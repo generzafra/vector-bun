@@ -1,6 +1,6 @@
 import { Hono, type Context } from 'hono';
 import { getCookie, setCookie } from 'hono/cookie';
-import { assertCsrf, cookieName, sessionCookieOptions } from '@vector/auth';
+import { assertCsrf, consumeRateLimit, cookieName, sessionCookieOptions } from '@vector/auth';
 import { env } from '@vector/config';
 import { AppError, ForbiddenError, UnauthorizedError, ValidationError } from '@vector/contracts';
 import {
@@ -57,6 +57,7 @@ import {
 	publishSocialPost,
 	refreshSocialConnection,
 	scheduleSocialPost,
+	serveSocialMediaGrant,
 	syncSocialMetricsForOperator,
 	transitionSocialPost,
 	uploadCreativeAsset,
@@ -617,6 +618,22 @@ app.post('/v1/leads/:id/status', async (c) => {
 	const body = await c.req.json();
 	const row = await updateLeadStatus(session, ctx, { ...body, id: c.req.param('id') }, requestId);
 	return c.json({ requestId, data: row });
+});
+
+app.get('/v1/public/social-media', async (c) => {
+	const requestId = createRequestId();
+	consumeRateLimit(`social-media:${c.req.header('x-forwarded-for') ?? '127.0.0.1'}`, 60, 60_000);
+	const result = await serveSocialMediaGrant(c.req.query('token') ?? '');
+	const body = new ArrayBuffer(result.bytes.byteLength);
+	new Uint8Array(body).set(result.bytes);
+	return new Response(body, {
+		headers: {
+			'content-type': result.mimeType,
+			'cache-control': 'private, max-age=60',
+			'x-robots-tag': 'noindex',
+			'x-request-id': requestId
+		}
+	});
 });
 
 app.get('/v1/social', async (c) => {

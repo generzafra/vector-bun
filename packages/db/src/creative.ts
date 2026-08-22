@@ -26,6 +26,18 @@ export async function getCreativeAssetForTenant(ctx: TenantContext, id: string) 
 	return row ?? null;
 }
 
+export async function getCreativeAssetVersionByIdForTenant(ctx: TenantContext, id: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(creativeAssetVersions)
+		.where(
+			and(eq(creativeAssetVersions.id, id), eq(creativeAssetVersions.clientId, required.clientId))
+		)
+		.limit(1);
+	return row ?? null;
+}
+
 export async function getCreativeAssetVersionForTenant(
 	ctx: TenantContext,
 	assetId: string,

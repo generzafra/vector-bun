@@ -1,9 +1,11 @@
 import { ProviderError } from '@vector/contracts';
 import { logError, logInfo } from '@vector/observability';
+import { asBody } from './bytes';
 import type {
 	ConnectionHealth,
 	MetricsRequest,
 	PostMetrics,
+	PublishMedia,
 	PublishRequest,
 	PublishResult,
 	RefreshRequest,
@@ -71,15 +73,31 @@ export class LinkedInSocialProvider implements SocialProvider {
 	}
 
 	async publish(request: PublishRequest): Promise<PublishResult> {
-		if (request.assetVersionId) {
+		if (request.assetVersionId && !request.media) {
 			throw new ProviderError(
-				'LinkedIn media upload is not enabled in this slice',
+				'LinkedIn media bytes were not loaded for the approved asset',
 				'SOCIAL_MEDIA_UNSUPPORTED'
 			);
 		}
 		const controller = new AbortController();
 		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 		try {
+			const image =
+				request.media &&
+				(await this.uploadImage(
+					request.accessToken,
+					request.externalAccountId,
+					request.media,
+					controller.signal
+				));
+			const payload: Record<string, unknown> = {
+				author: request.externalAccountId,
+				commentary: request.body,
+				visibility: 'PUBLIC',
+				distribution: { feedDistribution: 'MAIN_FEED' },
+				lifecycleState: 'PUBLISHED'
+			};
+			if (image) payload.content = { media: { id: image } };
 			const response = await this.sendHttp('https://api.linkedin.com/rest/posts', {
 				method: 'POST',
 				signal: controller.signal,
@@ -90,13 +108,7 @@ export class LinkedInSocialProvider implements SocialProvider {
 					'x-restli-protocol-version': '2.0.0',
 					'x-restli-idempotency-key': request.idempotencyKey
 				},
-				body: JSON.stringify({
-					author: request.externalAccountId,
-					commentary: request.body,
-					visibility: 'PUBLIC',
-					distribution: { feedDistribution: 'MAIN_FEED' },
-					lifecycleState: 'PUBLISHED'
-				})
+				body: JSON.stringify(payload)
 			});
 			if (!response.ok) {
 				throw new ProviderError(
@@ -122,6 +134,61 @@ export class LinkedInSocialProvider implements SocialProvider {
 		} finally {
 			clearTimeout(timer);
 		}
+	}
+
+	private async uploadImage(
+		accessToken: string,
+		owner: string,
+		media: PublishMedia,
+		signal: AbortSignal
+	) {
+		const initialized = await this.sendHttp(
+			'https://api.linkedin.com/rest/images?action=initializeUpload',
+			{
+				method: 'POST',
+				signal,
+				headers: {
+					authorization: `Bearer ${accessToken}`,
+					'content-type': 'application/json',
+					'linkedin-version': VERSION,
+					'x-restli-protocol-version': '2.0.0'
+				},
+				body: JSON.stringify({ initializeUploadRequest: { owner } })
+			}
+		);
+		if (!initialized.ok) {
+			throw new ProviderError(
+				`LinkedIn media initialize failed (${initialized.status})`,
+				'PROVIDER_TEMPORARY_FAILURE'
+			);
+		}
+		const body = (await initialized.json()) as {
+			value?: { uploadUrl?: string; image?: string };
+		};
+		const uploadUrl = body.value?.uploadUrl;
+		const image = body.value?.image;
+		if (!uploadUrl || !image) {
+			throw new ProviderError(
+				'LinkedIn media initialize returned no upload target',
+				'PROVIDER_INVALID_PAYLOAD'
+			);
+		}
+		const uploaded = await this.sendHttp(uploadUrl, {
+			method: 'PUT',
+			signal,
+			headers: {
+				authorization: `Bearer ${accessToken}`,
+				'content-type': media.mimeType
+			},
+			body: asBody(media.bytes)
+		});
+		if (!uploaded.ok) {
+			throw new ProviderError(
+				`LinkedIn media upload failed (${uploaded.status})`,
+				'PROVIDER_TEMPORARY_FAILURE'
+			);
+		}
+		return image;
 	}
 
 	async fetchPostMetrics(_request: MetricsRequest): Promise<PostMetrics> {

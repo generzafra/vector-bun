@@ -60,7 +60,7 @@ Social adapters, calendar, approval, publishing, automated social connection rea
 
 **Exit:** approved content can publish to at least two priority platforms, and required social connections are readiness-gated.
 
-**Status (23 August 2026):** Slices 1–3 are in. Approved text posts can publish through LinkedIn, X, Facebook, and Instagram adapters (memory in tests; official Graph adapters registered). Official Instagram Graph publish fails closed without media. Tokens refresh before publish when expired. Scheduled posts fire through `social-due-sweep`. Metrics sync and social → lead (`utm_medium=social`, `utm_content=post:{id}`) stay tenant-scoped. Creative C0 stores versions and rights on `StorageProvider`. Required social accounts gate `social.access`. Official production publish, OAuth install, and media upload are later slices. This does not accept the Phase 5 exit.
+**Status (23 August 2026):** Slices 1–4 are in. Approved text and C0 image posts can publish through LinkedIn, X, Facebook, and Instagram adapters (memory in tests; official upload endpoints registered). Official Instagram Graph publish fails closed without media. Tokens refresh before publish when expired. Scheduled posts fire through `social-due-sweep`. Metrics sync and social → lead (`utm_medium=social`, `utm_content=post:{id}`) stay tenant-scoped. Creative C0 stores versions and rights on `StorageProvider`. Required social accounts gate `social.access`. Official production OAuth install remains a later slice. This does not accept the Phase 5 exit.
 
 `ImageProvider`, deterministic composition, social creative families, and funnel hero generation are later Creative slices. They do not replace this exit.
 

@@ -159,6 +159,132 @@ test('official Meta Facebook publish and refresh use Graph endpoints', async () 
 	expect(calls.some((call) => call.includes('fb_exchange_token'))).toBe(true);
 });
 
+const PNG = Uint8Array.from([
+	0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+	0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4,
+	0x89, 0x00, 0x00, 0x00, 0x0a, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
+	0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
+	0x42, 0x60, 0x82
+]);
+
+function sampleMedia(publicUrl?: string) {
+	return {
+		assetVersionId: '33333333-3333-4333-8333-333333333333',
+		filename: 'social.png',
+		mimeType: 'image/png',
+		bytes: PNG,
+		publicUrl
+	};
+}
+
+test('official LinkedIn and X publish approved media through official upload endpoints', async () => {
+	const linkedinCalls: string[] = [];
+	const linkedin = new LinkedInSocialProvider(async (input, init) => {
+		const url = String(input);
+		linkedinCalls.push(`${init?.method ?? 'GET'} ${url}`);
+		if (url.includes('initializeUpload')) {
+			return jsonResponse(200, {
+				value: {
+					uploadUrl: 'https://www.linkedin.com/dm-uploads/image-1',
+					image: 'urn:li:image:abc'
+				}
+			});
+		}
+		if (url.includes('dm-uploads')) return new Response(null, { status: 201 });
+		if (url.includes('/rest/posts')) {
+			expect(String(init?.body)).toContain('urn:li:image:abc');
+			return new Response(null, { status: 201, headers: { 'x-restli-id': 'urn:li:share:1' } });
+		}
+		return jsonResponse(404, {});
+	});
+	const linkedinResult = await linkedin.publish({
+		clientId: '11111111-1111-4111-8111-111111111111',
+		publicationId: '22222222-2222-4222-8222-222222222222',
+		idempotencyKey: 'li-media-1',
+		platform: 'linkedin',
+		accessToken: 'li-token',
+		externalAccountId: 'urn:li:person:1',
+		body: 'With image',
+		assetVersionId: sampleMedia().assetVersionId,
+		media: sampleMedia()
+	});
+	expect(linkedinResult.providerPostId).toBe('urn:li:share:1');
+	expect(linkedinCalls.some((call) => call.includes('initializeUpload'))).toBe(true);
+
+	const xCalls: string[] = [];
+	const x = new XSocialProvider(async (input, init) => {
+		const url = String(input);
+		xCalls.push(`${init?.method ?? 'GET'} ${url}`);
+		if (url.includes('/media/upload')) return jsonResponse(200, { data: { id: 'media-9' } });
+		if (url.includes('/tweets')) {
+			expect(String(init?.body)).toContain('media-9');
+			return jsonResponse(201, { data: { id: 'tweet-9' } });
+		}
+		return jsonResponse(404, {});
+	});
+	const xResult = await x.publish({
+		clientId: '11111111-1111-4111-8111-111111111111',
+		publicationId: '22222222-2222-4222-8222-222222222222',
+		idempotencyKey: 'x-media-1',
+		platform: 'x',
+		accessToken: 'x-token',
+		externalAccountId: 'x-user-1',
+		body: 'With image',
+		media: sampleMedia()
+	});
+	expect(xResult.providerPostId).toBe('tweet-9');
+	expect(xCalls.some((call) => call.includes('/media/upload'))).toBe(true);
+});
+
+test('official Meta Facebook photos and Instagram containers use official media endpoints', async () => {
+	const facebookCalls: string[] = [];
+	const facebook = new MetaSocialProvider('facebook', async (input, init) => {
+		const url = String(input);
+		facebookCalls.push(`${init?.method ?? 'GET'} ${url}`);
+		if (url.includes('/photos')) return jsonResponse(200, { id: 'photo-1', post_id: 'page_photo' });
+		return jsonResponse(404, {});
+	});
+	const facebookResult = await facebook.publish({
+		clientId: '11111111-1111-4111-8111-111111111111',
+		publicationId: '22222222-2222-4222-8222-222222222222',
+		idempotencyKey: 'fb-media-1',
+		platform: 'facebook',
+		accessToken: 'page-token',
+		externalAccountId: 'page-1',
+		body: 'Photo caption',
+		media: sampleMedia()
+	});
+	expect(facebookResult.providerPostId).toBe('page_photo');
+	expect(facebookCalls.some((call) => call.includes('/page-1/photos'))).toBe(true);
+
+	const igCalls: string[] = [];
+	const instagram = new MetaSocialProvider('instagram', async (input, init) => {
+		const url = String(input);
+		igCalls.push(`${init?.method ?? 'GET'} ${url}`);
+		if (url.endsWith('/media')) {
+			expect(String(init?.body)).toContain('https://api.example.test/image.png');
+			return jsonResponse(200, { id: 'container-1' });
+		}
+		if (url.includes('/media_publish')) {
+			expect(String(init?.body)).toContain('container-1');
+			return jsonResponse(200, { id: 'ig-media-9' });
+		}
+		return jsonResponse(404, {});
+	});
+	const igResult = await instagram.publish({
+		clientId: '11111111-1111-4111-8111-111111111111',
+		publicationId: '22222222-2222-4222-8222-222222222222',
+		idempotencyKey: 'ig-media-1',
+		platform: 'instagram',
+		accessToken: 'ig-token',
+		externalAccountId: 'ig-user-1',
+		body: 'IG caption',
+		media: sampleMedia('https://api.example.test/image.png')
+	});
+	expect(igResult.providerPostId).toBe('ig-media-9');
+	expect(igCalls.some((call) => call.includes('/media_publish'))).toBe(true);
+});
+
 test('official Instagram publish fails closed without media', async () => {
 	const instagram = new MetaSocialProvider('instagram', async () => jsonResponse(200, {}));
 	let error: unknown;

@@ -2224,7 +2224,7 @@ Map Creative Engine work **forward**. The C0–C9 order in §63 is a cross-cutti
 
 ## Phase 5 — additive
 
-- C0 general asset library so Social does not invent a second media store. Slice 1 implements `creative_assets` / versions / rights on the existing `StorageProvider` (`clients/{client_id}/creative/...`). Slice 3 adds Facebook and Instagram `SocialProvider` adapters on the same C0 store. Official Instagram Graph publish stays media-required and does not start C2–C4. Slice 2–3 do not add Creative C1–C9.
+- C0 general asset library so Social does not invent a second media store. Slice 1 implements `creative_assets` / versions / rights on the existing `StorageProvider` (`clients/{client_id}/creative/...`). Slice 3 adds Facebook and Instagram `SocialProvider` adapters on the same C0 store. Slice 4 publishes approved C0 images through official upload APIs and a short-lived signed fetch grant for Instagram. That does not start C2–C4. Slice 2–4 do not add Creative C1–C9.
 - Later Phase 5 slices may add C1 brand visual profile, C2 `ImageProvider`, C3 composition, C4 derivatives, and C6 social families.
 - Phase 5 exit remains: approved content publishes to at least two priority platforms, and required social connections are readiness-gated.
 - Social-ready generated families are a later Creative slice, not the Phase 5 exit.

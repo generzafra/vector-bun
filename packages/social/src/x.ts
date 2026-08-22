@@ -1,9 +1,11 @@
 import { ProviderError } from '@vector/contracts';
 import { logError, logInfo } from '@vector/observability';
+import { asBody } from './bytes';
 import type {
 	ConnectionHealth,
 	MetricsRequest,
 	PostMetrics,
+	PublishMedia,
 	PublishRequest,
 	PublishResult,
 	RefreshRequest,
@@ -70,15 +72,20 @@ export class XSocialProvider implements SocialProvider {
 	}
 
 	async publish(request: PublishRequest): Promise<PublishResult> {
-		if (request.assetVersionId) {
+		if (request.assetVersionId && !request.media) {
 			throw new ProviderError(
-				'X media upload is not enabled in this slice',
+				'X media bytes were not loaded for the approved asset',
 				'SOCIAL_MEDIA_UNSUPPORTED'
 			);
 		}
 		const controller = new AbortController();
 		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 		try {
+			const mediaId =
+				request.media &&
+				(await this.uploadImage(request.accessToken, request.media, controller.signal));
+			const payload: Record<string, unknown> = { text: request.body };
+			if (mediaId) payload.media = { media_ids: [mediaId] };
 			const response = await this.sendHttp('https://api.x.com/2/tweets', {
 				method: 'POST',
 				signal: controller.signal,
@@ -86,7 +93,7 @@ export class XSocialProvider implements SocialProvider {
 					authorization: `Bearer ${request.accessToken}`,
 					'content-type': 'application/json'
 				},
-				body: JSON.stringify({ text: request.body })
+				body: JSON.stringify(payload)
 			});
 			if (!response.ok) {
 				throw new ProviderError(
@@ -112,6 +119,34 @@ export class XSocialProvider implements SocialProvider {
 		} finally {
 			clearTimeout(timer);
 		}
+	}
+
+	private async uploadImage(accessToken: string, media: PublishMedia, signal: AbortSignal) {
+		const form = new FormData();
+		form.append('media', new Blob([asBody(media.bytes)], { type: media.mimeType }), media.filename);
+		form.append('media_category', 'tweet_image');
+		const response = await this.sendHttp('https://api.x.com/2/media/upload', {
+			method: 'POST',
+			signal,
+			headers: { authorization: `Bearer ${accessToken}` },
+			body: form
+		});
+		if (!response.ok) {
+			throw new ProviderError(
+				`X media upload failed (${response.status})`,
+				'PROVIDER_TEMPORARY_FAILURE'
+			);
+		}
+		const body = (await response.json()) as {
+			data?: { id?: string };
+			media_id_string?: string;
+			id?: string;
+		};
+		const mediaId = body.data?.id ?? body.media_id_string ?? body.id;
+		if (!mediaId) {
+			throw new ProviderError('X media upload returned no media id', 'PROVIDER_INVALID_PAYLOAD');
+		}
+		return mediaId;
 	}
 
 	async fetchPostMetrics(request: MetricsRequest): Promise<PostMetrics> {

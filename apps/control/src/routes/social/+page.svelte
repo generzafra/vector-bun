@@ -40,7 +40,7 @@
 <PageHeader
 	eyebrow="Growth"
 	title="Social"
-	description="Approved posts publish to LinkedIn, X, Facebook, and Instagram through official APIs. Instagram Graph stays media-required in production. Tokens stay encrypted and refresh on the server. Scheduled posts, metrics, and social-to-lead tracking use the existing attribution path. Creative C0 assets stay tenant-scoped."
+	description="Approved posts publish to LinkedIn, X, Facebook, and Instagram through official APIs. Approved C0 images upload through those APIs. Instagram Graph requires an image. Tokens stay encrypted and refresh on the server. Scheduled posts, metrics, and social-to-lead tracking use the existing attribution path."
 />
 
 {#if form?.error}

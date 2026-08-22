@@ -36,6 +36,7 @@ import {
 	insertSocialPostForTenant,
 	insertSocialPublicationForTenant,
 	getCreativeAssetRightsForTenant,
+	getCreativeAssetVersionByIdForTenant,
 	listCreativeAssetsForTenant,
 	listDueScheduledPostsForTenant,
 	listPublishedSocialPublicationsForTenant,
@@ -57,23 +58,60 @@ import {
 	SOCIAL_SIMILARITY_WINDOW_DAYS,
 	assertFrequencyAllowed,
 	assertNotSimilar,
+	createSocialMediaGrant,
 	decryptSecret,
 	encryptSecret,
 	memorySocialProvider,
 	parseSocialAttributionContent,
+	parseSocialMediaGrant,
 	resetSocialProvider,
 	setSocialProvider,
 	similarityHash,
 	socialAttributionParams,
+	socialMediaPublicUrl,
 	socialProvider,
+	type PublishMedia,
 	type SocialProvider
 } from '@vector/social';
+import { storageProvider } from '@vector/storage';
 import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
 import { publicCreativeAsset, resolveAttachableCreativeAsset } from './creative';
 import { dispatchWorkflow } from './workflows';
 
 const TOKEN_REFRESH_SKEW_MS = 5 * 60_000;
+const SOCIAL_MEDIA_GRANT_TTL_MS = 15 * 60_000;
+
+async function loadPublishMedia(
+	ctx: TenantContext,
+	post: { assetId: string | null; assetVersionId: string | null }
+): Promise<PublishMedia | null> {
+	if (!post.assetId || !post.assetVersionId) return null;
+	await resolveAttachableCreativeAsset(ctx, post.assetId);
+	const version = await getCreativeAssetVersionByIdForTenant(ctx, post.assetVersionId);
+	if (!version) throw new NotFoundError('Creative asset version not found');
+	const object = await storageProvider().getObject(ctx.clientId, version.storageKey);
+	const token = createSocialMediaGrant(env.TOKEN_ENCRYPTION_KEY, {
+		clientId: ctx.clientId,
+		storageKey: version.storageKey,
+		mimeType: version.mimeType,
+		exp: Date.now() + SOCIAL_MEDIA_GRANT_TTL_MS
+	});
+	return {
+		assetVersionId: version.id,
+		filename: version.originalFilename,
+		mimeType: version.mimeType,
+		bytes: object.bytes,
+		publicUrl: socialMediaPublicUrl(env.API_ORIGIN, token)
+	};
+}
+
+export async function serveSocialMediaGrant(token: string) {
+	const grant = parseSocialMediaGrant(env.TOKEN_ENCRYPTION_KEY, token);
+	if (!grant) throw new NotFoundError('Social media grant not found');
+	const object = await storageProvider().getObject(grant.clientId, grant.storageKey);
+	return { bytes: object.bytes, mimeType: grant.mimeType };
+}
 
 const ALLOWED_TRANSITIONS: Record<SocialPostStatus, SocialPostStatus[]> = {
 	idea: ['draft', 'archived'],
@@ -543,6 +581,7 @@ async function publishToAccount(
 		}));
 	try {
 		const accessToken = await decryptAccessToken(fresh.encryptedAccessToken);
+		const media = await loadPublishMedia(ctx, post);
 		const result = await getDomainSocialProvider(account.platform).publish({
 			clientId: ctx.clientId,
 			publicationId: publication.id,
@@ -551,7 +590,8 @@ async function publishToAccount(
 			accessToken,
 			externalAccountId: account.externalAccountId,
 			body: post.body,
-			assetVersionId: post.assetVersionId
+			assetVersionId: post.assetVersionId,
+			media
 		});
 		const published = await updateSocialPublicationForTenant(ctx, publication.id, {
 			status: 'published',

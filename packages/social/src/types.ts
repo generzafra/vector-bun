@@ -10,6 +10,14 @@ export type ConnectionHealth = {
 	externalAccountId?: string;
 };
 
+export type PublishMedia = {
+	assetVersionId: string;
+	filename: string;
+	mimeType: string;
+	bytes: Uint8Array;
+	publicUrl?: string;
+};
+
 export type PublishRequest = {
 	clientId: string;
 	publicationId: string;
@@ -19,6 +27,7 @@ export type PublishRequest = {
 	externalAccountId: string;
 	body: string;
 	assetVersionId?: string | null;
+	media?: PublishMedia | null;
 };
 
 export type PublishResult = {

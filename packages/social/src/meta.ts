@@ -1,9 +1,11 @@
 import { ProviderError } from '@vector/contracts';
 import { logError, logInfo } from '@vector/observability';
+import { asBody } from './bytes';
 import type {
 	ConnectionHealth,
 	MetricsRequest,
 	PostMetrics,
+	PublishMedia,
 	PublishRequest,
 	PublishResult,
 	RefreshRequest,
@@ -82,37 +84,27 @@ export class MetaSocialProvider implements SocialProvider {
 	}
 
 	async publish(request: PublishRequest): Promise<PublishResult> {
-		if (request.assetVersionId || this.platform === 'instagram') {
+		if (this.platform === 'instagram' && (!request.media || !request.media.publicUrl)) {
 			throw new ProviderError(
-				this.platform === 'instagram'
-					? 'Instagram Graph publishing requires approved media in this slice'
-					: 'Meta media upload is not enabled in this slice',
+				'Instagram Graph publishing requires approved media with a fetchable image URL',
+				'SOCIAL_MEDIA_UNSUPPORTED'
+			);
+		}
+		if (request.assetVersionId && !request.media) {
+			throw new ProviderError(
+				'Meta media bytes were not loaded for the approved asset',
 				'SOCIAL_MEDIA_UNSUPPORTED'
 			);
 		}
 		const controller = new AbortController();
 		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 		try {
-			const response = await this.sendHttp(
-				`${GRAPH_BASE}/${encodeURIComponent(request.externalAccountId)}/feed`,
-				{
-					method: 'POST',
-					signal: controller.signal,
-					headers: {
-						authorization: `Bearer ${request.accessToken}`,
-						'content-type': 'application/json'
-					},
-					body: JSON.stringify({ message: request.body })
-				}
-			);
-			if (!response.ok) {
-				throw new ProviderError(
-					`Meta publish failed (${response.status})`,
-					'PROVIDER_TEMPORARY_FAILURE'
-				);
-			}
-			const body = (await response.json()) as { id?: string };
-			const providerPostId = body.id ?? `facebook-${request.publicationId}`;
+			const providerPostId =
+				this.platform === 'instagram'
+					? await this.publishInstagram(request, controller.signal)
+					: request.media
+						? await this.publishFacebookPhoto(request, request.media, controller.signal)
+						: await this.publishFacebookText(request, controller.signal);
 			logInfo('social.meta.publish', {
 				clientId: request.clientId,
 				publicationId: request.publicationId,
@@ -130,6 +122,116 @@ export class MetaSocialProvider implements SocialProvider {
 		} finally {
 			clearTimeout(timer);
 		}
+	}
+
+	private async publishFacebookText(request: PublishRequest, signal: AbortSignal) {
+		const response = await this.sendHttp(
+			`${GRAPH_BASE}/${encodeURIComponent(request.externalAccountId)}/feed`,
+			{
+				method: 'POST',
+				signal,
+				headers: {
+					authorization: `Bearer ${request.accessToken}`,
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify({ message: request.body })
+			}
+		);
+		if (!response.ok) {
+			throw new ProviderError(
+				`Meta publish failed (${response.status})`,
+				'PROVIDER_TEMPORARY_FAILURE'
+			);
+		}
+		const body = (await response.json()) as { id?: string };
+		return body.id ?? `facebook-${request.publicationId}`;
+	}
+
+	private async publishFacebookPhoto(
+		request: PublishRequest,
+		media: PublishMedia,
+		signal: AbortSignal
+	) {
+		const form = new FormData();
+		form.append(
+			'source',
+			new Blob([asBody(media.bytes)], { type: media.mimeType }),
+			media.filename
+		);
+		form.append('message', request.body);
+		form.append('published', 'true');
+		const response = await this.sendHttp(
+			`${GRAPH_BASE}/${encodeURIComponent(request.externalAccountId)}/photos`,
+			{
+				method: 'POST',
+				signal,
+				headers: { authorization: `Bearer ${request.accessToken}` },
+				body: form
+			}
+		);
+		if (!response.ok) {
+			throw new ProviderError(
+				`Meta photo publish failed (${response.status})`,
+				'PROVIDER_TEMPORARY_FAILURE'
+			);
+		}
+		const body = (await response.json()) as { id?: string; post_id?: string };
+		return body.post_id ?? body.id ?? `facebook-${request.publicationId}`;
+	}
+
+	private async publishInstagram(request: PublishRequest, signal: AbortSignal) {
+		const imageUrl = request.media?.publicUrl;
+		if (!imageUrl) {
+			throw new ProviderError(
+				'Instagram Graph publishing requires approved media with a fetchable image URL',
+				'SOCIAL_MEDIA_UNSUPPORTED'
+			);
+		}
+		const container = await this.sendHttp(
+			`${GRAPH_BASE}/${encodeURIComponent(request.externalAccountId)}/media`,
+			{
+				method: 'POST',
+				signal,
+				headers: {
+					authorization: `Bearer ${request.accessToken}`,
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify({ image_url: imageUrl, caption: request.body })
+			}
+		);
+		if (!container.ok) {
+			throw new ProviderError(
+				`Instagram media container failed (${container.status})`,
+				'PROVIDER_TEMPORARY_FAILURE'
+			);
+		}
+		const created = (await container.json()) as { id?: string };
+		if (!created.id) {
+			throw new ProviderError(
+				'Instagram media container returned no creation id',
+				'PROVIDER_INVALID_PAYLOAD'
+			);
+		}
+		const published = await this.sendHttp(
+			`${GRAPH_BASE}/${encodeURIComponent(request.externalAccountId)}/media_publish`,
+			{
+				method: 'POST',
+				signal,
+				headers: {
+					authorization: `Bearer ${request.accessToken}`,
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify({ creation_id: created.id })
+			}
+		);
+		if (!published.ok) {
+			throw new ProviderError(
+				`Instagram media publish failed (${published.status})`,
+				'PROVIDER_TEMPORARY_FAILURE'
+			);
+		}
+		const body = (await published.json()) as { id?: string };
+		return body.id ?? created.id;
 	}
 
 	async fetchPostMetrics(request: MetricsRequest): Promise<PostMetrics> {

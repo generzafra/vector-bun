@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { cookieName } from '@vector/auth';
 import { env } from '@vector/config';
 import {
+	ForbiddenError,
 	NotFoundError,
 	SOCIAL_PLATFORMS,
 	TenantContextError,
@@ -43,6 +44,7 @@ import {
 	recalculateReadiness,
 	refreshSocialConnection,
 	resetDomainSocialProvider,
+	serveSocialMediaGrant,
 	setDomainSocialProvider,
 	memorySocialProvider,
 	resolveSession,
@@ -55,6 +57,8 @@ import {
 import {
 	assertFrequencyAllowed,
 	assertNotSimilar,
+	createSocialMediaGrant,
+	parseSocialMediaGrant,
 	similarityHash,
 	socialAttributionParams
 } from '@vector/social';
@@ -134,6 +138,38 @@ async function connectPlatform(
 		},
 		`connect-${platform}-${suffix}`
 	);
+}
+
+async function approveImage(
+	actor: Awaited<ReturnType<typeof adminOn>>,
+	ctx: ReturnType<typeof contextFor>,
+	title: string
+) {
+	const uploaded = await uploadCreativeAsset(
+		actor,
+		ctx,
+		{
+			title,
+			kind: 'image',
+			filename: 'social.png',
+			declaredType: 'image/png',
+			bytes: PNG_1X1
+		},
+		`social-asset-${title}`
+	);
+	await confirmCreativeRights(
+		actor,
+		ctx,
+		{ id: uploaded.asset.id, rightsStatus: 'client_owned' },
+		`social-rights-${title}`
+	);
+	await approveCreativeAsset(
+		actor,
+		ctx,
+		{ id: uploaded.asset.id },
+		`social-asset-approve-${title}`
+	);
+	return uploaded.asset;
 }
 
 async function approvePost(
@@ -328,6 +364,67 @@ test('approved content publishes to Facebook and Instagram', async () => {
 	expect(overview.publications.filter((row) => row.postId === post.id)).toHaveLength(2);
 	expect(memorySocialProvider('facebook').published).toHaveLength(1);
 	expect(memorySocialProvider('instagram').published).toHaveLength(1);
+});
+
+test('approved C0 images publish through LinkedIn and Instagram', async () => {
+	const { alpha, beta } = await seededClients();
+	const actor = await adminOn(alpha.id, '127.0.0.74', 'social-media');
+	const ctx = contextFor(actor, 'social-media');
+	const suffix = crypto.randomUUID().slice(0, 8);
+	const asset = await approveImage(actor, ctx, `Graphic ${suffix}`);
+	const linkedin = await connectPlatform(actor, ctx, 'linkedin', suffix);
+	const instagram = await connectPlatform(actor, ctx, 'instagram', `ig-${suffix}`);
+	const post = await createSocialPost(
+		actor,
+		ctx,
+		{ body: `Media post ${suffix}`, assetId: asset.id, status: 'draft' },
+		'social-media-create'
+	);
+	await transitionSocialPost(actor, ctx, { id: post.id, to: 'reviewed' }, 'social-media-review');
+	await transitionSocialPost(actor, ctx, { id: post.id, to: 'approved' }, 'social-media-approve');
+	const result = await publishSocialPost(
+		actor,
+		ctx,
+		{ id: post.id, accountIds: [linkedin.account.id, instagram.account.id] },
+		'social-media-pub'
+	);
+	if (!('publications' in result)) throw new Error('expected in-process publish');
+	expect(result.publications.filter((row) => row.status === 'published')).toHaveLength(2);
+	const linkedinReq = memorySocialProvider('linkedin').published.at(-1);
+	const instagramReq = memorySocialProvider('instagram').published.at(-1);
+	expect(linkedinReq?.media?.assetVersionId).toBe(post.assetVersionId);
+	expect(linkedinReq?.media?.bytes).toEqual(PNG_1X1);
+	expect(instagramReq?.media?.publicUrl?.includes('/v1/public/social-media?token=')).toBe(true);
+	const overview = await getSocialOverview(actor, ctx);
+	const payload = JSON.stringify(overview);
+	expect(payload.includes('/v1/public/social-media')).toBe(false);
+	expect(payload.includes('TOKEN_ENCRYPTION_KEY')).toBe(false);
+	const cookie = `${cookieName()}=${actor.token}`;
+	const apiRes = await app.request('/v1/social', { headers: { cookie } });
+	expect(apiRes.status).toBe(200);
+	const apiPayload = await apiRes.text();
+	expect(apiPayload.includes('/v1/public/social-media')).toBe(false);
+	const grantUrl = instagramReq?.media?.publicUrl ?? '';
+	const served = await app.request(grantUrl.replace(env.API_ORIGIN, ''));
+	expect(served.status).toBe(200);
+	expect(served.headers.get('content-type')).toBe('image/png');
+	expect(new Uint8Array(await served.arrayBuffer())).toEqual(PNG_1X1);
+	const forged = await app.request('/v1/public/social-media?token=not-a-grant');
+	expect(forged.status).toBe(404);
+	const expired = createSocialMediaGrant(env.TOKEN_ENCRYPTION_KEY, {
+		clientId: alpha.id,
+		storageKey: buildStorageKey(alpha.id, 'creative', 'image', 'social.png'),
+		mimeType: 'image/png',
+		exp: Date.now() - 1000
+	});
+	expect(parseSocialMediaGrant(env.TOKEN_ENCRYPTION_KEY, expired)).toBeNull();
+	const mismatched = createSocialMediaGrant(env.TOKEN_ENCRYPTION_KEY, {
+		clientId: beta.id,
+		storageKey: buildStorageKey(alpha.id, 'creative', 'image', 'social.png'),
+		mimeType: 'image/png',
+		exp: Date.now() + 60_000
+	});
+	await expect(serveSocialMediaGrant(mismatched)).rejects.toBeInstanceOf(ForbiddenError);
 });
 
 test('frequency and similarity helpers fail closed', () => {

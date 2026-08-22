@@ -1,6 +1,6 @@
 # Phase 5 — Social
 
-**Status:** Slices 1–3 done — Creative C0 library, LinkedIn, X, Facebook, and Instagram publish (memory in tests; official Graph adapters registered), token refresh, scheduled due sweep, metrics sync, and social → lead on the existing attribution path. Official Instagram Graph publish stays media-required. Required social connections are readiness-gated. Phase 5 exit is not met until production tokens publish reliably on at least two official platforms.  
+**Status:** Slices 1–4 done — Creative C0 library, LinkedIn, X, Facebook, and Instagram publish (memory in tests; official adapters registered), official C0 image upload, token refresh, scheduled due sweep, metrics sync, and social → lead on the existing attribution path. Required social connections are readiness-gated. Phase 5 exit is not met until production tokens publish reliably on at least two official platforms.  
 **Prerequisite:** Phase 4 exit met. Do not start until AI actions are typed, approved, and costed.
 
 ---
@@ -72,3 +72,7 @@ Expired or near-expiry connections refresh through `SocialProvider.refreshConnec
 ## Slice 3 — Meta adapters (done)
 
 Facebook and Instagram are first-class `SocialProvider` platforms (`social_platform` adds `facebook` | `instagram`). Official adapters call Meta Graph (`adapter: meta`). Facebook text posts use `/{page-id}/feed`. Official Instagram publish fails closed with `SOCIAL_MEDIA_UNSUPPORTED` until media upload exists; the memory adapter still accepts text-only for tests. Token refresh uses `fb_exchange_token` and fails closed without `META_APP_ID` / `META_APP_SECRET`. YouTube and TikTok stay later. This does not accept the Phase 5 exit.
+
+## Slice 4 — Official C0 media publish (done)
+
+Domain loads approved, rights-confirmed C0 bytes through tenant-scoped `StorageProvider.getObject`. Official LinkedIn, X, and Facebook adapters upload those bytes. Official Instagram Graph creates a container from a short-lived signed `/v1/public/social-media` grant (HMAC, expiry, tenant key check) so Instagram can fetch the image without a second object store. Raw storage keys are not authorization. Grants and bytes never appear in Control or API JSON. Production OAuth install, YouTube, and TikTok stay later. This does not accept the Phase 5 exit.

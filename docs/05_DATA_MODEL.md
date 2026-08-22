@@ -50,7 +50,7 @@ social_metrics
 social_provider_events
 ```
 
-OAuth tokens are encrypted at rest on `social_connections` and are never returned to the browser or model. `token_expires_at` drives refresh-before-publish. Required `social_accounts` make `social.access` blocking. `social_platform` is `linkedin` | `x` | `facebook` | `instagram`. Post lifecycle is idea → draft → reviewed → approved → scheduled → publishing → published | failed → archived. Publications record the exact content version and asset version sent. `social_metrics` are snapshots, not the business source of truth. Social → lead uses existing `lead_sources.utm_content` = `post:{social_post_id}`.
+OAuth tokens are encrypted at rest on `social_connections` and are never returned to the browser or model. `token_expires_at` drives refresh-before-publish. Required `social_accounts` make `social.access` blocking. `social_platform` is `linkedin` | `x` | `facebook` | `instagram`. Post lifecycle is idea → draft → reviewed → approved → scheduled → publishing → published | failed → archived. Publications record the exact content version and asset version sent. Official image publish reads C0 bytes from `StorageProvider` under the tenant prefix. Instagram may fetch those bytes through a short-lived signed grant; the raw storage key is not authorization. `social_metrics` are snapshots, not the business source of truth. Social → lead uses existing `lead_sources.utm_content` = `post:{social_post_id}`.
 
 Phase 1 funnel (tenant-owned, `client_id` required):
 

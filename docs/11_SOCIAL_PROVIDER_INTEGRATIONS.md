@@ -2,7 +2,7 @@
 
 ## Architecture
 
-Use `SocialProvider` adapters in `packages/social`. LinkedIn, X, Facebook, and Instagram are registered. Memory is the test/default adapter. Official API adapters run when `SOCIAL_ADAPTER=official`. Official token refresh needs `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET`, `X_CLIENT_ID` / `X_CLIENT_SECRET`, or `META_APP_ID` / `META_APP_SECRET`. Official Instagram Graph publish requires media and fails closed for text-only. `SOCIAL_PUBLISHING_PAUSED` disables outbound publish but still allows validate, refresh, and metrics through the inner adapter.
+Use `SocialProvider` adapters in `packages/social`. LinkedIn, X, Facebook, and Instagram are registered. Memory is the test/default adapter. Official API adapters run when `SOCIAL_ADAPTER=official`. Official token refresh needs `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET`, `X_CLIENT_ID` / `X_CLIENT_SECRET`, or `META_APP_ID` / `META_APP_SECRET`. Official LinkedIn, X, and Facebook adapters upload approved C0 image bytes. Official Instagram Graph publish requires media plus a short-lived signed fetch URL and fails closed for text-only. `SOCIAL_PUBLISHING_PAUSED` disables outbound publish but still allows validate, refresh, and metrics through the inner adapter.
 
 ## Initial priority
 
