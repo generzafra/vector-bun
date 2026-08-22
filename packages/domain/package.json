@@ -15,6 +15,7 @@
 		"@vector/automation": "workspace:*",
 		"@vector/compliance": "workspace:*",
 		"@vector/email": "workspace:*",
+		"@vector/social": "workspace:*",
 		"@vector/config": "workspace:*",
 		"@vector/contracts": "workspace:*",
 		"@vector/db": "workspace:*",

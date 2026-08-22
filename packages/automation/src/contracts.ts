@@ -127,13 +127,66 @@ export const NURTURE_DUE_SWEEP_PLATFORM_WORKFLOW = {
 	concurrency: { key: 'platform', limit: 1 }
 } as const;
 
+export const socialPublishInputSchema = z
+	.object({
+		organizationId: z.string().uuid(),
+		clientId: z.string().uuid(),
+		postId: z.string().uuid(),
+		accountIds: z.array(z.string().uuid()).min(1).max(8),
+		requestId: z.string().min(1)
+	})
+	.strict();
+
+export type SocialPublishInput = z.infer<typeof socialPublishInputSchema>;
+
+export const SOCIAL_PUBLISH_WORKFLOW = {
+	name: 'social-publish',
+	trigger: 'approved or scheduled social post',
+	idempotencyKey: (input: Pick<SocialPublishInput, 'clientId' | 'postId'> & { accounts: string }) =>
+		`social-publish:${input.clientId}:${input.postId}:${input.accounts}`,
+	retry: { maxAttempts: 5, timeoutMs: 30_000 },
+	concurrency: { key: 'clientId', limit: 2 }
+} as const;
+
+export const socialDueSweepInputSchema = z
+	.object({
+		organizationId: z.string().uuid(),
+		clientId: z.string().uuid(),
+		requestId: z.string().min(1)
+	})
+	.strict();
+
+export type SocialDueSweepInput = z.infer<typeof socialDueSweepInputSchema>;
+
+export const SOCIAL_DUE_SWEEP_WORKFLOW = {
+	name: 'social-due-sweep',
+	trigger: 'operator or scheduled social publish sweep',
+	idempotencyKey: (input: Pick<SocialDueSweepInput, 'clientId'> & { windowStart: string }) =>
+		`social-due:${input.clientId}:${input.windowStart}`,
+	retry: { maxAttempts: 8, timeoutMs: 60_000 },
+	concurrency: { key: 'clientId', limit: 1 }
+} as const;
+
+export const SOCIAL_DUE_SWEEP_PLATFORM_WORKFLOW = {
+	name: 'social-due-sweep-platform',
+	trigger: 'scheduled social due-post fan-out',
+	idempotencyKey: (input: { windowStart: string }) => `social-due-platform:${input.windowStart}`,
+	retry: { maxAttempts: 5, timeoutMs: 60_000 },
+	concurrency: { key: 'platform', limit: 1 }
+} as const;
+
 export const TENANT_WORKFLOW_NAMES = [
 	LEAD_CAPTURED_WORKFLOW.name,
 	NURTURE_STEP_WORKFLOW.name,
 	ENROLL_ELIGIBLE_WORKFLOW.name,
 	NURTURE_DUE_SWEEP_WORKFLOW.name,
-	INBOUND_EMAIL_WORKFLOW.name
+	INBOUND_EMAIL_WORKFLOW.name,
+	SOCIAL_PUBLISH_WORKFLOW.name,
+	SOCIAL_DUE_SWEEP_WORKFLOW.name
 ] as const;
 
 export type TenantWorkflowName = (typeof TENANT_WORKFLOW_NAMES)[number];
-export type WorkflowName = TenantWorkflowName | typeof NURTURE_DUE_SWEEP_PLATFORM_WORKFLOW.name;
+export type WorkflowName =
+	| TenantWorkflowName
+	| typeof NURTURE_DUE_SWEEP_PLATFORM_WORKFLOW.name
+	| typeof SOCIAL_DUE_SWEEP_PLATFORM_WORKFLOW.name;

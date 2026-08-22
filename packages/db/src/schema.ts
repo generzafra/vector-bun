@@ -1721,3 +1721,296 @@ export const approvalDecisions = pgTable(
 		index('approval_decisions_request_idx').on(t.requestId)
 	]
 );
+
+export const creativeAssetStatus = pgEnum('creative_asset_status', [
+	'draft',
+	'approved',
+	'archived'
+]);
+export const creativeAssetKind = pgEnum('creative_asset_kind', ['image', 'graphic', 'other']);
+export const creativeRightsStatus = pgEnum('creative_rights_status', [
+	'unknown',
+	'client_owned',
+	'client_approved',
+	'restricted',
+	'prohibited'
+]);
+export const socialPlatform = pgEnum('social_platform', ['linkedin', 'x', 'facebook', 'instagram']);
+export const socialConnectionStatus = pgEnum('social_connection_status', [
+	'pending',
+	'active',
+	'expired',
+	'revoked'
+]);
+export const socialAccountStatus = pgEnum('social_account_status', ['active', 'disconnected']);
+export const socialPostStatus = pgEnum('social_post_status', [
+	'idea',
+	'draft',
+	'reviewed',
+	'approved',
+	'scheduled',
+	'publishing',
+	'published',
+	'failed',
+	'archived'
+]);
+export const socialPublicationStatus = pgEnum('social_publication_status', [
+	'queued',
+	'publishing',
+	'published',
+	'failed'
+]);
+
+export const creativeAssets = pgTable(
+	'creative_assets',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		title: text('title').notNull(),
+		kind: creativeAssetKind('kind').notNull().default('image'),
+		status: creativeAssetStatus('status').notNull().default('draft'),
+		sourceType: text('source_type').notNull().default('operator_upload'),
+		currentVersion: integer('current_version').notNull().default(1),
+		createdBy: text('created_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('creative_assets_client_idx').on(t.clientId),
+		index('creative_assets_org_idx').on(t.organizationId)
+	]
+);
+
+export const creativeAssetVersions = pgTable(
+	'creative_asset_versions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		assetId: uuid('asset_id')
+			.notNull()
+			.references(() => creativeAssets.id),
+		version: integer('version').notNull(),
+		storageKey: text('storage_key').notNull(),
+		originalFilename: text('original_filename').notNull(),
+		mimeType: text('mime_type').notNull(),
+		sizeBytes: integer('size_bytes').notNull(),
+		checksum: text('checksum').notNull(),
+		createdBy: text('created_by'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('creative_asset_versions_unique_idx').on(t.assetId, t.version),
+		uniqueIndex('creative_asset_versions_client_key_idx').on(t.clientId, t.storageKey),
+		index('creative_asset_versions_client_idx').on(t.clientId)
+	]
+);
+
+export const creativeAssetRights = pgTable(
+	'creative_asset_rights',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		assetId: uuid('asset_id')
+			.notNull()
+			.references(() => creativeAssets.id),
+		rightsStatus: creativeRightsStatus('rights_status').notNull().default('unknown'),
+		usageNotes: text('usage_notes'),
+		confirmedBy: text('confirmed_by'),
+		confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('creative_asset_rights_asset_idx').on(t.assetId),
+		index('creative_asset_rights_client_idx').on(t.clientId)
+	]
+);
+
+export const socialConnections = pgTable(
+	'social_connections',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		platform: socialPlatform('platform').notNull(),
+		status: socialConnectionStatus('status').notNull().default('pending'),
+		encryptedAccessToken: text('encrypted_access_token'),
+		encryptedRefreshToken: text('encrypted_refresh_token'),
+		tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }),
+		scopes: text('scopes'),
+		lastValidatedAt: timestamp('last_validated_at', { withTimezone: true }),
+		lastError: text('last_error'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('social_connections_client_platform_idx').on(t.clientId, t.platform),
+		index('social_connections_client_idx').on(t.clientId)
+	]
+);
+
+export const socialAccounts = pgTable(
+	'social_accounts',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		connectionId: uuid('connection_id')
+			.notNull()
+			.references(() => socialConnections.id),
+		platform: socialPlatform('platform').notNull(),
+		externalAccountId: text('external_account_id').notNull(),
+		handle: text('handle').notNull(),
+		displayName: text('display_name').notNull(),
+		required: boolean('required').notNull().default(true),
+		status: socialAccountStatus('status').notNull().default('active'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('social_accounts_connection_idx').on(t.connectionId),
+		index('social_accounts_client_idx').on(t.clientId)
+	]
+);
+
+export const socialPosts = pgTable(
+	'social_posts',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		status: socialPostStatus('status').notNull().default('draft'),
+		body: text('body').notNull(),
+		assetId: uuid('asset_id').references(() => creativeAssets.id),
+		assetVersionId: uuid('asset_version_id').references(() => creativeAssetVersions.id),
+		scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
+		similarityHash: text('similarity_hash').notNull(),
+		createdBy: text('created_by'),
+		approvedBy: text('approved_by'),
+		approvedAt: timestamp('approved_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('social_posts_client_idx').on(t.clientId),
+		index('social_posts_client_status_idx').on(t.clientId, t.status),
+		index('social_posts_similarity_idx').on(t.clientId, t.similarityHash)
+	]
+);
+
+export const socialPublications = pgTable(
+	'social_publications',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		postId: uuid('post_id')
+			.notNull()
+			.references(() => socialPosts.id),
+		accountId: uuid('account_id')
+			.notNull()
+			.references(() => socialAccounts.id),
+		connectionId: uuid('connection_id')
+			.notNull()
+			.references(() => socialConnections.id),
+		platform: socialPlatform('platform').notNull(),
+		status: socialPublicationStatus('status').notNull().default('queued'),
+		providerPostId: text('provider_post_id'),
+		contentVersion: integer('content_version').notNull().default(1),
+		assetVersionId: uuid('asset_version_id').references(() => creativeAssetVersions.id),
+		idempotencyKey: text('idempotency_key').notNull(),
+		error: text('error'),
+		publishedAt: timestamp('published_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('social_publications_idempotency_idx').on(t.clientId, t.idempotencyKey),
+		index('social_publications_client_idx').on(t.clientId),
+		index('social_publications_post_idx').on(t.postId)
+	]
+);
+
+export const socialMetrics = pgTable(
+	'social_metrics',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		publicationId: uuid('publication_id')
+			.notNull()
+			.references(() => socialPublications.id),
+		impressions: integer('impressions').notNull().default(0),
+		likes: integer('likes').notNull().default(0),
+		comments: integer('comments').notNull().default(0),
+		shares: integer('shares').notNull().default(0),
+		clicks: integer('clicks').notNull().default(0),
+		fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('social_metrics_client_idx').on(t.clientId),
+		index('social_metrics_publication_idx').on(t.publicationId)
+	]
+);
+
+export const socialProviderEvents = pgTable(
+	'social_provider_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		platform: socialPlatform('platform').notNull(),
+		providerEventId: text('provider_event_id').notNull(),
+		type: text('type').notNull(),
+		payload: jsonb('payload')
+			.$type<Record<string, string | number | boolean | null>>()
+			.notNull()
+			.default({}),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('social_provider_events_unique_idx').on(t.clientId, t.providerEventId),
+		index('social_provider_events_client_idx').on(t.clientId)
+	]
+);

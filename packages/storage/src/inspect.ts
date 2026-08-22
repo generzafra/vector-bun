@@ -45,6 +45,36 @@ export function inspectUpload(input: {
 	return { mime, sizeBytes: input.bytes.byteLength };
 }
 
+export const MAX_CREATIVE_BYTES = 8 * 1024 * 1024;
+
+const CREATIVE_ALLOWED = {
+	'image/png': ALLOWED['image/png'],
+	'image/jpeg': ALLOWED['image/jpeg'],
+	'image/webp': ALLOWED['image/webp']
+} as const;
+
+export type AllowedCreativeMime = keyof typeof CREATIVE_ALLOWED;
+
+export function inspectCreativeUpload(input: {
+	filename: string;
+	declaredType: string;
+	bytes: Uint8Array;
+}) {
+	if (input.bytes.byteLength === 0) throw new ValidationError('File is empty');
+	if (input.bytes.byteLength > MAX_CREATIVE_BYTES) {
+		throw new ValidationError('File exceeds the 8MB creative asset limit');
+	}
+	const mime = normalizeMime(input.declaredType);
+	const rule = CREATIVE_ALLOWED[mime as AllowedCreativeMime];
+	if (!rule) throw new ValidationError('Only PNG, JPEG, and WEBP creative assets are allowed');
+	if (!rule.magic(input.bytes)) throw new ValidationError('File contents do not match the declared type');
+	const ext = (input.filename.split('.').pop() ?? '').toLowerCase();
+	if (ext && !(rule.ext as readonly string[]).includes(ext)) {
+		throw new ValidationError('File extension does not match the contents');
+	}
+	return { mime, sizeBytes: input.bytes.byteLength };
+}
+
 function normalizeMime(value: string): AllowedAssetMime {
 	const raw = value.toLowerCase().split(';')[0]?.trim() ?? '';
 	if (raw === 'image/jpg') return 'image/jpeg';

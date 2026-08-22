@@ -1,6 +1,6 @@
 # Phase 5 — Social
 
-**Status:** Outline  
+**Status:** Slices 1–3 done — Creative C0 library, LinkedIn, X, Facebook, and Instagram publish (memory in tests; official Graph adapters registered), token refresh, scheduled due sweep, metrics sync, and social → lead on the existing attribution path. Official Instagram Graph publish stays media-required. Required social connections are readiness-gated. Phase 5 exit is not met until production tokens publish reliably on at least two official platforms.  
 **Prerequisite:** Phase 4 exit met. Do not start until AI actions are typed, approved, and costed.
 
 ---
@@ -60,3 +60,15 @@ Phase 4 approval queue and content versioning exist.
 Charters: `docs/11`, `docs/28`, `docs/29`, `docs/30`. Track lock: [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
 
 Must take: Creative C0. May take: social → lead on existing attribution. Must not take as this exit: C2–C9, O1–O20 (Today, goals, Ask Vector, entitlements), autonomous replies, a second object store.
+
+## Slice 1 — Creative C0 and two-platform publish (done)
+
+Approved text posts publish to LinkedIn and X. Creative C0 stores tenant-scoped versions and rights on the existing `StorageProvider`. Required social accounts gate `social.access`. Official adapters exist; tests use memory. Tokens are encrypted and never returned.
+
+## Slice 2 — Refresh, scheduled sweep, metrics, social → lead (done)
+
+Expired or near-expiry connections refresh through `SocialProvider.refreshConnection` before publish. Failed refresh marks the connection expired and does not publish. Scheduled posts fire through tenant-scoped `social-due-sweep`; a platform sweep fans out one tenant job per client with due posts. Metrics sync writes tenant-scoped snapshots. A lead captured with `utm_medium=social` and `utm_content=post:{id}` joins that post on the existing attribution path. Alpha cannot refresh, publish, measure, or attribute Beta. Official media upload and production OAuth install remain later slices. This does not accept the Phase 5 exit.
+
+## Slice 3 — Meta adapters (done)
+
+Facebook and Instagram are first-class `SocialProvider` platforms (`social_platform` adds `facebook` | `instagram`). Official adapters call Meta Graph (`adapter: meta`). Facebook text posts use `/{page-id}/feed`. Official Instagram publish fails closed with `SOCIAL_MEDIA_UNSUPPORTED` until media upload exists; the memory adapter still accepts text-only for tests. Token refresh uses `fb_exchange_token` and fails closed without `META_APP_ID` / `META_APP_SECRET`. YouTube and TikTok stay later. This does not accept the Phase 5 exit.

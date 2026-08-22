@@ -487,7 +487,10 @@ export async function persistCapturedLead(
 						: isNull(leadSources.utmMedium),
 					input.source.utmCampaign
 						? eq(leadSources.utmCampaign, input.source.utmCampaign)
-						: isNull(leadSources.utmCampaign)
+						: isNull(leadSources.utmCampaign),
+					input.source.utmContent
+						? eq(leadSources.utmContent, input.source.utmContent)
+						: isNull(leadSources.utmContent)
 				)
 			)
 			.limit(1);

@@ -42,6 +42,7 @@ import {
 } from '@vector/db';
 import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
+import { socialAccessReadiness } from './social';
 
 const POST_READY_STATES = new Set<LaunchState>([
 	'vector_ready',
@@ -132,6 +133,7 @@ async function evaluateAutomatic(ctx: TenantContext) {
 		getReadyEmailDomainForTenant(ctx)
 	]);
 	const emailReady = Boolean(emailConnection?.status === 'active' && emailDomain);
+	const social = await socialAccessReadiness(ctx);
 	return {
 		'brand.identity': {
 			complete: Boolean(brand?.displayName),
@@ -177,7 +179,7 @@ async function evaluateAutomatic(ctx: TenantContext) {
 				? `Sending domain ${emailDomain?.domain} is ready`
 				: 'SPF, DKIM, DMARC, or approved From is missing'
 		},
-		'social.access': { complete: false, detail: 'Social adapter is not connected in this slice' },
+		'social.access': social,
 		'analytics.connected': {
 			complete: false,
 			detail: 'Analytics adapter is not connected in this slice'
@@ -201,12 +203,14 @@ async function persistSummaryAndBlocks(
 	if (!launch) throw new NotFoundError('Launch record not found');
 	const blocking = items.filter((item) => item.blocking);
 	const optional = items.filter((item) => !item.blocking);
-	const blockingComplete = blocking.filter((item) => item.status === 'complete').length;
-	const optionalComplete = optional.filter((item) => item.status === 'complete').length;
+	const done = (item: { status: string }) =>
+		item.status === 'complete' || item.status === 'not_applicable';
+	const blockingComplete = blocking.filter(done).length;
+	const optionalComplete = optional.filter(done).length;
 	const vectorReady = blocking.length > 0 && blockingComplete === blocking.length;
 	const summary = {
 		scorePercent: scorePercent(
-			items.filter((item) => item.status === 'complete').length,
+			items.filter((item) => item.status === 'complete' || item.status === 'not_applicable').length,
 			items.length
 		),
 		blockingComplete,
@@ -227,7 +231,7 @@ async function persistSummaryAndBlocks(
 		await updateReadinessSummaryForTenant(ctx, summary);
 	}
 	const openBlocks = blocking
-		.filter((item) => item.status !== 'complete')
+		.filter((item) => item.status !== 'complete' && item.status !== 'not_applicable')
 		.map((item) => ({ itemKey: item.key, message: item.detail ?? item.label }));
 	await syncLaunchBlocksForTenant(ctx, launch.id, openBlocks);
 
@@ -327,15 +331,37 @@ async function refreshAutomaticItems(ctx: TenantContext) {
 	await ensureLaunchRecordsForTenant(ctx);
 	const evaluation = await evaluateAutomatic(ctx);
 	const items = await listReadinessItemsForTenant(ctx);
-	const updates: { key: string; status: 'complete' | 'pending'; detail: string }[] = [];
+	const updates: {
+		key: string;
+		status: 'complete' | 'pending' | 'not_applicable';
+		detail: string;
+		blocking?: boolean;
+	}[] = [];
 	for (const item of READINESS_CATALOG) {
 		if (item.source !== 'automatic') continue;
 		const result = evaluation[item.key as keyof typeof evaluation];
 		if (!result) continue;
-		const status = result.complete ? 'complete' : 'pending';
+		const status =
+			'notApplicable' in result && result.notApplicable
+				? 'not_applicable'
+				: result.complete
+					? 'complete'
+					: 'pending';
 		const current = items.find((row) => row.key === item.key);
-		if (current?.status === status && (current.detail ?? null) === result.detail) continue;
-		updates.push({ key: item.key, status, detail: result.detail });
+		const nextBlocking = 'blocking' in result ? result.blocking : undefined;
+		if (
+			current?.status === status &&
+			(current.detail ?? null) === result.detail &&
+			(nextBlocking === undefined || current.blocking === nextBlocking)
+		) {
+			continue;
+		}
+		updates.push({
+			key: item.key,
+			status,
+			detail: result.detail,
+			...(nextBlocking === undefined ? {} : { blocking: nextBlocking })
+		});
 	}
 	if (updates.length > 0) {
 		await updateReadinessItemsForTenant(ctx, updates);

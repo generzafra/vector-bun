@@ -6,6 +6,7 @@ export const STORAGE_CATEGORIES = [
 	'content',
 	'email',
 	'social',
+	'creative',
 	'generated',
 	'source',
 	'export'

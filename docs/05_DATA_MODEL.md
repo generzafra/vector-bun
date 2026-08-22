@@ -29,6 +29,29 @@ claims
 
 Creative Engine entities (`docs/29`) are later tenant-owned tables: `assets` and versions/derivatives, `brand_visual_profiles`, `creative_briefs`, `creative_concepts`, generation jobs, templates, rights, approvals, usage, and creative learning objects. Do not treat `brand_assets` as that library. Do not add a second object-store adapter.
 
+Phase 5 Creative C0 (tenant-owned, `client_id` required; not `brand_assets`):
+
+```text
+creative_assets
+creative_asset_versions
+creative_asset_rights
+```
+
+Versions are immutable. Bytes live behind `StorageProvider` under `clients/{client_id}/creative/...`. Raw storage keys are not authorization. Posts may attach an approved asset version or stay text-only. Rights must be confirmed before approval.
+
+Phase 5 social (tenant-owned, `client_id` required):
+
+```text
+social_connections
+social_accounts
+social_posts
+social_publications
+social_metrics
+social_provider_events
+```
+
+OAuth tokens are encrypted at rest on `social_connections` and are never returned to the browser or model. `token_expires_at` drives refresh-before-publish. Required `social_accounts` make `social.access` blocking. `social_platform` is `linkedin` | `x` | `facebook` | `instagram`. Post lifecycle is idea → draft → reviewed → approved → scheduled → publishing → published | failed → archived. Publications record the exact content version and asset version sent. `social_metrics` are snapshots, not the business source of truth. Social → lead uses existing `lead_sources.utm_content` = `post:{social_post_id}`.
+
 Phase 1 funnel (tenant-owned, `client_id` required):
 
 ```text

@@ -294,6 +294,119 @@ export const requestIntelligenceToolSchema = z
 	})
 	.strict();
 
+export const SOCIAL_PLATFORMS = ['linkedin', 'x', 'facebook', 'instagram'] as const;
+export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
+
+export const SOCIAL_POST_STATUSES = [
+	'idea',
+	'draft',
+	'reviewed',
+	'approved',
+	'scheduled',
+	'publishing',
+	'published',
+	'failed',
+	'archived'
+] as const;
+export type SocialPostStatus = (typeof SOCIAL_POST_STATUSES)[number];
+
+export const CREATIVE_ASSET_STATUSES = ['draft', 'approved', 'archived'] as const;
+export type CreativeAssetStatus = (typeof CREATIVE_ASSET_STATUSES)[number];
+
+export const CREATIVE_RIGHTS_STATUSES = [
+	'unknown',
+	'client_owned',
+	'client_approved',
+	'restricted',
+	'prohibited'
+] as const;
+export type CreativeRightsStatus = (typeof CREATIVE_RIGHTS_STATUSES)[number];
+
+export const CREATIVE_ASSET_KINDS = ['image', 'graphic', 'other'] as const;
+export type CreativeAssetKind = (typeof CREATIVE_ASSET_KINDS)[number];
+
+export const upsertSocialConnectionSchema = z
+	.object({
+		platform: z.enum(SOCIAL_PLATFORMS),
+		accessToken: z.string().trim().min(8).max(4000),
+		refreshToken: z.string().trim().min(8).max(4000).optional().nullable(),
+		externalAccountId: z.string().trim().min(1).max(180),
+		handle: z.string().trim().min(1).max(80),
+		displayName: z.string().trim().min(1).max(120),
+		required: z.boolean().default(true)
+	})
+	.strict();
+
+export const socialConnectionIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
+export const refreshSocialConnectionSchema = socialConnectionIdSchema;
+
+export const createSocialPostSchema = z
+	.object({
+		body: z.string().trim().min(1).max(2000),
+		assetId: z.string().uuid().optional().nullable(),
+		status: z.enum(['idea', 'draft']).default('draft')
+	})
+	.strict();
+
+export const socialPostIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
+export const transitionSocialPostSchema = z
+	.object({
+		id: z.string().uuid(),
+		to: z.enum(['draft', 'reviewed', 'approved', 'archived'])
+	})
+	.strict();
+
+export const scheduleSocialPostSchema = z
+	.object({
+		id: z.string().uuid(),
+		scheduledAt: z.coerce.date()
+	})
+	.strict();
+
+export const publishSocialPostSchema = z
+	.object({
+		id: z.string().uuid(),
+		accountIds: z.array(z.string().uuid()).min(1).max(8)
+	})
+	.strict();
+
+export const socialClientIdSchema = z
+	.object({
+		clientId: z.string().uuid()
+	})
+	.strict();
+
+export const uploadCreativeAssetSchema = z
+	.object({
+		title: z.string().trim().min(1).max(160),
+		kind: z.enum(CREATIVE_ASSET_KINDS).default('image')
+	})
+	.strict();
+
+export const creativeAssetIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
+export const confirmCreativeRightsSchema = z
+	.object({
+		id: z.string().uuid(),
+		rightsStatus: z.enum(['client_owned', 'client_approved', 'restricted', 'prohibited']),
+		usageNotes: z.string().trim().max(400).optional().nullable()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

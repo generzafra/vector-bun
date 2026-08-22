@@ -13,3 +13,5 @@ export * from './leads';
 export * from './memberships';
 export * from './pages';
 export * from './workflows';
+export * from './creative';
+export * from './social';

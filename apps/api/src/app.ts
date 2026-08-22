@@ -47,7 +47,20 @@ import {
 	transitionLaunch,
 	updateLeadStatus,
 	updateClientSettings,
-	uploadBrandAsset
+	uploadBrandAsset,
+	approveCreativeAsset,
+	confirmCreativeRights,
+	createSocialPost,
+	getCreativeAssetBytes,
+	getSocialOverview,
+	processDueSocialPublishesForOperator,
+	publishSocialPost,
+	refreshSocialConnection,
+	scheduleSocialPost,
+	syncSocialMetricsForOperator,
+	transitionSocialPost,
+	uploadCreativeAsset,
+	upsertSocialConnection
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
 
@@ -604,6 +617,199 @@ app.post('/v1/leads/:id/status', async (c) => {
 	const body = await c.req.json();
 	const row = await updateLeadStatus(session, ctx, { ...body, id: c.req.param('id') }, requestId);
 	return c.json({ requestId, data: row });
+});
+
+app.get('/v1/social', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'social.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getSocialOverview(session, ctx) });
+});
+
+app.get('/v1/social/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'social.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getSocialOverview(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/social/connections', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await upsertSocialConnection(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data }, 201);
+});
+
+app.post('/v1/social/connections/:id/refresh', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await refreshSocialConnection(session, ctx, { id: c.req.param('id') }, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/social/posts', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await createSocialPost(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data }, 201);
+});
+
+app.post('/v1/social/posts/:id/transition', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const body = await c.req.json();
+	const data = await transitionSocialPost(
+		session,
+		ctx,
+		{ ...body, id: c.req.param('id') },
+		requestId
+	);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/social/posts/:id/schedule', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const body = await c.req.json();
+	const data = await scheduleSocialPost(
+		session,
+		ctx,
+		{ ...body, id: c.req.param('id') },
+		requestId
+	);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/social/posts/:id/publish', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const body = await c.req.json();
+	const data = await publishSocialPost(session, ctx, { ...body, id: c.req.param('id') }, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/social/publish/process-due', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await processDueSocialPublishesForOperator(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/social/metrics/sync', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await syncSocialMetricsForOperator(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/creative/assets', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	const form = await c.req.formData();
+	assertCsrf(session.csrf, c.req.header('x-csrf-token') ?? String(form.get('_csrf') ?? ''));
+	actorCan(session, 'social.manage');
+	const file = form.get('file');
+	if (!(file instanceof File)) throw new ValidationError('File is required');
+	const ctx = contextFor(session, requestId);
+	const data = await uploadCreativeAsset(
+		session,
+		ctx,
+		{
+			title: String(form.get('title') ?? ''),
+			kind: String(form.get('kind') ?? 'image'),
+			filename: file.name,
+			declaredType: file.type,
+			bytes: new Uint8Array(await file.arrayBuffer())
+		},
+		requestId
+	);
+	return c.json({ requestId, data }, 201);
+});
+
+app.get('/v1/creative/assets/:id', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'social.read');
+	const ctx = contextFor(session, requestId);
+	const result = await getCreativeAssetBytes(session, ctx, c.req.param('id'));
+	const body = new ArrayBuffer(result.bytes.byteLength);
+	new Uint8Array(body).set(result.bytes);
+	return new Response(body, {
+		headers: {
+			'content-type': result.mimeType,
+			'cache-control': 'private, no-store',
+			'x-request-id': requestId
+		}
+	});
+});
+
+app.post('/v1/creative/assets/:id/rights', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const body = await c.req.json();
+	const data = await confirmCreativeRights(
+		session,
+		ctx,
+		{ ...body, id: c.req.param('id') },
+		requestId
+	);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/creative/assets/:id/approve', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await approveCreativeAsset(session, ctx, { id: c.req.param('id') }, requestId);
+	return c.json({ requestId, data });
 });
 
 app.post('/v1/launch/transition', async (c) => {

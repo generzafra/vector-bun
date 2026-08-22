@@ -74,7 +74,16 @@ const schema = z.object({
 	AI_EXECUTION_PAUSED: z.boolean().default(false),
 	AI_COST_CEILING_MICROS: z.coerce.number().int().nonnegative().default(5_000_000),
 	AI_INPUT_MICROS_PER_TOKEN: z.coerce.number().int().nonnegative().default(3),
-	AI_OUTPUT_MICROS_PER_TOKEN: z.coerce.number().int().nonnegative().default(15)
+	AI_OUTPUT_MICROS_PER_TOKEN: z.coerce.number().int().nonnegative().default(15),
+	TOKEN_ENCRYPTION_KEY: z.string().min(32).default('vector-token-encryption-test-key-32'),
+	SOCIAL_PUBLISHING_PAUSED: z.boolean().default(false),
+	SOCIAL_ADAPTER: z.enum(['memory', 'official']).default('memory'),
+	LINKEDIN_CLIENT_ID: z.string().optional(),
+	LINKEDIN_CLIENT_SECRET: z.string().optional(),
+	X_CLIENT_ID: z.string().optional(),
+	X_CLIENT_SECRET: z.string().optional(),
+	META_APP_ID: z.string().optional(),
+	META_APP_SECRET: z.string().optional()
 });
 
 export const isProd = process.env.NODE_ENV === 'production';
@@ -125,7 +134,17 @@ export const env = schema.parse({
 		process.env.AI_EXECUTION_PAUSED === 'true' || process.env.AI_EXECUTION_PAUSED === '1',
 	AI_COST_CEILING_MICROS: process.env.AI_COST_CEILING_MICROS,
 	AI_INPUT_MICROS_PER_TOKEN: process.env.AI_INPUT_MICROS_PER_TOKEN,
-	AI_OUTPUT_MICROS_PER_TOKEN: process.env.AI_OUTPUT_MICROS_PER_TOKEN
+	AI_OUTPUT_MICROS_PER_TOKEN: process.env.AI_OUTPUT_MICROS_PER_TOKEN,
+	TOKEN_ENCRYPTION_KEY: process.env.TOKEN_ENCRYPTION_KEY,
+	SOCIAL_PUBLISHING_PAUSED:
+		process.env.SOCIAL_PUBLISHING_PAUSED === 'true' || process.env.SOCIAL_PUBLISHING_PAUSED === '1',
+	SOCIAL_ADAPTER: process.env.SOCIAL_ADAPTER === 'official' ? 'official' : undefined,
+	LINKEDIN_CLIENT_ID: emptyToUndefined(process.env.LINKEDIN_CLIENT_ID),
+	LINKEDIN_CLIENT_SECRET: emptyToUndefined(process.env.LINKEDIN_CLIENT_SECRET),
+	X_CLIENT_ID: emptyToUndefined(process.env.X_CLIENT_ID),
+	X_CLIENT_SECRET: emptyToUndefined(process.env.X_CLIENT_SECRET),
+	META_APP_ID: emptyToUndefined(process.env.META_APP_ID),
+	META_APP_SECRET: emptyToUndefined(process.env.META_APP_SECRET)
 });
 
 function emptyToUndefined(value: string | undefined) {

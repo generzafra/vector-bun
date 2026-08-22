@@ -87,3 +87,24 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/intelligence/pause` — set the client AI kill switch (`ai.manage`, CSRF)
 
 `AIProvider` lives in `packages/ai`. Memory is the default. xAI Grok is selected when `XAI_API_KEY` is present. `AI_EXECUTION_PAUSED` wraps the adapter as disabled. Tokens stay in env, not the browser, logs, or prompts.
+
+## Phase 5 Control API
+
+Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
+
+- `GET /v1/social` — connections, accounts, posts, publications, Creative C0 library, readiness (`social.read`)
+- `GET /v1/social/:clientId` — same overview only when the actor already owns that client
+- `POST /v1/social/connections` — store an encrypted platform token and required account (`social.manage`, CSRF)
+- `POST /v1/social/connections/:id/refresh` — rotate encrypted tokens through the platform adapter (`social.manage`, CSRF)
+- `POST /v1/social/posts` — create an idea or draft; optional approved creative asset
+- `POST /v1/social/posts/:id/transition` — idea → draft → reviewed → approved
+- `POST /v1/social/posts/:id/schedule` — schedule an approved post
+- `POST /v1/social/posts/:id/publish` — publish an approved post through the `social-publish` workflow
+- `POST /v1/social/publish/process-due` — publish due scheduled posts for the active tenant
+- `POST /v1/social/metrics/sync` — refetch tenant-scoped publication metrics
+- `POST /v1/creative/assets` — operator upload into the C0 library (`social.manage`, CSRF, multipart)
+- `GET /v1/creative/assets/:id` — tenant-scoped bytes
+- `POST /v1/creative/assets/:id/rights` — confirm rights
+- `POST /v1/creative/assets/:id/approve` — approve after rights are confirmed
+
+`SocialProvider` lives in `packages/social`. Memory is the default. Official LinkedIn, X, and Meta (Facebook / Instagram) adapters run when `SOCIAL_ADAPTER=official`. Tokens are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in JSON. Refresh uses official OAuth token endpoints when client or app credentials are configured. Official Instagram Graph publish is media-required. `social-due-sweep` is tenant-scoped; `social-due-sweep-platform` fans out one job per client with due posts.

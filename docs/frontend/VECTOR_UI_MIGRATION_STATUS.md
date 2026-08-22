@@ -17,6 +17,7 @@ Identity migration applies to Control only. Delivery stays on client tokens and 
 | Leads        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Analytics    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Email        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Social       | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + tables    | [x] first pass | [x]                |
 | Intelligence | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + cards     | [x] first pass | [x]                |
 | Members      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 

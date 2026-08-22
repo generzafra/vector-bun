@@ -149,7 +149,7 @@ export async function ensureLaunchRecordsForTenant(ctx: TenantContext) {
 export async function updateReadinessItemForTenant(
 	ctx: TenantContext,
 	key: string,
-	input: { status: ReadinessItemStatus; detail?: string | null }
+	input: { status: ReadinessItemStatus; detail?: string | null; blocking?: boolean }
 ) {
 	const required = requireTenantContext(ctx);
 	const [row] = await db
@@ -157,7 +157,9 @@ export async function updateReadinessItemForTenant(
 		.set({
 			status: input.status,
 			detail: input.detail ?? null,
-			completedAt: input.status === 'complete' ? new Date() : null,
+			...(input.blocking === undefined ? {} : { blocking: input.blocking }),
+			completedAt:
+				input.status === 'complete' || input.status === 'not_applicable' ? new Date() : null,
 			updatedAt: new Date()
 		})
 		.where(
@@ -169,7 +171,12 @@ export async function updateReadinessItemForTenant(
 
 export async function updateReadinessItemsForTenant(
 	ctx: TenantContext,
-	updates: { key: string; status: ReadinessItemStatus; detail?: string | null }[]
+	updates: {
+		key: string;
+		status: ReadinessItemStatus;
+		detail?: string | null;
+		blocking?: boolean;
+	}[]
 ) {
 	requireTenantContext(ctx);
 	if (updates.length === 0) return [];

@@ -10,3 +10,5 @@ export * from './leads';
 export * from './analytics';
 export * from './email';
 export * from './ai';
+export * from './creative';
+export * from './social';

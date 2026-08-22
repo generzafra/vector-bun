@@ -4,11 +4,15 @@ import {
 	LEAD_CAPTURED_WORKFLOW,
 	NURTURE_DUE_SWEEP_WORKFLOW,
 	NURTURE_STEP_WORKFLOW,
+	SOCIAL_DUE_SWEEP_WORKFLOW,
+	SOCIAL_PUBLISH_WORKFLOW,
 	enrollEligibleInputSchema,
 	inboundEmailInputSchema,
 	leadCapturedInputSchema,
 	nurtureDueSweepInputSchema,
 	nurtureStepInputSchema,
+	socialDueSweepInputSchema,
+	socialPublishInputSchema,
 	platformDueSweepInputSchema,
 	registerWorkflowHandlers,
 	workflowRuntime,
@@ -16,7 +20,7 @@ import {
 	type WorkflowDispatchResult
 } from '@vector/automation';
 import { parseContract, requireTenantContext, type TenantContext } from '@vector/contracts';
-import { listTenantsWithDueNurtureSteps } from '@vector/db';
+import { listTenantsWithDueNurtureSteps, listTenantsWithDueSocialPosts } from '@vector/db';
 import {
 	enrollEligibleLeads,
 	processDueNurtureSteps,
@@ -24,6 +28,7 @@ import {
 	processLeadCapturedWorkflow,
 	processNurtureStepWorkflow
 } from './email';
+import { processSocialDueSweepWorkflow, processSocialPublishWorkflow } from './social';
 
 let handlersRegistered = false;
 
@@ -58,7 +63,9 @@ export function ensureWorkflowHandlers() {
 			const parsed = parseContract(nurtureDueSweepInputSchema, payload);
 			return processDueNurtureSteps(tenantFrom(parsed));
 		},
-		[INBOUND_EMAIL_WORKFLOW.name]: (payload) => processInboundEmailWorkflow(payload)
+		[INBOUND_EMAIL_WORKFLOW.name]: (payload) => processInboundEmailWorkflow(payload),
+		[SOCIAL_PUBLISH_WORKFLOW.name]: (payload) => processSocialPublishWorkflow(payload),
+		[SOCIAL_DUE_SWEEP_WORKFLOW.name]: (payload) => processSocialDueSweepWorkflow(payload)
 	});
 }
 
@@ -120,6 +127,33 @@ function prepareTenantWorkflow(name: TenantWorkflowName, input: unknown) {
 				idempotencyKey: INBOUND_EMAIL_WORKFLOW.idempotencyKey(payload)
 			};
 		}
+		case SOCIAL_PUBLISH_WORKFLOW.name: {
+			const payload = parseContract(socialPublishInputSchema, input);
+			return {
+				payload,
+				organizationId: payload.organizationId,
+				clientId: payload.clientId,
+				requestId: payload.requestId,
+				idempotencyKey: SOCIAL_PUBLISH_WORKFLOW.idempotencyKey({
+					clientId: payload.clientId,
+					postId: payload.postId,
+					accounts: payload.accountIds.slice().sort().join(',')
+				})
+			};
+		}
+		case SOCIAL_DUE_SWEEP_WORKFLOW.name: {
+			const payload = parseContract(socialDueSweepInputSchema, input);
+			return {
+				payload,
+				organizationId: payload.organizationId,
+				clientId: payload.clientId,
+				requestId: payload.requestId,
+				idempotencyKey: SOCIAL_DUE_SWEEP_WORKFLOW.idempotencyKey({
+					clientId: payload.clientId,
+					windowStart: hourWindow()
+				})
+			};
+		}
 		default: {
 			const exhausted: never = name;
 			throw new Error(`Unsupported tenant workflow: ${exhausted}`);
@@ -156,6 +190,25 @@ export async function processPlatformDueNurtureSweep(input: unknown, now = new D
 			organizationId: tenant.organizationId,
 			clientId: tenant.clientId,
 			...(await dispatchWorkflow(NURTURE_DUE_SWEEP_WORKFLOW.name, {
+				organizationId: tenant.organizationId,
+				clientId: tenant.clientId,
+				requestId: parsed.requestId
+			}))
+		});
+	}
+	return { tenants: tenants.length, results };
+}
+
+export async function processPlatformDueSocialSweep(input: unknown, now = new Date()) {
+	ensureWorkflowHandlers();
+	const parsed = parseContract(platformDueSweepInputSchema, input);
+	const tenants = await listTenantsWithDueSocialPosts(now);
+	const results = [];
+	for (const tenant of tenants) {
+		results.push({
+			organizationId: tenant.organizationId,
+			clientId: tenant.clientId,
+			...(await dispatchWorkflow(SOCIAL_DUE_SWEEP_WORKFLOW.name, {
 				organizationId: tenant.organizationId,
 				clientId: tenant.clientId,
 				requestId: parsed.requestId
