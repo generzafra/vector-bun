@@ -43,3 +43,31 @@
 **Identity tokens** — Plane-specific color/brand values. Control uses Vector Black / Blue / Cyan / Mint. Delivery uses the client brand profile.
 
 **Signal-to-growth grammar** — Visual vocabulary: dots = signals, lines = relationships, convergence = intelligence, arrow/V = direction, mint = successful outcome.
+
+**Vector Creative** — Client media capability: ingest, generation, composition, approval, and distribution. Charter: `docs/29`.
+
+**Vector Creative Engine** — Technical subsystem that produces production-ready branded assets. Not Control identity (`docs/28`) and not Delivery art direction (`docs/27`).
+
+**Creative Brief** — Structured description of one campaign or asset objective.
+
+**Creative Concept** — Proposed visual direction derived from a brief. Not an asset.
+
+**Asset Family** — Related assets created from one campaign concept.
+
+**Master Asset** — Highest-quality source used to create channel derivatives.
+
+**Derivative** — Resized, cropped, compressed, or reformatted output.
+
+**Creative Variant** — Materially different visual or composition intended for testing.
+
+**Today** — Client operating summary: new leads, high-intent, sales, approvals, what Vector handled (`docs/30`).
+
+**Data Health** — Freshness, coverage, and confidence of tracking, CRM, revenue, and channel sources.
+
+**Sales outcome** — Durable won/lost/appointment/purchase record. Distinct from `leads.status`.
+
+**Outcome coverage** — Share of qualified leads with a known sales result. Low coverage lowers recommendation confidence.
+
+**Ask Vector** — Tenant-scoped conversational interface to verified growth facts. Not a generic chatbot.
+
+**Package entitlement** — Purchased capability limit enforced by software, not staff memory.

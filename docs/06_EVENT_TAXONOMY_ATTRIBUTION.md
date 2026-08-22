@@ -22,6 +22,8 @@ First touch, last non direct touch, source and campaign attribution.
 
 Phase 2 emits `page_viewed`, `cta_clicked`, `form_started`, `form_submitted`, and `lead_created` from Delivery. Postgres stores events, touchpoints, attribution results, and conversion counts. The PostHog adapter is optional and does not receive preview/test events or form PII. Control `/analytics` reports production and preview buckets separately. Do not invent names in components.
 
+Later outcome events (`docs/30`) — `lead_qualified`, `deal_won`, `deal_lost`, `purchase_completed`, `revenue_recorded`, `refund_recorded` — need a dictionary owner before emit. Do not treat them as equally authoritative with form submits. Revenue and sales events record their source of truth. Attribution confidence labels (`directly attributed` / `estimated` / `unattributed`) are Outcomes-track work; v1 must not present uncertain association as fact.
+
 ## Governance
 
 All new events require dictionary documentation and owner. Do not create layout specific event names.

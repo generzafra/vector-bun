@@ -9,3 +9,5 @@ No irreversible or high risk action without the configured approval policy.
 Never let model confidence alone authorize a sensitive action.
 Never give production agents unrestricted SQL, shell, filesystem, arbitrary HTTP, or secrets.
 Kill switches can pause AI per client or globally. Confidence cannot override a pause.
+Image and video models may generate, edit, classify, or review drafts. They must not publish, overwrite approved brand marks, invent proof, bypass rights, or place assets into production. Exact logos and marketing text are composed by trusted software.
+Do not invent sales, revenue, close rates, attribution, or customer value. Check data health before important recommendations. Label observed, measured, inferred, estimated, and unknown. Confidence cannot authorize a sensitive action.

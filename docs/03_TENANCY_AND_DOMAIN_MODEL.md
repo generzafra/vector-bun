@@ -27,6 +27,8 @@ The same process may serve `cebudentalclinic.com` and `abcplumbing.com` while lo
 
 Shared infrastructure must never imply shared business data. Each client may independently own domain, brand, design tokens, content, offers, funnels, forms, leads, campaigns, analytics, email, social, SEO/AEO, AI policies, experiments, assets, and provider connections.
 
+Goals, sales outcomes, revenue, data-health records, notification preferences, package entitlements, and client-health snapshots are tenant-owned and require `client_id` (`docs/30`). Cross-tenant aggregation is MGE-internal and capability-gated. Do not expose one client's revenue to another client or to unauthorized operators.
+
 Multi-tenant hosting must not create visually cloned websites. The engine is shared. Brand and strategy are client-specific.
 
 ## Domain routing

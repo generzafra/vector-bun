@@ -8,7 +8,9 @@
 **Vector implementation role:** Cross-cutting frontend, funnel, conversion, and public-experience governance standard  
 **Recommended repository location:** `/docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`  
 **Required by:** `AGENTS.md`, frontend Cursor rules, funnel-engine work, Vector 24 launch workflows, CRO, and frontend Definition of Done  
-**Companion Control identity standard:** `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`
+**Companion Control identity standard:** `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`  
+**Companion creative production standard:** `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`  
+**Companion authenticated client UX / outcomes standard:** `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`
 
 ---
 
@@ -1131,6 +1133,8 @@ Avoid:
 Every image should answer:
 
 > Why is this visual here?
+
+Production machinery for ingest, generation, composition, rights, approval, and derivatives is `docs/29`. This document still governs whether the result is good enough to publish. Prefer authentic client media. Typography-led sections remain valid when imagery is inappropriate or missing.
 
 ---
 
@@ -3210,7 +3214,10 @@ The resulting documentation hierarchy should include:
 ├── 24_RISK_REGISTER.md
 ├── 25_GLOSSARY.md
 ├── 26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md
-└── 27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md
+├── 27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md
+├── 28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md
+├── 29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md
+└── 30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md
 ```
 
 ---
@@ -3468,18 +3475,18 @@ The operating goal is:
 
 This standard remains active across the whole Vector roadmap.
 
-| Vector Phase | Frontend responsibility                                                                   |
-| ------------ | ----------------------------------------------------------------------------------------- |
-| Phase 0      | Shared UI primitives, accessibility baseline, token conventions, frontend quality tooling |
-| Phase 1      | Funnel renderer, theme system, page schemas, components, responsive design, forms         |
-| Phase 2      | Analytics hooks, conversion measurement, lead-form UX                                     |
-| Phase 3      | Email capture UX, consent presentation, nurture entry states                              |
-| Phase 4      | AI-generated copy, structured page plans, frontend recommendations, AI design review      |
-| Phase 5      | Social campaign landing experiences and shareable pages                                   |
-| Phase 6      | SEO/AEO semantics and search-friendly content presentation                                |
-| Phase 7      | CRO variants and experimentation UI support                                               |
-| Phase 8      | Policy-bounded AI-assisted frontend optimization                                          |
-| Phase 9      | Multi-client launch automation and portfolio-wide quality consistency                     |
+| Vector Phase | Frontend responsibility                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Phase 0      | Shared UI primitives, accessibility baseline, token conventions, frontend quality tooling                          |
+| Phase 1      | Funnel renderer, theme system, page schemas, components, responsive design, forms                                  |
+| Phase 2      | Analytics hooks, conversion measurement, lead-form UX                                                              |
+| Phase 3      | Email capture UX, consent presentation, nurture entry states                                                       |
+| Phase 4      | AI-generated copy, structured page plans, frontend recommendations, AI design review                               |
+| Phase 5      | Social campaign landing experiences and shareable pages; consume approved Creative assets when present (`docs/29`) |
+| Phase 6      | SEO/AEO semantics and search-friendly content presentation                                                         |
+| Phase 7      | CRO variants and experimentation UI support; creative variants when C8 exists                                      |
+| Phase 8      | Policy-bounded AI-assisted frontend optimization                                                                   |
+| Phase 9      | Multi-client launch automation and portfolio-wide quality consistency; Creative QuickStart (`docs/29`)             |
 
 This document is never considered finished after a single phase. It remains a standing product standard.
 
@@ -3908,7 +3915,7 @@ Use performance history as evidence while continuing to respect each client's br
 
 # 92. Required Integration Actions
 
-**Integration status (22 August 2026):** Folded into `AGENTS.md`, `.cursor/rules/frontend-funnel-quality.mdc`, `.cursor/rules/frontend.mdc`, `.cursor/rules/implementation.mdc`, `.cursor/rules/delivery.mdc`, and charters `01`, `02`, `04`, `07`, `09`, `10`, `13`, `17`, `18`, `21`, `22`, `23`, `25`, `26`, plus Phase 1/2/4/6/7/9 plans. This file remains the detailed public-experience standard. Vector product identity for Control is a separate charter: `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`. Do not treat this file as a license to restyle Control cinema, and do not treat `docs/28` as Delivery identity.
+**Integration status (22 August 2026):** Folded into `AGENTS.md`, `.cursor/rules/frontend-funnel-quality.mdc`, `.cursor/rules/frontend.mdc`, `.cursor/rules/implementation.mdc`, `.cursor/rules/delivery.mdc`, and charters `01`, `02`, `04`, `07`, `09`, `10`, `13`, `17`, `18`, `21`, `22`, `23`, `25`, `26`, plus Phase 1/2/4/6/7/9 plans. This file remains the detailed public-experience standard. Vector product identity for Control is a separate charter: `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`. Client media production is a separate charter: `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`. Authenticated client outcomes are a separate charter: `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`. Do not treat this file as a license to restyle Control cinema, do not treat `docs/28` as Delivery identity, and do not treat `docs/29` or `docs/30` as a second public visual language.
 
 When this document is added to the Vector repository, perform the following once:
 

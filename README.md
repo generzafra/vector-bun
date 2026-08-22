@@ -10,8 +10,10 @@ Start with:
 4. `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` for MGE/Vector split, shared hosting, scaling, and Vector 24
 5. `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` for public frontend, UX, and conversion quality
 6. `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` for Control / Vector product identity
-7. Phase 0 in `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
-8. Execution plans in `docs/plans/` — start with `docs/plans/00_PHASE_0_FOUNDATION.md`
+7. `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` for client media, generation, composition, and creative approval
+8. `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` for authenticated client UX, goals, sales outcomes, and revenue intelligence
+9. Phase 5 in `docs/21_ROADMAP_ACCEPTANCE_GATES.md` — Phase 0–4 exits are met
+10. Execution plans in `docs/plans/` — next is `docs/plans/05_PHASE_5_SOCIAL.md`. Cross-cutting tracks: `docs/plans/CROSS_CUTTING_TRACKS.md`. Charters stop at `docs/30`.
 
 The `/docs` files are initial charters. Expand them as implementation decisions become concrete, but preserve their governing principles unless an ADR explicitly supersedes a decision.
 

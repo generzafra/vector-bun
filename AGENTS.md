@@ -16,10 +16,12 @@ Before implementation, read:
 8. `docs/14_SECURITY_PRIVACY_COMPLIANCE.md`
 9. `docs/18_QA_TEST_STRATEGY.md`
 10. `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
-11. `docs/plans/README.md` and the plan for the current phase. Phase 0 is `docs/plans/00_PHASE_0_FOUNDATION.md`.
+11. `docs/plans/README.md` and the plan for the current phase. Phase 0–4 exits are met. Phase 5 is `docs/plans/05_PHASE_5_SOCIAL.md`.
 12. `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` when the work touches onboarding, domains, hosting, delivery, launch, or scaling. Its decisions are folded into `01`, `03`, `04`, `05`, `16`, `17`, `19`, and `21`; where it is more specific, it governs.
 13. `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` when the work touches public frontend, marketing sites, funnels, landing pages, conversion, motion, or CRO variants. Its quality bar is folded into `01`, `02`, `04`, `07`, `09`, `10`, `13`, `17`, `18`, `21`, `22`, and `26`; where it is more specific on public experience, it governs.
 14. `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` when the work touches Control Plane UI, Vector product chrome, or Vector-native intelligence / opportunity / automation visuals. Living paths live in `docs/frontend/`. This is Control / Vector identity, not client Delivery identity.
+15. `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` when the work touches client images, social or email graphics, funnel or campaign media, Open Graph images, generated imagery, video, resizing, or creative approval. Public art direction stays in `docs/27`. Control identity stays in `docs/28`.
+16. `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` when the work touches authenticated client UX, goals, lead stages, sales outcomes, revenue, attribution confidence, data health, offers as commercial propositions, notifications, entitlements, or client-success health. Client dashboards use `docs/28` chrome. Delivery visitor UX stays `docs/27`.
 
 ## Non negotiable architecture
 
@@ -32,7 +34,7 @@ Before implementation, read:
 - Redis is transient infrastructure, not the business source of truth.
 - Trigger.dev owns durable production workflows.
 - External providers sit behind Vector owned adapters.
-- Grok is accessed through an `AIProvider` abstraction.
+- Grok is accessed through an `AIProvider` abstraction. Image and video models use separate `ImageProvider` / later `VideoProvider` adapters (`docs/29`).
 - AI output is never trusted execution input without schema, policy, and domain validation.
 - Every tenant owned query requires explicit tenant context.
 - Audit important state changes and automated actions.
@@ -77,3 +79,15 @@ Security, privacy, legal, tenant isolation, accessibility, and performance overr
 
 A feature is done only when applicable tests pass, authorization and tenant scoping are present, errors are handled, observability is included, and relevant docs are updated.
 Public marketing pages are also done only when the Frontend Release Gate in `docs/27` is met.
+
+## Creative Asset Governance
+
+For any task involving client images, social graphics, email graphics, funnel visuals, campaign media, Open Graph images, generated imagery, video, image editing, resizing, or creative assets, read `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` and `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`.
+
+Do not ask an image model to create final exact brand typography or logos when Vector can compose them deterministically. Prefer authentic client media when suitable. All generated client creative must be tenant-scoped, versioned, rights-aware, auditable, and subject to the configured approval policy. Bytes go through `StorageProvider`. Image models stay behind `ImageProvider`, not `AIProvider`.
+
+## Client Experience and Revenue Outcomes
+
+For work involving authenticated client UX, dashboards, goals, KPIs, lead stages, sales outcomes, revenue, attribution confidence, data health, offers, client notifications, entitlements, client health, or business reporting, read `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`.
+
+Client-facing interfaces must prioritize business outcomes and decisions. Do not expose technical platform complexity by default. Do not present uncertain attribution or estimates as factual. AI must not invent sales or revenue. Where outcome data exists, optimize beyond lead volume toward qualified leads, sales, and attributable business value. Client and operator stay one Control app.

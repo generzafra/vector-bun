@@ -12,7 +12,7 @@
 **Document status:** Pre implementation master plan  
 **Version:** 1.1  
 **Prepared:** 22 August 2026  
-**Appendix folded:** `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` (MGE/Vector split, shared hosting, scaling, Vector 24). Public frontend quality: `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`. Control / Vector product identity: `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`.
+**Appendix folded:** `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` (MGE/Vector split, shared hosting, scaling, Vector 24). Public frontend quality: `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`. Control / Vector product identity: `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`. Client media production: `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`. Client outcomes and authenticated client UX: `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`. `/docs` charters stop at 30. Further product law is an ADR or a fold, not `docs/31`.
 
 ---
 
@@ -91,6 +91,12 @@ Specialized AI driven workers that perform bounded jobs.
 
 **Vector Insights**  
 Analytics, attribution, diagnosis, recommendations, experiments, and performance reporting.
+
+**Vector Creative**  
+Client media ingest, generation, deterministic composition, approval, and distribution. Charter: `docs/29`. Not Control identity.
+
+**Vector Outcomes**  
+Goals, sales outcomes, optional revenue, data health, and authenticated client UX. Charter: `docs/30`. Uses Control identity.
 
 **Vector 24**  
 Mature-state launch standard: Vector Ready to a live initial growth system within 24 hours.
@@ -2410,6 +2416,14 @@ Also required before onboarding, domain, delivery, or launch work:
 
 Its decisions are folded into `01`, `03`, `04`, `05`, `16`, `17`, `19`, and `21`. Where the appendix is more specific, it governs.
 
+Also required before client media, generated imagery, composition, or creative approval work:
+
+- `29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`
+
+Also required before authenticated client UX, goals, sales outcomes, revenue, or entitlements work:
+
+- `30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`
+
 ## P1 — Required before production integrations
 
 17. `10_SEO_AEO_CONTENT_STANDARD.md`
@@ -2636,10 +2650,14 @@ Deliver:
 - Publishing.
 - Metrics collection.
 - Automated social connection readiness checks.
+- Creative C0 asset library so posts can attach approved media without a second object store (`docs/29`).
+- Optional social → lead persistence on existing attribution (`docs/30`). Not the publish exit.
 
 Exit gate:
 
 - Approved content can publish reliably to at least two priority platforms, and required social connections are readiness-gated.
+
+`ImageProvider`, generated social families, and funnel hero generation are later Creative slices. They do not replace this exit. Client Today, goals, and Ask Vector are later Outcomes slices.
 
 ## Phase 6 — SEO and AEO operations
 
@@ -3009,7 +3027,7 @@ Use this only after Cursor has access to the repository and the documents in thi
 ```text
 You are implementing Vector, an Autonomous Growth Operating System.
 
-Read AGENTS.md, all P0 documents in /docs, and docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md before writing code that touches onboarding, domains, delivery, or launch. Read docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md before public frontend, funnel, or conversion work. Read docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md before Control Plane or Vector-identity UI work.
+Read AGENTS.md, all P0 documents in /docs, and docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md before writing code that touches onboarding, domains, delivery, or launch. Read docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md before public frontend, funnel, or conversion work. Read docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md before Control Plane or Vector-identity UI work. Read docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md before client media, generated imagery, composition, or creative approval work. Read docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md before authenticated client UX, goals, sales outcomes, or revenue work.
 
 Do not implement the entire product at once.
 

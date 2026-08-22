@@ -20,6 +20,10 @@ The Design Review Checklist and Frontend Release Gate in `docs/27` are part of f
 
 Control visual QA uses the `docs/28` checklists and `docs/frontend/VECTOR_UI_MIGRATION_STATUS.md`. Do not treat a Control restyle as a Delivery identity change.
 
+Creative QA (`docs/29`) combines deterministic checks (dimensions, format, size, logo, required text, contrast, rights, tenant) with optional AI visual review. AI review does not replace deterministic validation. Failed generation must fall back; public pages must never render a broken image. Cross-tenant asset, generation, and rights tests are required for every new tenant-owned creative resource.
+
+Outcomes QA (`docs/30`) covers stage transitions, revenue recording and isolation, attribution-confidence labels, goal math, entitlements, notification routing, client-health scoring, and data-confidence display. Client-facing screens also pass the client UX checklist: plain language, estimates labeled, action obvious, mobile Today/approvals usable.
+
 ## Infrastructure tests
 
 Before claiming support for 20 ordinary clients, load-test cached and uncached public traffic, concurrent lead submissions, analytics ingestion, webhook bursts, database concurrency, Control Plane use under public traffic, and deploy-while-serving.

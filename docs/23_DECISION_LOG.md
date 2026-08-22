@@ -221,3 +221,89 @@ Operators still process due steps from Control. Trigger.dev cron is optional and
 ### Reversal path
 
 Unset `TRIGGER_SECRET_KEY`. The factory returns the in-process runtime.
+
+---
+
+## ADR-0008
+
+### Date
+
+22 August 2026
+
+### Status
+
+Accepted
+
+### Decision
+
+`docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` is the standing Creative Engine charter. It governs ingest, generation, deterministic composition, storage metadata, rights, versioning, approval, derivatives, and distribution of client media.
+
+The document number is **29**. `docs/28` remains Control / Vector product identity. `docs/27` remains public Delivery art direction and quality. Do not treat 29 as a second 28, and do not apply Vector Black / Blue to tenant campaign creative.
+
+Phase 1 `brand_assets` plus `StorageProvider` is Creative C0 partial (identity files only). Phase 4 `AIProvider` stays text, structured output, and tools. Image and video models use separate `ImageProvider` / later `VideoProvider` adapters. Do not invent `AssetStorageProvider`. Do not reopen Phase 1 or Phase 4 exits.
+
+Creative work follows the C0–C9 track in `docs/29` §63. That track is cross-cutting. Phase 5 exit remains two-platform social publish. C0 is the only Creative foundation Phase 5 must take so Social does not own a second media store. Funnel hero generation, video, Creative QuickStart, and creative learning objects wait for later slices or later phases.
+
+### Alternatives considered
+
+Renumber 29 as 28 and move the visual-language standard; fold image generation into `AIProvider`; require generated visuals before Phase 5 social publish; rewrite historical Phase 1 and Phase 4 exits.
+
+### Consequences
+
+Agents read 29 for client media work. Social, email, and funnel consume approved asset references. Operators still upload logos on `/knowledge` until C0 generalizes the library.
+
+### Security impact
+
+Generated and uploaded media stay tenant-scoped, rights-aware, and approval-gated. Raw storage keys are not authorization. Models must not publish, overwrite approved logos, or invent proof.
+
+### Operational impact
+
+No Creative Engine code is required to accept this ADR. Phase 5 may start. Vector 24 still treats automated creative as a mature-state requirement, not a first-client promise.
+
+### Reversal path
+
+Supersede this ADR. Leave `docs/29` as historical. Keep Phase 1 `brand_assets` and `StorageProvider`.
+
+---
+
+## ADR-0009
+
+### Date
+
+22 August 2026
+
+### Status
+
+Accepted
+
+### Decision
+
+`docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` is the standing client-experience, revenue-intelligence, and growth-outcomes charter. It governs authenticated client information architecture, business-language copy, goals, sales outcomes, optional revenue, attribution confidence, data health, notifications, entitlements, and client-success health.
+
+`docs/27` remains public visitor UX. `docs/28` remains Control / Vector identity — client dashboards use those tokens. `docs/29` remains the Creative Engine. Do not invent a third visual language.
+
+Phase 2 already has `leads.status` including `won` / `lost`, `lead_status_history`, scores, and attribution v1. Do not replace that enum (`new | working | qualified | won | lost | spam`) or edit applied migration `0006_phase2_leads.sql`. `appointment` / `proposal` live on `sales_outcomes` (or a later additive stage). Phase 1 `offers` is the knowledge-priced offer; campaign-offer fields extend that domain. Phase 4 recommendation cards already carry finding, evidence, impact, risk, and confidence for operators. Do not reopen Phase 2, 3, or 4 exits.
+
+Outcomes work follows the O1–O20 track in `docs/30` §88. Client and operator stay one Control app with capability-based navigation. Phase 5 exit remains two-platform social publish. Social may persist post → lead on the existing attribution path. Ask Vector, CRM adapters, ads, billing, entitlements, and a full Today dashboard are later slices. Revenue amounts are optional. AI must not invent sales or revenue. Uncertain attribution must not be presented as fact.
+
+This is the last numbered charter in `/docs`. Further product law is an ADR or a fold into an existing document, not `docs/31`.
+
+### Alternatives considered
+
+Reopen Phase 2 to add goals and revenue; replace `lead_status`; create `apps/client`; require Ask Vector before Phase 5 social; treat 30 as a second Control visual language.
+
+### Consequences
+
+Agents read 30 for client UX and outcome work. Operators keep the current infrastructure nav until Outcomes slices land. First paying-client readiness includes a primary goal and won/lost capture; it does not require billing or ads.
+
+### Security impact
+
+Goals, outcomes, revenue, health, and entitlements are tenant-owned. Revenue is commercially sensitive. Cross-tenant aggregation is MGE-internal and capability-gated. Client Sales must not receive `ai.manage` or unrestricted knowledge rights.
+
+### Operational impact
+
+No Outcomes code is required to accept this ADR. Phase 5 may start. Internal contribution-margin views stay hidden from clients.
+
+### Reversal path
+
+Supersede this ADR. Leave `docs/30` as historical. Keep Phase 2 lead statuses and Phase 1 `offers`.

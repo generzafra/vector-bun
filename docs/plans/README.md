@@ -8,7 +8,7 @@ These files turn the roadmap into Cursor-ready slices. Charters in `/docs` still
 
 Do not implement the entire roadmap in one change. Do not start a later phase until the prior exit gate is met.
 
-Phase 0, Phase 1, Phase 2, and Phase 3 exits are met. Next implementation slice is [04_PHASE_4_INTELLIGENCE.md](04_PHASE_4_INTELLIGENCE.md). Public frontend and funnel work remains governed by [../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md](../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md). Control / Vector identity is governed by [../28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md](../28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md). Each later phase applies the Frontend Release Gate only to the public surface it ships.
+Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 exits are met. Next implementation slice is [05_PHASE_5_SOCIAL.md](05_PHASE_5_SOCIAL.md). Charters stop at [../30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md](../30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md). Cross-cutting Creative (C0–C9) and Outcomes (O1–O20) mapping is locked in [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md). Public frontend: [../27](../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md). Control identity: [../28](../28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md). Creative machinery: [../29](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md). Client outcomes: [../30](../30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md). Phase 5 takes Creative C0 only so Social does not own blobs. Each later phase applies the Frontend Release Gate only to the public surface it ships.
 
 | Plan                                                             | Phase                | Depth   |
 | ---------------------------------------------------------------- | -------------------- | ------- |
@@ -22,5 +22,6 @@ Phase 0, Phase 1, Phase 2, and Phase 3 exits are met. Next implementation slice 
 | [07_PHASE_7_CRO.md](07_PHASE_7_CRO.md)                           | CRO experiments      | Outline |
 | [08_PHASE_8_AUTONOMY.md](08_PHASE_8_AUTONOMY.md)                 | Progressive autonomy | Outline |
 | [09_PHASE_9_SCALE.md](09_PHASE_9_SCALE.md)                       | Multi-client scale   | Outline |
+| [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md)               | C0–C9 + O1–O20 lock  | Locked  |
 
-Gates also live in [../21_ROADMAP_ACCEPTANCE_GATES.md](../21_ROADMAP_ACCEPTANCE_GATES.md). Vector 24 is a mature-state target after the first supervised clients, not a Phase 0–2 promise.
+Gates also live in [../21_ROADMAP_ACCEPTANCE_GATES.md](../21_ROADMAP_ACCEPTANCE_GATES.md). Vector 24 is a mature-state target after the first supervised clients, not a Phase 0–2 promise. Do not add `docs/31` or a Phase 10 plan unless an ADR says the lock is wrong.

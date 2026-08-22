@@ -6,7 +6,7 @@ Modular monolith with clear internal package boundaries and a separate Control P
 
 ## Control Plane
 
-Authenticated management of clients, brand data, funnels, campaigns, agents, approvals, analytics, policies, and integrations.
+Authenticated management of clients, brand data, funnels, campaigns, agents, approvals, analytics, policies, and integrations. Client and operator share this plane. Navigation differs by capability (`docs/30`). Do not fork `apps/client`.
 
 ## Delivery Plane
 
@@ -18,7 +18,7 @@ Public rendering path:
 Client Knowledge → Brand Configuration → Funnel / Page Schema → Approved Component Variants → SvelteKit Delivery Renderer → Client Custom Domain
 ```
 
-Visual quality, conversion narrative, motion, and anti-generic rules live in `docs/27`. Page schema, publishing, and safe composition live in `docs/09`. Control / Vector product identity lives in `docs/28`. Delivery appearance stays client-specific.
+Visual quality, conversion narrative, motion, and anti-generic rules live in `docs/27`. Page schema, publishing, and safe composition live in `docs/09`. Control / Vector product identity lives in `docs/28`. Client media ingest, generation, composition, approval, and derivatives live in `docs/29`. Authenticated client outcomes, goals, and business-language reporting live in `docs/30`. Delivery appearance stays client-specific. The Creative Engine is a Control-managed subsystem; Delivery consumes approved derivatives only. The compositor is trusted software, not an image model. Delivery continues to collect conversion signals; Control presents outcomes.
 
 ## Product topology
 

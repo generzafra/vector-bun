@@ -93,6 +93,7 @@ Operator uploads tenant-scoped brand assets through a `StorageProvider`. Local f
 - Control: `/knowledge` asset list, upload, mediated preview at `/knowledge/asset/:id`
 - Readiness: `assets.uploaded` completes when the tenant has at least one brand asset
 - Isolation: Alpha cannot read, write, or download Beta objects; raw keys are not authorization
+- Historical note: this is Creative C0 partial (identity files only). The general Creative Engine library, rights, generation, and derivatives live in `docs/29` and do not reopen this exit.
 
 ## Slice 5 — Production domain activation (done)
 
@@ -114,3 +115,7 @@ The seeded preview funnels meet the Phase 1 subset of `docs/27` §88: tokens, ac
 - Lead form: labels, preserved values, error / sending / success
 - Mobile: overflow clipped, wrap, 44px-class targets, reduced motion
 - Out of this slice: analytics events (Phase 2), consent UI (Phase 3), structured data (Phase 6)
+
+## Locked attachments
+
+`docs/27` MVP gate is met. `brand_assets` + `offers` + `StorageProvider` are Creative C0 / Outcomes offer seed only. Do not reopen this exit for generated heroes, campaign-offer versions, or a client Today dashboard. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

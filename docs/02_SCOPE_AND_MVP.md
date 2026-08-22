@@ -49,3 +49,7 @@ The first client uses a preview hostname and a tracked launch state. Vector 24 i
 The first production frontend does not need every visual variant in `docs/27`. It does need design tokens, responsive primitives, accessible navigation and forms, several hero variants, trust/proof/CTA/FAQ/case-study support, metadata, analytics hooks, mobile-first behavior, and frontend QA. Advanced cinematic experiences wait for a real client or reusable product need.
 
 Control visual language (`docs/28`) may be adopted incrementally on existing operator screens. It is not an MVP exit blocker and must not restyle Delivery client sites.
+
+Creative MVP, when that track starts, is ingest, brand visual profile, image library, `ImageProvider`, deterministic composition, derivatives, approval, R2 via existing `StorageProvider`, QA, and usage tracking (`docs/29`). Advanced video, 3D, and a full creative studio are out of scope. Phase 1 `brand_assets` already cover identity-file upload. Generated visuals are not an MVP acceptance criterion.
+
+Outcomes MVP (`docs/30`) is visitor → lead → existing `won` / `lost` status → optional revenue value → attribution v1. Full CRM, forecasting, commissions, multi-touch attribution, ads, and billing are out of scope. A client Today dashboard is not an MVP exit blocker.

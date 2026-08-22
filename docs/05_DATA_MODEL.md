@@ -25,7 +25,9 @@ offers
 claims
 ```
 
-`brands` is one row per client: audience, offer, conversions, personality, and design tokens. `brand_assets` stores metadata only; bytes live behind `StorageProvider` under `clients/{client_id}/brand/...`. Raw storage keys are not authorization. Claims store approved and prohibited statements. Money on offers is integer minor units plus currency.
+`brands` is one row per client: audience, offer, conversions, personality, and design tokens. `brand_assets` stores Phase 1 identity-file metadata only (logo, mark, og, favicon, other); bytes live behind `StorageProvider` under `clients/{client_id}/brand/...`. Raw storage keys are not authorization. Claims store approved and prohibited statements. Money on offers is integer minor units plus currency. Campaign-offer versions (`docs/30`) extend this `offers` domain; do not create a colliding second `offers` table.
+
+Creative Engine entities (`docs/29`) are later tenant-owned tables: `assets` and versions/derivatives, `brand_visual_profiles`, `creative_briefs`, `creative_concepts`, generation jobs, templates, rights, approvals, usage, and creative learning objects. Do not treat `brand_assets` as that library. Do not add a second object-store adapter.
 
 Phase 1 funnel (tenant-owned, `client_id` required):
 
@@ -60,6 +62,8 @@ attribution_results
 ```
 
 Email identity is unique per tenant. The same email on two clients is two contacts. Preview submits set `is_test`. Consent is a purpose ledger at form submit (`lead_follow_up` required, `marketing` granted or denied). Analytics sessions are not auth `sessions`. Postgres is the source of truth for leads and outcomes. Attribution v1 stores first touch and last non-direct; it is not presented as multi-touch truth.
+
+`leads.status` is `new | working | qualified | won | lost | spam`. Do not replace that enum. Later `sales_outcomes`, `client_goals`, `revenue_events`, `data_health_checks`, notification preferences, entitlements, and client-health snapshots are tenant-owned (`docs/30`). Status `won` / `lost` is not a revenue row. Revenue amounts are optional.
 
 Phase 3 email (tenant-owned, `client_id` required except global suppressions):
 

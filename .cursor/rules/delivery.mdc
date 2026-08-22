@@ -4,7 +4,7 @@ alwaysApply: true
 ---
 One logical Delivery Plane serves many verified custom hostnames. Unknown hosts fail closed.
 Clients ship on theircompany.com. Preview uses a private noindex host and must not send production email or social.
-Standardize funnel capabilities, not visual identity. Do not generate cloned AI websites. Public experience quality is governed by `docs/27`. Control identity in `docs/28` is not a tenant theme. Reusable engine, original client experience.
+Standardize funnel capabilities, not visual identity. Do not generate cloned AI websites. Public experience quality is governed by `docs/27`. Control identity in `docs/28` is not a tenant theme. Client media follows `docs/29`: Delivery consumes approved derivatives only. Reusable engine, original client experience.
 Client page publication updates an immutable page version and invalidates cache. It is not a Vector code deploy.
 Cache static assets and stable public pages at the edge when safe. Do not cache personalized, consent-sensitive, authenticated, or experiment-sensitive responses without an explicit cache key.
 A homepage load is not a launch. Domain, HTTPS, lead path, attribution, analytics, and recorded approval are required.

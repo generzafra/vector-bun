@@ -22,6 +22,7 @@ Portfolio operations work by exception, including Vector 24 clocks. Noisy-neighb
 - Client templates and operational queues
 - Optional dedicated delivery / DB as premium — not the default
 - Load tests before claiming support for 20 ordinary clients
+- Creative QuickStart, portfolio creative queues, and automated asset gap analysis (`docs/29`) so a normal launch does not require hand-designing every asset
 
 ## Out of scope
 
@@ -42,3 +43,7 @@ KPI is `vector_ready_at → live_at` excluding client-caused pauses. Track media
 ## Do not start until
 
 Multiple clients can launch without a code fork, and Phase 1 readiness / launch states exist.
+
+## Locked attachments
+
+Portfolio-by-exception is the exit. Additive: Creative QuickStart, Outcomes entitlements, client-success health, operator exception queues (`docs/29`, `docs/30`). No `docs/31`. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

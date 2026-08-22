@@ -8,7 +8,11 @@ Domain models are provider independent.
 
 AIProvider, EmailProvider, SocialProvider, AnalyticsProvider, StorageProvider, SearchProvider.
 
-`StorageProvider` is implemented in `packages/storage`. Local disk is the default. Cloudflare R2 is selected when R2 credentials are present. Object keys are `clients/{client_id}/...`. Metadata lives in PostgreSQL. Raw keys are not authorization.
+Later Creative Engine adapters (`docs/29`): ImageProvider, then VideoProvider and ImageTransformProvider. Do not add `generateImage` to `AIProvider`. Do not invent `AssetStorageProvider`.
+
+Later Outcomes adapters (`docs/30`): CRMProvider, then RevenueProvider, BookingProvider, CommerceProvider, AdProvider, and BillingProvider. Do not couple the domain to one CRM, ad network, or payment processor. Do not let AI change ad budgets automatically.
+
+`StorageProvider` is implemented in `packages/storage`. Local disk is the default. Cloudflare R2 is selected when R2 credentials are present. Object keys are `clients/{client_id}/...`. Metadata lives in PostgreSQL. Raw keys are not authorization. Creative bytes use the same adapter under `clients/{client_id}/creative/...` when C0 ships.
 
 ## Every adapter
 

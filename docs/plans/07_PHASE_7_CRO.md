@@ -20,6 +20,7 @@ One full experiment completes: hypothesis, variants, exposure, predetermined met
 - Variant lifecycle on immutable page versions; variants still pass `docs/27` quality, not generic AI restyles or Vector Control identity copied onto tenants
 - Guardrails: no early stop, no metric swap after launch, bot and source imbalance checks
 - Learning objects from validated outcomes only
+- Creative variants (`docs/29` C8) may be experiment inputs when that track exists. One client's winning style is not a universal rule.
 
 ## Out of scope
 
@@ -40,3 +41,7 @@ First launch ships one control variant. Experiments start after live. Do not blo
 ## Do not start until
 
 Phase 2 events and Phase 1 immutable page versions exist.
+
+## Locked attachments
+
+One experiment + learning object is the exit. Variants still pass `docs/27`. Creative C8 and Outcomes offer/revenue metrics are additive and require coverage. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

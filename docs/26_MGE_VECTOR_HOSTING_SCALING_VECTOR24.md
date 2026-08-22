@@ -38,6 +38,8 @@ This document is the detailed appendix for decisions that were later folded into
 - `22_CURSOR_AGENT_INSTRUCTIONS.md`, `23_DECISION_LOG.md`, `24_RISK_REGISTER.md`, `25_GLOSSARY.md`
 - `VECTOR_MASTER_IMPLEMENTATION_PLAN.md`
 - `27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` — public experience quality; reusable engine, original client experience. Where that standard is more specific on frontend, UX, and conversion, it governs.
+- `29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` — client media production required for mature Vector 24. Where that standard is more specific on assets, generation, and creative approval, it governs.
+- `30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` — client outcomes, goals, and authenticated client UX. Where that standard is more specific on sales outcomes, data health, and client experience, it governs.
 
 Where this appendix is more specific, it should govern unless superseded by a later accepted ADR.
 
@@ -277,7 +279,7 @@ Vector does not force:
 
 The engine is shared. The brand and strategy are client-specific.
 
-Vector 24 depends on reusable frontend infrastructure that does not produce cloned sites. Repeated manual frontend launch work should become a component, variant, token, onboarding field, QA check, or publishing action. Public quality is governed by `docs/27`. Control identity is governed by `docs/28` and must not be copied onto tenant domains. Operating goal: **reusable engine, original client experience.**
+Vector 24 depends on reusable frontend infrastructure that does not produce cloned sites. Repeated manual frontend launch work should become a component, variant, token, onboarding field, QA check, or publishing action. Public quality is governed by `docs/27`. Control identity is governed by `docs/28` and must not be copied onto tenant domains. Client media production is governed by `docs/29`. Authenticated client outcomes are governed by `docs/30`. Rapid onboarding is not fully automated if operators still hand-design every social graphic, funnel image, email header, and campaign asset after Vector Ready. That Creative automation is a mature-state requirement, not a first-client or Phase 5 promise. A Vector 24 launch should also have a primary goal, conversion definition, minimal pipeline, outcome method, and notification defaults. Operating goal: **reusable engine, original client experience.**
 
 ---
 
@@ -1386,6 +1388,7 @@ Add the following roadmap work if not already present.
 ## Phase 5
 
 - Automated social connection readiness checks.
+- Creative C0 asset library so social publish does not invent a second media store (`docs/29`). Generated social families are a later Creative slice.
 
 ## Phase 8
 
@@ -1398,6 +1401,7 @@ Add the following roadmap work if not already present.
 - Multi-client noisy-neighbor controls.
 - Usage quotas.
 - Scaling alerts.
+- Creative QuickStart and automated asset gap analysis (`docs/29`).
 
 ---
 

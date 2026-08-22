@@ -20,6 +20,10 @@ Preview/test → global pause → global suppression → client suppression → 
 
 Inbound `email.received` events resolve the tenant from a unique sending domain or From address. Unknown or ambiguous recipients are dropped. Stored bodies are text-only. Classification is rule-based and never authorizes a send.
 
+Email may later use lightweight Creative Engine banners (`docs/29`). Headlines, body, CTA, pricing, legal, and unsubscribe stay HTML text. Do not render an entire marketing email as an image.
+
+Email reporting should later support delivered → clicked → lead progression → appointment → sale where attribution exists (`docs/30`). That join does not reopen the Phase 3 exit.
+
 ## Auto replies
 
 Begin as drafts. Slice 3 stores inbound as drafts and never sends a reply. Only clearly bounded low risk classes can graduate to automatic sending in a later phase.

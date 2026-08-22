@@ -2,7 +2,7 @@
 
 ## Read before coding
 
-`AGENTS.md`, all P0 documents, and `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` whenever the work touches onboarding, domains, hosting, delivery, launch, or scaling. Read `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` before creating or materially editing public frontend, funnels, landing pages, conversion, motion, or CRO variants. Read `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` and `docs/frontend/VECTOR_FRONTEND_MAP.md` before Control Plane or Vector-identity UI work.
+`AGENTS.md`, all P0 documents, and `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` whenever the work touches onboarding, domains, hosting, delivery, launch, or scaling. Read `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` before creating or materially editing public frontend, funnels, landing pages, conversion, motion, or CRO variants. Read `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` and `docs/frontend/VECTOR_FRONTEND_MAP.md` before Control Plane or Vector-identity UI work. Read `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` before client images, generated media, composition, derivatives, creative approval, or social/email/funnel asset work. Read `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` before authenticated client UX, goals, sales outcomes, revenue, data health, notifications, or entitlements. Client UI is outcome-first; do not expose platform internals by default.
 
 ## Work method
 

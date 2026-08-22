@@ -41,3 +41,7 @@ Technical SEO baseline (metadata, sitemap, robots, schema) must be generated aut
 ## Do not start until
 
 Phase 1 page versions and Phase 4 knowledge authority exist. Prefer Phase 5 complete unless waived.
+
+## Locked attachments
+
+Technical SEO baseline is the exit. Search → qualified-lead reporting (`docs/30`) and Creative OG composition (`docs/29`) are additive. Do not optimize only for rank. Essential copy stays HTML (`docs/10`, `docs/27`). See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

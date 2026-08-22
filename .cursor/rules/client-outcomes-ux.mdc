@@ -1,0 +1,23 @@
+---
+description: Vector client UX, revenue intelligence, goals, and outcome rules
+alwaysApply: false
+---
+When implementing authenticated client UI, lead outcome tracking, goals, revenue attribution, client dashboards, recommendations, client health, notifications, offers, package entitlements, or client reporting, read:
+
+docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md
+
+Authenticated screens use `docs/28` Control tokens. Public visitor UX stays `docs/27`. Creative production stays `docs/29`. Do not invent a third visual language.
+
+Rules:
+- Client UX is outcome-first, not infrastructure-first.
+- Prefer simple business language.
+- Use progressive disclosure. One Control app; nav differs by capability.
+- Never imply attribution certainty when data is estimated or incomplete.
+- AI must check data health before important recommendations.
+- AI must not invent sales, revenue, close rates, or customer value.
+- Marketing optimization should progress from traffic → lead → qualified lead → sale → revenue where data allows.
+- Keep CRM, revenue, ads, and billing behind provider adapters.
+- Every tenant-owned outcome must be client-scoped.
+- Keep Phase 2 `lead_status` (`new | working | qualified | won | lost | spam`). Do not rewrite applied migrations.
+- Extend Phase 1 `offers`; do not create a colliding second offers table.
+- Money is integer minor units plus currency. Revenue amounts are optional.

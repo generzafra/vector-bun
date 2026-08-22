@@ -1,6 +1,6 @@
 # Roadmap and Acceptance Gates
 
-Detailed execution plans: [plans/README.md](plans/README.md). Implement one phase at a time. Cursor Grok Bot is the development agent. Production Grok API starts in Phase 4.
+Detailed execution plans: [plans/README.md](plans/README.md). Cross-cutting Creative and Outcomes mapping: [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md). Implement one phase at a time. Cursor Grok Bot is the development agent. Production Grok API starts in Phase 4. Numbered charters stop at `docs/30`.
 
 ## Phase 0
 
@@ -50,13 +50,19 @@ Production `AIProvider` and xAI Grok API, prompts, structured outputs, initial a
 
 **Exit:** all AI actions are typed, auditable, tenant scoped, cost attributable. Frontend recommendations and draft page structures respect brand, `docs/27`, accessibility, conversion, and approval policy. Control recommendation UI, when built, follows `docs/28` plus master plan §28.3.
 
+**Status (22 August 2026):** Phase 4 exit is met. Research, Copy, Analytics, and Funnel Strategist produce typed drafts. Approving funnel or copy may write an unpublished `page_versions` draft. Decide never publishes, sends, or activates a domain. Tool calls are audited and denied. `AIProvider` is text, structured output, and tools only. Generated visuals are `docs/29` and are not part of this exit.
+
 ## Phase 5
 
 Plan: [plans/05_PHASE_5_SOCIAL.md](plans/05_PHASE_5_SOCIAL.md).
 
-Social adapters, calendar, approval, publishing, automated social connection readiness checks.
+Social adapters, calendar, approval, publishing, automated social connection readiness checks. Take Creative C0 (`docs/29`) so Social stores media through the existing `StorageProvider` and a general asset library, not a second blob store.
 
 **Exit:** approved content can publish to at least two priority platforms, and required social connections are readiness-gated.
+
+`ImageProvider`, deterministic composition, social creative families, and funnel hero generation are later Creative slices. They do not replace this exit.
+
+Social → lead may persist on the existing attribution path (`docs/30`). Client Today, goals, `sales_outcomes`, Ask Vector, and entitlements are Outcomes-track work and do not replace this exit.
 
 ## Phase 6
 
@@ -66,13 +72,15 @@ SEO and AEO operational models.
 
 **Exit:** Vector can produce an evidence-based prioritized search backlog.
 
+Search → qualified-lead reporting (`docs/30`) is additive when coverage exists.
+
 ## Phase 7
 
 Plan: [plans/07_PHASE_7_CRO.md](plans/07_PHASE_7_CRO.md).
 
 CRO experiments from hypothesis through recorded learning.
 
-**Exit:** one full experiment completes with a durable learning object. Frontend experiment variants can be created, reviewed, measured, and promoted through the CRO system without lowering the `docs/27` quality bar.
+**Exit:** one full experiment completes with a durable learning object. Frontend experiment variants can be created, reviewed, measured, and promoted through the CRO system without lowering the `docs/27` quality bar. Creative variants (`docs/29`) may become experiment inputs when C8 exists; that is additive. Qualified-lead or revenue primary metrics (`docs/30`) are allowed only when sample size and data health support them.
 
 ## Phase 8
 
@@ -82,13 +90,15 @@ Progressive autonomy, launch automation policies, low-risk auto-execution.
 
 **Exit:** low-risk workflows and selected launch steps run without daily human intervention and remain auditable.
 
+Autonomy is also conditioned on data health and outcome coverage (`docs/30`). Incomplete sales data lowers confidence and cannot unlock high-impact auto-execute.
+
 ## Phase 9
 
 Plan: [plans/09_PHASE_9_SCALE.md](plans/09_PHASE_9_SCALE.md).
 
 Multi-client operational scale: usage quotas, noisy-neighbor controls, scaling alerts, portfolio launch dashboard, cost dashboards, client-level SLAs, bulk monitoring.
 
-**Exit:** operators can oversee many clients by exception, including Vector 24 clocks, and a single tenant cannot exhaust shared resources. Multiple clients can launch from the same engine without appearing to use the same templated website. The portfolio dashboard uses `docs/28` operational density. Client sites still must not share Vector product chrome.
+**Exit:** operators can oversee many clients by exception, including Vector 24 clocks, and a single tenant cannot exhaust shared resources. Multiple clients can launch from the same engine without appearing to use the same templated website. The portfolio dashboard uses `docs/28` operational density. Client sites still must not share Vector product chrome. Creative QuickStart and automated asset gap analysis (`docs/29`) are additive so a normal launch does not require hand-designing every asset. Portfolio / client-success health, entitlements, and operator exception queues (`docs/30`) are additive.
 
 ## Vector 24
 

@@ -39,3 +39,7 @@ Agents may configure approved components and theme tokens. They may not inject a
 Theme tokens cover color, surface, type, spacing, radius, motion, and z-index. Client tokens change appearance; they do not fork the renderer. A published page must pass the Frontend Release Gate in `docs/27` before it is treated as production-ready.
 
 Capability tokens (spacing, radius, motion, section variants) are the shared engine. Identity tokens are per plane: Delivery uses the client palette; Control uses `docs/28`. Do not import Control identity tokens into the Delivery renderer.
+
+The funnel engine consumes approved Creative Engine asset references (`docs/29`). It does not permanently own client media bytes or invent a second image generator. When image fields are added, they reference an approved tenant-scoped asset id, not a raw URL. Typography-led sections remain a valid fallback.
+
+Funnel reporting should eventually show qualified leads, won deals, and optional revenue (`docs/30`), not conversion rate alone. That join is Outcomes-track work, not a Phase 1 schema change.

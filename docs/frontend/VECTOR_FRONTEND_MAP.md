@@ -6,10 +6,10 @@ Living map of **actual** frontend paths. Update this file when canonical paths c
 
 ## Planes
 
-| Plane    | App             | Identity                  | Quality bar                |
-| -------- | --------------- | ------------------------- | -------------------------- |
-| Control  | `apps/control`  | `docs/28` Vector identity | Operational, not cinematic |
-| Delivery | `apps/delivery` | Client brand tokens       | `docs/27`                  |
+| Plane    | App             | Identity                  | Quality bar                                          | Media                                     |
+| -------- | --------------- | ------------------------- | ---------------------------------------------------- | ----------------------------------------- |
+| Control  | `apps/control`  | `docs/28` Vector identity | Operational, not cinematic; client IA/copy `docs/30` | Operator library when Creative C0 exists  |
+| Delivery | `apps/delivery` | Client brand tokens       | `docs/27`                                            | Approved Creative derivatives (`docs/29`) |
 
 ## Global styles
 

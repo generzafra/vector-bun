@@ -7,7 +7,7 @@ When creating or materially editing Control Plane UI or `@vector/ui` identity to
 
 Reuse existing Vector tokens and Control primitives. Do not hard-code recurring brand hex, radius, or motion values in routes.
 
-This identity does not apply to Delivery client sites. Do not import Control tokens into `apps/delivery`. Do not replace client heroes with the Vector signal-to-growth graph.
+This identity does not apply to Delivery client sites. Do not import Control tokens into `apps/delivery`. Do not replace client heroes with the Vector signal-to-growth graph. Authenticated client outcome screens (`docs/30`) use these tokens and outcome-first copy; they are not a second visual language.
 
 Control stays operational: no MGE cream/cinema, no decorative network meshes, no mint as a generic accent.
 

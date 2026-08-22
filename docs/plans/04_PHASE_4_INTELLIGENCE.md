@@ -84,3 +84,7 @@ Any attempted tool invocation is written to tenant-scoped `ai_tool_calls` with `
 - Control: Tool-call audit table
 
 Trigger.dev AI jobs and pgvector remain later. Do not start Phase 5 until this exit is accepted. Phase 8 owns Level 3+ execute.
+
+`ImageProvider` and generated visuals are `docs/29`, not this phase. `AIProvider` stays text, structured output, and tools. This exit does not require AI-generated images.
+
+Ask Vector, data-health gates, and goal-linked provenance are Outcomes O13–O15 (`docs/30`), not this exit. Recommendation cards already carry finding, evidence, impact, risk, and confidence. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

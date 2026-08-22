@@ -65,3 +65,7 @@ Keep Postgres as the source of truth. PostHog receives production taxonomy event
 ## Slice 3 — Launch-funnel analytics (done)
 
 Control `/analytics` shows recorded launch transition counts plus contract→ready and ready→live seconds. Launch data requires `launch.read`. Alpha cannot read Beta events, attribution, or launch transitions. A 24-hour SLA is not measured.
+
+## Locked attachments
+
+`lead_status` is `new | working | qualified | won | lost | spam`. Attribution is first touch / last non-direct. That is Outcomes O2 seed, not `sales_outcomes` or a goal dashboard. Do not reopen this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

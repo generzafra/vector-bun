@@ -1,0 +1,21 @@
+---
+description: Vector creative asset generation and media pipeline
+alwaysApply: false
+---
+When implementing or modifying image, video, social creative, email creative, funnel media, Open Graph media, campaign assets, brand assets, or generated visuals, read:
+
+docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md
+docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md
+
+Control / Vector product chrome stays in `docs/28`. Do not paint tenant domains with Vector identity.
+
+Rules:
+- Prefer authentic approved client media.
+- Never regenerate the client's official logo by default.
+- Keep exact text and brand marks in deterministic composition.
+- Keep image and video models behind Vector-owned interfaces. Do not add generateImage to AIProvider.
+- Store bytes through StorageProvider. Do not invent a second object-store adapter.
+- Track client, campaign, version, provenance, rights, cost, and approval.
+- Do not publish generated assets before applicable QA and approval.
+- Reuse approved assets before generating new ones.
+- Approved assets are immutable versions. Failed generation must fall back; never render a broken image.

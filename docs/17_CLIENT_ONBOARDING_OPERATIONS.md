@@ -57,6 +57,10 @@ Provide a structured wizard that saves progress and scores readiness:
 
 Clients may upload logos, catalogs, pricing, photos, testimonials, legal pages, and existing-site references. Extracted facts need authority classification and may require approval before publication.
 
+The target onboarding philosophy is Creative QuickStart (`docs/29`): Vector gathers what it can from a URL, logo, and supplied materials; the client confirms; Vector asks only for missing blockers. That is the mature Vector 24 path, not a Phase 5 rebuild of the wizard. Creative Readiness (logo, visual direction, rights, and either authentic assets, approved generation, or a typography-led system) is additive to the existing readiness catalog.
+
+Outcomes QuickStart (`docs/30`) asks in plain language: primary goal, what counts as a good lead, what happens after contact, what counts as a sale, whether a CRM or booking tool exists, high-intent notification preference, and who approves campaigns. Vector 24 should launch with goal, conversion definition, a minimal pipeline (already `new` → `won`/`lost`), an outcome method, and notification defaults. Revenue value may stay optional.
+
 ## Required client decisions
 
 Goals, conversion definitions, approval contacts, approved claims, prohibited claims, markets, communication policy, email consent policy, social channels, reporting cadence.

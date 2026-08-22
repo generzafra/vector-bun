@@ -29,6 +29,10 @@ Trigger, input schema, tenant, idempotency, retry, timeout, concurrency, approva
 
 Phase 3 contracts live in `packages/automation` (`lead-captured`, `nurture-step`, `enroll-eligible`, `nurture-due-sweep`, `inbound-email`, `nurture-due-sweep-platform`). A Vector-owned `WorkflowRuntime` runs them. Tests and local default to in-process. `TRIGGER_SECRET_KEY` selects the Trigger.dev adapter. Task definitions live in `apps/jobs` and only call domain handlers. Inbound work records a draft only. The platform due-sweep returns tenant IDs, then each tenant job uses explicit `TenantContext`.
 
+Later Creative Engine workflows (`docs/29`) — ingest, generation, derivatives, QA, approval, channel-ready, archive, performance feedback — use the same `WorkflowRuntime`. They must not become a second job host.
+
+Later Outcomes workflows (`docs/30`) — lead-stage alerts, sales-outcome reconciliation, revenue import, attribution reconciliation, goal reviews, data-health checks, client digests, approval reminders — also use `WorkflowRuntime`.
+
 ## Idempotency
 
 Every externally triggered workflow must tolerate duplicate delivery.

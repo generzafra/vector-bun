@@ -4,11 +4,12 @@
 
 **Project:** Vector — Autonomous Growth OS  
 **Document type:** Cross-cutting implementation architecture and operating standard  
-**Recommended repository location:** `/docs/28_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`  
-**Status:** Pre-implementation specification  
-**Version:** 1.0  
+**Recommended repository location:** `/docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`  
+**Status:** Accepted architecture standard (ADR-0008). Implementation follows the C0–C9 track. This does not reopen Phase 1 or Phase 4 exits.  
+**Version:** 1.1  
 **Date:** 22 August 2026  
-**Applies to:** Client onboarding, brand ingestion, funnels, social media, email marketing, campaign generation, SEO/AEO presentation, CRO experiments, Vector 24, asset storage, AI governance, approvals, and client operations
+**Applies to:** Client onboarding, brand ingestion, funnels, social media, email marketing, campaign generation, SEO/AEO presentation, CRO experiments, Vector 24, asset storage, AI governance, approvals, and client operations  
+**Does not replace:** `docs/27` public art direction, `docs/28` Control / Vector product identity, or `packages/storage` `StorageProvider`
 
 ---
 
@@ -329,10 +330,11 @@ Create provider interfaces for:
 ImageProvider
 VideoProvider
 ImageTransformProvider
-AssetStorageProvider
 ```
 
-Provider-specific functionality must not leak throughout the domain.
+Do not invent a second `AssetStorageProvider`. Object bytes use the existing `StorageProvider` in `packages/storage`. Metadata and authorization stay in PostgreSQL.
+
+Provider-specific functionality must not leak throughout the domain. Do not add `generateImage` to `AIProvider`.
 
 ---
 
@@ -388,9 +390,19 @@ Document 27 defines the **visual quality philosophy**.
 
 This document defines the **production machinery** that supplies the imagery and media required to achieve that quality.
 
-Document 27 should govern art direction.
+Document 27 governs art direction for public Delivery experiences.
 
-Document 28 should govern generation, storage, composition, transformation, approval, and distribution.
+This document (29) governs generation, storage, composition, transformation, approval, and distribution.
+
+## 3.20 `28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`
+
+Document 28 is Control / Vector product identity. It is not the Creative Engine and is not a tenant theme.
+
+Client campaign media, funnel imagery, social graphics, email banners, and Open Graph assets follow this document and `docs/27`. Do not paint tenant domains with Vector Black / Blue.
+
+## 3.21 `30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`
+
+Creative → campaign → lead → sale → revenue is Creative C8 plus the Outcomes charter. Do not treat click-through as business success. Authenticated creative review for clients uses `docs/28` chrome and `docs/30` copy.
 
 ---
 
@@ -987,7 +999,7 @@ When automated cropping has low confidence, require manual adjustment.
 
 # 19. Asset Storage
 
-Use R2 through the Vector storage abstraction.
+Use R2 through the existing Vector `StorageProvider`. Local disk remains the default when R2 credentials are absent.
 
 Recommended key structure:
 
@@ -2119,6 +2131,8 @@ The winning style can influence later recommendations.
 
 # 63. Initial Creative MVP
 
+Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These nine items are the Creative track (C0–C9), not a new Vector phase.
+
 Build in this order.
 
 ## Phase C0 — Foundation
@@ -2200,49 +2214,35 @@ Build in this order.
 
 ---
 
-# 64. Required Changes to `21_ROADMAP_ACCEPTANCE_GATES.md`
+# 64. Roadmap mapping — do not reopen exited gates
 
-Add:
+Phase 1 already exited with `brand_assets` and `StorageProvider`. That is a thin identity-file library (Creative C0 partial), not the Creative Engine. Do not change the Phase 1 exit.
 
-## Phase 1
+Phase 4 already exited with typed, versioned, auditable, tenant-scoped, cost-attributed text drafts. `AIProvider` is text, structured output, and tools only. Do not change the Phase 4 exit to require generated visuals.
 
-- Asset library.
-- Brand visual profile.
-- Funnel asset manifest.
-- R2 media storage.
+Map Creative Engine work **forward**. The C0–C9 order in §63 is a cross-cutting track. It is not a new numbered Vector phase and must not replace the Phase 5 social-publish exit.
 
-**Exit:** one production funnel can render complete approved client media without manual file placement.
+## Phase 5 — additive
 
-## Phase 4
+- C0 general asset library so Social does not invent a second media store.
+- Later Phase 5 slices may add C1 brand visual profile, C2 `ImageProvider`, C3 composition, C4 derivatives, and C6 social families.
+- Phase 5 exit remains: approved content publishes to at least two priority platforms, and required social connections are readiness-gated.
+- Social-ready generated families are a later Creative slice, not the Phase 5 exit.
 
-- Image provider abstraction.
-- AI generation audit.
-- Creative brief generation.
-
-**Exit:** every AI-generated visual is tenant-scoped, versioned, attributable, and reviewable.
-
-## Phase 5
-
-- Social creative families.
-- Channel derivatives.
-- Creative approval.
-
-**Exit:** an approved campaign can produce social-ready copy and visuals.
-
-## Phase 7
+## Phase 7 — additive
 
 - Creative A/B testing.
-- Performance learning.
+- Performance learning objects.
 
-**Exit:** Vector can compare creative variants against a business metric.
+**Forward exit:** Vector can compare creative variants against a business metric.
 
-## Phase 9
+## Phase 9 — additive
 
 - Creative QuickStart.
 - Portfolio creative queues.
 - Automated asset gap analysis.
 
-**Exit:** normal client launch does not require manual design of every required asset.
+**Forward exit:** a normal client launch does not require manual design of every required asset. Vector 24 remains a mature-state target.
 
 ---
 
@@ -2257,7 +2257,7 @@ For any task involving client images, social graphics, email graphics,
 funnel visuals, campaign media, Open Graph images, generated imagery,
 video, image editing, resizing, or creative assets, read:
 
-docs/28_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md
+docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md
 
 Also read:
 docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md
@@ -2293,7 +2293,7 @@ When implementing or modifying image, video, social creative, email creative,
 funnel media, Open Graph media, campaign assets, brand assets, or generated
 visuals, read:
 
-docs/28_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md
+docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md
 docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md
 
 Rules:

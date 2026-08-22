@@ -84,3 +84,7 @@ Phase 3 contracts dispatch through a Vector-owned `WorkflowRuntime`. Local and `
 - Control `/email` shows the runner adapter
 - Env: `TRIGGER_SECRET_KEY`, optional `TRIGGER_PROJECT_REF` and `TRIGGER_API_URL`
 - Isolation: inbound worker re-checks the recipient tenant; platform sweep only returns tenant IDs then processes each with `TenantContext`
+
+## Locked attachments
+
+Consent and suppression stay fail-closed. Email → lead-stage → sale joins are later Outcomes work (`docs/30`). Creative email banners are later Creative work (`docs/29`). Do not reopen this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

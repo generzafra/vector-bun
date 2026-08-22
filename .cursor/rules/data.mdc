@@ -5,7 +5,8 @@ alwaysApply: true
 Every tenant-owned row has client_id. Identifiers are UUID or sortable unique IDs.
 Money is integer minor units plus currency. Never floats.
 Store time in UTC. Keep client timezone as a separate field.
-Published funnels, content, prompts, and experiments are immutable versions.
+Published funnels, content, prompts, experiments, and approved creative assets are immutable versions. Creative rows require client_id. Raw storage keys are not authorization.
+Goals, sales outcomes, revenue events, data-health rows, notification preferences, and entitlements are tenant-owned. Do not retroactively rewrite historical goal targets. Money is integer minor units plus currency. Keep Phase 2 `lead_status` and extend Phase 1 `offers` rather than colliding replacements.
 Never edit an applied Drizzle migration. Never mutate production schema by hand.
 Index client_id and common list filters. Do not ON DELETE CASCADE leads, consents, analytics, or audit.
 Provider payloads stay as references or bounded snapshots, not the source of truth.

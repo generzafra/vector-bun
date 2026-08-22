@@ -12,6 +12,8 @@ Also report infrastructure demand separately from tenant count: requests per sec
 
 Vector 24 product metrics: median time to Vector Ready, median ready-to-live, percentage launched under 24 hours and 12 hours, manual interventions per launch, automation failures per launch, client-blocked hours, internal build hours.
 
+Business data health is observable beside technical health (`docs/30`): lead ingestion, CRM sync delay, stale revenue import, expired social/search connections, incomplete attribution. Stale outcome data must degrade recommendation confidence.
+
 ## Initial SLOs
 
 Revise after measurement. Starting internal targets:

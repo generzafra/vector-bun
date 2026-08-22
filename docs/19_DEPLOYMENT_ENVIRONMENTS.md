@@ -23,7 +23,7 @@ For about the first 10–20 ordinary marketing clients: 8–12 vCPU, 16–32 GB 
 
 ## Edge and publication
 
-Cache static assets, stable public pages, prerendered content, and R2 media at Cloudflare when safe. Do not cache personalized, consent-sensitive, authenticated, or experiment-sensitive responses without an explicit cache key and policy.
+Cache static assets, stable public pages, prerendered content, and R2 media at Cloudflare when safe. Do not cache personalized, consent-sensitive, authenticated, or experiment-sensitive responses without an explicit cache key and policy. Approved creative derivatives (`docs/29`) should use immutable versioned URLs; do not overwrite a cached public asset in place.
 
 Client page publication updates immutable page versions and invalidates relevant cache. It is not a Vector code deployment.
 
