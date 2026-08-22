@@ -22,6 +22,7 @@ import {
 	listServicesForTenant,
 	publishLatestDraftForTenant,
 	updatePageVersionDocumentForTenant,
+	getAiRunForPageVersionForTenant,
 	getBrandForTenant
 } from '@vector/db';
 import {
@@ -47,6 +48,7 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 		getProductionDomainForTenant(required)
 	]);
 	const hostname = domain?.hostname ?? null;
+	const intelligenceRun = draft ? await getAiRunForPageVersionForTenant(required, draft.id) : null;
 	return {
 		site,
 		funnel,
@@ -58,7 +60,17 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 		previewHostname: hostname,
 		previewUrl: hostname ? previewOrigin(hostname, env.DELIVERY_ORIGIN) : null,
 		productionHostname: production?.hostname ?? null,
-		productionUrl: production ? previewOrigin(production.hostname, env.DELIVERY_ORIGIN) : null
+		productionUrl: production ? previewOrigin(production.hostname, env.DELIVERY_ORIGIN) : null,
+		intelligenceDraft:
+			intelligenceRun && draft
+				? {
+						pageVersionId: draft.id,
+						version: draft.version,
+						agentKey: intelligenceRun.agentKey,
+						runId: intelligenceRun.id,
+						noindex: draft.document.seo.noindex
+					}
+				: null
 	};
 }
 

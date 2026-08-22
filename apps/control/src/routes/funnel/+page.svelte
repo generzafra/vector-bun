@@ -14,7 +14,7 @@
 <PageHeader
 	eyebrow="Delivery"
 	title="Funnel"
-	description="Compose one lead funnel from the active client's knowledge, then publish an immutable preview version. Publication is not a Vector code deploy."
+	description="Compose one lead funnel from the active client's knowledge, then publish an immutable preview version. Intelligence drafts are reviewed here. Publication is a Funnel action, not an Intelligence approval."
 />
 
 {#if form?.error}
@@ -30,6 +30,14 @@
 {:else}
 	<section>
 		<h2>Status</h2>
+		{#if data.funnel.intelligenceDraft}
+			<Alert tone="info">
+				Latest draft is from Intelligence ({data.funnel.intelligenceDraft.agentKey}), version
+				{data.funnel.intelligenceDraft.version}. Preview stays noindex. Publish preview is a Funnel
+				action.
+				<a href="/intelligence">Open Intelligence</a>
+			</Alert>
+		{/if}
 		<div class="meta">
 			<p>Draft version: {data.funnel.draft?.version ?? 'none'}</p>
 			<p>Published version: {data.funnel.published?.version ?? 'none'}</p>

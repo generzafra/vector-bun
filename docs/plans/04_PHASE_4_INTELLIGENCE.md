@@ -1,6 +1,6 @@
 # Phase 4 — Vector Intelligence
 
-**Status:** Slice 2 done — Slice 1 plus approved funnel/copy recommendations materialize as unpublished tenant-scoped page drafts. Research/analytics stay recommendation-only. Approvals still do not publish, send, or go live.  
+**Status:** Slice 3 done — approved funnel/copy drafts are reviewed on Funnel. Intelligence decide still does not publish, send, or go live.  
 **Prerequisite:** Phase 3 exit met. Do not start until nurture can complete safely.
 
 ---
@@ -66,3 +66,11 @@ Approving a Funnel Strategist or Copy recommendation writes a new `page_versions
 - Artifact link: `ai_runs.artifact_kind`, `ai_runs.artifact_page_version_id` (migration `0010_phase4_artifacts`)
 - Feedback: `ai_feedback` on every decide (`+1` approve, `-1` reject)
 - Control: unpublished drafts + activity on `/intelligence`
+
+## Slice 3 — Review intelligence drafts on Funnel (done)
+
+The current Funnel draft is attributed when it was created by an approved Intelligence run. `/intelligence` links that artifact to `/funnel`. `/funnel` links back to `/intelligence`. Compose from knowledge creates a new unattributed draft. Publication stays `publishFunnel` / `pages.manage`. Intelligence decide still does not publish, send, or activate a domain. Alpha cannot see a Beta intelligence draft on Funnel.
+
+- `getFunnel` returns `intelligenceDraft` only when the latest draft id matches a tenant-scoped `ai_runs.artifact_page_version_id`
+- Overview artifacts include `isCurrentFunnelDraft`
+- Control: Funnel status banner; Intelligence “Review on Funnel”

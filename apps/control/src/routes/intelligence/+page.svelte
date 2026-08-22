@@ -159,8 +159,8 @@
 	<section>
 		<h2>Unpublished drafts</h2>
 		<p>
-			Approved funnel and copy artifacts stay drafts. Preview remains noindex. Publication is a
-			separate operator action.
+			Approved funnel and copy artifacts stay drafts. Preview remains noindex. Review the current
+			draft on Funnel. Publication is a Funnel action, not an Intelligence approval.
 		</p>
 		{#if overview.artifacts.length === 0}
 			<EmptyState title="No unpublished page drafts from approvals." />
@@ -172,6 +172,7 @@
 						<th>Version</th>
 						<th>Status</th>
 						<th>noindex</th>
+						<th>Review</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -186,6 +187,11 @@
 								/>
 							</td>
 							<td>{artifact.noindex ? 'yes' : 'no'}</td>
+							<td>
+								<a href="/funnel">
+									{artifact.isCurrentFunnelDraft ? 'Current Funnel draft' : 'Open Funnel'}
+								</a>
+							</td>
 						</tr>
 					{/each}
 				</tbody>

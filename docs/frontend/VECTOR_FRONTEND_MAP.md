@@ -94,7 +94,7 @@ There is not yet a shared `Button.svelte` or form-control package. Control nativ
 | Members      | `apps/control/src/routes/members/+page.svelte`      |
 | Login        | `apps/control/src/routes/login/+page.svelte`        |
 
-`/intelligence` is the Phase 4 Control surface for drafts, recommendation cards, approvals, unpublished page artifacts, activity, and the tenant cost ledger. Opportunities as a separate queue, Campaigns, Automation, and chart themes are still later. Analytics remains tables only.
+`/intelligence` is the Phase 4 Control surface for drafts, recommendation cards, approvals, unpublished page artifacts, activity, and the tenant cost ledger. Approved funnel/copy drafts are reviewed on `/funnel`; publication stays a Funnel action. Opportunities as a separate queue, Campaigns, Automation, and chart themes are still later. Analytics remains tables only.
 
 ## Delivery public routes
 

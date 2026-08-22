@@ -43,6 +43,7 @@ import {
 	getBrandForTenant,
 	getClientForTenant,
 	getHomePageForTenant,
+	getLatestDraftForTenant,
 	getPageVersionForTenant,
 	getPreviewDomainForTenant,
 	getPublishedAgentByKey,
@@ -307,18 +308,29 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 	const required = assertActorOwnsContext(actor, ctx);
 	if (clientId) assertAiClient(required, clientId);
 	const settings = await ensureAiSettingsForTenant(required);
-	const [agents, runs, decisions, approvals, approvalHistory, feedback, costs, costTotal, health] =
-		await Promise.all([
-			listAiAgents(),
-			listAiRunsForTenant(required),
-			listAiDecisionsForTenant(required),
-			listApprovalRequestsForTenant(required),
-			listApprovalDecisionsForTenant(required),
-			listAiFeedbackForTenant(required),
-			listAiCostEventsForTenant(required),
-			sumAiCostMicrosForTenant(required),
-			getDomainAIProvider().health()
-		]);
+	const [
+		agents,
+		runs,
+		decisions,
+		approvals,
+		approvalHistory,
+		feedback,
+		costs,
+		costTotal,
+		health,
+		latestDraft
+	] = await Promise.all([
+		listAiAgents(),
+		listAiRunsForTenant(required),
+		listAiDecisionsForTenant(required),
+		listApprovalRequestsForTenant(required),
+		listApprovalDecisionsForTenant(required),
+		listAiFeedbackForTenant(required),
+		listAiCostEventsForTenant(required),
+		sumAiCostMicrosForTenant(required),
+		getDomainAIProvider().health(),
+		getLatestDraftForTenant(required)
+	]);
 	const artifacts = [];
 	for (const run of runs) {
 		if (!run.artifactPageVersionId) continue;
@@ -330,7 +342,8 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 			pageVersionId: version.id,
 			version: version.version,
 			status: version.status,
-			noindex: version.document.seo.noindex
+			noindex: version.document.seo.noindex,
+			isCurrentFunnelDraft: latestDraft?.id === version.id
 		});
 	}
 	return {

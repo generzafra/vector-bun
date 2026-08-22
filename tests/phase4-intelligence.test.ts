@@ -22,6 +22,7 @@ import {
 	countPublishedPageVersionsForTenant,
 	db,
 	emailMessages,
+	getAiRunForPageVersionForTenant,
 	getHomePageForTenant,
 	getPageVersionForTenant,
 	getPreviewDomainForTenant,
@@ -32,8 +33,10 @@ import {
 } from '@vector/db';
 import { isApprovedSectionType } from '@vector/funnel-engine';
 import {
+	composeFunnel,
 	contextFor,
 	decideIntelligenceApproval,
+	getFunnel,
 	getIntelligenceOverview,
 	login,
 	pauseIntelligence,
@@ -109,6 +112,9 @@ test('missing TenantContext cannot read AI records', () => {
 	expect(listApprovalRequestsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 	expect(listAiFeedbackForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 	expect(countDraftPageVersionsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
+	expect(
+		getAiRunForPageVersionForTenant(null as never, '00000000-0000-4000-8000-000000000001')
+	).rejects.toBeInstanceOf(TenantContextError);
 });
 
 test('research run is typed, versioned, costed, and never executes', async () => {
@@ -477,6 +483,95 @@ test('alpha funnel approval cannot create or expose a beta draft', async () => {
 		betaOverview.artifacts.every((row) => row.pageVersionId !== decided.artifact?.pageVersionId)
 	).toBe(true);
 	expect(JSON.stringify(betaOverview)).not.toContain(decided.artifact!.pageVersionId);
+});
+
+test('approved intelligence draft is the current Funnel draft and still unpublished', async () => {
+	setDomainAIProvider(memory);
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.4.26', 'ai-funnel-review');
+	const ctx = contextFor(actor, 'ai-funnel-review');
+	const pagesBefore = await countPublishedPageVersionsForTenant(ctx);
+	const result = await runIntelligence(
+		actor,
+		ctx,
+		{ agentKey: 'funnel_strategist' },
+		'ai-funnel-review'
+	);
+	const decided = await decideIntelligenceApproval(
+		actor,
+		ctx,
+		{ id: result.approval!.id, decision: 'approved' },
+		'ai-funnel-review-decide'
+	);
+	expect(decided.executed).toBe(false);
+	const funnel = await getFunnel(actor, ctx);
+	expect(funnel.intelligenceDraft?.pageVersionId).toBe(decided.artifact?.pageVersionId);
+	expect(funnel.intelligenceDraft?.agentKey).toBe('funnel_strategist');
+	expect(funnel.draft?.id).toBe(decided.artifact?.pageVersionId);
+	expect(funnel.draft?.status).toBe('draft');
+	expect(funnel.draft?.document.seo.noindex).toBe(true);
+	const overview = await getIntelligenceOverview(actor, ctx);
+	expect(
+		overview.artifacts.some(
+			(row) => row.pageVersionId === decided.artifact?.pageVersionId && row.isCurrentFunnelDraft
+		)
+	).toBe(true);
+	expect(await countPublishedPageVersionsForTenant(ctx)).toBe(pagesBefore);
+});
+
+test('alpha intelligence draft does not appear on the beta Funnel', async () => {
+	setDomainAIProvider(memory);
+	const { alpha, beta } = await seededClients();
+	const alphaActor = await adminOn(alpha.id, '10.0.4.27', 'ai-funnel-iso');
+	const alphaCtx = contextFor(alphaActor, 'ai-funnel-iso');
+	const betaActor = await adminOn(beta.id, '10.0.4.28', 'ai-funnel-iso-beta');
+	const betaCtx = contextFor(betaActor, 'ai-funnel-iso-beta');
+	const result = await runIntelligence(alphaActor, alphaCtx, { agentKey: 'copy' }, 'ai-funnel-iso');
+	const decided = await decideIntelligenceApproval(
+		alphaActor,
+		alphaCtx,
+		{ id: result.approval!.id, decision: 'approved' },
+		'ai-funnel-iso-decide'
+	);
+	const betaFunnel = await getFunnel(betaActor, betaCtx);
+	expect(betaFunnel.intelligenceDraft?.pageVersionId ?? null).not.toBe(
+		decided.artifact?.pageVersionId
+	);
+	expect(JSON.stringify(betaFunnel)).not.toContain(decided.artifact!.pageVersionId);
+	expect(
+		await getAiRunForPageVersionForTenant(betaCtx, decided.artifact!.pageVersionId)
+	).toBeNull();
+});
+
+test('compose after an intelligence draft clears Funnel intelligence attribution', async () => {
+	setDomainAIProvider(memory);
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.4.29', 'ai-funnel-compose');
+	const ctx = contextFor(actor, 'ai-funnel-compose');
+	const result = await runIntelligence(
+		actor,
+		ctx,
+		{ agentKey: 'funnel_strategist' },
+		'ai-funnel-compose'
+	);
+	const decided = await decideIntelligenceApproval(
+		actor,
+		ctx,
+		{ id: result.approval!.id, decision: 'approved' },
+		'ai-funnel-compose-decide'
+	);
+	expect((await getFunnel(actor, ctx)).intelligenceDraft?.pageVersionId).toBe(
+		decided.artifact?.pageVersionId
+	);
+	await composeFunnel(actor, ctx, 'ai-funnel-compose-knowledge');
+	const funnel = await getFunnel(actor, ctx);
+	expect(funnel.draft?.id).not.toBe(decided.artifact?.pageVersionId);
+	expect(funnel.intelligenceDraft).toBeNull();
+	const overview = await getIntelligenceOverview(actor, ctx);
+	expect(
+		overview.artifacts.find((row) => row.pageVersionId === decided.artifact?.pageVersionId)
+			?.isCurrentFunnelDraft
+	).toBe(false);
 });
 
 test('idempotent run keys do not double-charge', async () => {

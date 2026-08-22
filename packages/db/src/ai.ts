@@ -103,6 +103,19 @@ export async function getAiRunForTenant(ctx: TenantContext, runId: string) {
 	return row ?? null;
 }
 
+export async function getAiRunForPageVersionForTenant(ctx: TenantContext, pageVersionId: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(aiRuns)
+		.where(
+			and(eq(aiRuns.clientId, required.clientId), eq(aiRuns.artifactPageVersionId, pageVersionId))
+		)
+		.orderBy(desc(aiRuns.updatedAt))
+		.limit(1);
+	return row ?? null;
+}
+
 export async function listAiRunsForTenant(ctx: TenantContext) {
 	const required = requireTenantContext(ctx);
 	return db
