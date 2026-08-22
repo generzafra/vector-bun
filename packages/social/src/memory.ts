@@ -5,14 +5,20 @@ import type {
 	ConnectionHealth,
 	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthExchangeResult,
+	OAuthPageChoice,
 	OAuthTokenSet,
 	PostMetrics,
 	PublishRequest,
 	PublishResult,
 	RefreshRequest,
 	RefreshResult,
+	ResolveOAuthPageInput,
 	SocialProvider
 } from './types';
+import { oauthConnected, oauthSelectPage } from './types';
+
+export type MemoryOAuthPage = OAuthPageChoice & { accessToken: string };
 
 const EMPTY_METRICS: PostMetrics = {
 	impressions: 0,
@@ -26,7 +32,9 @@ export class MemorySocialProvider implements SocialProvider {
 	readonly published: PublishRequest[] = [];
 	readonly refreshed: RefreshRequest[] = [];
 	readonly exchanged: ExchangeAuthorizationCodeInput[] = [];
+	readonly resolvedPages: string[] = [];
 	readonly metrics = new Map<string, PostMetrics>();
+	oauthPages: MemoryOAuthPage[] | null = null;
 	refreshFail = false;
 
 	constructor(readonly platform: SocialPlatform) {}
@@ -55,7 +63,9 @@ export class MemorySocialProvider implements SocialProvider {
 		return url.toString();
 	}
 
-	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+	async exchangeAuthorizationCode(
+		input: ExchangeAuthorizationCodeInput
+	): Promise<OAuthExchangeResult> {
 		this.exchanged.push(input);
 		if (!input.code || !input.codeVerifier) {
 			throw new ProviderError(
@@ -63,14 +73,39 @@ export class MemorySocialProvider implements SocialProvider {
 				'PROVIDER_INVALID_PAYLOAD'
 			);
 		}
-		return {
+		const eligible = this.eligibleOAuthPages();
+		if (eligible && eligible.length > 1) {
+			return oauthSelectPage({
+				pages: eligible.map((page) => ({
+					pageId: page.pageId,
+					name: page.name,
+					instagramUserId: page.instagramUserId,
+					instagramHandle: page.instagramHandle
+				})),
+				userAccessToken: `memory-oauth-user-${this.platform}`,
+				expiresAt: new Date(Date.now() + 60 * 60 * 1000)
+			});
+		}
+		if (eligible?.length === 1) {
+			return oauthConnected(this.tokensForPage(eligible[0]));
+		}
+		return oauthConnected({
 			accessToken: `memory-oauth-${this.platform}-${input.code.slice(0, 12)}`,
 			refreshToken: `memory-oauth-rt-${this.platform}`,
 			expiresAt: new Date(Date.now() + 60 * 60 * 1000),
 			externalAccountId: `oauth-${this.platform}-account`,
 			handle: `${this.platform}-oauth`,
 			displayName: `${this.platform} OAuth`
-		};
+		});
+	}
+
+	async resolveOAuthPage(input: ResolveOAuthPageInput): Promise<OAuthTokenSet> {
+		this.resolvedPages.push(input.pageId);
+		const page = this.eligibleOAuthPages()?.find((row) => row.pageId === input.pageId);
+		if (!page) {
+			throw new ProviderError('Memory OAuth page was not found', 'PROVIDER_INVALID_PAYLOAD');
+		}
+		return this.tokensForPage(page);
 	}
 
 	async publish(request: PublishRequest): Promise<PublishResult> {
@@ -119,7 +154,30 @@ export class MemorySocialProvider implements SocialProvider {
 		this.published.length = 0;
 		this.refreshed.length = 0;
 		this.exchanged.length = 0;
+		this.resolvedPages.length = 0;
+		this.oauthPages = null;
 		this.metrics.clear();
 		this.refreshFail = false;
+	}
+
+	private eligibleOAuthPages() {
+		if (!this.oauthPages) return null;
+		if (this.platform === 'instagram') {
+			return this.oauthPages.filter((page) => page.instagramUserId);
+		}
+		if (this.platform === 'facebook') return this.oauthPages;
+		return null;
+	}
+
+	private tokensForPage(page: MemoryOAuthPage): OAuthTokenSet {
+		const instagram = this.platform === 'instagram';
+		return {
+			accessToken: page.accessToken,
+			refreshToken: page.accessToken,
+			expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+			externalAccountId: instagram ? (page.instagramUserId ?? page.pageId) : page.pageId,
+			handle: instagram ? (page.instagramHandle ?? page.name) : page.name,
+			displayName: instagram ? (page.instagramHandle ?? page.name) : page.name
+		};
 	}
 }

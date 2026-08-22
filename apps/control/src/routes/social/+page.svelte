@@ -86,6 +86,22 @@
 			encrypted tokens on the server. Tokens are never shown.
 		</p>
 		<p>Redirect URI: {overview.oauth.redirectUri}</p>
+		{#if canManage && data.pageChoices && data.pageChoices.length > 0}
+			<form method="post" action="?/selectOAuthPage">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Page
+					<select name="pageId" required>
+						{#each data.pageChoices as page (page.pageId)}
+							<option value={page.pageId}>
+								{page.name}{page.instagramHandle ? ` · ${page.instagramHandle}` : ''}
+							</option>
+						{/each}
+					</select>
+				</label>
+				<button type="submit">Connect selected Page</button>
+			</form>
+		{/if}
 		{#if overview.accounts.length === 0}
 			<EmptyState title="No social accounts connected." />
 		{:else}

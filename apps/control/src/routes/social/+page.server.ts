@@ -1,4 +1,5 @@
 import { fail, isRedirect, redirect } from '@sveltejs/kit';
+import { env } from '@vector/config';
 import { AppError } from '@vector/contracts';
 import {
 	approveCreativeAsset,
@@ -10,6 +11,9 @@ import {
 	publishSocialPost,
 	refreshSocialConnection,
 	scheduleSocialPost,
+	parseSocialOAuthSelection,
+	selectSocialOAuthPage,
+	SOCIAL_OAUTH_PAGE_PICK_COOKIE,
 	startSocialOAuth,
 	syncSocialMetricsForOperator,
 	transitionSocialPost,
@@ -17,20 +21,36 @@ import {
 	upsertSocialConnection
 } from '@vector/domain';
 
-export async function load({ locals, url }) {
+export async function load({ locals, url, cookies }) {
 	const session = locals.session!;
-	if (!session.clientId) return { overview: null, needsClient: true, oauthNotice: null };
+	if (!session.clientId) {
+		return { overview: null, needsClient: true, oauthNotice: null, pageChoices: null };
+	}
 	const ctx = contextFor(session, locals.requestId);
 	const oauth = url.searchParams.get('oauth');
+	const pick = cookies.get(SOCIAL_OAUTH_PAGE_PICK_COOKIE);
+	const selection = pick ? parseSocialOAuthSelection(env.TOKEN_ENCRYPTION_KEY, pick) : null;
+	const pageChoices =
+		oauth === 'select' &&
+		selection &&
+		selection.clientId === session.clientId &&
+		selection.userId === session.userId
+			? selection.pages
+			: null;
 	return {
 		overview: await getSocialOverview(session, ctx),
 		needsClient: false,
+		pageChoices,
 		oauthNotice:
 			oauth === 'connected'
 				? 'Official OAuth connection stored. Tokens stay encrypted and are not shown.'
-				: oauth === 'error'
-					? 'Official OAuth did not complete. Start the connect flow again.'
-					: null
+				: oauth === 'select' && pageChoices
+					? 'Select the Page to finish the official connection. Tokens stay on the server.'
+					: oauth === 'select'
+						? 'Page selection expired. Start official OAuth again.'
+						: oauth === 'error'
+							? 'Official OAuth did not complete. Start the connect flow again.'
+							: null
 	};
 }
 
@@ -54,6 +74,32 @@ export const actions = {
 			if (isRedirect(error)) throw error;
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not start official OAuth' });
+		}
+	},
+	selectOAuthPage: async ({ request, locals, cookies }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const selectionToken = cookies.get(SOCIAL_OAUTH_PAGE_PICK_COOKIE);
+		if (!selectionToken) {
+			return fail(400, { error: 'Page selection expired. Start official OAuth again.' });
+		}
+		const form = await request.formData();
+		try {
+			await selectSocialOAuthPage(
+				session,
+				contextFor(session, locals.requestId),
+				{
+					pageId: String(form.get('pageId') ?? ''),
+					selectionToken
+				},
+				locals.requestId
+			);
+			cookies.delete(SOCIAL_OAUTH_PAGE_PICK_COOKIE, { path: '/' });
+			throw redirect(303, '/social?oauth=connected');
+		} catch (error) {
+			if (isRedirect(error)) throw error;
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not select social Page' });
 		}
 	},
 	connect: async ({ request, locals }) => {

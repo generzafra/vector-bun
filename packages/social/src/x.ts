@@ -6,7 +6,9 @@ import type {
 	ConnectionHealth,
 	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthExchangeResult,
 	OAuthTokenSet,
+	ResolveOAuthPageInput,
 	PostMetrics,
 	PublishMedia,
 	PublishRequest,
@@ -15,6 +17,7 @@ import type {
 	RefreshResult,
 	SocialProvider
 } from './types';
+import { oauthConnected } from './types';
 
 const TIMEOUT_MS = 10_000;
 
@@ -89,7 +92,9 @@ export class XSocialProvider implements SocialProvider {
 		return url.toString();
 	}
 
-	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+	async exchangeAuthorizationCode(
+		input: ExchangeAuthorizationCodeInput
+	): Promise<OAuthExchangeResult> {
 		const clientId = this.oauth.clientId;
 		const clientSecret = this.oauth.clientSecret;
 		if (!clientId || !clientSecret) {
@@ -149,7 +154,7 @@ export class XSocialProvider implements SocialProvider {
 			if (!profile.data?.id) {
 				throw new ProviderError('X profile returned no account id', 'PROVIDER_INVALID_PAYLOAD');
 			}
-			return {
+			return oauthConnected({
 				accessToken: tokens.access_token,
 				refreshToken: tokens.refresh_token,
 				expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : undefined,
@@ -157,7 +162,7 @@ export class XSocialProvider implements SocialProvider {
 				externalAccountId: profile.data.id,
 				handle: profile.data.username ?? 'x',
 				displayName: profile.data.name ?? profile.data.username ?? 'X'
-			};
+			});
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			logError('social.x.oauth', error, {});
@@ -165,6 +170,13 @@ export class XSocialProvider implements SocialProvider {
 		} finally {
 			clearTimeout(timer);
 		}
+	}
+
+	async resolveOAuthPage(_input: ResolveOAuthPageInput): Promise<OAuthTokenSet> {
+		throw new ProviderError(
+			'X OAuth does not use Page selection',
+			'SOCIAL_PAGE_SELECTION_UNSUPPORTED'
+		);
 	}
 
 	async publish(request: PublishRequest): Promise<PublishResult> {

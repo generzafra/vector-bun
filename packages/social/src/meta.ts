@@ -6,7 +6,10 @@ import type {
 	ConnectionHealth,
 	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthExchangeResult,
+	OAuthPageChoice,
 	OAuthTokenSet,
+	ResolveOAuthPageInput,
 	PostMetrics,
 	PublishMedia,
 	PublishRequest,
@@ -15,6 +18,7 @@ import type {
 	RefreshResult,
 	SocialProvider
 } from './types';
+import { oauthConnected, oauthSelectPage } from './types';
 
 const TIMEOUT_MS = 10_000;
 const GRAPH_VERSION = 'v21.0';
@@ -103,7 +107,9 @@ export class MetaSocialProvider implements SocialProvider {
 		return url.toString();
 	}
 
-	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+	async exchangeAuthorizationCode(
+		input: ExchangeAuthorizationCodeInput
+	): Promise<OAuthExchangeResult> {
 		const appId = this.oauth.appId;
 		const appSecret = this.oauth.appSecret;
 		if (!appId || !appSecret) {
@@ -147,86 +153,50 @@ export class MetaSocialProvider implements SocialProvider {
 				? ((await longLived.json()) as { access_token?: string; expires_in?: number })
 				: {};
 			const userToken = longBody.access_token ?? shortBody.access_token;
-			const pagesResponse = await this.sendHttp(`${GRAPH_BASE}/me/accounts`, {
-				method: 'GET',
-				signal: controller.signal,
-				headers: { authorization: `Bearer ${userToken}` }
+			const expiresAt = longBody.expires_in
+				? new Date(Date.now() + longBody.expires_in * 1000)
+				: undefined;
+			const eligible = await this.eligiblePages(userToken, controller.signal, expiresAt);
+			if (eligible.length === 0) {
+				throw new ProviderError(
+					this.platform === 'instagram'
+						? 'Meta OAuth found no Instagram professional account on a Page'
+						: 'Meta OAuth found no Page with a publish token',
+					'PROVIDER_INVALID_PAYLOAD'
+				);
+			}
+			if (eligible.length === 1) return oauthConnected(eligible[0].tokens);
+			return oauthSelectPage({
+				pages: eligible.map((row) => row.choice),
+				userAccessToken: userToken,
+				expiresAt
 			});
-			if (!pagesResponse.ok) {
-				throw new ProviderError(
-					`Meta page lookup failed (${pagesResponse.status})`,
-					'PROVIDER_TEMPORARY_FAILURE'
-				);
-			}
-			const pages = (await pagesResponse.json()) as {
-				data?: Array<{ id?: string; name?: string; access_token?: string }>;
-			};
-			const page = (pages.data ?? []).find((row) => row.id && row.access_token);
-			if (!page?.id || !page.access_token) {
-				throw new ProviderError(
-					'Meta OAuth found no Page with a publish token',
-					'PROVIDER_INVALID_PAYLOAD'
-				);
-			}
-			if (this.platform === 'facebook') {
-				return {
-					accessToken: page.access_token,
-					refreshToken: page.access_token,
-					expiresAt: longBody.expires_in
-						? new Date(Date.now() + longBody.expires_in * 1000)
-						: undefined,
-					externalAccountId: page.id,
-					handle: page.name ?? 'facebook',
-					displayName: page.name ?? 'Facebook'
-				};
-			}
-			const igLookup = await this.sendHttp(
-				`${GRAPH_BASE}/${encodeURIComponent(page.id)}?fields=instagram_business_account`,
-				{
-					method: 'GET',
-					signal: controller.signal,
-					headers: { authorization: `Bearer ${page.access_token}` }
-				}
-			);
-			if (!igLookup.ok) {
-				throw new ProviderError(
-					`Instagram account lookup failed (${igLookup.status})`,
-					'PROVIDER_TEMPORARY_FAILURE'
-				);
-			}
-			const igBody = (await igLookup.json()) as {
-				instagram_business_account?: { id?: string };
-			};
-			const igUserId = igBody.instagram_business_account?.id;
-			if (!igUserId) {
-				throw new ProviderError(
-					'Meta OAuth found no Instagram professional account on the Page',
-					'PROVIDER_INVALID_PAYLOAD'
-				);
-			}
-			const igProfile = await this.sendHttp(
-				`${GRAPH_BASE}/${encodeURIComponent(igUserId)}?fields=id,username`,
-				{
-					method: 'GET',
-					signal: controller.signal,
-					headers: { authorization: `Bearer ${page.access_token}` }
-				}
-			);
-			const ig = igProfile.ok ? ((await igProfile.json()) as { username?: string }) : {};
-			return {
-				accessToken: page.access_token,
-				refreshToken: page.access_token,
-				expiresAt: longBody.expires_in
-					? new Date(Date.now() + longBody.expires_in * 1000)
-					: undefined,
-				externalAccountId: igUserId,
-				handle: ig.username ?? 'instagram',
-				displayName: ig.username ?? page.name ?? 'Instagram'
-			};
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			logError('social.meta.oauth', error, { platform: this.platform });
 			throw new ProviderError('Meta OAuth exchange failed', 'PROVIDER_TEMPORARY_FAILURE');
+		} finally {
+			clearTimeout(timer);
+		}
+	}
+
+	async resolveOAuthPage(input: ResolveOAuthPageInput): Promise<OAuthTokenSet> {
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+		try {
+			const eligible = await this.eligiblePages(input.userAccessToken, controller.signal);
+			const selected = eligible.find((row) => row.choice.pageId === input.pageId);
+			if (!selected) {
+				throw new ProviderError(
+					'Meta OAuth page was not found or is not eligible',
+					'PROVIDER_INVALID_PAYLOAD'
+				);
+			}
+			return selected.tokens;
+		} catch (error) {
+			if (error instanceof ProviderError) throw error;
+			logError('social.meta.oauth.page', error, { platform: this.platform });
+			throw new ProviderError('Meta OAuth page selection failed', 'PROVIDER_TEMPORARY_FAILURE');
 		} finally {
 			clearTimeout(timer);
 		}
@@ -271,6 +241,97 @@ export class MetaSocialProvider implements SocialProvider {
 		} finally {
 			clearTimeout(timer);
 		}
+	}
+
+	private async eligiblePages(
+		userToken: string,
+		signal: AbortSignal,
+		expiresAt?: Date
+	): Promise<Array<{ choice: OAuthPageChoice; tokens: OAuthTokenSet }>> {
+		const pagesResponse = await this.sendHttp(`${GRAPH_BASE}/me/accounts`, {
+			method: 'GET',
+			signal,
+			headers: { authorization: `Bearer ${userToken}` }
+		});
+		if (!pagesResponse.ok) {
+			throw new ProviderError(
+				`Meta page lookup failed (${pagesResponse.status})`,
+				'PROVIDER_TEMPORARY_FAILURE'
+			);
+		}
+		const pages = (await pagesResponse.json()) as {
+			data?: Array<{ id?: string; name?: string; access_token?: string }>;
+		};
+		const withTokens = (pages.data ?? []).filter(
+			(row): row is { id: string; name?: string; access_token: string } =>
+				Boolean(row.id && row.access_token)
+		);
+		const eligible: Array<{ choice: OAuthPageChoice; tokens: OAuthTokenSet }> = [];
+		for (const page of withTokens) {
+			if (this.platform === 'facebook') {
+				eligible.push({
+					choice: { pageId: page.id, name: page.name ?? 'facebook' },
+					tokens: {
+						accessToken: page.access_token,
+						refreshToken: page.access_token,
+						expiresAt,
+						externalAccountId: page.id,
+						handle: page.name ?? 'facebook',
+						displayName: page.name ?? 'Facebook'
+					}
+				});
+				continue;
+			}
+			const ig = await this.instagramForPage(page, signal);
+			if (!ig) continue;
+			eligible.push({
+				choice: {
+					pageId: page.id,
+					name: page.name ?? 'instagram',
+					instagramUserId: ig.id,
+					instagramHandle: ig.username
+				},
+				tokens: {
+					accessToken: page.access_token,
+					refreshToken: page.access_token,
+					expiresAt,
+					externalAccountId: ig.id,
+					handle: ig.username ?? 'instagram',
+					displayName: ig.username ?? page.name ?? 'Instagram'
+				}
+			});
+		}
+		return eligible;
+	}
+
+	private async instagramForPage(
+		page: { id: string; name?: string; access_token: string },
+		signal: AbortSignal
+	) {
+		const igLookup = await this.sendHttp(
+			`${GRAPH_BASE}/${encodeURIComponent(page.id)}?fields=instagram_business_account`,
+			{
+				method: 'GET',
+				signal,
+				headers: { authorization: `Bearer ${page.access_token}` }
+			}
+		);
+		if (!igLookup.ok) return null;
+		const igBody = (await igLookup.json()) as {
+			instagram_business_account?: { id?: string };
+		};
+		const igUserId = igBody.instagram_business_account?.id;
+		if (!igUserId) return null;
+		const igProfile = await this.sendHttp(
+			`${GRAPH_BASE}/${encodeURIComponent(igUserId)}?fields=id,username`,
+			{
+				method: 'GET',
+				signal,
+				headers: { authorization: `Bearer ${page.access_token}` }
+			}
+		);
+		const ig = igProfile.ok ? ((await igProfile.json()) as { username?: string }) : {};
+		return { id: igUserId, username: ig.username };
 	}
 
 	private async publishFacebookText(request: PublishRequest, signal: AbortSignal) {

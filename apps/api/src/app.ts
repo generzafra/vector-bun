@@ -60,6 +60,7 @@ import {
 	serveSocialMediaGrant,
 	startSocialOAuth,
 	completeSocialOAuth,
+	selectSocialOAuthPage,
 	syncSocialMetricsForOperator,
 	transitionSocialPost,
 	uploadCreativeAsset,
@@ -678,6 +679,17 @@ app.post('/v1/social/oauth/complete', async (c) => {
 	actorCan(session, 'social.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await completeSocialOAuth(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/social/oauth/select', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await selectSocialOAuthPage(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data });
 });
 

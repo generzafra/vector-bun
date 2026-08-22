@@ -400,8 +400,9 @@ test('official LinkedIn and X OAuth fail closed without credentials and exchange
 		redirectUri: 'http://localhost:5183/social/oauth/callback',
 		codeVerifier: 'li-verifier'
 	});
-	expect(linkedinTokens.accessToken).toBe('linkedin-oauth-access');
-	expect(linkedinTokens.externalAccountId).toBe('urn:li:person:person-9');
+	if (linkedinTokens.kind !== 'connected') throw new Error('expected LinkedIn connected');
+	expect(linkedinTokens.tokens.accessToken).toBe('linkedin-oauth-access');
+	expect(linkedinTokens.tokens.externalAccountId).toBe('urn:li:person:person-9');
 	expect(linkedinCalls.some((call) => call.includes('/oauth/v2/accessToken'))).toBe(true);
 	expect(linkedinCalls.some((call) => call.includes('/v2/userinfo'))).toBe(true);
 
@@ -454,8 +455,9 @@ test('official LinkedIn and X OAuth fail closed without credentials and exchange
 		redirectUri: 'http://localhost:5183/social/oauth/callback',
 		codeVerifier: 'x-verifier'
 	});
-	expect(xTokens.accessToken).toBe('x-oauth-access');
-	expect(xTokens.handle).toBe('vectorx');
+	if (xTokens.kind !== 'connected') throw new Error('expected X connected');
+	expect(xTokens.tokens.accessToken).toBe('x-oauth-access');
+	expect(xTokens.tokens.handle).toBe('vectorx');
 	expect(xCalls.some((call) => call.includes('https://api.x.com/2/oauth2/token'))).toBe(true);
 });
 
@@ -509,8 +511,9 @@ test('official Meta OAuth stores the Page token and fails closed without a Page 
 		redirectUri: 'http://localhost:5183/social/oauth/callback',
 		codeVerifier: 'fb-verifier'
 	});
-	expect(facebookTokens.accessToken).toBe('page-token-9');
-	expect(facebookTokens.externalAccountId).toBe('page-9');
+	if (facebookTokens.kind !== 'connected') throw new Error('expected Facebook connected');
+	expect(facebookTokens.tokens.accessToken).toBe('page-token-9');
+	expect(facebookTokens.tokens.externalAccountId).toBe('page-9');
 	expect(facebookCalls.some((call) => call.includes('/me/accounts'))).toBe(true);
 
 	const noPage = new MetaSocialProvider(
@@ -564,9 +567,10 @@ test('official Meta OAuth stores the Page token and fails closed without a Page 
 		redirectUri: 'http://localhost:5183/social/oauth/callback',
 		codeVerifier: 'ig-verifier'
 	});
-	expect(igTokens.accessToken).toBe('page-token-9');
-	expect(igTokens.externalAccountId).toBe('ig-9');
-	expect(igTokens.handle).toBe('vectorig');
+	if (igTokens.kind !== 'connected') throw new Error('expected Instagram connected');
+	expect(igTokens.tokens.accessToken).toBe('page-token-9');
+	expect(igTokens.tokens.externalAccountId).toBe('ig-9');
+	expect(igTokens.tokens.handle).toBe('vectorig');
 
 	const noIg = new MetaSocialProvider(
 		'instagram',
@@ -596,4 +600,40 @@ test('official Meta OAuth stores the Page token and fails closed without a Page 
 		noIgError = caught;
 	}
 	expect(noIgError).toBeInstanceOf(ProviderError);
+});
+
+test('official Meta OAuth asks for a Page when more than one eligible Page exists', async () => {
+	const facebook = new MetaSocialProvider(
+		'facebook',
+		async (input) => {
+			const url = String(input);
+			if (url.includes('redirect_uri=')) return jsonResponse(200, { access_token: 'meta-short' });
+			if (url.includes('fb_exchange_token'))
+				return jsonResponse(200, { access_token: 'meta-long' });
+			if (url.includes('/me/accounts')) {
+				return jsonResponse(200, {
+					data: [
+						{ id: 'page-a', name: 'Page A', access_token: 'page-token-a' },
+						{ id: 'page-b', name: 'Page B', access_token: 'page-token-b' }
+					]
+				});
+			}
+			return jsonResponse(404, {});
+		},
+		{ appId: 'meta-app', appSecret: 'meta-secret' }
+	);
+	const exchanged = await facebook.exchangeAuthorizationCode({
+		code: 'fb-multi',
+		redirectUri: 'http://localhost:5183/social/oauth/callback',
+		codeVerifier: 'fb-verifier'
+	});
+	if (exchanged.kind !== 'select_page') throw new Error('expected page selection');
+	expect(exchanged.pages.map((page) => page.pageId)).toEqual(['page-a', 'page-b']);
+	expect(JSON.stringify(exchanged.pages).includes('page-token')).toBe(false);
+	const selected = await facebook.resolveOAuthPage({
+		userAccessToken: exchanged.userAccessToken,
+		pageId: 'page-b'
+	});
+	expect(selected.accessToken).toBe('page-token-b');
+	expect(selected.externalAccountId).toBe('page-b');
 });

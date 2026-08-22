@@ -6,7 +6,9 @@ import type {
 	ConnectionHealth,
 	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthExchangeResult,
 	OAuthTokenSet,
+	ResolveOAuthPageInput,
 	PostMetrics,
 	PublishMedia,
 	PublishRequest,
@@ -15,6 +17,7 @@ import type {
 	RefreshResult,
 	SocialProvider
 } from './types';
+import { oauthConnected } from './types';
 
 const TIMEOUT_MS = 10_000;
 const VERSION = '202401';
@@ -210,7 +213,9 @@ export class LinkedInSocialProvider implements SocialProvider {
 		return url.toString();
 	}
 
-	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+	async exchangeAuthorizationCode(
+		input: ExchangeAuthorizationCodeInput
+	): Promise<OAuthExchangeResult> {
 		const clientId = this.oauth.clientId;
 		const clientSecret = this.oauth.clientSecret;
 		if (!clientId || !clientSecret) {
@@ -277,7 +282,7 @@ export class LinkedInSocialProvider implements SocialProvider {
 			const externalAccountId = profile.sub.startsWith('urn:')
 				? profile.sub
 				: `urn:li:person:${profile.sub}`;
-			return {
+			return oauthConnected({
 				accessToken: tokens.access_token,
 				refreshToken: tokens.refresh_token,
 				expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : undefined,
@@ -285,7 +290,7 @@ export class LinkedInSocialProvider implements SocialProvider {
 				externalAccountId,
 				handle: profile.email ?? profile.name ?? 'linkedin',
 				displayName: profile.name ?? 'LinkedIn'
-			};
+			});
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			logError('social.linkedin.oauth', error, {});
@@ -293,6 +298,13 @@ export class LinkedInSocialProvider implements SocialProvider {
 		} finally {
 			clearTimeout(timer);
 		}
+	}
+
+	async resolveOAuthPage(_input: ResolveOAuthPageInput): Promise<OAuthTokenSet> {
+		throw new ProviderError(
+			'LinkedIn OAuth does not use Page selection',
+			'SOCIAL_PAGE_SELECTION_UNSUPPORTED'
+		);
 	}
 
 	async fetchPostMetrics(_request: MetricsRequest): Promise<PostMetrics> {

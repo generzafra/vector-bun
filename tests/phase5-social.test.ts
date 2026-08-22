@@ -49,6 +49,7 @@ import {
 	memorySocialProvider,
 	resolveSession,
 	startSocialOAuth,
+	selectSocialOAuthPage,
 	switchActiveClient,
 	syncSocialMetrics,
 	transitionSocialPost,
@@ -850,6 +851,7 @@ test('official OAuth start and complete store encrypted tokens without leaking t
 		{ code, state: authorize.searchParams.get('state') ?? '' },
 		'social-oauth-complete'
 	);
+	if (completed.status !== 'connected') throw new Error('expected connected LinkedIn OAuth');
 	expect(completed.account.platform).toBe('linkedin');
 	expect(completed.account.handle).toBe('linkedin-oauth');
 	expect(completed.connection.status).toBe('active');
@@ -971,4 +973,87 @@ test('Alpha OAuth state cannot complete as Beta and forged state fails closed', 
 	const betaOverview = await getSocialOverview(betaActor, betaCtx);
 	expect(betaOverview.accounts.some((account) => account.handle === 'facebook-oauth')).toBe(false);
 	expect(JSON.stringify(betaOverview).includes('stolen-code-value')).toBe(false);
+});
+
+test('Meta OAuth page picker stores only the selected Page and stays tenant bound', async () => {
+	const { alpha, beta } = await seededClients();
+	const alphaActor = await adminOn(alpha.id, '127.0.0.78', 'social-page-a');
+	const betaActor = await adminOn(beta.id, '127.0.0.79', 'social-page-b');
+	const alphaCtx = contextFor(alphaActor, 'social-page-a');
+	const betaCtx = contextFor(betaActor, 'social-page-b');
+	memorySocialProvider('facebook').oauthPages = [
+		{ pageId: 'page-a', name: 'Page A', accessToken: 'memory-page-a-token-value' },
+		{ pageId: 'page-b', name: 'Page B', accessToken: 'memory-page-b-token-value' }
+	];
+	const started = await startSocialOAuth(
+		alphaActor,
+		alphaCtx,
+		{ platform: 'facebook', required: true },
+		'social-page-start'
+	);
+	const pending = await completeSocialOAuth(
+		alphaActor,
+		alphaCtx,
+		{
+			code: `page-code-${crypto.randomUUID().slice(0, 8)}`,
+			state: new URL(started.authorizeUrl).searchParams.get('state') ?? ''
+		},
+		'social-page-complete'
+	);
+	if (pending.status !== 'select_page') throw new Error('expected page selection');
+	expect(pending.pages.map((page) => page.pageId)).toEqual(['page-a', 'page-b']);
+	assertNoSocialOAuthSecrets(JSON.stringify(pending), [
+		'memory-page-a-token-value',
+		'memory-page-b-token-value',
+		'memory-oauth-user-facebook'
+	]);
+	let stolen: unknown;
+	try {
+		await selectSocialOAuthPage(
+			betaActor,
+			betaCtx,
+			{ pageId: 'page-b', selectionToken: pending.selectionToken },
+			'social-page-stolen'
+		);
+	} catch (error) {
+		stolen = error;
+	}
+	expect(stolen).toBeInstanceOf(ForbiddenError);
+	const selected = await selectSocialOAuthPage(
+		alphaActor,
+		alphaCtx,
+		{ pageId: 'page-b', selectionToken: pending.selectionToken },
+		'social-page-select'
+	);
+	if (selected.status !== 'connected') throw new Error('expected connected page');
+	expect(selected.account.handle).toBe('Page B');
+	assertNoSocialOAuthSecrets(JSON.stringify(selected), [
+		'memory-page-a-token-value',
+		'memory-page-b-token-value'
+	]);
+	const [row] = await db
+		.select()
+		.from(socialConnections)
+		.where(
+			and(eq(socialConnections.clientId, alpha.id), eq(socialConnections.platform, 'facebook'))
+		)
+		.limit(1);
+	expect(decryptSecret(env.TOKEN_ENCRYPTION_KEY, row?.encryptedAccessToken ?? '')).toBe(
+		'memory-page-b-token-value'
+	);
+	expect(memorySocialProvider('facebook').resolvedPages.at(-1)).toBe('page-b');
+	const cookie = `${cookieName()}=${alphaActor.token}`;
+	const apiSelect = await app.request('/v1/social/oauth/select', {
+		method: 'POST',
+		headers: {
+			cookie,
+			'content-type': 'application/json',
+			'x-csrf-token': alphaActor.csrf
+		},
+		body: JSON.stringify({ pageId: 'page-a', selectionToken: pending.selectionToken })
+	});
+	expect(apiSelect.status).toBe(200);
+	assertNoSocialOAuthSecrets(await apiSelect.text(), ['memory-page-a-token-value']);
+	const betaOverview = await getSocialOverview(betaActor, betaCtx);
+	expect(betaOverview.accounts.some((account) => account.handle === 'Page B')).toBe(false);
 });

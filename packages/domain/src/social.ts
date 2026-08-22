@@ -13,6 +13,7 @@ import {
 	assertActorOwnsContext,
 	completeSocialOAuthSchema,
 	createSocialPostSchema,
+	selectSocialOAuthPageSchema,
 	parseContract,
 	publishSocialPostSchema,
 	refreshSocialConnectionSchema,
@@ -63,13 +64,18 @@ import {
 	assertNotSimilar,
 	createPkcePair,
 	createSocialMediaGrant,
+	createSocialOAuthSelection,
 	createSocialOAuthState,
 	decryptSecret,
 	encryptSecret,
 	memorySocialProvider,
 	parseSocialAttributionContent,
+	parseSocialOAuthSelection,
+	SOCIAL_OAUTH_PAGE_PICK_COOKIE,
 	parseSocialMediaGrant,
+	requireOAuthSelection,
 	requireOAuthState,
+	SOCIAL_OAUTH_SELECTION_TTL_MS,
 	resetSocialProvider,
 	setSocialProvider,
 	similarityHash,
@@ -77,6 +83,7 @@ import {
 	socialMediaPublicUrl,
 	socialOAuthRedirectUri,
 	socialProvider,
+	type OAuthTokenSet,
 	type PublishMedia,
 	type SocialProvider
 } from '@vector/social';
@@ -156,7 +163,12 @@ export function resetDomainSocialProvider() {
 	resetSocialProvider();
 }
 
-export { memorySocialProvider };
+export {
+	memorySocialProvider,
+	parseSocialOAuthSelection,
+	SOCIAL_OAUTH_PAGE_PICK_COOKIE,
+	SOCIAL_OAUTH_SELECTION_TTL_MS
+};
 
 function publicConnection(row: {
 	id: string;
@@ -485,22 +497,112 @@ export async function completeSocialOAuth(
 	if (state.userId !== actor.userId) {
 		throw new ForbiddenError('Social OAuth state does not match this operator');
 	}
-	const tokens = await getDomainSocialProvider(state.platform).exchangeAuthorizationCode({
+	const exchanged = await getDomainSocialProvider(state.platform).exchangeAuthorizationCode({
 		code: parsed.code,
 		redirectUri: state.redirectUri,
 		codeVerifier: state.codeVerifier
 	});
+	if (exchanged.kind === 'select_page') {
+		if (state.platform !== 'facebook' && state.platform !== 'instagram') {
+			throw new ValidationError('Page selection is only used for Facebook and Instagram');
+		}
+		const selectionToken = createSocialOAuthSelection(env.TOKEN_ENCRYPTION_KEY, {
+			clientId: required.clientId,
+			organizationId: required.organizationId,
+			userId: actor.userId,
+			platform: state.platform,
+			userAccessToken: exchanged.userAccessToken,
+			expiresAt: exchanged.expiresAt?.getTime(),
+			required: state.required,
+			pages: exchanged.pages,
+			exp: Date.now() + SOCIAL_OAUTH_SELECTION_TTL_MS
+		});
+		await recordAudit({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			actorType: 'human',
+			actorId: actor.userId,
+			action: 'social.oauth.select_required',
+			entityType: 'social_connection',
+			requestId,
+			reason: state.platform
+		});
+		return {
+			status: 'select_page' as const,
+			platform: state.platform,
+			pages: exchanged.pages,
+			selectionToken
+		};
+	}
+	return persistOAuthConnection(
+		actor,
+		required,
+		state.platform,
+		exchanged.tokens,
+		state.required,
+		requestId
+	);
+}
+
+export async function selectSocialOAuthPage(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'social.manage');
+	consumeRateLimit(`social-oauth-select:${ctx.clientId}`, 10, 60_000);
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(selectSocialOAuthPageSchema, input);
+	const selection = requireOAuthSelection(env.TOKEN_ENCRYPTION_KEY, parsed.selectionToken);
+	if (
+		selection.clientId !== required.clientId ||
+		selection.organizationId !== required.organizationId
+	) {
+		throw new ForbiddenError('Social OAuth selection does not match this tenant');
+	}
+	if (selection.userId !== actor.userId) {
+		throw new ForbiddenError('Social OAuth selection does not match this operator');
+	}
+	if (!selection.pages.some((page) => page.pageId === parsed.pageId)) {
+		throw new ValidationError('Selected social Page is not in this OAuth install');
+	}
+	const tokens = await getDomainSocialProvider(selection.platform).resolveOAuthPage({
+		userAccessToken: selection.userAccessToken,
+		pageId: parsed.pageId
+	});
+	if (selection.expiresAt && !tokens.expiresAt) {
+		tokens.expiresAt = new Date(selection.expiresAt);
+	}
+	return persistOAuthConnection(
+		actor,
+		required,
+		selection.platform,
+		tokens,
+		selection.required,
+		requestId
+	);
+}
+
+async function persistOAuthConnection(
+	actor: Actor,
+	required: TenantContext,
+	platform: SocialPlatform,
+	tokens: OAuthTokenSet,
+	connectionRequired: boolean,
+	requestId: string
+) {
 	const stored = await upsertSocialConnection(
 		actor,
 		required,
 		{
-			platform: state.platform,
+			platform,
 			accessToken: tokens.accessToken,
 			refreshToken: tokens.refreshToken ?? null,
 			externalAccountId: tokens.externalAccountId,
 			handle: tokens.handle,
 			displayName: tokens.displayName,
-			required: state.required
+			required: connectionRequired
 		},
 		requestId
 	);
@@ -519,9 +621,9 @@ export async function completeSocialOAuth(
 		entityType: 'social_connection',
 		entityId: stored.connection.id,
 		requestId,
-		reason: state.platform
+		reason: platform
 	});
-	return stored;
+	return { status: 'connected' as const, ...stored };
 }
 
 export async function refreshSocialConnection(

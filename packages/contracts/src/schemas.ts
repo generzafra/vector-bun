@@ -359,6 +359,13 @@ export const completeSocialOAuthSchema = z
 	})
 	.strict();
 
+export const selectSocialOAuthPageSchema = z
+	.object({
+		pageId: z.string().trim().min(1).max(180),
+		selectionToken: z.string().trim().min(8).max(8000)
+	})
+	.strict();
+
 export const createSocialPostSchema = z
 	.object({
 		body: z.string().trim().min(1).max(2000),

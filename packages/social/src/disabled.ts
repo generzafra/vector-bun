@@ -5,7 +5,9 @@ import type {
 	ConnectionHealth,
 	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthExchangeResult,
 	OAuthTokenSet,
+	ResolveOAuthPageInput,
 	PostMetrics,
 	PublishRequest,
 	PublishResult,
@@ -39,8 +41,15 @@ export class DisabledSocialProvider implements SocialProvider {
 		throw new ProviderError(this.detail, 'SOCIAL_PUBLISHING_PAUSED');
 	}
 
-	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+	async exchangeAuthorizationCode(
+		input: ExchangeAuthorizationCodeInput
+	): Promise<OAuthExchangeResult> {
 		if (this.inner) return this.inner.exchangeAuthorizationCode(input);
+		throw new ProviderError(this.detail, 'SOCIAL_PUBLISHING_PAUSED');
+	}
+
+	async resolveOAuthPage(input: ResolveOAuthPageInput): Promise<OAuthTokenSet> {
+		if (this.inner) return this.inner.resolveOAuthPage(input);
 		throw new ProviderError(this.detail, 'SOCIAL_PUBLISHING_PAUSED');
 	}
 

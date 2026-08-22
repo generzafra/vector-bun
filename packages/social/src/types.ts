@@ -95,6 +95,44 @@ export type OAuthTokenSet = {
 	displayName: string;
 };
 
+export type OAuthPageChoice = {
+	pageId: string;
+	name: string;
+	instagramUserId?: string;
+	instagramHandle?: string;
+};
+
+export type OAuthConnectedResult = {
+	kind: 'connected';
+	tokens: OAuthTokenSet;
+};
+
+export type OAuthSelectPageResult = {
+	kind: 'select_page';
+	pages: OAuthPageChoice[];
+	userAccessToken: string;
+	expiresAt?: Date;
+};
+
+export type OAuthExchangeResult = OAuthConnectedResult | OAuthSelectPageResult;
+
+export type ResolveOAuthPageInput = {
+	userAccessToken: string;
+	pageId: string;
+};
+
+export function oauthConnected(tokens: OAuthTokenSet): OAuthConnectedResult {
+	return { kind: 'connected', tokens };
+}
+
+export function oauthSelectPage(input: {
+	pages: OAuthPageChoice[];
+	userAccessToken: string;
+	expiresAt?: Date;
+}): OAuthSelectPageResult {
+	return { kind: 'select_page', ...input };
+}
+
 export interface SocialProvider {
 	platform: SocialPlatform;
 	validateConnection(input: {
@@ -102,7 +140,8 @@ export interface SocialProvider {
 		externalAccountId: string;
 	}): Promise<ConnectionHealth>;
 	createAuthorizationUrl(request: AuthorizationRequest): string;
-	exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet>;
+	exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthExchangeResult>;
+	resolveOAuthPage(input: ResolveOAuthPageInput): Promise<OAuthTokenSet>;
 	publish(request: PublishRequest): Promise<PublishResult>;
 	schedule?(request: ScheduleRequest): Promise<ScheduleResult>;
 	fetchPostMetrics(request: MetricsRequest): Promise<PostMetrics>;
