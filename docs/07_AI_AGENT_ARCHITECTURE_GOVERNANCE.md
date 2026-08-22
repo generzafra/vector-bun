@@ -49,6 +49,6 @@ AI may recommend copy, page structure, and component variants. It may not write 
 
 Preferred path: recommendation → validated page/section schema → approved variant → approved tokens → renderer → unpublished draft → preview → separate publication approval.
 
-Phase 4 Slice 2 materializes approved funnel plans and copy onto a tenant-scoped `page_versions` draft only. Slice 3 reviews that draft on Funnel. Publication, email send, and domain activation stay human-operated and outside the intelligence decide path.
+Phase 4 Slice 2 materializes approved funnel plans and copy onto a tenant-scoped `page_versions` draft only. Slice 3 reviews that draft on Funnel. Slice 4 records denied tool calls and never executes SQL, shell, filesystem, HTTP, or secrets. Publication, email send, and domain activation stay human-operated and outside the intelligence decide path.
 
 New shared components enter the codebase through engineering review and tests, not a model dump. Public recommendations must respect brand, `docs/27`, accessibility, conversion, and approval policy. Control recommendation, activity, and intelligence surfaces use `docs/28` explainability patterns. `/intelligence` ships recommendation cards with finding, evidence, proposed action, impact, confidence, risk, cost, and required approval. Confidence is labeled explanatory and cannot approve or unpause.

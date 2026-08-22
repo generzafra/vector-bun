@@ -1,6 +1,6 @@
 # Phase 4 — Vector Intelligence
 
-**Status:** Slice 3 done — approved funnel/copy drafts are reviewed on Funnel. Intelligence decide still does not publish, send, or go live.  
+**Status:** Slice 4 done — Phase 4 exit met for typed, versioned, auditable, tenant-scoped, cost-attributed drafts. Tool calls are audited and denied. Intelligence still does not publish, send, or go live.  
 **Prerequisite:** Phase 3 exit met. Do not start until nurture can complete safely.
 
 ---
@@ -74,3 +74,13 @@ The current Funnel draft is attributed when it was created by an approved Intell
 - `getFunnel` returns `intelligenceDraft` only when the latest draft id matches a tenant-scoped `ai_runs.artifact_page_version_id`
 - Overview artifacts include `isCurrentFunnelDraft`
 - Control: Funnel status banner; Intelligence “Review on Funnel”
+
+## Slice 4 — Tool-call audit, deny by default (done)
+
+Any attempted tool invocation is written to tenant-scoped `ai_tool_calls` with `authorized: false` and then fails closed (`AI_TOOLS_DISABLED`). The provider `useTools` path is not called. SQL, shell, filesystem, HTTP, and secrets do not run. A successful Research/Copy/Analytics/Funnel run records no tool calls. Alpha cannot read or invoke a tool against a Beta run. Missing TenantContext cannot list tool calls. `/intelligence` shows the audit. There is no Control or API action that executes a tool.
+
+- Domain: `requestIntelligenceTool`
+- Repos: `insertAiToolCallForTenant`, `listAiToolCallsForTenant`
+- Control: Tool-call audit table
+
+Trigger.dev AI jobs and pgvector remain later. Do not start Phase 5 until this exit is accepted. Phase 8 owns Level 3+ execute.

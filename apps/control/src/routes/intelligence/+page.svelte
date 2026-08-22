@@ -258,6 +258,41 @@
 	</section>
 
 	<section>
+		<h2>Tool-call audit</h2>
+		<p>
+			Phase 4 agents cannot invoke SQL, shell, filesystem, HTTP, or secrets. Denied attempts are
+			recorded and never executed.
+		</p>
+		{#if overview.toolCalls.length === 0}
+			<EmptyState title="No tool calls for this client." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Tool</th>
+						<th>Authorized</th>
+						<th>Blocked by</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.toolCalls as call (call.id)}
+						<tr>
+							<td>{call.name}</td>
+							<td>
+								<StatusChip
+									label={call.authorized ? 'authorized' : 'denied'}
+									tone={call.authorized ? 'danger' : 'warning'}
+								/>
+							</td>
+							<td>{typeof call.output.blockedBy === 'string' ? call.output.blockedBy : '—'}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+	</section>
+
+	<section>
 		<h2>Cost ledger</h2>
 		{#if overview.costs.length === 0}
 			<EmptyState title="No cost events." />

@@ -284,6 +284,16 @@ export const pauseIntelligenceSchema = z
 	})
 	.strict();
 
+export const requestIntelligenceToolSchema = z
+	.object({
+		runId: z.string().uuid(),
+		name: z.string().trim().min(1).max(80),
+		input: z
+			.record(z.string(), z.union([z.string().max(400), z.number(), z.boolean(), z.null()]))
+			.optional()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

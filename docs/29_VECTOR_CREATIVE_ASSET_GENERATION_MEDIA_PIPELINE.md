@@ -1,4 +1,5 @@
 # VECTOR Creative Asset Generation & Media Pipeline
+
 ## AI Image, Video, Brand Asset, Funnel, Social, and Email Creative System
 
 **Project:** Vector — Autonomous Growth OS  
@@ -801,9 +802,9 @@ Create:
 
 ```ts
 interface ImageProvider {
-  generate(request: GenerateImageRequest): Promise<ImageGenerationResult>;
-  edit(request: EditImageRequest): Promise<ImageGenerationResult>;
-  generateVariants(request: VariantRequest): Promise<ImageGenerationResult[]>;
+	generate(request: GenerateImageRequest): Promise<ImageGenerationResult>;
+	edit(request: EditImageRequest): Promise<ImageGenerationResult>;
+	generateVariants(request: VariantRequest): Promise<ImageGenerationResult[]>;
 }
 ```
 
@@ -825,9 +826,9 @@ Create separately:
 
 ```ts
 interface VideoProvider {
-  generate(request: GenerateVideoRequest): Promise<VideoGenerationResult>;
-  imageToVideo(request: ImageToVideoRequest): Promise<VideoGenerationResult>;
-  edit?(request: EditVideoRequest): Promise<VideoGenerationResult>;
+	generate(request: GenerateVideoRequest): Promise<VideoGenerationResult>;
+	imageToVideo(request: ImageToVideoRequest): Promise<VideoGenerationResult>;
+	edit?(request: EditVideoRequest): Promise<VideoGenerationResult>;
 }
 ```
 

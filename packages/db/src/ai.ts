@@ -10,13 +10,15 @@ import {
 	aiFeedback,
 	aiMessages,
 	aiRuns,
+	aiToolCalls,
 	approvalDecisions,
 	approvalRequests,
 	pageVersions,
 	promptTemplates,
 	promptVersions,
 	type AiMessageContent,
-	type AiRunOutput
+	type AiRunOutput,
+	type AiToolPayload
 } from './schema';
 
 export function assertAiClient(ctx: TenantContext, clientId: string) {
@@ -466,6 +468,41 @@ export async function listAiFeedbackForTenant(ctx: TenantContext) {
 		.from(aiFeedback)
 		.where(eq(aiFeedback.clientId, required.clientId))
 		.orderBy(desc(aiFeedback.createdAt));
+}
+
+export async function insertAiToolCallForTenant(
+	ctx: TenantContext,
+	input: {
+		runId: string;
+		name: string;
+		input?: AiToolPayload;
+		output?: AiToolPayload;
+		authorized?: boolean;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(aiToolCalls)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			runId: input.runId,
+			name: input.name,
+			input: input.input ?? {},
+			output: input.output ?? {},
+			authorized: input.authorized ?? false
+		})
+		.returning();
+	return row;
+}
+
+export async function listAiToolCallsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(aiToolCalls)
+		.where(eq(aiToolCalls.clientId, required.clientId))
+		.orderBy(desc(aiToolCalls.createdAt));
 }
 
 export async function upsertPromptTemplate(key: string, name: string) {

@@ -27,6 +27,7 @@ import {
 	decideApprovalSchema,
 	parseContract,
 	pauseIntelligenceSchema,
+	requestIntelligenceToolSchema,
 	runIntelligenceSchema,
 	type TenantContext
 } from '@vector/contracts';
@@ -51,6 +52,7 @@ import {
 	insertAiDecisionForTenant,
 	insertAiFeedbackForTenant,
 	insertAiMessageForTenant,
+	insertAiToolCallForTenant,
 	insertAiRunForTenant,
 	insertApprovalDecisionForTenant,
 	insertApprovalRequestForTenant,
@@ -60,6 +62,7 @@ import {
 	listAiDecisionsForTenant,
 	listAiFeedbackForTenant,
 	listAiRunsForTenant,
+	listAiToolCallsForTenant,
 	listApprovalDecisionsForTenant,
 	listApprovalRequestsForTenant,
 	listClaimsForTenant,
@@ -91,7 +94,7 @@ type IntelligenceArtifact = {
 type IntelligenceActivity = {
 	id: string;
 	at: Date;
-	kind: 'run' | 'approval' | 'feedback' | 'artifact';
+	kind: 'run' | 'approval' | 'feedback' | 'artifact' | 'tool';
 	summary: string;
 	runId: string | null;
 	status: string | null;
@@ -258,6 +261,7 @@ function buildIntelligenceActivity(input: {
 	runs: Awaited<ReturnType<typeof listAiRunsForTenant>>;
 	approvalHistory: Awaited<ReturnType<typeof listApprovalDecisionsForTenant>>;
 	feedback: Awaited<ReturnType<typeof listAiFeedbackForTenant>>;
+	toolCalls: Awaited<ReturnType<typeof listAiToolCallsForTenant>>;
 }): IntelligenceActivity[] {
 	const items: IntelligenceActivity[] = [];
 	for (const run of input.runs) {
@@ -300,6 +304,18 @@ function buildIntelligenceActivity(input: {
 			status: String(row.rating)
 		});
 	}
+	for (const row of input.toolCalls) {
+		items.push({
+			id: `tool:${row.id}`,
+			at: row.createdAt,
+			kind: 'tool',
+			summary: row.authorized
+				? `Tool ${row.name} authorized`
+				: `Tool ${row.name} denied. Not executed.`,
+			runId: row.runId,
+			status: row.authorized ? 'authorized' : 'denied'
+		});
+	}
 	return items.sort((left, right) => right.at.getTime() - left.at.getTime()).slice(0, 20);
 }
 
@@ -315,6 +331,7 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 		approvals,
 		approvalHistory,
 		feedback,
+		toolCalls,
 		costs,
 		costTotal,
 		health,
@@ -326,6 +343,7 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 		listApprovalRequestsForTenant(required),
 		listApprovalDecisionsForTenant(required),
 		listAiFeedbackForTenant(required),
+		listAiToolCallsForTenant(required),
 		listAiCostEventsForTenant(required),
 		sumAiCostMicrosForTenant(required),
 		getDomainAIProvider().health(),
@@ -357,8 +375,9 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 		approvals,
 		approvalHistory,
 		feedback,
+		toolCalls,
 		artifacts,
-		activity: buildIntelligenceActivity({ runs, approvalHistory, feedback }),
+		activity: buildIntelligenceActivity({ runs, approvalHistory, feedback, toolCalls }),
 		costs,
 		costTotalMicros: costTotal,
 		costTotalLabel: formatCostUsd(costTotal)
@@ -648,6 +667,49 @@ export async function decideIntelligenceApproval(
 		artifact,
 		executed: false as const
 	};
+}
+
+export async function requestIntelligenceTool(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'ai.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(requestIntelligenceToolSchema, input);
+	const run = await getAiRunForTenant(required, parsed.runId);
+	if (!run) throw new NotFoundError('AI run not found');
+	const pagesBefore = await countPublishedPageVersionsForTenant(required);
+	const recorded = await insertAiToolCallForTenant(required, {
+		runId: run.id,
+		name: parsed.name,
+		input: parsed.input ?? {},
+		output: { blockedBy: 'phase4_tools_disabled' },
+		authorized: false
+	});
+	if ((await countPublishedPageVersionsForTenant(required)) !== pagesBefore) {
+		throw new ForbiddenError('Tool calls must not publish pages');
+	}
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'ai',
+		actorId: actor.userId,
+		action: 'ai.tool.denied',
+		entityType: 'ai_tool_call',
+		entityId: recorded.id,
+		requestId,
+		reason: 'phase4_tools_disabled'
+	});
+	logInfo('ai.tool.denied', {
+		clientId: required.clientId,
+		runId: run.id,
+		toolName: parsed.name,
+		authorized: false,
+		executed: false
+	});
+	throw new ProviderError('Production agents cannot invoke tools in Phase 4', 'AI_TOOLS_DISABLED');
 }
 
 export async function pauseIntelligence(

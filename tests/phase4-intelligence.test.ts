@@ -11,6 +11,7 @@ import {
 import { env } from '@vector/config';
 import {
 	ForbiddenError,
+	NotFoundError,
 	ProviderError,
 	TenantContextError,
 	ValidationError,
@@ -29,6 +30,7 @@ import {
 	listAiCostEventsForTenant,
 	listAiFeedbackForTenant,
 	listAiRunsForTenant,
+	listAiToolCallsForTenant,
 	listApprovalRequestsForTenant
 } from '@vector/db';
 import { isApprovedSectionType } from '@vector/funnel-engine';
@@ -40,6 +42,7 @@ import {
 	getIntelligenceOverview,
 	login,
 	pauseIntelligence,
+	requestIntelligenceTool,
 	resetDomainAIProvider,
 	resolveSession,
 	runIntelligence,
@@ -115,6 +118,7 @@ test('missing TenantContext cannot read AI records', () => {
 	expect(
 		getAiRunForPageVersionForTenant(null as never, '00000000-0000-4000-8000-000000000001')
 	).rejects.toBeInstanceOf(TenantContextError);
+	expect(listAiToolCallsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 });
 
 test('research run is typed, versioned, costed, and never executes', async () => {
@@ -199,6 +203,14 @@ test('missing ai.manage cannot run or decide', async () => {
 			ctx,
 			{ id: '00000000-0000-4000-8000-000000000001', decision: 'approved' },
 			'ai-cap-decide'
+		)
+	).rejects.toBeInstanceOf(ForbiddenError);
+	await expect(
+		requestIntelligenceTool(
+			actor,
+			ctx,
+			{ runId: '00000000-0000-4000-8000-000000000001', name: 'sql' },
+			'ai-cap-tool'
 		)
 	).rejects.toBeInstanceOf(ForbiddenError);
 });
@@ -572,6 +584,93 @@ test('compose after an intelligence draft clears Funnel intelligence attribution
 		overview.artifacts.find((row) => row.pageVersionId === decided.artifact?.pageVersionId)
 			?.isCurrentFunnelDraft
 	).toBe(false);
+});
+
+test('tool requests are audited, denied, and never execute', async () => {
+	setDomainAIProvider(memory);
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.4.30', 'ai-tool-deny');
+	const ctx = contextFor(actor, 'ai-tool-deny');
+	const pagesBefore = await countPublishedPageVersionsForTenant(ctx);
+	const sentBefore = await db
+		.select()
+		.from(emailMessages)
+		.where(eq(emailMessages.clientId, alpha.id));
+	const result = await runIntelligence(actor, ctx, { agentKey: 'analytics' }, 'ai-tool-deny');
+	expect(result.run.status).toBe('succeeded');
+	expect(memory.toolCallCount).toBe(0);
+	let error: unknown;
+	try {
+		await requestIntelligenceTool(
+			actor,
+			ctx,
+			{
+				runId: result.run.id,
+				name: 'sql',
+				input: { query: 'select * from clients' }
+			},
+			'ai-tool-deny-call'
+		);
+	} catch (caught) {
+		error = caught;
+	}
+	expect(error).toBeInstanceOf(ProviderError);
+	expect((error as ProviderError).code).toBe('AI_TOOLS_DISABLED');
+	expect(memory.toolCallCount).toBe(0);
+	expect(await countPublishedPageVersionsForTenant(ctx)).toBe(pagesBefore);
+	const sentAfter = await db
+		.select()
+		.from(emailMessages)
+		.where(eq(emailMessages.clientId, alpha.id));
+	expect(sentAfter.length).toBe(sentBefore.length);
+	const overview = await getIntelligenceOverview(actor, ctx);
+	const denied = overview.toolCalls.find((row) => row.runId === result.run.id);
+	expect(denied?.authorized).toBe(false);
+	expect(denied?.name).toBe('sql');
+	expect(denied?.output.blockedBy).toBe('phase4_tools_disabled');
+	expect(overview.activity.some((row) => row.kind === 'tool' && row.status === 'denied')).toBe(
+		true
+	);
+});
+
+test('alpha tool-call audit cannot be read as beta', async () => {
+	setDomainAIProvider(memory);
+	const { alpha, beta } = await seededClients();
+	const alphaActor = await adminOn(alpha.id, '10.0.4.31', 'ai-tool-iso');
+	const alphaCtx = contextFor(alphaActor, 'ai-tool-iso');
+	const betaActor = await adminOn(beta.id, '10.0.4.32', 'ai-tool-iso-beta');
+	const betaCtx = contextFor(betaActor, 'ai-tool-iso-beta');
+	const result = await runIntelligence(
+		alphaActor,
+		alphaCtx,
+		{ agentKey: 'research' },
+		'ai-tool-iso'
+	);
+	try {
+		await requestIntelligenceTool(
+			alphaActor,
+			alphaCtx,
+			{ runId: result.run.id, name: 'shell' },
+			'ai-tool-iso-call'
+		);
+	} catch {
+		// denied
+	}
+	const betaOverview = await getIntelligenceOverview(betaActor, betaCtx);
+	expect(betaOverview.toolCalls.every((row) => row.runId !== result.run.id)).toBe(true);
+	expect(JSON.stringify(betaOverview)).not.toContain(result.run.id);
+	let missing: unknown;
+	try {
+		await requestIntelligenceTool(
+			betaActor,
+			betaCtx,
+			{ runId: result.run.id, name: 'sql' },
+			'ai-tool-iso-hijack'
+		);
+	} catch (caught) {
+		missing = caught;
+	}
+	expect(missing).toBeInstanceOf(NotFoundError);
 });
 
 test('idempotent run keys do not double-charge', async () => {
