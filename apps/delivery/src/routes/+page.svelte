@@ -1,17 +1,31 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { publicPageMeta } from '@vector/funnel-engine';
 	import PageRenderer from '$lib/sections/PageRenderer.svelte';
 
 	let { data, form } = $props();
 	const tokens = $derived(data.document.theme.tokens);
 	const personality = $derived(data.document.theme.personality ?? 'corporate');
+	const meta = $derived(
+		publicPageMeta({
+			title: data.document.seo.title,
+			description: data.document.seo.description,
+			origin: page.url.origin,
+			domainKind: data.domainKind
+		})
+	);
 </script>
 
 <svelte:head>
-	<title>{data.document.seo.title}</title>
-	<meta name="description" content={data.document.seo.description} />
-	{#if data.document.seo.noindex || data.domainKind === 'preview'}
-		<meta name="robots" content="noindex, nofollow" />
+	<title>{meta.title}</title>
+	<meta name="description" content={meta.description} />
+	<meta name="robots" content={meta.robots} />
+	{#if meta.canonical}
+		<link rel="canonical" href={meta.canonical} />
 	{/if}
+	<meta property="og:title" content={meta.title} />
+	<meta property="og:description" content={meta.description} />
+	<meta name="twitter:card" content="summary" />
 </svelte:head>
 
 <div
@@ -24,11 +38,13 @@
 >
 	<a class="skip" href="#main">Skip to content</a>
 	<header class="top">
-		<p class="brand">{data.document.identity.displayName}</p>
-		<a class="cta" href="#lead">{data.document.narrative.primaryConversion}</a>
+		<nav aria-label="Page">
+			<p class="brand">{data.document.identity.displayName}</p>
+			<a class="cta" href="#lead">{data.document.narrative.primaryConversion}</a>
+		</nav>
 	</header>
 	<main id="main">
-		<PageRenderer document={data.document} {form} />
+		<PageRenderer document={data.document} {form} domainKind={data.domainKind} />
 	</main>
 	{#if data.domainKind === 'preview'}
 		<p class="preview-note">Private preview. Not indexed. Production email and social are off.</p>

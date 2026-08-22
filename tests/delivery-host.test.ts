@@ -1,6 +1,10 @@
 import { expect, test } from 'bun:test';
 import {
+	isDomainChallengePath,
 	isHealthPath,
+	isRobotsPath,
+	isSitemapPath,
+	isValidPublicHostname,
 	normalizeHostname,
 	previewHostname,
 	unknownHostPayload
@@ -27,4 +31,9 @@ test('hostname normalization strips port and rejects empty hosts', () => {
 	expect(previewHostname('beta', 'vector.maxglobalexpo.com')).toBe(
 		'preview-beta.vector.maxglobalexpo.com'
 	);
+	expect(isDomainChallengePath('/.well-known/vector-domain')).toBe(true);
+	expect(isRobotsPath('/robots.txt')).toBe(true);
+	expect(isSitemapPath('/sitemap.xml')).toBe(true);
+	expect(isValidPublicHostname('www.client.com')).toBe(true);
+	expect(isValidPublicHostname('preview-client.localhost')).toBe(false);
 });

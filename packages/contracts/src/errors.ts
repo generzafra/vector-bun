@@ -53,3 +53,10 @@ export class RateLimitError extends AppError {
 		this.name = 'RateLimitError';
 	}
 }
+
+export class ProviderError extends AppError {
+	constructor(message = 'Provider failed', code = 'PROVIDER_TEMPORARY_FAILURE') {
+		super(message, 502, code);
+		this.name = 'ProviderError';
+	}
+}

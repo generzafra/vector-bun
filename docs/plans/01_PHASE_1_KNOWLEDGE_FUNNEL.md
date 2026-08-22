@@ -1,6 +1,6 @@
 # Phase 1 — Knowledge and Funnel
 
-**Status:** In progress — knowledge, preview-funnel, and launch/readiness slices implemented. R2 and production domain activation remain.
+**Status:** Phase 1 exit met — knowledge, preview-funnel, launch/readiness, storage, production domain activation, and the MVP Frontend Release Gate.
 **Prerequisite:** Phase 0 exit met. Do not start until cross-tenant tests pass and Phase 0 CI deploy succeeds.
 
 ---
@@ -79,5 +79,38 @@ Operator tracks a tenant-scoped readiness checklist and launch state machine. Sa
 - Capabilities: `launch.read`, `launch.manage`
 - Control: `/launch`
 - `vector_ready` requires blocking items: brand identity/narrative, service, approved and prohibited claims, published preview
-- `launching` / `live` require an active production domain (not implemented yet; transitions fail closed)
+- `launching` / `live` require an active production domain; transitions fail closed until activation
 - Isolation: Alpha cannot read or transition Beta; launch events do not leak across tenants
+
+## Slice 4 — Brand asset storage (done)
+
+Operator uploads tenant-scoped brand assets through a `StorageProvider`. Local files are the default. Cloudflare R2 is used when R2 credentials are present. Same key pattern and validation for every client. No custom engineering.
+
+- Package: `packages/storage`
+- Table: `brand_assets`
+- Keys: `clients/{client_id}/brand/{purpose}/{id}-{filename}`
+- Validation: 2MB max, PNG/JPEG/WEBP/ICO, magic-byte check
+- Control: `/knowledge` asset list, upload, mediated preview at `/knowledge/asset/:id`
+- Readiness: `assets.uploaded` completes when the tenant has at least one brand asset
+- Isolation: Alpha cannot read, write, or download Beta objects; raw keys are not authorization
+
+## Slice 5 — Production domain activation (done)
+
+Operator submits a tenant-scoped production or redirect hostname, verifies ownership through Delivery `/.well-known/vector-domain`, then activates it on the shared Delivery Plane. Same path for every client. No custom engineering. Preview stays `noindex` and is not the production identity.
+
+- Table: `client_domains` verification token, verified/activated timestamps
+- Capabilities: `pages.read`, `pages.manage`
+- Control: `/launch` production domain section
+- Delivery: hostname lookup, HTTP challenge, production robots/sitemap, redirect 308
+- Readiness: `domain.production` completes when a production hostname is active
+- Isolation: Alpha cannot read or activate Beta hostnames; unknown hosts 404 with no tenant data; first-come hostname reservation does not leak the other tenant
+
+## Slice 6 — Frontend Release Gate, MVP set (done)
+
+The seeded preview funnels meet the Phase 1 subset of `docs/27` §88: tokens, accessible nav/forms, hero/proof/CTA, mobile-first, metadata. Same renderer for every client. Client tokens and personality keep Alpha and Beta distinct. No cloned reference sites. No Control restyle.
+
+- Preview: `noindex`, no public canonical
+- Production: indexable canonical from the request origin
+- Lead form: labels, preserved values, error / sending / success
+- Mobile: overflow clipped, wrap, 44px-class targets, reduced motion
+- Out of this slice: analytics events (Phase 2), consent UI (Phase 3), structured data (Phase 6)

@@ -2,6 +2,29 @@ export function isHealthPath(pathname: string) {
 	return pathname === '/health' || pathname === '/health/';
 }
 
+export function isDomainChallengePath(pathname: string) {
+	return pathname === '/.well-known/vector-domain' || pathname === '/.well-known/vector-domain/';
+}
+
+export function isRobotsPath(pathname: string) {
+	return pathname === '/robots.txt';
+}
+
+export function isSitemapPath(pathname: string) {
+	return pathname === '/sitemap.xml';
+}
+
+export function isPreviewReservedHostname(hostname: string) {
+	return hostname.startsWith('preview-');
+}
+
+const HOSTNAME_PATTERN =
+	/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+
+export function isValidPublicHostname(hostname: string) {
+	return HOSTNAME_PATTERN.test(hostname) && !isPreviewReservedHostname(hostname);
+}
+
 export function normalizeHostname(host: string | null | undefined): string | null {
 	if (!host) return null;
 	let value = host.trim().toLowerCase();

@@ -20,6 +20,8 @@ Client knowledge, assets, funnel engine, custom domains, forms, client readiness
 
 **Exit:** one client can publish a production lead funnel, including a private preview hostname and tracked launch state. That funnel must meet the Frontend Release Gate in `docs/27` for the MVP component set (tokens, accessible nav/forms, hero/proof/CTA, mobile-first, metadata).
 
+**Status (22 August 2026):** Phase 1 exit is met for the MVP component set. Seeded Alpha/Beta publish to private preview hosts with tracked launch state. Delivery uses client tokens, skip-link navigation, labeled lead form states (error / loading / success), hero/proof/CTA/services, mobile overflow and reduced-motion rules, and hostname-aware metadata (preview `noindex`, production canonical). Analytics events and structured data stay in later phases. Control was not restyled.
+
 ## Phase 2
 
 Plan: [plans/02_PHASE_2_LEADS_ANALYTICS.md](plans/02_PHASE_2_LEADS_ANALYTICS.md).

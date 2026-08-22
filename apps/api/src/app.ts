@@ -2,7 +2,7 @@ import { Hono, type Context } from 'hono';
 import { getCookie, setCookie } from 'hono/cookie';
 import { assertCsrf, cookieName, sessionCookieOptions } from '@vector/auth';
 import { env } from '@vector/config';
-import { AppError, ForbiddenError, UnauthorizedError } from '@vector/contracts';
+import { AppError, ForbiddenError, UnauthorizedError, ValidationError } from '@vector/contracts';
 import {
 	actorCan,
 	contextFor,
@@ -10,20 +10,28 @@ import {
 	addOffer,
 	addService,
 	createClient,
+	getBrandAssetBytes,
 	getClient,
 	completeReadinessItem,
+	activateClientDomain,
 	composeFunnel,
+	disableClientDomain,
 	getFunnel,
+	listClientDomains,
+	submitClientDomain,
+	verifyClientDomain,
 	getKnowledge,
 	getLaunch,
 	listClientsForActor,
 	login,
 	publishFunnel,
 	recalculateReadiness,
+	removeBrandAsset,
 	resolveSession,
 	saveBrand,
 	transitionLaunch,
-	updateClientSettings
+	updateClientSettings,
+	uploadBrandAsset
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
 
@@ -157,6 +165,60 @@ app.post('/v1/knowledge/claims', async (c) => {
 	return c.json({ requestId, data: row }, 201);
 });
 
+app.post('/v1/knowledge/assets', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	const form = await c.req.formData();
+	assertCsrf(session.csrf, c.req.header('x-csrf-token') ?? String(form.get('_csrf') ?? ''));
+	actorCan(session, 'knowledge.manage');
+	const file = form.get('file');
+	if (!(file instanceof File)) throw new ValidationError('File is required');
+	const ctx = contextFor(session, requestId);
+	const row = await uploadBrandAsset(
+		session,
+		ctx,
+		{
+			purpose: String(form.get('purpose') ?? ''),
+			filename: file.name,
+			declaredType: file.type,
+			bytes: new Uint8Array(await file.arrayBuffer())
+		},
+		requestId
+	);
+	const { storageKey: _storageKey, ...safe } = row;
+	return c.json({ requestId, data: safe }, 201);
+});
+
+app.get('/v1/knowledge/assets/:id', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'knowledge.read');
+	const ctx = contextFor(session, requestId);
+	const result = await getBrandAssetBytes(session, ctx, c.req.param('id'));
+	const body = new ArrayBuffer(result.bytes.byteLength);
+	new Uint8Array(body).set(result.bytes);
+	return new Response(body, {
+		headers: {
+			'content-type': result.mimeType,
+			'cache-control': 'private, no-store',
+			'x-request-id': requestId
+		}
+	});
+});
+
+app.delete('/v1/knowledge/assets/:id', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'knowledge.manage');
+	const ctx = contextFor(session, requestId);
+	await removeBrandAsset(session, ctx, c.req.param('id'), requestId);
+	return c.json({ requestId, data: { ok: true } });
+});
+
 app.get('/v1/funnel', async (c) => {
 	const requestId = createRequestId();
 	const session = await requireSession(c);
@@ -184,6 +246,71 @@ app.post('/v1/funnel/compose', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const row = await composeFunnel(session, ctx, requestId);
 	return c.json({ requestId, data: row }, 201);
+});
+
+app.get('/v1/domains', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'pages.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await listClientDomains(session, ctx) });
+});
+
+app.get('/v1/domains/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'pages.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await listClientDomains(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/domains', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await submitClientDomain(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/domains/:id/verify', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await verifyClientDomain(session, ctx, c.req.param('id'), requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.post('/v1/domains/:id/activate', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await activateClientDomain(session, ctx, c.req.param('id'), requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.post('/v1/domains/:id/disable', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await disableClientDomain(session, ctx, c.req.param('id'), requestId);
+	return c.json({ requestId, data: row });
 });
 
 app.post('/v1/funnel/publish', async (c) => {

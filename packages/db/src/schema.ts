@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
 	boolean,
 	index,
@@ -227,6 +228,41 @@ export const brands = pgTable(
 	]
 );
 
+export const brandAssetPurpose = pgEnum('brand_asset_purpose', [
+	'logo',
+	'mark',
+	'og',
+	'favicon',
+	'other'
+]);
+
+export const brandAssets = pgTable(
+	'brand_assets',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		storageKey: text('storage_key').notNull(),
+		purpose: brandAssetPurpose('purpose').notNull(),
+		originalFilename: text('original_filename').notNull(),
+		mimeType: text('mime_type').notNull(),
+		sizeBytes: integer('size_bytes').notNull(),
+		checksum: text('checksum').notNull(),
+		createdBy: text('created_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('brand_assets_client_key_idx').on(t.clientId, t.storageKey),
+		index('brand_assets_client_idx').on(t.clientId),
+		index('brand_assets_org_idx').on(t.organizationId)
+	]
+);
+
 export const services = pgTable(
 	'services',
 	{
@@ -309,11 +345,16 @@ export const clientDomains = pgTable(
 		kind: domainKind('kind').notNull(),
 		status: domainStatus('status').notNull().default('pending'),
 		isCanonical: boolean('is_canonical').notNull().default(true),
+		verificationToken: text('verification_token'),
+		verifiedAt: timestamp('verified_at', { withTimezone: true }),
+		activatedAt: timestamp('activated_at', { withTimezone: true }),
 		createdAt: createdAt(),
 		updatedAt: updatedAt()
 	},
 	(t) => [
-		uniqueIndex('client_domains_hostname_idx').on(t.hostname),
+		uniqueIndex('client_domains_hostname_live_idx')
+			.on(t.hostname)
+			.where(sql`${t.status} <> 'disabled'`),
 		index('client_domains_client_idx').on(t.clientId)
 	]
 );

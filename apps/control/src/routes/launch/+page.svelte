@@ -1,6 +1,10 @@
 <script lang="ts">
 	let { data, form } = $props();
 	const canManage = $derived(data.permissions.includes('launch.manage'));
+	const canManageDomains = $derived(data.permissions.includes('pages.manage'));
+	const managedDomains = $derived(
+		data.domains.filter((domain) => domain.kind === 'production' || domain.kind === 'redirect')
+	);
 	const clocks = $derived(
 		data.launch
 			? [
@@ -24,7 +28,8 @@
 <h1>Launch</h1>
 <p>
 	Track readiness and launch state for the active client. The same checklist and states apply to
-	every client. Clock fields are recorded. A 24-hour SLA is not measured in this slice.
+	every client. Clock fields are recorded. A 24-hour SLA is not measured in this slice. Preview
+	stays private. Production hostnames are verified, then activated on the shared Delivery Plane.
 </p>
 
 {#if form?.error}
@@ -36,6 +41,81 @@
 {:else if !data.launch}
 	<p class="err">Launch could not be loaded.</p>
 {:else}
+	<section>
+		<h2>Production domain</h2>
+		<p>
+			Submit the client hostname, point DNS at Delivery, then verify and activate. HTTPS is issued
+			at the edge after DNS is live. Preview remains noindex.
+		</p>
+		{#if managedDomains.length === 0}
+			<p>No production or redirect hostname yet.</p>
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Hostname</th>
+						<th>Kind</th>
+						<th>Status</th>
+						<th>Token</th>
+						{#if canManageDomains}<th></th>{/if}
+					</tr>
+				</thead>
+				<tbody>
+					{#each managedDomains as domain (domain.id)}
+						<tr>
+							<td>{domain.hostname}</td>
+							<td>{domain.kind}</td>
+							<td>{domain.status}</td>
+							<td><code>{domain.verificationToken ?? '—'}</code></td>
+							{#if canManageDomains}
+								<td>
+									{#if domain.status === 'pending'}
+										<form method="post" action="?/verifyDomain">
+											<input type="hidden" name="_csrf" value={data.csrf} />
+											<input type="hidden" name="id" value={domain.id} />
+											<button type="submit">Verify</button>
+										</form>
+									{/if}
+									{#if domain.status === 'verified'}
+										<form method="post" action="?/activateDomain">
+											<input type="hidden" name="_csrf" value={data.csrf} />
+											<input type="hidden" name="id" value={domain.id} />
+											<button type="submit">Activate</button>
+										</form>
+									{/if}
+									{#if domain.status !== 'disabled'}
+										<form method="post" action="?/disableDomain">
+											<input type="hidden" name="_csrf" value={data.csrf} />
+											<input type="hidden" name="id" value={domain.id} />
+											<button type="submit">Disable</button>
+										</form>
+									{/if}
+								</td>
+							{/if}
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+		{#if canManageDomains}
+			<form class="wide" method="post" action="?/submitDomain">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Hostname
+					<input name="hostname" required placeholder="www.client.com" />
+				</label>
+				<label>
+					Kind
+					<select name="kind">
+						<option value="production">production</option>
+						<option value="redirect">redirect</option>
+					</select>
+				</label>
+				<button type="submit">Submit hostname</button>
+			</form>
+		{/if}
+	</section>
+
 	<section>
 		<h2>Readiness</h2>
 		<p>Score: {data.launch.readiness.scorePercent}%</p>

@@ -104,6 +104,35 @@ export const knowledgeClientIdSchema = z
 	})
 	.strict();
 
+export const ASSET_PURPOSES = ['logo', 'mark', 'og', 'favicon', 'other'] as const;
+
+export const uploadBrandAssetSchema = z
+	.object({
+		purpose: z.enum(ASSET_PURPOSES)
+	})
+	.strict();
+
+export const brandAssetIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
+export const DOMAIN_KINDS = ['production', 'redirect'] as const;
+
+export const submitClientDomainSchema = z
+	.object({
+		hostname: z.string().min(3).max(253),
+		kind: z.enum(DOMAIN_KINDS)
+	})
+	.strict();
+
+export const clientDomainIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

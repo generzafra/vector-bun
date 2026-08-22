@@ -51,7 +51,13 @@ const schema = z.object({
 	SEED_ADMIN_EMAIL: z.string().email().default('admin@vector.test'),
 	SEED_ADMIN_PASSWORD: z.string().min(10).default('ChangeMeNow!vector'),
 	SEED_USER_A_EMAIL: z.string().email().default('usera@vector.test'),
-	SEED_USER_A_PASSWORD: z.string().min(10).default('ChangeMeNow!vector-a')
+	SEED_USER_A_PASSWORD: z.string().min(10).default('ChangeMeNow!vector-a'),
+	STORAGE_LOCAL_DIR: z.string().min(1).default('.data/storage'),
+	R2_ACCOUNT_ID: z.string().optional(),
+	R2_ACCESS_KEY_ID: z.string().optional(),
+	R2_SECRET_ACCESS_KEY: z.string().optional(),
+	R2_BUCKET: z.string().optional(),
+	R2_ENDPOINT: z.string().optional()
 });
 
 export const isProd = process.env.NODE_ENV === 'production';
@@ -77,5 +83,15 @@ export const env = schema.parse({
 	SEED_ADMIN_EMAIL: process.env.SEED_ADMIN_EMAIL,
 	SEED_ADMIN_PASSWORD: process.env.SEED_ADMIN_PASSWORD,
 	SEED_USER_A_EMAIL: process.env.SEED_USER_A_EMAIL,
-	SEED_USER_A_PASSWORD: process.env.SEED_USER_A_PASSWORD
+	SEED_USER_A_PASSWORD: process.env.SEED_USER_A_PASSWORD,
+	STORAGE_LOCAL_DIR: process.env.STORAGE_LOCAL_DIR,
+	R2_ACCOUNT_ID: emptyToUndefined(process.env.R2_ACCOUNT_ID),
+	R2_ACCESS_KEY_ID: emptyToUndefined(process.env.R2_ACCESS_KEY_ID),
+	R2_SECRET_ACCESS_KEY: emptyToUndefined(process.env.R2_SECRET_ACCESS_KEY),
+	R2_BUCKET: emptyToUndefined(process.env.R2_BUCKET),
+	R2_ENDPOINT: emptyToUndefined(process.env.R2_ENDPOINT)
 });
+
+function emptyToUndefined(value: string | undefined) {
+	return value && value.trim() ? value : undefined;
+}

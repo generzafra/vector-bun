@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageDocument } from '@vector/funnel-engine';
+	import type { LeadFormState } from '$lib/lead-form';
 	import Cta from './Cta.svelte';
 	import Faq from './Faq.svelte';
 	import HeroMinimal from './HeroMinimal.svelte';
@@ -11,10 +12,12 @@
 
 	let {
 		document,
-		form
+		form,
+		domainKind = 'preview'
 	}: {
 		document: PageDocument;
-		form?: { accepted?: boolean; error?: string } | null;
+		form?: LeadFormState;
+		domainKind?: 'preview' | 'production' | 'redirect';
 	} = $props();
 </script>
 
@@ -34,6 +37,6 @@
 	{:else if section.type === 'faq'}
 		<Faq {section} />
 	{:else if section.type === 'lead-form'}
-		<LeadForm {section} {form} />
+		<LeadForm {section} {form} {domainKind} />
 	{/if}
 {/each}

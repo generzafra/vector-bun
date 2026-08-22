@@ -29,6 +29,20 @@
 			"when": 1755870000000,
 			"tag": "0003_phase1_launch",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1755880000000,
+			"tag": "0004_phase1_storage",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1755890000000,
+			"tag": "0005_phase1_domains",
+			"breakpoints": true
 		}
 	]
 }

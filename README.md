@@ -34,6 +34,6 @@ Seed accounts (see `.env.example`):
 - `admin@vector.test` — org-wide MGE Super Admin
 - `usera@vector.test` — Client Admin on Alpha only
 
-Control signs in at `http://localhost:5183/login`. After seed, preview funnels are on `http://preview-alpha.localhost:5184` and `http://preview-beta.localhost:5184` (`bun run dev:delivery`). Unknown hosts fail closed as 404. Launch readiness lives at `/launch`; Vector 24 is not measured yet.
+Control signs in at `http://localhost:5183/login`. After seed, preview funnels are on `http://preview-alpha.localhost:5184` and `http://preview-beta.localhost:5184` (`bun run dev:delivery`). Unknown hosts fail closed as 404. Launch readiness and production domain activation live at `/launch`; Vector 24 is not measured yet. Brand assets upload on `/knowledge` and default to `.data/storage` until R2 env vars are set. Phase 1 public pages meet the `docs/27` MVP Frontend Release Gate (tokens, nav/forms, hero/proof/CTA, mobile, metadata).
 
 Format with `bun run format`. Check with `bun run format:check`.

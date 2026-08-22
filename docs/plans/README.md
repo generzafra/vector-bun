@@ -8,7 +8,7 @@ These files turn the roadmap into Cursor-ready slices. Charters in `/docs` still
 
 Do not implement the entire roadmap in one change. Do not start a later phase until the prior exit gate is met.
 
-Phase 0 exit is met. Next implementation slice is [01_PHASE_1_KNOWLEDGE_FUNNEL.md](01_PHASE_1_KNOWLEDGE_FUNNEL.md). Public frontend and funnel work in that phase is governed by [../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md](../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md).
+Phase 0 and Phase 1 exits are met. Next implementation slice is [02_PHASE_2_LEADS_ANALYTICS.md](02_PHASE_2_LEADS_ANALYTICS.md). Public frontend and funnel work remains governed by [../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md](../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md). Each later phase applies the Frontend Release Gate only to the public surface it ships.
 
 | Plan                                                             | Phase                | Depth   |
 | ---------------------------------------------------------------- | -------------------- | ------- |

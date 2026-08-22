@@ -16,6 +16,7 @@ import {
 	deleteServiceForTenant,
 	getBrandForTenant,
 	getServiceForTenant,
+	listBrandAssetsForTenant,
 	insertClaimForTenant,
 	insertOfferForTenant,
 	insertServiceForTenant,
@@ -31,13 +32,20 @@ export async function getKnowledge(actor: Actor, ctx: TenantContext, clientId?: 
 	requireCapability(actor.permissions, 'knowledge.read');
 	const required = assertActorOwnsContext(actor, ctx);
 	if (clientId) assertKnowledgeClient(required, clientId);
-	const [brand, services, offers, claims] = await Promise.all([
+	const [brand, services, offers, claims, assets] = await Promise.all([
 		getBrandForTenant(required),
 		listServicesForTenant(required),
 		listOffersForTenant(required),
-		listClaimsForTenant(required)
+		listClaimsForTenant(required),
+		listBrandAssetsForTenant(required)
 	]);
-	return { brand, services, offers, claims };
+	return {
+		brand,
+		services,
+		offers,
+		claims,
+		assets: assets.map(({ storageKey: _storageKey, ...asset }) => asset)
+	};
 }
 
 export async function saveBrand(

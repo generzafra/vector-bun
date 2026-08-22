@@ -4,3 +4,5 @@ export * from './repos';
 export * from './knowledge';
 export * from './pages';
 export * from './launch';
+export * from './assets';
+export * from './domains';

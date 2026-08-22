@@ -1,0 +1,53 @@
+import { ValidationError } from '@vector/contracts';
+
+export const ASSET_PURPOSES = ['logo', 'mark', 'og', 'favicon', 'other'] as const;
+export type AssetPurpose = (typeof ASSET_PURPOSES)[number];
+
+export const MAX_ASSET_BYTES = 2 * 1024 * 1024;
+
+const ALLOWED = {
+	'image/png': { ext: ['png'], magic: (b: Uint8Array) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 },
+	'image/jpeg': { ext: ['jpg', 'jpeg'], magic: (b: Uint8Array) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+	'image/webp': {
+		ext: ['webp'],
+		magic: (b: Uint8Array) =>
+			b[0] === 0x52 &&
+			b[1] === 0x49 &&
+			b[2] === 0x46 &&
+			b[3] === 0x46 &&
+			b[8] === 0x57 &&
+			b[9] === 0x45 &&
+			b[10] === 0x42 &&
+			b[11] === 0x50
+	},
+	'image/x-icon': { ext: ['ico'], magic: (b: Uint8Array) => b[0] === 0x00 && b[1] === 0x00 && b[2] === 0x01 && b[3] === 0x00 }
+} as const;
+
+export type AllowedAssetMime = keyof typeof ALLOWED;
+
+export function inspectUpload(input: {
+	filename: string;
+	declaredType: string;
+	bytes: Uint8Array;
+}) {
+	if (input.bytes.byteLength === 0) throw new ValidationError('File is empty');
+	if (input.bytes.byteLength > MAX_ASSET_BYTES) {
+		throw new ValidationError('File exceeds the 2MB brand asset limit');
+	}
+	const mime = normalizeMime(input.declaredType);
+	const rule = ALLOWED[mime];
+	if (!rule) throw new ValidationError('Only PNG, JPEG, WEBP, and ICO brand assets are allowed');
+	if (!rule.magic(input.bytes)) throw new ValidationError('File contents do not match the declared type');
+	const ext = (input.filename.split('.').pop() ?? '').toLowerCase();
+	if (ext && !(rule.ext as readonly string[]).includes(ext)) {
+		throw new ValidationError('File extension does not match the contents');
+	}
+	return { mime, sizeBytes: input.bytes.byteLength };
+}
+
+function normalizeMime(value: string): AllowedAssetMime {
+	const raw = value.toLowerCase().split(';')[0]?.trim() ?? '';
+	if (raw === 'image/jpg') return 'image/jpeg';
+	if (raw === 'image/ico' || raw === 'image/vnd.microsoft.icon') return 'image/x-icon';
+	return raw as AllowedAssetMime;
+}

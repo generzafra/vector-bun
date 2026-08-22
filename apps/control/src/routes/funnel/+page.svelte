@@ -34,6 +34,14 @@
 		{:else if data.funnel.previewUrl}
 			<p>Preview URL after publish: {data.funnel.previewUrl}</p>
 		{/if}
+		{#if data.funnel.productionUrl}
+			<p>
+				Production:
+				<a href={data.funnel.productionUrl}>{data.funnel.productionUrl}</a>
+			</p>
+		{:else}
+			<p>Production hostname is activated on Launch.</p>
+		{/if}
 	</section>
 
 	{#if canManage}

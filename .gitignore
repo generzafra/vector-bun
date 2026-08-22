@@ -36,6 +36,7 @@ logs/
 
 # Local data
 /storage
+.data/
 /backups
 *.sqlite
 *.sqlite3

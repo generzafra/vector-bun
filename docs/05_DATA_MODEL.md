@@ -19,12 +19,13 @@ Phase 1 knowledge (tenant-owned, `client_id` required):
 
 ```text
 brands
+brand_assets
 services
 offers
 claims
 ```
 
-`brands` is one row per client: audience, offer, conversions, personality, and design tokens. Claims store approved and prohibited statements. Money on offers is integer minor units plus currency.
+`brands` is one row per client: audience, offer, conversions, personality, and design tokens. `brand_assets` stores metadata only; bytes live behind `StorageProvider` under `clients/{client_id}/brand/...`. Raw storage keys are not authorization. Claims store approved and prohibited statements. Money on offers is integer minor units plus currency.
 
 Phase 1 funnel (tenant-owned, `client_id` required):
 
@@ -36,7 +37,7 @@ page_versions
 client_domains
 ```
 
-`page_versions` are immutable after `published`. Compose inserts a new draft; publish copies that draft into a new published row and points `pages.published_version_id` at it. `client_domains.hostname` is globally unique. Hostname lookup is bootstrap only; page reads after that require TenantContext. Preview hostnames use `preview-{client-slug}.{DELIVERY_PREVIEW_PARENT_HOST}` and stay `noindex` until a later production domain slice.
+`page_versions` are immutable after `published`. Compose inserts a new draft; publish copies that draft into a new published row and points `pages.published_version_id` at it. Live `client_domains.hostname` values are globally unique (`status <> disabled`). Hostname lookup is bootstrap only; page reads after that require TenantContext. Preview hostnames use `preview-{client-slug}.{DELIVERY_PREVIEW_PARENT_HOST}` and stay `noindex`. Production hostnames are submitted, verified via `/.well-known/vector-domain`, then activated. Redirect hostnames 308 to the active canonical production host.
 
 Phase 1 launch (tenant-owned, `client_id` required): the same readiness catalog and launch state machine for every client. Clock fields are stored. A 24-hour SLA is not computed or displayed. `vector_ready` requires blocking items only (knowledge + published preview). `launching` and `live` stay fail-closed until a production domain is active.
 

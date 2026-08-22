@@ -14,6 +14,7 @@ import {
 	getLatestDraftForTenant,
 	getLeadFunnelForTenant,
 	getPreviewDomainForTenant,
+	getProductionDomainForTenant,
 	getPublishedHomeForTenant,
 	getSiteForTenant,
 	listClaimsForTenant,
@@ -36,13 +37,14 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 	requireCapability(actor.permissions, 'pages.read');
 	const required = assertActorOwnsContext(actor, ctx);
 	if (clientId) assertPageClient(required, clientId);
-	const [site, funnel, page, draft, published, domain] = await Promise.all([
+	const [site, funnel, page, draft, published, domain, production] = await Promise.all([
 		getSiteForTenant(required),
 		getLeadFunnelForTenant(required),
 		getHomePageForTenant(required),
 		getLatestDraftForTenant(required),
 		getPublishedHomeForTenant(required),
-		getPreviewDomainForTenant(required)
+		getPreviewDomainForTenant(required),
+		getProductionDomainForTenant(required)
 	]);
 	const hostname = domain?.hostname ?? null;
 	return {
@@ -52,8 +54,11 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 		draft,
 		published: published?.version ?? null,
 		domain,
+		production,
 		previewHostname: hostname,
-		previewUrl: hostname ? previewOrigin(hostname, env.DELIVERY_ORIGIN) : null
+		previewUrl: hostname ? previewOrigin(hostname, env.DELIVERY_ORIGIN) : null,
+		productionHostname: production?.hostname ?? null,
+		productionUrl: production ? previewOrigin(production.hostname, env.DELIVERY_ORIGIN) : null
 	};
 }
 

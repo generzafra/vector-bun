@@ -35,7 +35,16 @@ export const ALLOWED_LAUNCH_TRANSITIONS: Record<LaunchState, LaunchState[]> = {
 	launching: ['live', 'launch_failed', 'paused'],
 	live: ['paused'],
 	launch_failed: ['onboarding', 'generating', 'paused'],
-	paused: ['onboarding', 'blocked', 'vector_ready', 'generating', 'qa', 'awaiting_client_approval', 'awaiting_domain', 'launching']
+	paused: [
+		'onboarding',
+		'blocked',
+		'vector_ready',
+		'generating',
+		'qa',
+		'awaiting_client_approval',
+		'awaiting_domain',
+		'launching'
+	]
 };
 
 export const LIVE_REQUIRED_ITEM_KEYS = ['domain.production'] as const;
@@ -165,9 +174,9 @@ export const READINESS_CATALOG: ReadinessCatalogItem[] = [
 	}
 ];
 
-export const OPERATOR_READINESS_KEYS = READINESS_CATALOG.filter((item) => item.source === 'operator').map(
-	(item) => item.key
-) as [string, ...string[]];
+export const OPERATOR_READINESS_KEYS = READINESS_CATALOG.filter(
+	(item) => item.source === 'operator'
+).map((item) => item.key) as [string, ...string[]];
 
 export const transitionLaunchSchema = z
 	.object({

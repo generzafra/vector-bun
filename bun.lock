@@ -11,6 +11,7 @@
         "@vector/db": "workspace:*",
         "@vector/domain": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
+        "@vector/storage": "workspace:*",
         "drizzle-orm": "^0.44.5",
       },
       "devDependencies": {
@@ -115,6 +116,7 @@
         "@vector/db": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
         "@vector/observability": "workspace:*",
+        "@vector/storage": "workspace:*",
         "drizzle-orm": "^0.44.5",
       },
     },
@@ -127,6 +129,14 @@
     },
     "packages/observability": {
       "name": "@vector/observability",
+    },
+    "packages/storage": {
+      "name": "@vector/storage",
+      "dependencies": {
+        "@vector/config": "workspace:*",
+        "@vector/contracts": "workspace:*",
+        "@vector/observability": "workspace:*",
+      },
     },
     "packages/ui": {
       "name": "@vector/ui",
@@ -308,6 +318,8 @@
     "@vector/funnel-engine": ["@vector/funnel-engine@workspace:packages/funnel-engine"],
 
     "@vector/observability": ["@vector/observability@workspace:packages/observability"],
+
+    "@vector/storage": ["@vector/storage@workspace:packages/storage"],
 
     "@vector/ui": ["@vector/ui@workspace:packages/ui"],
 

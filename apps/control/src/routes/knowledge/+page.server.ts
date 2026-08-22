@@ -6,10 +6,12 @@ import {
 	addService,
 	contextFor,
 	getKnowledge,
+	removeBrandAsset,
 	removeClaim,
 	removeOffer,
 	removeService,
-	saveBrand
+	saveBrand,
+	uploadBrandAsset
 } from '@vector/domain';
 
 export async function load({ locals }) {
@@ -165,6 +167,47 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not remove claim' });
+		}
+	},
+	uploadAsset: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		const file = form.get('file');
+		if (!(file instanceof File) || file.size === 0) return fail(400, { error: 'Choose a file' });
+		try {
+			await uploadBrandAsset(
+				session,
+				contextFor(session, locals.requestId),
+				{
+					purpose: String(form.get('purpose') ?? ''),
+					filename: file.name,
+					declaredType: file.type || 'application/octet-stream',
+					bytes: new Uint8Array(await file.arrayBuffer())
+				},
+				locals.requestId
+			);
+			return { ok: true };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not upload asset' });
+		}
+	},
+	removeAsset: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			await removeBrandAsset(
+				session,
+				contextFor(session, locals.requestId),
+				String(form.get('id') ?? ''),
+				locals.requestId
+			);
+			return { ok: true };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not remove asset' });
 		}
 	}
 };

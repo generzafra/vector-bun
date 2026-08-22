@@ -24,6 +24,7 @@ import {
 	getReadinessForTenant,
 	insertLaunchApprovalForTenant,
 	insertLaunchEventForTenant,
+	listBrandAssetsForTenant,
 	listClaimsForTenant,
 	listLaunchApprovalsForTenant,
 	listLaunchBlocksForTenant,
@@ -92,6 +93,7 @@ async function evaluateAutomatic(ctx: TenantContext) {
 	const published = await getPublishedHomeForTenant(ctx);
 	const preview = await getPreviewDomainForTenant(ctx);
 	const production = await getProductionDomainForTenant(ctx);
+	const assets = await listBrandAssetsForTenant(ctx);
 	const approved = claims.some((claim) => claim.kind === 'approved');
 	const prohibited = claims.some((claim) => claim.kind === 'prohibited');
 	return {
@@ -139,7 +141,10 @@ async function evaluateAutomatic(ctx: TenantContext) {
 			complete: false,
 			detail: 'Analytics adapter is not connected in this slice'
 		},
-		'assets.uploaded': { complete: false, detail: 'Asset storage is not connected in this slice' }
+		'assets.uploaded': {
+			complete: assets.length > 0,
+			detail: assets.length > 0 ? `${assets.length} brand asset(s)` : 'No brand assets uploaded'
+		}
 	} as const;
 }
 

@@ -5,8 +5,8 @@
 
 <h1>Knowledge</h1>
 <p>
-	Capture brand, offer, services, and approved claims for the active client. This profile is reused
-	at launch instead of custom engineering.
+	Capture brand, assets, offer, services, and approved claims for the active client. This profile is
+	reused at launch instead of custom engineering.
 </p>
 
 {#if form?.error}
@@ -83,6 +83,58 @@
 			<p>{data.knowledge.brand.offer}</p>
 		{:else}
 			<p>No brand profile yet.</p>
+		{/if}
+	</section>
+
+	<section>
+		<h2>Brand assets</h2>
+		<p>
+			PNG, JPEG, WEBP, or ICO up to 2MB. Files are tenant-scoped and served through Vector, not raw
+			object keys.
+		</p>
+		{#if data.knowledge.assets.length === 0}
+			<p>No brand assets yet. This keeps <code>assets.uploaded</code> pending.</p>
+		{:else}
+			<ul class="assets">
+				{#each data.knowledge.assets as asset (asset.id)}
+					<li>
+						<img src={`/knowledge/asset/${asset.id}`} alt={asset.originalFilename} />
+						<span>{asset.purpose} · {asset.originalFilename}</span>
+						{#if canManage}
+							<form method="post" action="?/removeAsset">
+								<input type="hidden" name="_csrf" value={data.csrf} />
+								<input type="hidden" name="id" value={asset.id} />
+								<button type="submit">Remove</button>
+							</form>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
+		{#if canManage}
+			<form class="wide" method="post" action="?/uploadAsset" enctype="multipart/form-data">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Purpose
+					<select name="purpose">
+						<option value="logo">Logo</option>
+						<option value="mark">Mark</option>
+						<option value="og">Open Graph</option>
+						<option value="favicon">Favicon</option>
+						<option value="other">Other</option>
+					</select>
+				</label>
+				<label>
+					File
+					<input
+						name="file"
+						type="file"
+						accept="image/png,image/jpeg,image/webp,image/x-icon,.ico"
+						required
+					/>
+				</label>
+				<button type="submit">Upload asset</button>
+			</form>
 		{/if}
 	</section>
 
