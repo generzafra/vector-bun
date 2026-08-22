@@ -11,14 +11,18 @@ import {
 	addService,
 	createClient,
 	getClient,
+	completeReadinessItem,
 	composeFunnel,
 	getFunnel,
 	getKnowledge,
+	getLaunch,
 	listClientsForActor,
 	login,
 	publishFunnel,
+	recalculateReadiness,
 	resolveSession,
 	saveBrand,
+	transitionLaunch,
 	updateClientSettings
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
@@ -190,6 +194,56 @@ app.post('/v1/funnel/publish', async (c) => {
 	actorCan(session, 'pages.manage');
 	const ctx = contextFor(session, requestId);
 	const row = await publishFunnel(session, ctx, requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.get('/v1/launch', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'launch.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getLaunch(session, ctx) });
+});
+
+app.get('/v1/launch/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'launch.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getLaunch(session, ctx, c.req.param('clientId')) });
+});
+
+app.post('/v1/launch/recalculate', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'launch.manage');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await recalculateReadiness(session, ctx, requestId) });
+});
+
+app.post('/v1/launch/items', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'launch.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await completeReadinessItem(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.post('/v1/launch/transition', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'launch.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await transitionLaunch(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data: row });
 });
 

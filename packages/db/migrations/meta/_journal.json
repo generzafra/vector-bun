@@ -22,6 +22,13 @@
 			"when": 1755860000000,
 			"tag": "0002_phase1_funnel",
 			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1755870000000,
+			"tag": "0003_phase1_launch",
+			"breakpoints": true
 		}
 	]
 }

@@ -1,6 +1,6 @@
 # Phase 1 — Knowledge and Funnel
 
-**Status:** In progress — knowledge and preview-funnel slices implemented. Launch state, readiness, R2, and production domain activation remain.
+**Status:** In progress — knowledge, preview-funnel, and launch/readiness slices implemented. R2 and production domain activation remain.
 **Prerequisite:** Phase 0 exit met. Do not start until cross-tenant tests pass and Phase 0 CI deploy succeeds.
 
 ---
@@ -70,3 +70,14 @@ Operator composes one lead funnel from approved section types, publishes an immu
 - Delivery: hostname lookup, then TenantContext page load; unknown hosts 404 with no tenant data
 - Preview: `noindex`, no production email, lead POST acknowledges only (no CRM persist)
 - Isolation: Alpha preview host cannot serve Beta copy; route IDs on Delivery 404
+
+## Slice 3 — Readiness and launch state (done)
+
+Operator tracks a tenant-scoped readiness checklist and launch state machine. Same catalog and states for every client. No custom engineering. Clock fields exist. Vector 24 SLA is not measured or promised.
+
+- Tables: `client_readiness`, `client_readiness_items`, `client_launches`, `client_launch_events`, `client_launch_blocks`, `client_launch_approvals`
+- Capabilities: `launch.read`, `launch.manage`
+- Control: `/launch`
+- `vector_ready` requires blocking items: brand identity/narrative, service, approved and prohibited claims, published preview
+- `launching` / `live` require an active production domain (not implemented yet; transitions fail closed)
+- Isolation: Alpha cannot read or transition Beta; launch events do not leak across tenants

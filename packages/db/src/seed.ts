@@ -4,6 +4,7 @@ import { CAPABILITIES, ROLE_CAPABILITIES, ROLE_KEYS } from '@vector/contracts';
 import { composeLeadPage, previewHostname } from '@vector/funnel-engine';
 import { db } from './client';
 import { listClaimsForTenant, listOffersForTenant, listServicesForTenant } from './knowledge';
+import { ensureLaunchRecordsForTenant } from './launch';
 import {
 	composeLeadFunnelForTenant,
 	getPreviewDomainForTenant,
@@ -330,6 +331,19 @@ async function main() {
 
 	await seedPreviewFunnel(clientA.id, 'alpha', brandA);
 	await seedPreviewFunnel(clientB.id, 'beta', brandB);
+
+	await ensureLaunchRecordsForTenant({
+		organizationId: org.id,
+		clientId: clientA.id,
+		roleIds: [],
+		requestId: 'seed'
+	});
+	await ensureLaunchRecordsForTenant({
+		organizationId: org.id,
+		clientId: clientB.id,
+		roleIds: [],
+		requestId: 'seed'
+	});
 
 	console.info(
 		JSON.stringify({

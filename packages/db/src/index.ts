@@ -3,3 +3,4 @@ export * from './schema';
 export * from './repos';
 export * from './knowledge';
 export * from './pages';
+export * from './launch';

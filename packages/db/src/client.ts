@@ -11,7 +11,8 @@ function createDb() {
 	sqlClient = postgres(env.DATABASE_URL, {
 		max: 10,
 		idle_timeout: 30,
-		connect_timeout: 10
+		connect_timeout: 10,
+		prepare: false
 	});
 	return drizzle(sqlClient, { schema });
 }
@@ -42,7 +43,7 @@ export async function closeDb() {
 	const client = sqlClient;
 	sqlClient = null;
 	inner = null;
-	await client.end({ timeout: 5 });
+	await client.end({ timeout: 1 });
 }
 
 export { schema };

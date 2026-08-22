@@ -60,6 +60,22 @@ export async function getPreviewDomainForTenant(ctx: TenantContext) {
 	return row ?? null;
 }
 
+export async function getProductionDomainForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(clientDomains)
+		.where(
+			and(
+				eq(clientDomains.clientId, required.clientId),
+				eq(clientDomains.kind, 'production'),
+				eq(clientDomains.status, 'active')
+			)
+		)
+		.limit(1);
+	return row ?? null;
+}
+
 export async function listPageVersionsForTenant(ctx: TenantContext, pageId: string) {
 	const required = requireTenantContext(ctx);
 	return db

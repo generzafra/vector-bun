@@ -17,6 +17,7 @@
 				<a href="/clients">Clients</a>
 				<a href="/knowledge">Knowledge</a>
 				<a href="/funnel">Funnel</a>
+				<a href="/launch">Launch</a>
 				<a href="/members">Members</a>
 			{/if}
 		</nav>

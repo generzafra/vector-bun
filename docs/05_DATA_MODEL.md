@@ -38,6 +38,8 @@ client_domains
 
 `page_versions` are immutable after `published`. Compose inserts a new draft; publish copies that draft into a new published row and points `pages.published_version_id` at it. `client_domains.hostname` is globally unique. Hostname lookup is bootstrap only; page reads after that require TenantContext. Preview hostnames use `preview-{client-slug}.{DELIVERY_PREVIEW_PARENT_HOST}` and stay `noindex` until a later production domain slice.
 
+Phase 1 launch (tenant-owned, `client_id` required): the same readiness catalog and launch state machine for every client. Clock fields are stored. A 24-hour SLA is not computed or displayed. `vector_ready` requires blocking items only (knowledge + published preview). `launching` and `live` stay fail-closed until a production domain is active.
+
 ## Launch and readiness
 
 Required for Vector 24 and operator launch tracking:
