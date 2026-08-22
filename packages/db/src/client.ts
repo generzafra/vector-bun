@@ -3,7 +3,9 @@ import postgres from 'postgres';
 import { env, isViteBuild } from '@vector/config';
 import * as schema from './schema';
 
-let sqlClient: ReturnType<typeof postgres> | null = null;
+type SqlClient = ReturnType<typeof postgres>;
+
+let sqlClient: SqlClient | null = null;
 
 function createDb() {
 	sqlClient = postgres(env.DATABASE_URL, {
@@ -14,12 +16,33 @@ function createDb() {
 	return drizzle(sqlClient, { schema });
 }
 
-export const db = isViteBuild ? ({} as ReturnType<typeof createDb>) : createDb();
+type AppDb = ReturnType<typeof createDb>;
+
+let inner: AppDb | null = isViteBuild ? null : createDb();
+
+function activeDb(): AppDb {
+	if (!sqlClient || !inner) {
+		inner = createDb();
+	}
+	return inner;
+}
+
+export const db: AppDb = isViteBuild
+	? ({} as AppDb)
+	: new Proxy({} as AppDb, {
+			get(_target, prop, receiver) {
+				const target = activeDb();
+				const value = Reflect.get(target, prop, receiver);
+				return typeof value === 'function' ? value.bind(target) : value;
+			}
+		});
 
 export async function closeDb() {
 	if (!sqlClient) return;
-	await sqlClient.end({ timeout: 5 });
+	const client = sqlClient;
 	sqlClient = null;
+	inner = null;
+	await client.end({ timeout: 5 });
 }
 
 export { schema };

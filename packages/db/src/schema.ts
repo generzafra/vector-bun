@@ -1,4 +1,5 @@
 import {
+	boolean,
 	index,
 	integer,
 	jsonb,
@@ -9,6 +10,7 @@ import {
 	uniqueIndex,
 	uuid
 } from 'drizzle-orm/pg-core';
+import type { PageDocument } from '@vector/funnel-engine';
 import { uuidv7 } from 'uuidv7';
 
 const id = () =>
@@ -287,4 +289,126 @@ export const claims = pgTable(
 		updatedAt: updatedAt()
 	},
 	(t) => [index('claims_client_idx').on(t.clientId)]
+);
+
+export const domainKind = pgEnum('domain_kind', ['preview', 'production', 'redirect']);
+export const domainStatus = pgEnum('domain_status', ['pending', 'verified', 'active', 'disabled']);
+export const pageVersionStatus = pgEnum('page_version_status', ['draft', 'published']);
+
+export const clientDomains = pgTable(
+	'client_domains',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		hostname: text('hostname').notNull(),
+		kind: domainKind('kind').notNull(),
+		status: domainStatus('status').notNull().default('pending'),
+		isCanonical: boolean('is_canonical').notNull().default(true),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('client_domains_hostname_idx').on(t.hostname),
+		index('client_domains_client_idx').on(t.clientId)
+	]
+);
+
+export const sites = pgTable(
+	'sites',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		name: text('name').notNull(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('sites_client_idx').on(t.clientId),
+		index('sites_org_idx').on(t.organizationId)
+	]
+);
+
+export const funnels = pgTable(
+	'funnels',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		siteId: uuid('site_id')
+			.notNull()
+			.references(() => sites.id),
+		name: text('name').notNull(),
+		slug: text('slug').notNull(),
+		purpose: text('purpose').notNull().default('lead'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('funnels_client_slug_idx').on(t.clientId, t.slug),
+		index('funnels_client_idx').on(t.clientId)
+	]
+);
+
+export const pages = pgTable(
+	'pages',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		funnelId: uuid('funnel_id')
+			.notNull()
+			.references(() => funnels.id),
+		path: text('path').notNull().default('/'),
+		title: text('title').notNull(),
+		publishedVersionId: uuid('published_version_id'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('pages_funnel_path_idx').on(t.funnelId, t.path),
+		index('pages_client_idx').on(t.clientId)
+	]
+);
+
+export const pageVersions = pgTable(
+	'page_versions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		pageId: uuid('page_id')
+			.notNull()
+			.references(() => pages.id),
+		version: integer('version').notNull(),
+		status: pageVersionStatus('status').notNull(),
+		document: jsonb('document').$type<PageDocument>().notNull(),
+		publishedAt: timestamp('published_at', { withTimezone: true }),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('page_versions_page_version_idx').on(t.pageId, t.version),
+		index('page_versions_client_idx').on(t.clientId)
+	]
 );

@@ -50,6 +50,8 @@ export const brandTokensSchema = z
 	})
 	.strict();
 
+export type BrandTokens = z.infer<typeof brandTokensSchema>;
+
 export const upsertBrandSchema = z
 	.object({
 		displayName: z.string().min(1).max(120),

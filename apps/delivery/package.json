@@ -11,6 +11,9 @@
 	},
 	"dependencies": {
 		"@vector/config": "workspace:*",
+		"@vector/db": "workspace:*",
+		"@vector/domain": "workspace:*",
+		"@vector/funnel-engine": "workspace:*",
 		"@vector/observability": "workspace:*"
 	},
 	"devDependencies": {

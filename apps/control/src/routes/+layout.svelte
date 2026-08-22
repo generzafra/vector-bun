@@ -16,6 +16,7 @@
 				<a href="/">Overview</a>
 				<a href="/clients">Clients</a>
 				<a href="/knowledge">Knowledge</a>
+				<a href="/funnel">Funnel</a>
 				<a href="/members">Members</a>
 			{/if}
 		</nav>

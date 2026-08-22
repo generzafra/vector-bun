@@ -1,6 +1,6 @@
 # Phase 1 — Knowledge and Funnel
 
-**Status:** In progress — knowledge slice implemented. Funnel renderer, preview host, and launch state remain.
+**Status:** In progress — knowledge and preview-funnel slices implemented. Launch state, readiness, R2, and production domain activation remain.
 **Prerequisite:** Phase 0 exit met. Do not start until cross-tenant tests pass and Phase 0 CI deploy succeeds.
 
 ---
@@ -58,3 +58,15 @@ Operator can capture a tenant-scoped brand profile, services, offers, and approv
 - Capabilities: `knowledge.read`, `knowledge.manage`
 - Control: `/knowledge`
 - Isolation: actor context must match the client; Alpha cannot read or write Beta knowledge
+
+## Slice 2 — Funnel schema and preview host (done)
+
+Operator composes one lead funnel from approved section types, publishes an immutable page version, and Delivery renders it on `preview-{slug}` only. Same compose + preview hostname pattern for every client. No custom engineering. No visual page builder.
+
+- Package: `packages/funnel-engine`
+- Tables: `sites`, `funnels`, `pages`, `page_versions`, `client_domains`
+- Capabilities: `pages.read`, `pages.manage`
+- Control: `/funnel`
+- Delivery: hostname lookup, then TenantContext page load; unknown hosts 404 with no tenant data
+- Preview: `noindex`, no production email, lead POST acknowledges only (no CRM persist)
+- Isolation: Alpha preview host cannot serve Beta copy; route IDs on Delivery 404

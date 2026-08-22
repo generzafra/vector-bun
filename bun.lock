@@ -10,6 +10,7 @@
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
         "@vector/domain": "workspace:*",
+        "@vector/funnel-engine": "workspace:*",
         "drizzle-orm": "^0.44.5",
       },
       "devDependencies": {
@@ -56,6 +57,9 @@
       "name": "@vector/delivery",
       "dependencies": {
         "@vector/config": "workspace:*",
+        "@vector/db": "workspace:*",
+        "@vector/domain": "workspace:*",
+        "@vector/funnel-engine": "workspace:*",
         "@vector/observability": "workspace:*",
       },
       "devDependencies": {
@@ -93,6 +97,7 @@
       "dependencies": {
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
+        "@vector/funnel-engine": "workspace:*",
         "drizzle-orm": "^0.44.5",
         "postgres": "^3.4.7",
         "uuidv7": "^1.0.2",
@@ -108,8 +113,16 @@
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
+        "@vector/funnel-engine": "workspace:*",
         "@vector/observability": "workspace:*",
         "drizzle-orm": "^0.44.5",
+      },
+    },
+    "packages/funnel-engine": {
+      "name": "@vector/funnel-engine",
+      "dependencies": {
+        "@vector/contracts": "workspace:*",
+        "zod": "^4.1.5",
       },
     },
     "packages/observability": {
@@ -291,6 +304,8 @@
     "@vector/delivery": ["@vector/delivery@workspace:apps/delivery"],
 
     "@vector/domain": ["@vector/domain@workspace:packages/domain"],
+
+    "@vector/funnel-engine": ["@vector/funnel-engine@workspace:packages/funnel-engine"],
 
     "@vector/observability": ["@vector/observability@workspace:packages/observability"],
 

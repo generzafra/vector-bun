@@ -34,6 +34,6 @@ Seed accounts (see `.env.example`):
 - `admin@vector.test` — org-wide MGE Super Admin
 - `usera@vector.test` — Client Admin on Alpha only
 
-Control signs in at `http://localhost:5183/login`. Delivery `/health` is public; every other host path fail-closes as 404.
+Control signs in at `http://localhost:5183/login`. After seed, preview funnels are on `http://preview-alpha.localhost:5184` and `http://preview-beta.localhost:5184` (`bun run dev:delivery`). Unknown hosts fail closed as 404.
 
 Format with `bun run format`. Check with `bun run format:check`.

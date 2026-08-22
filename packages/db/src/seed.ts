@@ -1,7 +1,14 @@
 import { and, eq } from 'drizzle-orm';
 import { env } from '@vector/config';
 import { CAPABILITIES, ROLE_CAPABILITIES, ROLE_KEYS } from '@vector/contracts';
+import { composeLeadPage, previewHostname } from '@vector/funnel-engine';
 import { db } from './client';
+import { listClaimsForTenant, listOffersForTenant, listServicesForTenant } from './knowledge';
+import {
+	composeLeadFunnelForTenant,
+	getPreviewDomainForTenant,
+	publishLatestDraftForTenant
+} from './pages';
 import {
 	brands,
 	claims,
@@ -134,39 +141,74 @@ async function main() {
 		displayName: string,
 		audience: string,
 		offer: string,
-		primaryConversion: string
+		primaryConversion: string,
+		brandPersonality: 'premium' | 'technology',
+		tokens: {
+			background: string;
+			surface: string;
+			text: string;
+			accent: string;
+			fontFamily: string;
+		}
 	) {
+		const values = {
+			displayName,
+			audience,
+			offer,
+			primaryConversion,
+			brandPersonality,
+			tokens,
+			updatedAt: new Date()
+		};
 		const [existing] = await db.select().from(brands).where(eq(brands.clientId, clientId)).limit(1);
-		if (existing) return existing;
+		if (existing) {
+			const [row] = await db
+				.update(brands)
+				.set(values)
+				.where(eq(brands.id, existing.id))
+				.returning();
+			return row;
+		}
 		const [row] = await db
 			.insert(brands)
 			.values({
 				organizationId: org.id,
 				clientId,
-				displayName,
-				audience,
-				offer,
-				primaryConversion,
-				brandPersonality: 'corporate',
-				tokens: { accent: '#3b6fd9' }
+				...values
 			})
 			.returning();
 		return row;
 	}
 
-	await upsertBrand(
+	const brandA = await upsertBrand(
 		clientA.id,
 		'Client Alpha Dental',
 		'Local patients who need implant consults',
 		'Guided implant consults with a clear treatment plan',
-		'Book an implant consult'
+		'Book an implant consult',
+		'premium',
+		{
+			background: '#f4efe6',
+			surface: '#fffaf2',
+			text: '#1a1714',
+			accent: '#0f4c5c',
+			fontFamily: 'Georgia, "Times New Roman", serif'
+		}
 	);
-	await upsertBrand(
+	const brandB = await upsertBrand(
 		clientB.id,
 		'Client Beta Logistics',
 		'Warehouse operators who need faster throughput',
 		'Automation that reduces dock-to-stock time',
-		'Request a warehouse assessment'
+		'Request a warehouse assessment',
+		'technology',
+		{
+			background: '#101412',
+			surface: '#171c19',
+			text: '#e7eee8',
+			accent: '#d4b06a',
+			fontFamily: 'Segoe UI, system-ui, sans-serif'
+		}
 	);
 
 	async function upsertService(
@@ -249,6 +291,45 @@ async function main() {
 	await upsertClaim(clientA.id, 'prohibited', 'Guaranteed implant success');
 	await upsertClaim(clientB.id, 'approved', 'Assessment covers inbound and outbound docks');
 	await upsertClaim(clientB.id, 'prohibited', 'Guaranteed 50 percent cost reduction');
+
+	async function seedPreviewFunnel(
+		clientId: string,
+		slug: string,
+		brand: NonNullable<typeof brandA>
+	) {
+		const ctx = {
+			organizationId: org.id,
+			clientId,
+			roleIds: [],
+			requestId: 'seed'
+		};
+		if (await getPreviewDomainForTenant(ctx)) return;
+		const [serviceRows, offerRows, claimRows] = await Promise.all([
+			listServicesForTenant(ctx),
+			listOffersForTenant(ctx),
+			listClaimsForTenant(ctx)
+		]);
+		const document = composeLeadPage(
+			{
+				clientSlug: slug,
+				brand,
+				services: serviceRows,
+				offers: offerRows,
+				claims: claimRows
+			},
+			{ preview: true }
+		);
+		await composeLeadFunnelForTenant(ctx, {
+			siteName: brand.displayName,
+			title: document.seo.title,
+			hostname: previewHostname(slug, env.DELIVERY_PREVIEW_PARENT_HOST),
+			document
+		});
+		await publishLatestDraftForTenant(ctx);
+	}
+
+	await seedPreviewFunnel(clientA.id, 'alpha', brandA);
+	await seedPreviewFunnel(clientB.id, 'beta', brandB);
 
 	console.info(
 		JSON.stringify({

@@ -26,6 +26,7 @@
 		"@vector/contracts": "workspace:*",
 		"@vector/db": "workspace:*",
 		"@vector/domain": "workspace:*",
+		"@vector/funnel-engine": "workspace:*",
 		"drizzle-orm": "^0.44.5"
 	},
 	"devDependencies": {

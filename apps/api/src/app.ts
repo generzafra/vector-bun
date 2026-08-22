@@ -11,9 +11,12 @@ import {
 	addService,
 	createClient,
 	getClient,
+	composeFunnel,
+	getFunnel,
 	getKnowledge,
 	listClientsForActor,
 	login,
+	publishFunnel,
 	resolveSession,
 	saveBrand,
 	updateClientSettings
@@ -148,6 +151,46 @@ app.post('/v1/knowledge/claims', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const row = await addClaim(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data: row }, 201);
+});
+
+app.get('/v1/funnel', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'pages.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getFunnel(session, ctx) });
+});
+
+app.get('/v1/funnel/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'pages.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getFunnel(session, ctx, c.req.param('clientId')) });
+});
+
+app.post('/v1/funnel/compose', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await composeFunnel(session, ctx, requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/funnel/publish', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await publishFunnel(session, ctx, requestId);
+	return c.json({ requestId, data: row });
 });
 
 app.onError((error, c) => {

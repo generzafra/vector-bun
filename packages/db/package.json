@@ -14,6 +14,7 @@
 	"dependencies": {
 		"@vector/config": "workspace:*",
 		"@vector/contracts": "workspace:*",
+		"@vector/funnel-engine": "workspace:*",
 		"drizzle-orm": "^0.44.5",
 		"postgres": "^3.4.7",
 		"uuidv7": "^1.0.2"

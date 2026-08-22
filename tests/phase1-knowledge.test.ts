@@ -1,8 +1,8 @@
-import { afterAll, expect, test } from 'bun:test';
+import { expect, test } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { env } from '@vector/config';
 import { ForbiddenError, TenantContextError, requireTenantContext } from '@vector/contracts';
-import { auditLogs, clients, closeDb, db, getBrandForTenant } from '@vector/db';
+import { auditLogs, clients, db, getBrandForTenant } from '@vector/db';
 import {
 	contextFor,
 	getKnowledge,
@@ -23,10 +23,6 @@ async function seededClients() {
 function sessionCookie(res: Response) {
 	return res.headers.getSetCookie?.()[0] ?? res.headers.get('set-cookie') ?? '';
 }
-
-afterAll(async () => {
-	await closeDb();
-});
 
 test('missing TenantContext cannot read knowledge', () => {
 	expect(() => requireTenantContext(null)).toThrow(TenantContextError);

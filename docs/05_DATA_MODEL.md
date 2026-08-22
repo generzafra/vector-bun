@@ -26,6 +26,18 @@ claims
 
 `brands` is one row per client: audience, offer, conversions, personality, and design tokens. Claims store approved and prohibited statements. Money on offers is integer minor units plus currency.
 
+Phase 1 funnel (tenant-owned, `client_id` required):
+
+```text
+sites
+funnels
+pages
+page_versions
+client_domains
+```
+
+`page_versions` are immutable after `published`. Compose inserts a new draft; publish copies that draft into a new published row and points `pages.published_version_id` at it. `client_domains.hostname` is globally unique. Hostname lookup is bootstrap only; page reads after that require TenantContext. Preview hostnames use `preview-{client-slug}.{DELIVERY_PREVIEW_PARENT_HOST}` and stay `noindex` until a later production domain slice.
+
 ## Launch and readiness
 
 Required for Vector 24 and operator launch tracking:

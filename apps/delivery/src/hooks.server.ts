@@ -1,8 +1,22 @@
 import { error, type Handle } from '@sveltejs/kit';
-import { resolveDeliveryRequest } from '$lib/server/host';
+import { resolveDeliveryPage } from '@vector/domain';
+import { createRequestId } from '@vector/observability';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	const decision = resolveDeliveryRequest(event.url.pathname, event.request.headers.get('host'));
-	if (decision.allow) return resolve(event);
-	error(404, 'Unknown host');
+	const requestId = createRequestId();
+	event.locals.requestId = requestId;
+	const decision = await resolveDeliveryPage(
+		event.request.headers.get('host'),
+		event.url.pathname,
+		requestId
+	);
+	event.locals.delivery = decision;
+	if (decision.kind === 'health') return resolve(event);
+	if (decision.kind !== 'page') error(404, 'Unknown host');
+	const response = await resolve(event);
+	if (decision.domainKind === 'preview') {
+		response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+		response.headers.set('Cache-Control', 'private, no-store');
+	}
+	return response;
 };

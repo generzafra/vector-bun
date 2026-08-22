@@ -1,0 +1,173 @@
+:root {
+	--bg: #111;
+	--surface: #1a1a1a;
+	--text: #f4f4f0;
+	--accent: #c4a35a;
+	--font: Georgia, 'Times New Roman', serif;
+	color: var(--text);
+	background: var(--bg);
+	font-family: var(--font);
+	line-height: 1.55;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+}
+
+a {
+	color: var(--accent);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+	outline: 3px solid var(--accent);
+	outline-offset: 3px;
+}
+
+.skip {
+	position: absolute;
+	left: 0.75rem;
+	top: -3rem;
+	background: var(--surface);
+	color: var(--text);
+	padding: 0.6rem 0.9rem;
+}
+
+.skip:focus {
+	top: 0.75rem;
+}
+
+.top {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	align-items: center;
+	padding: 1rem 1.25rem;
+	border-bottom: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+.brand {
+	font-weight: 650;
+	margin: 0;
+}
+
+.cta,
+button[type='submit'] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.75rem;
+	padding: 0.7rem 1.1rem;
+	background: var(--accent);
+	color: var(--bg);
+	text-decoration: none;
+	border: 0;
+	font: inherit;
+	cursor: pointer;
+}
+
+main {
+	max-width: 68rem;
+	margin: 0 auto;
+	padding: 1.5rem 1.25rem 4rem;
+}
+
+.hero-minimal,
+.hero-split,
+.proof,
+.services,
+.offer,
+.cta-block,
+.faq,
+.lead {
+	padding: 2.5rem 0;
+}
+
+.hero-split {
+	display: grid;
+	gap: 1.75rem;
+}
+
+.hero-split .aside {
+	background: var(--surface);
+	padding: 1.25rem;
+	border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.page-premium .hero-split {
+	align-items: start;
+}
+
+.lede,
+.section-body {
+	max-width: 40rem;
+}
+
+.service {
+	padding: 1rem 0;
+	border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.proof-item,
+.faq details {
+	margin: 0.85rem 0;
+}
+
+label {
+	display: grid;
+	gap: 0.3rem;
+	margin: 0.85rem 0;
+}
+
+input,
+textarea {
+	min-height: 2.75rem;
+	padding: 0.55rem 0.7rem;
+	border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+	background: var(--surface);
+	color: inherit;
+	font: inherit;
+}
+
+textarea {
+	min-height: 6rem;
+}
+
+.err {
+	color: #b42318;
+}
+
+.status {
+	padding: 0.8rem 0;
+}
+
+.preview-note {
+	padding: 1rem 1.25rem 2rem;
+	font-size: 0.95rem;
+	opacity: 0.85;
+}
+
+@media (min-width: 800px) {
+	.hero-split {
+		grid-template-columns: 3fr 2fr;
+		padding-top: 3.5rem;
+	}
+
+	.page-technology .hero-minimal,
+	.page-growth .hero-minimal {
+		max-width: 38rem;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		scroll-behavior: auto;
+	}
+}

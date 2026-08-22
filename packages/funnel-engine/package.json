@@ -1,0 +1,15 @@
+{
+	"name": "@vector/funnel-engine",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit -p tsconfig.json"
+	},
+	"dependencies": {
+		"@vector/contracts": "workspace:*",
+		"zod": "^4.1.5"
+	}
+}
