@@ -199,6 +199,18 @@
 		{#each clocks as [label, value] (label)}
 			<p>{label}: {value ?? '—'}</p>
 		{/each}
+		<h3>Timing splits</h3>
+		<p>
+			Contract to Vector Ready: {data.launch.timing.contractToReadySeconds ?? '—'} seconds
+		</p>
+		<p>
+			Onboarding to Vector Ready: {data.launch.timing.onboardingToReadySeconds ?? '—'} seconds
+		</p>
+		<p>
+			Vector Ready to live: {data.launch.timing.readyToLiveSeconds ?? '—'} seconds
+		</p>
+		<p>Paused: {data.launch.timing.pausedSeconds} seconds</p>
+		<p>These are recorded intervals. A 24-hour SLA is not measured here.</p>
 		{#if canManage}
 			<form class="wide" method="post" action="?/transition">
 				<input type="hidden" name="_csrf" value={data.csrf} />

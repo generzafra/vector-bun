@@ -41,6 +41,26 @@ client_domains
 
 Phase 1 launch (tenant-owned, `client_id` required): the same readiness catalog and launch state machine for every client. Clock fields are stored. A 24-hour SLA is not computed or displayed. `vector_ready` requires blocking items only (knowledge + published preview). `launching` and `live` stay fail-closed until a production domain is active.
 
+Phase 2 CRM, consent, and analytics (tenant-owned, `client_id` required):
+
+```text
+contacts
+contact_identities
+leads
+lead_sources
+lead_scores
+lead_score_events
+lead_status_history
+consent_records
+visitors
+analytics_sessions
+analytics_events
+attribution_touchpoints
+attribution_results
+```
+
+Email identity is unique per tenant. The same email on two clients is two contacts. Preview submits set `is_test`. Consent is a purpose ledger at form submit (`lead_follow_up` required, `marketing` granted or denied). Analytics sessions are not auth `sessions`. Postgres is the source of truth for leads and outcomes. Attribution v1 stores first touch and last non-direct; it is not presented as multi-touch truth.
+
 ## Launch and readiness
 
 Required for Vector 24 and operator launch tracking:

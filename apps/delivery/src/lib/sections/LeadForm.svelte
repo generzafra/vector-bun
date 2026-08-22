@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
+	import { CONSENT_COPY } from '@vector/compliance';
 	import type { PageSection } from '@vector/funnel-engine';
 	import type { LeadFormState } from '$lib/lead-form';
 
@@ -15,6 +17,7 @@
 	const previewHost = $derived(domainKind === 'preview');
 	const body = $derived(previewHost ? section.body : undefined);
 	let submitting = $state(false);
+	let formStarted = $state(false);
 
 	const labels = {
 		name: 'Name',
@@ -26,6 +29,16 @@
 
 	function fieldValue(field: keyof typeof labels) {
 		return form?.[field] ?? '';
+	}
+
+	async function emitFormStarted() {
+		if (formStarted) return;
+		formStarted = true;
+		const payload = new FormData();
+		payload.set('name', 'form_started');
+		payload.set('landingUrl', page.url.href);
+		if (document.referrer) payload.set('referrer', document.referrer);
+		await fetch('?/event', { method: 'POST', body: payload });
 	}
 </script>
 
@@ -48,6 +61,7 @@
 			method="post"
 			action="?/lead"
 			aria-busy={submitting}
+			onfocusin={emitFormStarted}
 			use:enhance={() => {
 				submitting = true;
 				return async ({ update }) => {
@@ -56,6 +70,7 @@
 				};
 			}}
 		>
+			<input type="hidden" name="landingUrl" value={page.url.href} />
 			{#each section.fields as field (field)}
 				<label>
 					{labels[field]}
@@ -84,6 +99,19 @@
 					{/if}
 				</label>
 			{/each}
+			<label class="choice">
+				<input
+					name="consentLeadFollowUp"
+					type="checkbox"
+					required
+					checked={form?.consentLeadFollowUp === true}
+				/>
+				<span>{CONSENT_COPY.lead_follow_up}</span>
+			</label>
+			<label class="choice">
+				<input name="consentMarketing" type="checkbox" checked={form?.consentMarketing === true} />
+				<span>{CONSENT_COPY.marketing}</span>
+			</label>
 			<button type="submit" disabled={submitting}>
 				{submitting ? 'Sending…' : section.submitLabel}
 			</button>

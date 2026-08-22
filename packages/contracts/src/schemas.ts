@@ -133,6 +133,71 @@ export const clientDomainIdSchema = z
 	})
 	.strict();
 
+export const LEAD_STATUSES = ['new', 'working', 'qualified', 'won', 'lost', 'spam'] as const;
+export type LeadStatus = (typeof LEAD_STATUSES)[number];
+
+export const captureLeadSchema = z
+	.object({
+		name: z.string().trim().min(1).max(120),
+		email: z.string().trim().email().max(254),
+		phone: z.string().trim().max(40).optional().nullable(),
+		company: z.string().trim().max(120).optional().nullable(),
+		message: z.string().trim().max(2000).optional().nullable(),
+		consentLeadFollowUp: z.boolean(),
+		consentMarketing: z.boolean(),
+		visitorId: z.string().uuid().optional(),
+		sessionId: z.string().uuid().optional(),
+		landingUrl: z.string().max(2000).optional().nullable(),
+		referrer: z.string().max(2000).optional().nullable(),
+		utmSource: z.string().max(200).optional().nullable(),
+		utmMedium: z.string().max(200).optional().nullable(),
+		utmCampaign: z.string().max(200).optional().nullable(),
+		utmTerm: z.string().max(200).optional().nullable(),
+		utmContent: z.string().max(200).optional().nullable(),
+		hostname: z.string().min(1).max(253),
+		domainKind: z.enum(['preview', 'production']),
+		siteId: z.string().uuid(),
+		funnelId: z.string().uuid(),
+		pageId: z.string().uuid(),
+		pageVersionId: z.string().uuid()
+	})
+	.strict();
+
+export const recordDeliveryEventSchema = z
+	.object({
+		name: z.enum(['page_viewed', 'form_started']),
+		visitorId: z.string().uuid(),
+		sessionId: z.string().uuid(),
+		landingUrl: z.string().max(2000).optional().nullable(),
+		referrer: z.string().max(2000).optional().nullable(),
+		utmSource: z.string().max(200).optional().nullable(),
+		utmMedium: z.string().max(200).optional().nullable(),
+		utmCampaign: z.string().max(200).optional().nullable(),
+		utmTerm: z.string().max(200).optional().nullable(),
+		utmContent: z.string().max(200).optional().nullable(),
+		hostname: z.string().min(1).max(253),
+		domainKind: z.enum(['preview', 'production']),
+		siteId: z.string().uuid(),
+		funnelId: z.string().uuid(),
+		pageId: z.string().uuid(),
+		pageVersionId: z.string().uuid()
+	})
+	.strict();
+
+export const updateLeadStatusSchema = z
+	.object({
+		id: z.string().uuid(),
+		status: z.enum(LEAD_STATUSES),
+		reason: z.string().trim().min(1).max(400)
+	})
+	.strict();
+
+export const leadClientIdSchema = z
+	.object({
+		clientId: z.string().uuid()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

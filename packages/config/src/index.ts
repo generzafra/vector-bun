@@ -57,7 +57,9 @@ const schema = z.object({
 	R2_ACCESS_KEY_ID: z.string().optional(),
 	R2_SECRET_ACCESS_KEY: z.string().optional(),
 	R2_BUCKET: z.string().optional(),
-	R2_ENDPOINT: z.string().optional()
+	R2_ENDPOINT: z.string().optional(),
+	POSTHOG_API_KEY: z.string().optional(),
+	POSTHOG_HOST: z.string().url().default('https://us.i.posthog.com')
 });
 
 export const isProd = process.env.NODE_ENV === 'production';
@@ -89,7 +91,9 @@ export const env = schema.parse({
 	R2_ACCESS_KEY_ID: emptyToUndefined(process.env.R2_ACCESS_KEY_ID),
 	R2_SECRET_ACCESS_KEY: emptyToUndefined(process.env.R2_SECRET_ACCESS_KEY),
 	R2_BUCKET: emptyToUndefined(process.env.R2_BUCKET),
-	R2_ENDPOINT: emptyToUndefined(process.env.R2_ENDPOINT)
+	R2_ENDPOINT: emptyToUndefined(process.env.R2_ENDPOINT),
+	POSTHOG_API_KEY: emptyToUndefined(process.env.POSTHOG_API_KEY),
+	POSTHOG_HOST: process.env.POSTHOG_HOST
 });
 
 function emptyToUndefined(value: string | undefined) {

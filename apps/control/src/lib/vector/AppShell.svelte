@@ -9,6 +9,7 @@
 		{ href: '/clients', label: 'Clients' },
 		{ href: '/knowledge', label: 'Knowledge' },
 		{ href: '/funnel', label: 'Funnel' },
+		{ href: '/leads', label: 'Leads' },
 		{ href: '/launch', label: 'Launch' },
 		{ href: '/members', label: 'Members' }
 	] as const;

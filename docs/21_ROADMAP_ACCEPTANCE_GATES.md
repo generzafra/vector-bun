@@ -30,6 +30,8 @@ Contacts, leads, event taxonomy, PostHog, attribution, launch-funnel analytics, 
 
 **Exit:** acquisition source can be traced to lead, and operators can see readiness-to-live timing. Public conversion elements emit the Vector event taxonomy.
 
+**Status (22 August 2026):** Slice 1 is implemented. Delivery form submit creates a tenant-scoped contact and lead with consent, `form_submitted` / `lead_created`, and first-touch / last-non-direct attribution. Operators list leads at `/leads` and see recorded contract→ready and ready→live seconds on Launch. PostHog remains optional; Postgres is source of truth. Phase 2 exit is not claimed until production PostHog wiring and conversion reporting land.
+
 ## Phase 3
 
 Plan: [plans/03_PHASE_3_EMAIL_NURTURE.md](plans/03_PHASE_3_EMAIL_NURTURE.md).

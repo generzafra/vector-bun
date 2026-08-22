@@ -9,7 +9,9 @@
 		"typecheck": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
+		"@vector/analytics": "workspace:*",
 		"@vector/auth": "workspace:*",
+		"@vector/compliance": "workspace:*",
 		"@vector/config": "workspace:*",
 		"@vector/contracts": "workspace:*",
 		"@vector/db": "workspace:*",

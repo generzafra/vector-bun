@@ -10,7 +10,9 @@
 		"typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
 	},
 	"dependencies": {
+		"@vector/compliance": "workspace:*",
 		"@vector/config": "workspace:*",
+		"@vector/contracts": "workspace:*",
 		"@vector/db": "workspace:*",
 		"@vector/domain": "workspace:*",
 		"@vector/funnel-engine": "workspace:*",

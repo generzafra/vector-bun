@@ -2,8 +2,10 @@ import { requireTenantContext } from '@vector/contracts';
 import {
 	findActiveDomainByHostname,
 	findRoutableDomainByHostname,
+	getLeadFunnelForTenant,
 	getProductionDomainForTenant,
-	getPublishedHomeForTenant
+	getPublishedHomeForTenant,
+	getSiteForTenant
 } from '@vector/db';
 import {
 	isDomainChallengePath,
@@ -29,6 +31,9 @@ export type DeliveryResolution =
 			domainKind: DeliveryDomainKind;
 			clientId: string;
 			organizationId: string;
+			siteId: string;
+			funnelId: string;
+			pageId: string;
 			versionId: string;
 			document: ReturnType<typeof parsePageDocument>;
 	  };
@@ -82,8 +87,12 @@ export async function resolveDeliveryPage(
 		roleIds: [],
 		requestId
 	});
-	const published = await getPublishedHomeForTenant(ctx);
-	if (!published) return { kind: 'unknown_host', host: hostHeader };
+	const [published, site, funnel] = await Promise.all([
+		getPublishedHomeForTenant(ctx),
+		getSiteForTenant(ctx),
+		getLeadFunnelForTenant(ctx)
+	]);
+	if (!published || !site || !funnel) return { kind: 'unknown_host', host: hostHeader };
 	const document = parsePageDocument(published.version.document);
 	logInfo('delivery.resolve', {
 		requestId,
@@ -97,6 +106,9 @@ export async function resolveDeliveryPage(
 		domainKind: domain.kind,
 		clientId: domain.clientId,
 		organizationId: domain.organizationId,
+		siteId: site.id,
+		funnelId: funnel.id,
+		pageId: published.page.id,
 		versionId: published.version.id,
 		document
 	};

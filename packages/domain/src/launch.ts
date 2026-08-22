@@ -82,7 +82,36 @@ async function snapshot(ctx: TenantContext) {
 		launch.status === 'paused' && launch.resumeStatus
 			? ([launch.resumeStatus, 'blocked'] as LaunchState[])
 			: ALLOWED_LAUNCH_TRANSITIONS[launch.status];
-	return { readiness, items, launch, events, blocks, approvals, nextStates };
+	return {
+		readiness,
+		items,
+		launch,
+		events,
+		blocks,
+		approvals,
+		nextStates,
+		timing: launchTimingSplits(launch)
+	};
+}
+
+export function secondsBetween(from: Date | null | undefined, to: Date | null | undefined) {
+	if (!from || !to) return null;
+	return Math.max(0, Math.floor((to.getTime() - from.getTime()) / 1000));
+}
+
+export function launchTimingSplits(launch: {
+	signedAt: Date | null;
+	onboardingStartedAt: Date | null;
+	vectorReadyAt: Date | null;
+	liveAt: Date | null;
+	pausedSeconds: number;
+}) {
+	return {
+		contractToReadySeconds: secondsBetween(launch.signedAt, launch.vectorReadyAt),
+		onboardingToReadySeconds: secondsBetween(launch.onboardingStartedAt, launch.vectorReadyAt),
+		readyToLiveSeconds: secondsBetween(launch.vectorReadyAt, launch.liveAt),
+		pausedSeconds: launch.pausedSeconds
+	};
 }
 
 async function evaluateAutomatic(ctx: TenantContext) {

@@ -5,7 +5,9 @@
     "": {
       "name": "vector-bun",
       "dependencies": {
+        "@vector/analytics": "workspace:*",
         "@vector/auth": "workspace:*",
+        "@vector/compliance": "workspace:*",
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
@@ -58,7 +60,9 @@
     "apps/delivery": {
       "name": "@vector/delivery",
       "dependencies": {
+        "@vector/compliance": "workspace:*",
         "@vector/config": "workspace:*",
+        "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
         "@vector/domain": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
@@ -73,6 +77,14 @@
         "vite": "^7.1.0",
       },
     },
+    "packages/analytics": {
+      "name": "@vector/analytics",
+      "dependencies": {
+        "@vector/config": "workspace:*",
+        "@vector/contracts": "workspace:*",
+        "@vector/observability": "workspace:*",
+      },
+    },
     "packages/auth": {
       "name": "@vector/auth",
       "dependencies": {
@@ -80,6 +92,12 @@
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
         "drizzle-orm": "^0.44.5",
+      },
+    },
+    "packages/compliance": {
+      "name": "@vector/compliance",
+      "dependencies": {
+        "@vector/contracts": "workspace:*",
       },
     },
     "packages/config": {
@@ -111,7 +129,9 @@
     "packages/domain": {
       "name": "@vector/domain",
       "dependencies": {
+        "@vector/analytics": "workspace:*",
         "@vector/auth": "workspace:*",
+        "@vector/compliance": "workspace:*",
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
@@ -300,9 +320,13 @@
 
     "@types/trusted-types": ["@types/trusted-types@2.0.7", "", {}, "sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw=="],
 
+    "@vector/analytics": ["@vector/analytics@workspace:packages/analytics"],
+
     "@vector/api": ["@vector/api@workspace:apps/api"],
 
     "@vector/auth": ["@vector/auth@workspace:packages/auth"],
+
+    "@vector/compliance": ["@vector/compliance@workspace:packages/compliance"],
 
     "@vector/config": ["@vector/config@workspace:packages/config"],
 

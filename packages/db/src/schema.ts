@@ -636,3 +636,380 @@ export const clientLaunchApprovals = pgTable(
 	},
 	(t) => [index('client_launch_approvals_client_idx').on(t.clientId)]
 );
+
+export const contactIdentityKind = pgEnum('contact_identity_kind', ['email', 'phone', 'visitor']);
+export const leadStatus = pgEnum('lead_status', [
+	'new',
+	'working',
+	'qualified',
+	'won',
+	'lost',
+	'spam'
+]);
+export const consentPurpose = pgEnum('consent_purpose', [
+	'lead_follow_up',
+	'marketing',
+	'analytics'
+]);
+export const consentDecision = pgEnum('consent_decision', ['granted', 'denied']);
+export const attributionModel = pgEnum('attribution_model', ['first_touch_last_non_direct_v1']);
+
+export type ConsentEvidence = {
+	hostname: string;
+	copyVersion: number;
+	text: string;
+};
+
+export type AnalyticsEventProperties = {
+	hostname?: string;
+	domainKind?: string;
+	landingUrl?: string;
+	referrer?: string;
+};
+
+export const contacts = pgTable(
+	'contacts',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		displayName: text('display_name').notNull(),
+		email: text('email').notNull(),
+		phone: text('phone'),
+		company: text('company'),
+		firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
+		lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('contacts_client_email_idx').on(t.clientId, t.email),
+		index('contacts_client_idx').on(t.clientId),
+		index('contacts_org_idx').on(t.organizationId)
+	]
+);
+
+export const contactIdentities = pgTable(
+	'contact_identities',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		contactId: uuid('contact_id')
+			.notNull()
+			.references(() => contacts.id),
+		kind: contactIdentityKind('kind').notNull(),
+		value: text('value').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('contact_identities_client_kind_value_idx').on(t.clientId, t.kind, t.value),
+		index('contact_identities_client_idx').on(t.clientId),
+		index('contact_identities_contact_idx').on(t.contactId)
+	]
+);
+
+export const leadSources = pgTable(
+	'lead_sources',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		channel: text('channel').notNull(),
+		utmSource: text('utm_source'),
+		utmMedium: text('utm_medium'),
+		utmCampaign: text('utm_campaign'),
+		utmTerm: text('utm_term'),
+		utmContent: text('utm_content'),
+		referrer: text('referrer'),
+		createdAt: createdAt()
+	},
+	(t) => [index('lead_sources_client_idx').on(t.clientId)]
+);
+
+export const leads = pgTable(
+	'leads',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		contactId: uuid('contact_id')
+			.notNull()
+			.references(() => contacts.id),
+		sourceId: uuid('source_id').references(() => leadSources.id),
+		status: leadStatus('status').notNull().default('new'),
+		siteId: uuid('site_id'),
+		funnelId: uuid('funnel_id'),
+		pageId: uuid('page_id'),
+		pageVersionId: uuid('page_version_id'),
+		hostname: text('hostname').notNull(),
+		domainKind: text('domain_kind').notNull(),
+		isTest: boolean('is_test').notNull().default(false),
+		message: text('message'),
+		landingUrl: text('landing_url'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('leads_client_created_idx').on(t.clientId, t.createdAt),
+		index('leads_client_contact_idx').on(t.clientId, t.contactId),
+		index('leads_org_idx').on(t.organizationId)
+	]
+);
+
+export const leadScores = pgTable(
+	'lead_scores',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		leadId: uuid('lead_id')
+			.notNull()
+			.references(() => leads.id),
+		score: integer('score').notNull(),
+		version: text('version').notNull().default('v1'),
+		computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('lead_scores_lead_idx').on(t.leadId),
+		index('lead_scores_client_idx').on(t.clientId)
+	]
+);
+
+export const leadScoreEvents = pgTable(
+	'lead_score_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		leadId: uuid('lead_id')
+			.notNull()
+			.references(() => leads.id),
+		score: integer('score').notNull(),
+		reason: text('reason').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [index('lead_score_events_client_idx').on(t.clientId)]
+);
+
+export const leadStatusHistory = pgTable(
+	'lead_status_history',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		leadId: uuid('lead_id')
+			.notNull()
+			.references(() => leads.id),
+		fromStatus: leadStatus('from_status').notNull(),
+		toStatus: leadStatus('to_status').notNull(),
+		reason: text('reason').notNull(),
+		actorId: text('actor_id'),
+		requestId: text('request_id').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [index('lead_status_history_client_idx').on(t.clientId)]
+);
+
+export const consentRecords = pgTable(
+	'consent_records',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		contactId: uuid('contact_id')
+			.notNull()
+			.references(() => contacts.id),
+		leadId: uuid('lead_id').references(() => leads.id),
+		purpose: consentPurpose('purpose').notNull(),
+		decision: consentDecision('decision').notNull(),
+		source: text('source').notNull(),
+		copyVersion: integer('copy_version').notNull(),
+		evidence: jsonb('evidence').$type<ConsentEvidence>().notNull(),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('consent_records_client_idx').on(t.clientId),
+		index('consent_records_contact_idx').on(t.contactId)
+	]
+);
+
+export const visitors = pgTable(
+	'visitors',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		anonymousId: text('anonymous_id').notNull(),
+		contactId: uuid('contact_id').references(() => contacts.id),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('visitors_client_anonymous_idx').on(t.clientId, t.anonymousId),
+		index('visitors_client_idx').on(t.clientId)
+	]
+);
+
+export const analyticsSessions = pgTable(
+	'analytics_sessions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		visitorId: uuid('visitor_id')
+			.notNull()
+			.references(() => visitors.id),
+		landingUrl: text('landing_url'),
+		referrer: text('referrer'),
+		utmSource: text('utm_source'),
+		utmMedium: text('utm_medium'),
+		utmCampaign: text('utm_campaign'),
+		isTest: boolean('is_test').notNull().default(false),
+		startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+		lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [index('analytics_sessions_client_idx').on(t.clientId)]
+);
+
+export const analyticsEvents = pgTable(
+	'analytics_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		eventId: uuid('event_id').notNull(),
+		name: text('name').notNull(),
+		taxonomyVersion: integer('taxonomy_version').notNull().default(1),
+		visitorId: uuid('visitor_id').references(() => visitors.id),
+		sessionId: uuid('session_id').references(() => analyticsSessions.id),
+		contactId: uuid('contact_id').references(() => contacts.id),
+		leadId: uuid('lead_id').references(() => leads.id),
+		siteId: uuid('site_id'),
+		funnelId: uuid('funnel_id'),
+		pageId: uuid('page_id'),
+		pageVersionId: uuid('page_version_id'),
+		properties: jsonb('properties').$type<AnalyticsEventProperties>().notNull().default({}),
+		isTest: boolean('is_test').notNull().default(false),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('analytics_events_client_event_idx').on(t.clientId, t.eventId),
+		index('analytics_events_client_name_idx').on(t.clientId, t.name),
+		index('analytics_events_client_idx').on(t.clientId)
+	]
+);
+
+export const attributionTouchpoints = pgTable(
+	'attribution_touchpoints',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		visitorId: uuid('visitor_id')
+			.notNull()
+			.references(() => visitors.id),
+		sessionId: uuid('session_id').references(() => analyticsSessions.id),
+		leadId: uuid('lead_id').references(() => leads.id),
+		channel: text('channel').notNull(),
+		source: text('source'),
+		medium: text('medium'),
+		campaign: text('campaign'),
+		term: text('term'),
+		content: text('content'),
+		referrer: text('referrer'),
+		landingUrl: text('landing_url'),
+		isDirect: boolean('is_direct').notNull(),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('attribution_touchpoints_client_idx').on(t.clientId),
+		index('attribution_touchpoints_visitor_idx').on(t.visitorId)
+	]
+);
+
+export const attributionResults = pgTable(
+	'attribution_results',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		leadId: uuid('lead_id')
+			.notNull()
+			.references(() => leads.id),
+		model: attributionModel('model').notNull().default('first_touch_last_non_direct_v1'),
+		firstTouchChannel: text('first_touch_channel').notNull(),
+		firstTouchSource: text('first_touch_source'),
+		firstTouchMedium: text('first_touch_medium'),
+		firstTouchCampaign: text('first_touch_campaign'),
+		lastNonDirectChannel: text('last_non_direct_channel').notNull(),
+		lastNonDirectSource: text('last_non_direct_source'),
+		lastNonDirectMedium: text('last_non_direct_medium'),
+		lastNonDirectCampaign: text('last_non_direct_campaign'),
+		computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('attribution_results_lead_idx').on(t.leadId),
+		index('attribution_results_client_idx').on(t.clientId)
+	]
+);

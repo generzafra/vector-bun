@@ -6,3 +6,4 @@ export * from './pages';
 export * from './launch';
 export * from './assets';
 export * from './domains';
+export * from './leads';

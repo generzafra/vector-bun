@@ -22,6 +22,7 @@ import {
 	verifyClientDomain,
 	getKnowledge,
 	getLaunch,
+	listLeads,
 	listClientsForActor,
 	login,
 	publishFunnel,
@@ -30,6 +31,7 @@ import {
 	resolveSession,
 	saveBrand,
 	transitionLaunch,
+	updateLeadStatus,
 	updateClientSettings,
 	uploadBrandAsset
 } from '@vector/domain';
@@ -360,6 +362,36 @@ app.post('/v1/launch/items', async (c) => {
 	actorCan(session, 'launch.manage');
 	const ctx = contextFor(session, requestId);
 	const row = await completeReadinessItem(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.get('/v1/leads', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'leads.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await listLeads(session, ctx) });
+});
+
+app.get('/v1/leads/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'leads.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await listLeads(session, ctx, c.req.param('clientId')) });
+});
+
+app.post('/v1/leads/:id/status', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'leads.manage');
+	const ctx = contextFor(session, requestId);
+	const body = await c.req.json();
+	const row = await updateLeadStatus(session, ctx, { ...body, id: c.req.param('id') }, requestId);
 	return c.json({ requestId, data: row });
 });
 

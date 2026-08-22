@@ -1,4 +1,5 @@
 # VECTOR Growth OS
+
 ## Website Hero + In-Product Visual Language Implementation Standard
 
 **Document type:** Frontend implementation standard  
@@ -22,11 +23,11 @@ VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md
 
 The two standards have separate responsibilities:
 
-| Standard | Primary responsibility |
-|---|---|
-| `VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` | General frontend quality, UX, conversion architecture, page storytelling, mobile-first behavior, accessibility, performance, and anti-generic-AI design rules |
+| Standard                                                    | Primary responsibility                                                                                                                                          |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`            | General frontend quality, UX, conversion architecture, page storytelling, mobile-first behavior, accessibility, performance, and anti-generic-AI design rules   |
 | `VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE_IMPLEMENTATION.md` | VECTOR-specific brand semantics, design tokens, signal-to-growth grammar, product shell, charts, motion, branded components, and repo-wide visual-system wiring |
-| Feature/project specifications | Business logic, data, permissions, API behavior, workflows, and feature acceptance criteria |
+| Feature/project specifications                              | Business logic, data, permissions, API behavior, workflows, and feature acceptance criteria                                                                     |
 
 ## 0.1 Precedence
 
@@ -200,15 +201,15 @@ Do not repeat the exact same diagram everywhere. Reuse the underlying grammar:
 
 ## 4.1 Primary Brand Palette
 
-| Token | Hex | Purpose |
-|---|---:|---|
-| `--vector-black` | `#070A0F` | Primary background |
-| `--vector-graphite` | `#111720` | Elevated panels and cards |
-| `--vector-blue` | `#1677FF` | Core brand action color |
-| `--vector-cyan` | `#35D9FF` | Signal/intelligence accent |
-| `--vector-mint` | `#32E6A1` | Positive outcome / growth |
-| `--vector-white` | `#F4F7FA` | Primary text |
-| `--vector-steel` | `#8995A5` | Secondary text |
+| Token               |       Hex | Purpose                    |
+| ------------------- | --------: | -------------------------- |
+| `--vector-black`    | `#070A0F` | Primary background         |
+| `--vector-graphite` | `#111720` | Elevated panels and cards  |
+| `--vector-blue`     | `#1677FF` | Core brand action color    |
+| `--vector-cyan`     | `#35D9FF` | Signal/intelligence accent |
+| `--vector-mint`     | `#32E6A1` | Positive outcome / growth  |
+| `--vector-white`    | `#F4F7FA` | Primary text               |
+| `--vector-steel`    | `#8995A5` | Secondary text             |
 
 ## 4.2 Extended Functional Tokens
 
@@ -216,32 +217,32 @@ Recommended implementation values:
 
 ```css
 :root {
-  --bg-0: #070A0F;
-  --bg-1: #0A0F16;
-  --bg-2: #0D131C;
-  --surface-1: #111720;
-  --surface-2: #151D28;
-  --surface-3: #1A2430;
+	--bg-0: #070a0f;
+	--bg-1: #0a0f16;
+	--bg-2: #0d131c;
+	--surface-1: #111720;
+	--surface-2: #151d28;
+	--surface-3: #1a2430;
 
-  --text-primary: #F4F7FA;
-  --text-secondary: #A9B3C0;
-  --text-tertiary: #748091;
-  --text-disabled: #566171;
+	--text-primary: #f4f7fa;
+	--text-secondary: #a9b3c0;
+	--text-tertiary: #748091;
+	--text-disabled: #566171;
 
-  --border-subtle: rgba(164, 184, 207, 0.10);
-  --border-default: rgba(164, 184, 207, 0.16);
-  --border-strong: rgba(164, 184, 207, 0.26);
+	--border-subtle: rgba(164, 184, 207, 0.1);
+	--border-default: rgba(164, 184, 207, 0.16);
+	--border-strong: rgba(164, 184, 207, 0.26);
 
-  --blue-500: #1677FF;
-  --blue-400: #3E8EFF;
-  --cyan-400: #35D9FF;
-  --mint-400: #32E6A1;
-  --amber-400: #F4B860;
-  --red-400: #FF6B6B;
+	--blue-500: #1677ff;
+	--blue-400: #3e8eff;
+	--cyan-400: #35d9ff;
+	--mint-400: #32e6a1;
+	--amber-400: #f4b860;
+	--red-400: #ff6b6b;
 
-  --blue-glow: rgba(22, 119, 255, 0.32);
-  --cyan-glow: rgba(53, 217, 255, 0.24);
-  --mint-glow: rgba(50, 230, 161, 0.22);
+	--blue-glow: rgba(22, 119, 255, 0.32);
+	--cyan-glow: rgba(53, 217, 255, 0.24);
+	--mint-glow: rgba(50, 230, 161, 0.22);
 }
 ```
 
@@ -268,13 +269,13 @@ VECTOR may use gradients, but they must be controlled and rare.
 Approved brand gradient:
 
 ```css
-background: linear-gradient(135deg, #1677FF 0%, #35D9FF 100%);
+background: linear-gradient(135deg, #1677ff 0%, #35d9ff 100%);
 ```
 
 Optional prestige gradient for selected hero/launch surfaces:
 
 ```css
-background: linear-gradient(135deg, #1677FF 0%, #635BFF 50%, #35D9FF 100%);
+background: linear-gradient(135deg, #1677ff 0%, #635bff 50%, #35d9ff 100%);
 ```
 
 Rules:
@@ -406,16 +407,13 @@ Cards should be distinguished mostly with:
 Recommended card shell:
 
 ```css
-background: linear-gradient(
-  180deg,
-  rgba(255,255,255,0.028) 0%,
-  rgba(255,255,255,0.012) 100%
-), #111720;
+background:
+	linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0.012) 100%), #111720;
 
-border: 1px solid rgba(164,184,207,0.12);
+border: 1px solid rgba(164, 184, 207, 0.12);
 box-shadow:
-  0 10px 30px rgba(0,0,0,0.20),
-  inset 0 1px 0 rgba(255,255,255,0.025);
+	0 10px 30px rgba(0, 0, 0, 0.2),
+	inset 0 1px 0 rgba(255, 255, 255, 0.025);
 ```
 
 Avoid visible glass blur on every card. Use backdrop blur only for floating overlays, menus, sticky headers, or transient layers.
@@ -430,10 +428,10 @@ Example:
 
 ```css
 .vector-grid {
-  background-image:
-    linear-gradient(rgba(93, 123, 154, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(93, 123, 154, 0.06) 1px, transparent 1px);
-  background-size: 40px 40px;
+	background-image:
+		linear-gradient(rgba(93, 123, 154, 0.06) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(93, 123, 154, 0.06) 1px, transparent 1px);
+	background-size: 40px 40px;
 }
 ```
 
@@ -741,7 +739,7 @@ Animation durations should be shortened by ~20–30% on mobile.
 Respect:
 
 ```css
-@media (prefers-reduced-motion: reduce)
+@media (prefers-reduced-motion: reduce);
 ```
 
 In reduced-motion mode:
@@ -1129,8 +1127,8 @@ Inputs should use:
 Focus:
 
 ```css
-box-shadow: 0 0 0 3px rgba(22,119,255,0.18);
-border-color: rgba(22,119,255,0.75);
+box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.18);
+border-color: rgba(22, 119, 255, 0.75);
 ```
 
 Never rely on glow alone for focus accessibility.
@@ -1366,25 +1364,25 @@ Example:
 
 ```css
 :root {
-  --vector-radius-sm: 8px;
-  --vector-radius-md: 12px;
-  --vector-radius-lg: 16px;
+	--vector-radius-sm: 8px;
+	--vector-radius-md: 12px;
+	--vector-radius-lg: 16px;
 
-  --vector-space-1: 4px;
-  --vector-space-2: 8px;
-  --vector-space-3: 12px;
-  --vector-space-4: 16px;
-  --vector-space-5: 20px;
-  --vector-space-6: 24px;
-  --vector-space-8: 32px;
-  --vector-space-10: 40px;
-  --vector-space-12: 48px;
-  --vector-space-16: 64px;
+	--vector-space-1: 4px;
+	--vector-space-2: 8px;
+	--vector-space-3: 12px;
+	--vector-space-4: 16px;
+	--vector-space-5: 20px;
+	--vector-space-6: 24px;
+	--vector-space-8: 32px;
+	--vector-space-10: 40px;
+	--vector-space-12: 48px;
+	--vector-space-16: 64px;
 
-  --vector-border: rgba(164,184,207,0.12);
-  --vector-border-strong: rgba(164,184,207,0.24);
+	--vector-border: rgba(164, 184, 207, 0.12);
+	--vector-border-strong: rgba(164, 184, 207, 0.24);
 
-  --vector-shadow-card: 0 12px 34px rgba(0,0,0,0.24);
+	--vector-shadow-card: 0 12px 34px rgba(0, 0, 0, 0.24);
 }
 ```
 
@@ -1777,21 +1775,21 @@ Use one global stylesheet entry.
 Recommended:
 
 ```css
-@import "./lib/vector/tokens/colors.css";
-@import "./lib/vector/tokens/typography.css";
-@import "./lib/vector/tokens/spacing.css";
-@import "./lib/vector/tokens/radius.css";
-@import "./lib/vector/tokens/elevation.css";
-@import "./lib/vector/tokens/motion.css";
-@import "./lib/vector/tokens/charts.css";
-@import "./lib/vector/tokens/themes.css";
-@import "./lib/vector/tokens/vector.css";
+@import './lib/vector/tokens/colors.css';
+@import './lib/vector/tokens/typography.css';
+@import './lib/vector/tokens/spacing.css';
+@import './lib/vector/tokens/radius.css';
+@import './lib/vector/tokens/elevation.css';
+@import './lib/vector/tokens/motion.css';
+@import './lib/vector/tokens/charts.css';
+@import './lib/vector/tokens/themes.css';
+@import './lib/vector/tokens/vector.css';
 ```
 
 The application root should expose an explicit theme identity:
 
 ```html
-<html data-brand="vector" data-theme="vector-dark">
+<html data-brand="vector" data-theme="vector-dark"></html>
 ```
 
 or equivalent on the top-level application container.
@@ -1935,23 +1933,23 @@ Consume the canonical authenticated shell.
 
 # 53. Route-to-Visual Mapping
 
-| Area | Primary language | Brand motif intensity |
-|---|---|---:|
-| Homepage | Cinematic platform story | High |
-| Product page | Product demonstration | High |
-| Solutions | Outcome/use case | Medium |
-| Pricing | Clarity/comparison | Low |
-| Case studies | Editorial evidence | Low |
-| Demo/contact | Trust and conversion | Low |
-| Auth | Calm infrastructure | Very low |
-| Dashboard | Operational command | Medium |
-| Opportunities | Intelligence/recommendation | High |
-| Campaigns | Execution/observability | Medium |
-| Analytics | Data-first | Low |
-| Automation | Orchestration | High |
-| CRM | Dense operational data | Low |
-| Intelligence | Analysis/explainability | High |
-| Settings | Utility | Very low |
+| Area          | Primary language            | Brand motif intensity |
+| ------------- | --------------------------- | --------------------: |
+| Homepage      | Cinematic platform story    |                  High |
+| Product page  | Product demonstration       |                  High |
+| Solutions     | Outcome/use case            |                Medium |
+| Pricing       | Clarity/comparison          |                   Low |
+| Case studies  | Editorial evidence          |                   Low |
+| Demo/contact  | Trust and conversion        |                   Low |
+| Auth          | Calm infrastructure         |              Very low |
+| Dashboard     | Operational command         |                Medium |
+| Opportunities | Intelligence/recommendation |                  High |
+| Campaigns     | Execution/observability     |                Medium |
+| Analytics     | Data-first                  |                   Low |
+| Automation    | Orchestration               |                  High |
+| CRM           | Dense operational data      |                   Low |
+| Intelligence  | Analysis/explainability     |                  High |
+| Settings      | Utility                     |              Very low |
 
 This prevents both over-branding and under-branding.
 

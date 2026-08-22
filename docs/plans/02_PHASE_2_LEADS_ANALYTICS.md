@@ -1,6 +1,6 @@
 # Phase 2 — Leads and Analytics
 
-**Status:** Outline  
+**Status:** Slice 1 in progress — contacts, leads, consent ledger, event taxonomy, attribution v1, and readiness timing splits.  
 **Prerequisite:** Phase 1 exit met. Do not start until one client can publish a preview funnel with launch state.
 
 ---
@@ -45,3 +45,23 @@ Emit and store `vector_ready_at` and related timestamps. Report contract → rea
 ## Do not start until
 
 Phase 1 preview publish, form config, and launch states exist.
+
+## Slice 1 — Lead capture, consent, taxonomy, attribution v1 (done)
+
+A visitor from a tracked source can submit the Delivery lead form and become a tenant-scoped contact and lead. Consent is recorded at submit. Public conversion elements emit the versioned Vector taxonomy. Attribution is first touch and last non-direct. Operators can list leads and see recorded readiness-to-live interval splits. Same path for every client. No custom engineering.
+
+- Packages: `packages/analytics`, `packages/compliance`
+- Tables: `contacts`, `contact_identities`, `leads`, `lead_sources`, `lead_scores`, `lead_score_events`, `lead_status_history`, `consent_records`, `visitors`, `analytics_sessions`, `analytics_events`, `attribution_touchpoints`, `attribution_results`
+- Capabilities: `leads.read`, `leads.manage`, `analytics.read`
+- Delivery: persist on `?/lead`; emit `page_viewed`, `form_started`, `form_submitted`, `lead_created`
+- Preview: `is_test`, no production email
+- Control: `/leads`; Launch shows contract→ready and ready→live seconds without a 24-hour SLA
+- Isolation: Alpha cannot read Beta contacts, leads, consent, or events; same email does not merge across tenants
+
+## Slice 2 — PostHog production wiring and conversion reporting (next)
+
+Keep Postgres as the source of truth. Turn the PostHog adapter on for production behavioral events only. Add operator conversion reporting without inventing event names.
+
+## Slice 3 — Launch-funnel analytics
+
+Operator views for launch-funnel conversion, not just clock fields. Still fail closed across tenants.

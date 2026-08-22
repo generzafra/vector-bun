@@ -153,6 +153,18 @@ label {
 	margin: 0.85rem 0;
 }
 
+label.choice {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.65rem;
+}
+
+label.choice input {
+	width: auto;
+	min-height: 1.25rem;
+	margin-top: 0.3rem;
+}
+
 input,
 textarea {
 	min-height: 2.75rem;

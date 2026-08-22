@@ -14,6 +14,7 @@ Identity migration applies to Control only. Delivery stays on client tokens and 
 | Knowledge | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Funnel    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Launch    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Leads     | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Members   | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 
 Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. Official mark, wordmark, and favicon pack live under `apps/control/static/brand/vector/`.
@@ -26,15 +27,15 @@ Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. O
 
 ## Future Control modules
 
-| Module                          | Status                                    |
-| ------------------------------- | ----------------------------------------- |
-| Opportunities / recommendations | planned (Phase 4+)                        |
-| Campaigns                       | planned                                   |
-| Analytics / charts              | planned (Phase 2+ if Control charts ship) |
-| Automation canvas               | planned (Phase 8)                         |
-| Intelligence explainability     | planned (Phase 4)                         |
-| Portfolio dashboard             | planned (Phase 9)                         |
-| Vector marketing hero           | not in this repo                          |
+| Module                          | Status                                         |
+| ------------------------------- | ---------------------------------------------- |
+| Opportunities / recommendations | planned (Phase 4+)                             |
+| Campaigns                       | planned                                        |
+| Analytics / charts              | planned (later Phase 2 if Control charts ship) |
+| Automation canvas               | planned (Phase 8)                              |
+| Intelligence explainability     | planned (Phase 4)                              |
+| Portfolio dashboard             | planned (Phase 9)                              |
+| Vector marketing hero           | not in this repo                               |
 
 ## Remaining follow-up
 

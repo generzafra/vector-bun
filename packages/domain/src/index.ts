@@ -6,5 +6,6 @@ export * from './delivery';
 export * from './domains';
 export * from './knowledge';
 export * from './launch';
+export * from './leads';
 export * from './memberships';
 export * from './pages';

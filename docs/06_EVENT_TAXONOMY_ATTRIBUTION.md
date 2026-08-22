@@ -20,6 +20,8 @@ Tenant, site, funnel, page version, campaign, experiment variant, visitor, sessi
 
 First touch, last non direct touch, source and campaign attribution.
 
+Phase 2 slice 1 emits `page_viewed`, `form_started`, `form_submitted`, and `lead_created` from Delivery. Postgres stores events, touchpoints, and attribution results. The PostHog adapter is optional and does not receive preview/test events or form PII. Do not invent names in components.
+
 ## Governance
 
 All new events require dictionary documentation and owner. Do not create layout specific event names.
