@@ -66,7 +66,15 @@ const schema = z.object({
 	EMAIL_SENDING_PAUSED: z.boolean().default(false),
 	TRIGGER_SECRET_KEY: z.string().optional(),
 	TRIGGER_PROJECT_REF: z.string().optional(),
-	TRIGGER_API_URL: z.string().url().optional()
+	TRIGGER_API_URL: z.string().url().optional(),
+	XAI_API_KEY: z.string().optional(),
+	XAI_BASE_URL: z.string().url().default('https://api.x.ai/v1'),
+	XAI_MODEL_DEFAULT: z.string().min(1).default('grok-3-mini'),
+	XAI_MODEL_RESEARCH: z.string().min(1).default('grok-4'),
+	AI_EXECUTION_PAUSED: z.boolean().default(false),
+	AI_COST_CEILING_MICROS: z.coerce.number().int().nonnegative().default(5_000_000),
+	AI_INPUT_MICROS_PER_TOKEN: z.coerce.number().int().nonnegative().default(3),
+	AI_OUTPUT_MICROS_PER_TOKEN: z.coerce.number().int().nonnegative().default(15)
 });
 
 export const isProd = process.env.NODE_ENV === 'production';
@@ -108,7 +116,16 @@ export const env = schema.parse({
 		process.env.EMAIL_SENDING_PAUSED === 'true' || process.env.EMAIL_SENDING_PAUSED === '1',
 	TRIGGER_SECRET_KEY: emptyToUndefined(process.env.TRIGGER_SECRET_KEY),
 	TRIGGER_PROJECT_REF: emptyToUndefined(process.env.TRIGGER_PROJECT_REF),
-	TRIGGER_API_URL: emptyToUndefined(process.env.TRIGGER_API_URL)
+	TRIGGER_API_URL: emptyToUndefined(process.env.TRIGGER_API_URL),
+	XAI_API_KEY: emptyToUndefined(process.env.XAI_API_KEY),
+	XAI_BASE_URL: process.env.XAI_BASE_URL,
+	XAI_MODEL_DEFAULT: process.env.XAI_MODEL_DEFAULT,
+	XAI_MODEL_RESEARCH: process.env.XAI_MODEL_RESEARCH,
+	AI_EXECUTION_PAUSED:
+		process.env.AI_EXECUTION_PAUSED === 'true' || process.env.AI_EXECUTION_PAUSED === '1',
+	AI_COST_CEILING_MICROS: process.env.AI_COST_CEILING_MICROS,
+	AI_INPUT_MICROS_PER_TOKEN: process.env.AI_INPUT_MICROS_PER_TOKEN,
+	AI_OUTPUT_MICROS_PER_TOKEN: process.env.AI_OUTPUT_MICROS_PER_TOKEN
 });
 
 function emptyToUndefined(value: string | undefined) {

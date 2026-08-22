@@ -26,12 +26,16 @@ import {
 	listLeads,
 	listClientsForActor,
 	addClientSuppression,
+	decideIntelligenceApproval,
 	enrollEligibleLeadsForOperator,
 	getEmailOverview,
+	getIntelligenceOverview,
+	pauseIntelligence,
 	processDueNurtureForOperator,
 	processEmailWebhook,
 	reviewInboundMessage,
 	recheckSendingDomain,
+	runIntelligence,
 	unsubscribeByToken,
 	upsertSendingDomain,
 	login,
@@ -487,6 +491,66 @@ app.post('/v1/email/inbound/:id/review', async (c) => {
 	actorCan(session, 'email.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await reviewInboundMessage(session, ctx, { id: c.req.param('id') }, requestId);
+	return c.json({ requestId, data });
+});
+
+app.get('/v1/intelligence', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'ai.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getIntelligenceOverview(session, ctx) });
+});
+
+app.get('/v1/intelligence/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'ai.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getIntelligenceOverview(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/intelligence/runs', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'ai.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await runIntelligence(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data }, 201);
+});
+
+app.post('/v1/intelligence/approvals/:id/decide', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'ai.manage');
+	const ctx = contextFor(session, requestId);
+	const body = await c.req.json();
+	const data = await decideIntelligenceApproval(
+		session,
+		ctx,
+		{ ...body, id: c.req.param('id') },
+		requestId
+	);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/intelligence/pause', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'ai.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await pauseIntelligence(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data });
 });
 

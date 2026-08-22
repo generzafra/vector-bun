@@ -6,7 +6,7 @@ AI proposes. Policy decides. Trusted code executes.
 
 ## Provider independence
 
-Define an `AIProvider` contract. Grok is the first implementation.
+Define an `AIProvider` contract in `packages/ai`. `GrokProvider` is the first production adapter (xAI API). Tests and local default to `MemoryAIProvider`. Domain code talks to the interface, not xAI.
 
 ## Required production controls
 
@@ -49,4 +49,4 @@ AI may recommend copy, page structure, and component variants. It may not write 
 
 Preferred path: recommendation → validated page/section schema → approved variant → approved tokens → renderer → preview → approval → publication.
 
-New shared components enter the codebase through engineering review and tests, not a model dump. Public recommendations must respect brand, `docs/27`, accessibility, conversion, and approval policy. Control recommendation, activity, and intelligence surfaces use `docs/28` explainability patterns when those screens exist.
+New shared components enter the codebase through engineering review and tests, not a model dump. Public recommendations must respect brand, `docs/27`, accessibility, conversion, and approval policy. Control recommendation, activity, and intelligence surfaces use `docs/28` explainability patterns. `/intelligence` ships recommendation cards with finding, evidence, proposed action, impact, confidence, risk, cost, and required approval. Confidence is labeled explanatory and cannot approve or unpause.

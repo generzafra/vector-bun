@@ -11,6 +11,7 @@
 		{ href: '/funnel', label: 'Funnel' },
 		{ href: '/leads', label: 'Leads' },
 		{ href: '/email', label: 'Email' },
+		{ href: '/intelligence', label: 'Intelligence' },
 		{ href: '/analytics', label: 'Analytics' },
 		{ href: '/launch', label: 'Launch' },
 		{ href: '/members', label: 'Members' }

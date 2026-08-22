@@ -1,6 +1,6 @@
 # Phase 4 — Vector Intelligence
 
-**Status:** Outline  
+**Status:** Slice 1 done — `AIProvider` (memory / xAI Grok / disabled), prompt and agent version registry, Research / Copy / Analytics / Funnel Strategist drafts, cost ledger, client and platform kill switches, approval queue that never executes.  
 **Prerequisite:** Phase 3 exit met. Do not start until nurture can complete safely.
 
 ---
@@ -38,6 +38,7 @@ Every AI action is typed, versioned, auditable, tenant-scoped, and cost-attribut
 - `ai_agents`, `ai_agent_versions`, `prompt_templates`, `prompt_versions`
 - `ai_runs`, `ai_messages`, `ai_tool_calls`, `ai_decisions`, `ai_feedback`, `ai_cost_events`
 - `approval_requests`, `approval_decisions`
+- `ai_client_settings` (per-tenant pause and cost ceiling)
 
 ## Vector 24 hook
 
@@ -46,3 +47,13 @@ Agents may draft funnel/copy/research after VECTOR READY in later clients. Phase
 ## Do not start until
 
 Phase 3 email, consent, and suppression cannot be bypassed by a tool.
+
+## Slice 1 — Adapter, registry, structured drafts, cost, kill switch, approval queue (done)
+
+An operator can run Research, Copy, Analytics, or Funnel Strategist through `AIProvider`. The run is tenant-scoped, versioned (agent + prompt + schema), Zod-validated, and cost-attributed in integer USD micros. Outputs create a proposed decision and a pending approval. Approval records a human decision and does not publish, send, or execute. Client pause and `AI_EXECUTION_PAUSED` fail closed; confidence cannot override. Alpha cannot read Beta runs, costs, or approvals. Knowledge and analytics facts are loaded only for the active tenant. Copy cannot include HTML. Funnel plans accept only approved section types. Production agents do not call tools.
+
+- Package: `packages/ai` (`MemoryAIProvider` default, `GrokProvider` when `XAI_API_KEY` is set, `DisabledAIProvider` when paused)
+- Capabilities: `ai.read`, `ai.manage`
+- Control: `/intelligence` with `docs/28` recommendation cards
+- API: `GET /v1/intelligence`, `POST /v1/intelligence/runs`, `POST /v1/intelligence/approvals/:id/decide`, `POST /v1/intelligence/pause`
+- Isolation: missing TenantContext fails closed; route client id cannot leak the other tenant

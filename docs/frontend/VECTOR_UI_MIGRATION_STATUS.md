@@ -6,17 +6,19 @@ Identity migration applies to Control only. Delivery stays on client tokens and 
 
 ## Control
 
-| Route     | tokens wired | shell migrated | shared controls | responsive reviewed | accessibility reviewed | visual QA      | legacy CSS removed |
-| --------- | ------------ | -------------- | --------------- | ------------------- | ---------------------- | -------------- | ------------------ |
-| Login     | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] focus + labels     | [x] first pass | [x]                |
-| Overview  | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
-| Clients   | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
-| Knowledge | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
-| Funnel    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
-| Launch    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
-| Leads     | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
-| Analytics | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
-| Members   | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Route        | tokens wired | shell migrated | shared controls | responsive reviewed | accessibility reviewed | visual QA      | legacy CSS removed |
+| ------------ | ------------ | -------------- | --------------- | ------------------- | ---------------------- | -------------- | ------------------ |
+| Login        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] focus + labels     | [x] first pass | [x]                |
+| Overview     | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Clients      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Knowledge    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Funnel       | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Launch       | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Leads        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Analytics    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Email        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Intelligence | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + cards     | [x] first pass | [x]                |
+| Members      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 
 Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. Official mark, wordmark, and favicon pack live under `apps/control/static/brand/vector/`.
 
@@ -28,15 +30,15 @@ Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. O
 
 ## Future Control modules
 
-| Module                          | Status                                    |
-| ------------------------------- | ----------------------------------------- |
-| Opportunities / recommendations | planned (Phase 4+)                        |
-| Campaigns                       | planned                                   |
-| Analytics / charts              | tables shipped; chart theme still planned |
-| Automation canvas               | planned (Phase 8)                         |
-| Intelligence explainability     | planned (Phase 4)                         |
-| Portfolio dashboard             | planned (Phase 9)                         |
-| Vector marketing hero           | not in this repo                          |
+| Module                          | Status                                       |
+| ------------------------------- | -------------------------------------------- |
+| Opportunities / recommendations | `/intelligence` recommendation cards shipped |
+| Campaigns                       | planned                                      |
+| Analytics / charts              | tables shipped; chart theme still planned    |
+| Automation canvas               | planned (Phase 8)                            |
+| Intelligence explainability     | `/intelligence` finding / evidence / cost    |
+| Portfolio dashboard             | planned (Phase 9)                            |
+| Vector marketing hero           | not in this repo                             |
 
 ## Remaining follow-up
 

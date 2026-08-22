@@ -253,6 +253,37 @@ export const emailInboundIdSchema = z
 	})
 	.strict();
 
+export const AI_AGENT_KEYS = ['research', 'copy', 'analytics', 'funnel_strategist'] as const;
+export type AIAgentKey = (typeof AI_AGENT_KEYS)[number];
+
+export const runIntelligenceSchema = z
+	.object({
+		agentKey: z.enum(AI_AGENT_KEYS),
+		brief: z.string().trim().max(2000).optional().nullable(),
+		idempotencyKey: z.string().uuid().optional()
+	})
+	.strict();
+
+export const intelligenceClientIdSchema = z
+	.object({
+		clientId: z.string().uuid()
+	})
+	.strict();
+
+export const decideApprovalSchema = z
+	.object({
+		id: z.string().uuid(),
+		decision: z.enum(['approved', 'rejected']),
+		note: z.string().trim().max(400).optional().nullable()
+	})
+	.strict();
+
+export const pauseIntelligenceSchema = z
+	.object({
+		paused: z.boolean()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

@@ -1388,3 +1388,333 @@ export const emailInboundMessages = pgTable(
 		index('email_inbound_status_idx').on(t.clientId, t.status)
 	]
 );
+
+export const aiRunStatus = pgEnum('ai_run_status', ['queued', 'succeeded', 'failed', 'paused']);
+export const aiDecisionStatus = pgEnum('ai_decision_status', ['proposed', 'approved', 'rejected']);
+export const approvalRequestStatus = pgEnum('approval_request_status', [
+	'pending',
+	'approved',
+	'rejected'
+]);
+export const approvalDecisionKind = pgEnum('approval_decision_kind', ['approved', 'rejected']);
+export const aiMessageRole = pgEnum('ai_message_role', ['system', 'user', 'assistant']);
+export const aiRiskClass = pgEnum('ai_risk_class', ['low', 'content', 'financial', 'legal']);
+export const aiTaskClass = pgEnum('ai_task_class', [
+	'classification',
+	'extraction',
+	'copy_generation',
+	'strategic_reasoning',
+	'deep_research',
+	'content_review',
+	'data_interpretation',
+	'tool_orchestration'
+]);
+
+export type AiRunOutput = Record<string, unknown>;
+export type AiMessageContent = { text: string };
+export type AiToolPayload = Record<string, string | number | boolean | null>;
+
+export const aiAgents = pgTable(
+	'ai_agents',
+	{
+		id: id(),
+		key: text('key').notNull(),
+		name: text('name').notNull(),
+		description: text('description').notNull(),
+		defaultAutonomy: integer('default_autonomy').notNull().default(1),
+		defaultRiskClass: aiRiskClass('default_risk_class').notNull().default('low'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [uniqueIndex('ai_agents_key_idx').on(t.key)]
+);
+
+export const promptTemplates = pgTable(
+	'prompt_templates',
+	{
+		id: id(),
+		key: text('key').notNull(),
+		name: text('name').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [uniqueIndex('prompt_templates_key_idx').on(t.key)]
+);
+
+export const promptVersions = pgTable(
+	'prompt_versions',
+	{
+		id: id(),
+		templateId: uuid('template_id')
+			.notNull()
+			.references(() => promptTemplates.id),
+		version: integer('version').notNull(),
+		systemText: text('system_text').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [uniqueIndex('prompt_versions_template_version_idx').on(t.templateId, t.version)]
+);
+
+export const aiAgentVersions = pgTable(
+	'ai_agent_versions',
+	{
+		id: id(),
+		agentId: uuid('agent_id')
+			.notNull()
+			.references(() => aiAgents.id),
+		promptVersionId: uuid('prompt_version_id')
+			.notNull()
+			.references(() => promptVersions.id),
+		version: integer('version').notNull(),
+		schemaName: text('schema_name').notNull(),
+		schemaVersion: text('schema_version').notNull(),
+		taskClass: aiTaskClass('task_class').notNull(),
+		modelHint: text('model_hint'),
+		createdAt: createdAt()
+	},
+	(t) => [uniqueIndex('ai_agent_versions_unique_idx').on(t.agentId, t.version)]
+);
+
+export const aiClientSettings = pgTable(
+	'ai_client_settings',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		paused: boolean('paused').notNull().default(false),
+		autonomyCeiling: integer('autonomy_ceiling').notNull().default(2),
+		costCeilingMicros: integer('cost_ceiling_micros').notNull().default(5_000_000),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [uniqueIndex('ai_client_settings_client_idx').on(t.clientId)]
+);
+
+export const aiRuns = pgTable(
+	'ai_runs',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		agentId: uuid('agent_id')
+			.notNull()
+			.references(() => aiAgents.id),
+		agentVersionId: uuid('agent_version_id')
+			.notNull()
+			.references(() => aiAgentVersions.id),
+		promptVersionId: uuid('prompt_version_id')
+			.notNull()
+			.references(() => promptVersions.id),
+		agentKey: text('agent_key').notNull(),
+		schemaName: text('schema_name').notNull(),
+		schemaVersion: text('schema_version').notNull(),
+		taskClass: aiTaskClass('task_class').notNull(),
+		status: aiRunStatus('status').notNull().default('queued'),
+		provider: text('provider').notNull(),
+		model: text('model').notNull(),
+		autonomyLevel: integer('autonomy_level').notNull().default(1),
+		brief: text('brief'),
+		output: jsonb('output').$type<AiRunOutput>(),
+		error: text('error'),
+		blockedBy: text('blocked_by'),
+		idempotencyKey: text('idempotency_key').notNull(),
+		requestId: text('request_id').notNull(),
+		actorId: text('actor_id'),
+		latencyMs: integer('latency_ms'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('ai_runs_idempotency_idx').on(t.clientId, t.idempotencyKey),
+		index('ai_runs_client_created_idx').on(t.clientId, t.createdAt),
+		index('ai_runs_org_idx').on(t.organizationId)
+	]
+);
+
+export const aiMessages = pgTable(
+	'ai_messages',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		runId: uuid('run_id')
+			.notNull()
+			.references(() => aiRuns.id),
+		role: aiMessageRole('role').notNull(),
+		content: jsonb('content').$type<AiMessageContent>().notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [index('ai_messages_client_idx').on(t.clientId), index('ai_messages_run_idx').on(t.runId)]
+);
+
+export const aiToolCalls = pgTable(
+	'ai_tool_calls',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		runId: uuid('run_id')
+			.notNull()
+			.references(() => aiRuns.id),
+		name: text('name').notNull(),
+		input: jsonb('input').$type<AiToolPayload>().notNull().default({}),
+		output: jsonb('output').$type<AiToolPayload>().notNull().default({}),
+		authorized: boolean('authorized').notNull().default(false),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('ai_tool_calls_client_idx').on(t.clientId),
+		index('ai_tool_calls_run_idx').on(t.runId)
+	]
+);
+
+export const aiDecisions = pgTable(
+	'ai_decisions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		runId: uuid('run_id')
+			.notNull()
+			.references(() => aiRuns.id),
+		kind: text('kind').notNull(),
+		finding: text('finding').notNull(),
+		evidence: text('evidence').notNull(),
+		proposedAction: text('proposed_action').notNull(),
+		expectedImpact: text('expected_impact').notNull(),
+		confidence: integer('confidence').notNull(),
+		riskClass: aiRiskClass('risk_class').notNull(),
+		recommendedAutonomy: integer('recommended_autonomy').notNull(),
+		status: aiDecisionStatus('status').notNull().default('proposed'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('ai_decisions_run_idx').on(t.runId),
+		index('ai_decisions_client_idx').on(t.clientId)
+	]
+);
+
+export const aiFeedback = pgTable(
+	'ai_feedback',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		runId: uuid('run_id')
+			.notNull()
+			.references(() => aiRuns.id),
+		rating: integer('rating').notNull(),
+		note: text('note'),
+		actorId: text('actor_id'),
+		createdAt: createdAt()
+	},
+	(t) => [index('ai_feedback_client_idx').on(t.clientId)]
+);
+
+export const aiCostEvents = pgTable(
+	'ai_cost_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		runId: uuid('run_id')
+			.notNull()
+			.references(() => aiRuns.id),
+		provider: text('provider').notNull(),
+		model: text('model').notNull(),
+		promptTokens: integer('prompt_tokens').notNull(),
+		completionTokens: integer('completion_tokens').notNull(),
+		totalTokens: integer('total_tokens').notNull(),
+		costMicros: integer('cost_micros').notNull(),
+		currency: text('currency').notNull().default('USD'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('ai_cost_events_client_idx').on(t.clientId),
+		index('ai_cost_events_run_idx').on(t.runId)
+	]
+);
+
+export const approvalRequests = pgTable(
+	'approval_requests',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		runId: uuid('run_id')
+			.notNull()
+			.references(() => aiRuns.id),
+		decisionId: uuid('decision_id')
+			.notNull()
+			.references(() => aiDecisions.id),
+		actionType: text('action_type').notNull(),
+		riskClass: aiRiskClass('risk_class').notNull(),
+		summary: text('summary').notNull(),
+		status: approvalRequestStatus('status').notNull().default('pending'),
+		required: boolean('required').notNull().default(true),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('approval_requests_run_idx').on(t.runId),
+		index('approval_requests_client_status_idx').on(t.clientId, t.status)
+	]
+);
+
+export const approvalDecisions = pgTable(
+	'approval_decisions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		requestId: uuid('request_id')
+			.notNull()
+			.references(() => approvalRequests.id),
+		decision: approvalDecisionKind('decision').notNull(),
+		note: text('note'),
+		actorId: text('actor_id'),
+		confidenceIgnored: boolean('confidence_ignored').notNull().default(true),
+		decidedAt: timestamp('decided_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('approval_decisions_client_idx').on(t.clientId),
+		index('approval_decisions_request_idx').on(t.requestId)
+	]
+);

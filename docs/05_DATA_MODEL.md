@@ -80,6 +80,22 @@ email_inbound_messages
 
 `email_suppressions.scope = global` is platform-owned and has a null `client_id`. Client suppressions never merge across tenants. Sending-domain readiness stores SPF, DKIM, DMARC, and approved From as machine-checked fields. Published welcome sequences are approved versions (`welcome_v1`). Preview/`is_test` messages are not production sends. Engagement counts are derived from tenant-scoped `email_messages` and `email_events`. `email_contacts` sync from leads even when a send is skipped. Inbound replies live on `email_inbound_messages` as drafts; they are not a send queue. Workflow runs are not a second source of truth; Trigger.dev is the optional durable host for the same tenant-scoped handlers.
 
+Phase 4 intelligence: platform catalog has no `client_id` (`ai_agents`, `ai_agent_versions`, `prompt_templates`, `prompt_versions`). Tenant-owned rows require `client_id`:
+
+```text
+ai_client_settings
+ai_runs
+ai_messages
+ai_tool_calls
+ai_decisions
+ai_feedback
+ai_cost_events
+approval_requests
+approval_decisions
+```
+
+Prompt and agent versions are immutable. Runs record provider, model, schema name/version, and prompt version. Cost is integer USD micros plus currency. Approvals are required in Phase 4; deciding them does not execute. Knowledge used as model input is a tenant snapshot, never another client’s embeddings or claims.
+
 ## Launch and readiness
 
 Required for Vector 24 and operator launch tracking:

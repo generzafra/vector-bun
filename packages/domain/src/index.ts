@@ -5,6 +5,7 @@ export * from './auth-service';
 export * from './clients';
 export * from './delivery';
 export * from './email';
+export * from './intelligence';
 export * from './domains';
 export * from './knowledge';
 export * from './launch';

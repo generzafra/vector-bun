@@ -5,6 +5,7 @@
     "": {
       "name": "vector-bun",
       "dependencies": {
+        "@vector/ai": "workspace:*",
         "@vector/analytics": "workspace:*",
         "@vector/auth": "workspace:*",
         "@vector/automation": "workspace:*",
@@ -89,6 +90,16 @@
         "@vector/domain": "workspace:*",
       },
     },
+    "packages/ai": {
+      "name": "@vector/ai",
+      "dependencies": {
+        "@vector/config": "workspace:*",
+        "@vector/contracts": "workspace:*",
+        "@vector/funnel-engine": "workspace:*",
+        "@vector/observability": "workspace:*",
+        "zod": "^4.1.5",
+      },
+    },
     "packages/analytics": {
       "name": "@vector/analytics",
       "dependencies": {
@@ -150,6 +161,7 @@
     "packages/domain": {
       "name": "@vector/domain",
       "dependencies": {
+        "@vector/ai": "workspace:*",
         "@vector/analytics": "workspace:*",
         "@vector/auth": "workspace:*",
         "@vector/automation": "workspace:*",
@@ -404,6 +416,8 @@
     "@types/resolve": ["@types/resolve@1.20.2", "", {}, "sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q=="],
 
     "@types/trusted-types": ["@types/trusted-types@2.0.7", "", {}, "sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw=="],
+
+    "@vector/ai": ["@vector/ai@workspace:packages/ai"],
 
     "@vector/analytics": ["@vector/analytics@workspace:packages/analytics"],
 
