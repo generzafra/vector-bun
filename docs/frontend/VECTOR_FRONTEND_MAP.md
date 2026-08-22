@@ -85,11 +85,13 @@ There is not yet a shared `Button.svelte` or form-control package. Control nativ
 | Clients   | `apps/control/src/routes/clients/+page.svelte`   |
 | Knowledge | `apps/control/src/routes/knowledge/+page.svelte` |
 | Funnel    | `apps/control/src/routes/funnel/+page.svelte`    |
+| Leads     | `apps/control/src/routes/leads/+page.svelte`     |
+| Analytics | `apps/control/src/routes/analytics/+page.svelte` |
 | Launch    | `apps/control/src/routes/launch/+page.svelte`    |
 | Members   | `apps/control/src/routes/members/+page.svelte`   |
 | Login     | `apps/control/src/routes/login/+page.svelte`     |
 
-Future modules (Opportunities, Campaigns, Analytics, Intelligence, Automation) follow master plan §28 and are not present.
+Future modules (Opportunities, Campaigns, Intelligence, Automation) follow master plan §28 and are not present. Analytics is tables only; no chart library.
 
 ## Delivery public routes
 

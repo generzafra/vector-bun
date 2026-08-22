@@ -165,7 +165,7 @@ export const captureLeadSchema = z
 
 export const recordDeliveryEventSchema = z
 	.object({
-		name: z.enum(['page_viewed', 'form_started']),
+		name: z.enum(['page_viewed', 'cta_clicked', 'form_started']),
 		visitorId: z.string().uuid(),
 		sessionId: z.string().uuid(),
 		landingUrl: z.string().max(2000).optional().nullable(),

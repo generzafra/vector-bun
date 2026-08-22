@@ -1,6 +1,6 @@
 # Phase 2 — Leads and Analytics
 
-**Status:** Slice 1 in progress — contacts, leads, consent ledger, event taxonomy, attribution v1, and readiness timing splits.  
+**Status:** Slices 1–3 done — lead capture, production PostHog wiring, conversion reporting, and launch-funnel counts.  
 **Prerequisite:** Phase 1 exit met. Do not start until one client can publish a preview funnel with launch state.
 
 ---
@@ -58,10 +58,10 @@ A visitor from a tracked source can submit the Delivery lead form and become a t
 - Control: `/leads`; Launch shows contract→ready and ready→live seconds without a 24-hour SLA
 - Isolation: Alpha cannot read Beta contacts, leads, consent, or events; same email does not merge across tenants
 
-## Slice 2 — PostHog production wiring and conversion reporting (next)
+## Slice 2 — PostHog production wiring and conversion reporting (done)
 
-Keep Postgres as the source of truth. Turn the PostHog adapter on for production behavioral events only. Add operator conversion reporting without inventing event names.
+Keep Postgres as the source of truth. PostHog receives production taxonomy events only. Preview/`is_test` events and form fields never leave Vector. Control `/analytics` reports conversion from Postgres using `page_viewed` → `cta_clicked` → `form_started` → `form_submitted` → `lead_created`. Rates are null when the previous step is zero. Delivery emits `cta_clicked` from nav and CTA sections without inventing names.
 
-## Slice 3 — Launch-funnel analytics
+## Slice 3 — Launch-funnel analytics (done)
 
-Operator views for launch-funnel conversion, not just clock fields. Still fail closed across tenants.
+Control `/analytics` shows recorded launch transition counts plus contract→ready and ready→live seconds. Launch data requires `launch.read`. Alpha cannot read Beta events, attribution, or launch transitions. A 24-hour SLA is not measured.

@@ -4,6 +4,7 @@
 	import { CONSENT_COPY } from '@vector/compliance';
 	import type { PageSection } from '@vector/funnel-engine';
 	import type { LeadFormState } from '$lib/lead-form';
+	import { emitDeliveryEvent } from '$lib/track';
 
 	let {
 		section,
@@ -31,14 +32,10 @@
 		return form?.[field] ?? '';
 	}
 
-	async function emitFormStarted() {
+	function emitFormStarted() {
 		if (formStarted) return;
 		formStarted = true;
-		const payload = new FormData();
-		payload.set('name', 'form_started');
-		payload.set('landingUrl', page.url.href);
-		if (document.referrer) payload.set('referrer', document.referrer);
-		await fetch('?/event', { method: 'POST', body: payload });
+		emitDeliveryEvent('form_started');
 	}
 </script>
 

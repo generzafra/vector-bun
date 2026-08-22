@@ -38,3 +38,15 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/domains/:id/disable` — remove the host from routing
 
 Delivery challenge: `GET /.well-known/vector-domain` on the submitted Host. Unknown hosts return no tenant data.
+
+## Phase 2 Control API
+
+Authenticated session cookie. Tenant context is the active client, never a route id alone.
+
+- `GET /v1/leads` — list leads for the active client (`leads.read`)
+- `GET /v1/leads/:clientId` — same list only when the actor already owns that client
+- `POST /v1/leads/:id/status` — update lead status (`leads.manage`, CSRF)
+- `GET /v1/analytics` — conversion and launch-funnel report for the active client (`analytics.read`)
+- `GET /v1/analytics/:clientId` — same report only when the actor already owns that client
+
+Postgres is the source of truth for leads and conversion counts. PostHog is an optional production fan-out.

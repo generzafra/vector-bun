@@ -2,6 +2,15 @@ export const EVENT_TAXONOMY_VERSION = 1;
 
 export const CORE_EVENTS = [
 	'page_viewed',
+	'cta_clicked',
+	'form_started',
+	'form_submitted',
+	'lead_created'
+] as const;
+
+export const CONVERSION_STEPS = [
+	'page_viewed',
+	'cta_clicked',
 	'form_started',
 	'form_submitted',
 	'lead_created'

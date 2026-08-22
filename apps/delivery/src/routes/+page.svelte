@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { publicPageMeta } from '@vector/funnel-engine';
 	import PageRenderer from '$lib/sections/PageRenderer.svelte';
+	import { emitDeliveryEvent } from '$lib/track';
 
 	let { data, form } = $props();
 	const tokens = $derived(data.document.theme.tokens);
@@ -40,7 +41,9 @@
 	<header class="top">
 		<nav aria-label="Page">
 			<p class="brand">{data.document.identity.displayName}</p>
-			<a class="cta" href="#lead">{data.document.narrative.primaryConversion}</a>
+			<a class="cta" href="#lead" onclick={() => emitDeliveryEvent('cta_clicked')}>
+				{data.document.narrative.primaryConversion}
+			</a>
 		</nav>
 	</header>
 	<main id="main">

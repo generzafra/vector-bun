@@ -1,7 +1,6 @@
 import { consumeRateLimit, requireCapability } from '@vector/auth';
 import {
 	classifyTouch,
-	createAnalyticsProvider,
 	EVENT_TAXONOMY_VERSION,
 	leadScoreV1,
 	resolveAttribution,
@@ -38,10 +37,9 @@ import {
 	updateLeadStatusForTenant
 } from '@vector/db';
 import { logError, logInfo } from '@vector/observability';
+import { getAnalyticsProvider } from './analytics';
 import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
-
-const analytics = createAnalyticsProvider();
 
 export function deliveryTenantContext(
 	input: { organizationId: string; clientId: string; requestId?: string },
@@ -77,9 +75,15 @@ async function fanout(
 	}
 }
 
-export async function recordDeliveryEvent(ctx: TenantContext, input: unknown, requestId: string) {
+export async function recordDeliveryEvent(
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string,
+	ip = '127.0.0.1'
+) {
 	const required = deliveryTenantContext(ctx, requestId);
 	const parsed = parseContract(recordDeliveryEventSchema, input);
+	consumeRateLimit(`event:${required.clientId}:${ip}`, 60, 60_000);
 	const isTest = parsed.domainKind === 'preview';
 	const { visitor, session } = await persistDeliveryVisit(required, {
 		anonymousId: parsed.visitorId,
@@ -129,7 +133,7 @@ export async function recordDeliveryEvent(ctx: TenantContext, input: unknown, re
 		},
 		isTest
 	});
-	await fanout(analytics, {
+	await fanout(getAnalyticsProvider(), {
 		eventId: event.eventId,
 		name: parsed.name,
 		clientId: required.clientId,
@@ -288,7 +292,7 @@ export async function captureLead(
 	});
 	for (const event of persisted.events) {
 		if (!persisted.created && event.name === 'lead_created') continue;
-		await fanout(analytics, {
+		await fanout(getAnalyticsProvider(), {
 			eventId: event.eventId,
 			name: event.name as 'form_submitted' | 'lead_created',
 			clientId: required.clientId,
@@ -395,5 +399,3 @@ export async function listLeadConsent(actor: Actor, ctx: TenantContext, contactI
 	const required = assertActorOwnsContext(actor, ctx);
 	return listConsentForContact(required, contactId);
 }
-
-export { createAnalyticsProvider };

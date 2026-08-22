@@ -21,6 +21,7 @@ import {
 	submitClientDomain,
 	verifyClientDomain,
 	getKnowledge,
+	getAnalyticsReport,
 	getLaunch,
 	listLeads,
 	listClientsForActor,
@@ -363,6 +364,27 @@ app.post('/v1/launch/items', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const row = await completeReadinessItem(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data: row });
+});
+
+app.get('/v1/analytics', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'analytics.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getAnalyticsReport(session, ctx) });
+});
+
+app.get('/v1/analytics/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'analytics.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getAnalyticsReport(session, ctx, c.req.param('clientId'))
+	});
 });
 
 app.get('/v1/leads', async (c) => {

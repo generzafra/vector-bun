@@ -1,11 +1,13 @@
 import { env } from '@vector/config';
 import { logError } from '@vector/observability';
+import { sanitizeAnalyticsProperties } from './sanitize';
 import type { AnalyticsProvider, AnalyticsTrackInput } from './types';
 
 export class PostHogAnalyticsProvider implements AnalyticsProvider {
 	constructor(
 		private readonly apiKey = env.POSTHOG_API_KEY,
-		private readonly host = env.POSTHOG_HOST
+		private readonly host = env.POSTHOG_HOST,
+		private readonly send: typeof fetch = fetch
 	) {}
 
 	async track(input: AnalyticsTrackInput) {
@@ -13,7 +15,7 @@ export class PostHogAnalyticsProvider implements AnalyticsProvider {
 		const controller = new AbortController();
 		const timer = setTimeout(() => controller.abort(), 2000);
 		try {
-			const response = await fetch(`${this.host.replace(/\/$/, '')}/capture/`, {
+			const response = await this.send(`${this.host.replace(/\/$/, '')}/capture/`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				signal: controller.signal,
@@ -23,7 +25,7 @@ export class PostHogAnalyticsProvider implements AnalyticsProvider {
 					distinct_id: input.visitorId ?? input.eventId,
 					timestamp: input.occurredAt.toISOString(),
 					properties: {
-						...input.properties,
+						...sanitizeAnalyticsProperties(input.properties),
 						client_id: input.clientId,
 						event_id: input.eventId,
 						$ip: null

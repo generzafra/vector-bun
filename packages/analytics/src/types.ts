@@ -12,7 +12,7 @@ export type AnalyticsTrackInput = {
 
 export type AnalyticsHealth = {
 	ok: boolean;
-	adapter: 'disabled' | 'posthog';
+	adapter: 'disabled' | 'posthog' | 'memory';
 	detail: string;
 };
 

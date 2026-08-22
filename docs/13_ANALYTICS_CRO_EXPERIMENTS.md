@@ -22,4 +22,6 @@ Completed validated experiments become durable learning objects.
 
 Public conversion elements use the central Vector event taxonomy. Do not invent ad-hoc analytics names inside components.
 
+Phase 2 conversion reporting reads Postgres event counts. PostHog is an optional production fan-out and must skip preview/test events and form fields. Control `/analytics` is tables, not charts.
+
 Frontend CRO variants must support assignment, variant identification, exposure tracking, conversion measurement, rollback, and immutable result recording. One client's winning design is evidence, not a global visual rule. Variant quality still follows `docs/27`.

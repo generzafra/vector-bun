@@ -73,7 +73,9 @@ export const actions = {
 		const page = locals.delivery;
 		const form = await request.formData();
 		const name = String(form.get('name') ?? '');
-		if (name !== 'form_started') return fail(400, { error: 'Unknown event' });
+		if (name !== 'form_started' && name !== 'cta_clicked') {
+			return fail(400, { error: 'Unknown event' });
+		}
 		const visitorId = cookieId(cookies.get(VISITOR_COOKIE));
 		const sessionId = cookieId(cookies.get(ANALYTICS_SESSION_COOKIE));
 		cookies.set(VISITOR_COOKIE, visitorId, analyticsCookieOptions());
@@ -82,7 +84,7 @@ export const actions = {
 			await recordDeliveryEvent(
 				deliveryTenantContext(page, locals.requestId),
 				{
-					name: 'form_started',
+					name: name as 'form_started' | 'cta_clicked',
 					visitorId,
 					sessionId,
 					...attributionFrom(url, request, form),
@@ -93,7 +95,8 @@ export const actions = {
 					pageId: page.pageId,
 					pageVersionId: page.versionId
 				},
-				locals.requestId
+				locals.requestId,
+				getClientAddress()
 			);
 			return { eventAccepted: true };
 		} catch (err) {
