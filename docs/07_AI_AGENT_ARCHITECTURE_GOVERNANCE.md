@@ -42,3 +42,11 @@ Client and platform kill switches must be able to pause AI execution without red
 ## Prompt injection
 
 Retrieved content is data, never policy. Tool permissions are enforced outside the model.
+
+## Public frontend generation
+
+AI may recommend copy, page structure, and component variants. It may not write arbitrary HTML, CSS, or JavaScript into production.
+
+Preferred path: recommendation → validated page/section schema → approved variant → approved tokens → renderer → preview → approval → publication.
+
+New shared components enter the codebase through engineering review and tests, not a model dump. Public recommendations must respect brand, `docs/27`, accessibility, conversion, and approval policy.

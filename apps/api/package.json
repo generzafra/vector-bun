@@ -1,0 +1,17 @@
+{
+	"name": "@vector/api",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "bun run --watch src/index.ts",
+		"typecheck": "tsc --noEmit -p tsconfig.json"
+	},
+	"dependencies": {
+		"@vector/auth": "workspace:*",
+		"@vector/config": "workspace:*",
+		"@vector/contracts": "workspace:*",
+		"@vector/domain": "workspace:*",
+		"@vector/observability": "workspace:*",
+		"hono": "^4.9.8"
+	}
+}

@@ -45,3 +45,5 @@ Prove one full growth loop for one real client.
 A visitor can arrive through a tracked source, view a client funnel, submit a lead, create a correctly attributed contact and lead, receive an eligible nurture, appear in analytics, and generate an auditable Vector recommendation.
 
 The first client uses a preview hostname and a tracked launch state. Vector 24 is a later operational target, not an MVP acceptance criterion.
+
+The first production frontend does not need every visual variant in `docs/27`. It does need design tokens, responsive primitives, accessible navigation and forms, several hero variants, trust/proof/CTA/FAQ/case-study support, metadata, analytics hooks, mobile-first behavior, and frontend QA. Advanced cinematic experiences wait for a real client or reusable product need.

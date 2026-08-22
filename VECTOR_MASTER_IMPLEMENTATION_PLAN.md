@@ -12,7 +12,7 @@
 **Document status:** Pre implementation master plan  
 **Version:** 1.1  
 **Prepared:** 22 August 2026  
-**Appendix folded:** `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` (MGE/Vector split, shared hosting, scaling, Vector 24)
+**Appendix folded:** `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` (MGE/Vector split, shared hosting, scaling, Vector 24). Public frontend quality: `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`.
 
 ---
 
@@ -2567,7 +2567,7 @@ Deliver:
 
 Exit gate:
 
-- One client can publish a production grade lead funnel from a tracked launch state, including a private preview hostname.
+- One client can publish a production grade lead funnel from a tracked launch state, including a private preview hostname. The funnel must meet the Frontend Release Gate in `docs/27` for the Phase 1 component set.
 
 ## Phase 2 — Leads, analytics, and attribution
 
@@ -3006,7 +3006,7 @@ Use this only after Cursor has access to the repository and the documents in thi
 ```text
 You are implementing Vector, an Autonomous Growth Operating System.
 
-Read AGENTS.md, all P0 documents in /docs, and docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md before writing code that touches onboarding, domains, delivery, or launch.
+Read AGENTS.md, all P0 documents in /docs, and docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md before writing code that touches onboarding, domains, delivery, or launch. Read docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md before public frontend, funnel, or conversion work.
 
 Do not implement the entire product at once.
 

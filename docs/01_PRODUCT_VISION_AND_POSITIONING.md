@@ -81,3 +81,9 @@ Vector 24 → mature-state launch standard after readiness is complete
 
 Do not become a generic page builder, mass SEO generator, universal CRM replacement, unrestricted autonomous agent, or clone based website factory.
 Do not become a fork-per-client hosting company or a single physical-server architecture.
+
+## Public experience
+
+Strategic positioning must be immediately understandable on public pages: offer, audience, why it matters, next action.
+
+`docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` translates positioning into narrative, hierarchy, proof, and conversion. It is a quality bar, not a single visual identity. Client brand and offer stay specific. The MGE marketing site, once operated as a Vector tenant, is governed by the same public-experience standard.

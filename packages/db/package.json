@@ -1,0 +1,24 @@
+{
+	"name": "@vector/db",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"generate": "drizzle-kit generate",
+		"migrate": "drizzle-kit migrate",
+		"seed": "bun run src/seed.ts",
+		"typecheck": "tsc --noEmit -p tsconfig.json"
+	},
+	"dependencies": {
+		"@vector/config": "workspace:*",
+		"@vector/contracts": "workspace:*",
+		"drizzle-orm": "^0.44.5",
+		"postgres": "^3.4.7",
+		"uuidv7": "^1.0.2"
+	},
+	"devDependencies": {
+		"drizzle-kit": "^0.31.10"
+	}
+}

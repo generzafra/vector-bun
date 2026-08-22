@@ -10,13 +10,15 @@ Repository, CI, environment validation, PostgreSQL, tenant context, auth, RBAC, 
 
 **Exit:** cross tenant tests pass and staging deploy succeeds.
 
+**Status (22 August 2026):** Phase 0 exit is met. Isolation tests pass against Compose Postgres. Staging for this phase is GitHub Actions (`prettier --check`, typecheck, `bun test`, migrate, Control/Delivery/API builds). A live VPS is not required.
+
 ## Phase 1
 
 Plan: [plans/01_PHASE_1_KNOWLEDGE_FUNNEL.md](plans/01_PHASE_1_KNOWLEDGE_FUNNEL.md).
 
 Client knowledge, assets, funnel engine, custom domains, forms, client readiness model, onboarding completion scoring, launch state machine, preview domain model.
 
-**Exit:** one client can publish a production lead funnel, including a private preview hostname and tracked launch state.
+**Exit:** one client can publish a production lead funnel, including a private preview hostname and tracked launch state. That funnel must meet the Frontend Release Gate in `docs/27` for the MVP component set (tokens, accessible nav/forms, hero/proof/CTA, mobile-first, metadata).
 
 ## Phase 2
 
@@ -24,7 +26,7 @@ Plan: [plans/02_PHASE_2_LEADS_ANALYTICS.md](plans/02_PHASE_2_LEADS_ANALYTICS.md)
 
 Contacts, leads, event taxonomy, PostHog, attribution, launch-funnel analytics, readiness and launch timing events.
 
-**Exit:** acquisition source can be traced to lead, and operators can see readiness-to-live timing.
+**Exit:** acquisition source can be traced to lead, and operators can see readiness-to-live timing. Public conversion elements emit the Vector event taxonomy.
 
 ## Phase 3
 
@@ -40,7 +42,7 @@ Plan: [plans/04_PHASE_4_INTELLIGENCE.md](plans/04_PHASE_4_INTELLIGENCE.md).
 
 Production `AIProvider` and xAI Grok API, prompts, structured outputs, initial agents, approvals, cost ledger.
 
-**Exit:** all AI actions are typed, auditable, tenant scoped, cost attributable.
+**Exit:** all AI actions are typed, auditable, tenant scoped, cost attributable. Frontend recommendations and draft page structures respect brand, `docs/27`, accessibility, conversion, and approval policy.
 
 ## Phase 5
 
@@ -64,7 +66,7 @@ Plan: [plans/07_PHASE_7_CRO.md](plans/07_PHASE_7_CRO.md).
 
 CRO experiments from hypothesis through recorded learning.
 
-**Exit:** one full experiment completes with a durable learning object.
+**Exit:** one full experiment completes with a durable learning object. Frontend experiment variants can be created, reviewed, measured, and promoted through the CRO system without lowering the `docs/27` quality bar.
 
 ## Phase 8
 
@@ -80,7 +82,7 @@ Plan: [plans/09_PHASE_9_SCALE.md](plans/09_PHASE_9_SCALE.md).
 
 Multi-client operational scale: usage quotas, noisy-neighbor controls, scaling alerts, portfolio launch dashboard, cost dashboards, client-level SLAs, bulk monitoring.
 
-**Exit:** operators can oversee many clients by exception, including Vector 24 clocks, and a single tenant cannot exhaust shared resources.
+**Exit:** operators can oversee many clients by exception, including Vector 24 clocks, and a single tenant cannot exhaust shared resources. Multiple clients can launch from the same engine without appearing to use the same templated website.
 
 ## Vector 24
 

@@ -1,0 +1,18 @@
+---
+description: Public frontend, UX, and funnel quality from docs/27
+globs: apps/delivery/**/*.svelte,apps/delivery/**/*.svelte.ts,packages/funnel-engine/**,packages/ui/**,packages/content/**
+alwaysApply: false
+---
+When creating or materially editing public-facing UI, first read `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`.
+
+Applies to marketing sites, client websites, landing pages, sales funnels, service/product pages, campaign pages, public forms, and CRO variants. Control Plane stays operational, not cinematic.
+
+Before implementation establish audience, primary and secondary conversion, page narrative, brand direction, proof, selected reference principles, component strategy, mobile behavior, and analytics events.
+
+Do not create generic AI-style landing pages: no default purple/blue glow, fake logos, three identical feature cards, oversized radius, or buzzword headlines.
+
+Use shared Vector tokens and section variants (`hero-split`, `services-editorial`) without making every client look the same. Prefer Outcome → Visual → Explanation → Proof → CTA.
+
+Respect `prefers-reduced-motion`. Keep essential copy in crawlable HTML. Never fake metrics or invent analytics event names.
+
+Security, privacy, legal, tenant isolation, accessibility, performance, and explicit client requirements override visual experimentation.

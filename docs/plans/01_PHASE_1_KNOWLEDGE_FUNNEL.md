@@ -9,9 +9,11 @@
 
 A supervised operator can ingest client knowledge, compose one lead funnel from approved section types, publish an immutable page version to a private preview host, and track launch state.
 
+Public pages follow `docs/27`. Implement the MVP frontend foundation (tokens, accessible nav/forms, several hero variants, trust/proof/CTA, mobile-first, metadata). Do not build every cinematic variant. Do not generate a generic AI landing page.
+
 ## Exit gate
 
-One client can publish a production-grade lead funnel, including a private preview hostname and a tracked launch state.
+One client can publish a production-grade lead funnel, including a private preview hostname and a tracked launch state. The published funnel must pass the Frontend Release Gate in `docs/27` for the Phase 1 component set.
 
 ## In scope
 

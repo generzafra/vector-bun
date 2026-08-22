@@ -61,6 +61,8 @@ Clients may upload logos, catalogs, pricing, photos, testimonials, legal pages, 
 
 Goals, conversion definitions, approval contacts, approved claims, prohibited claims, markets, communication policy, email consent policy, social channels, reporting cadence.
 
+To apply `docs/27` without custom engineering, also collect: target audience, primary and secondary conversion, desired brand perception, approved colors and typography, photography and media, products and services, pricing approach, proof, testimonials, case studies, competitors, and prohibited claims. Missing proof or brand inputs is a readiness blocker when the public page would otherwise invent them.
+
 ## Launch classes
 
 - **A — Simple local service:** 1–4 hours after readiness.

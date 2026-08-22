@@ -2,7 +2,7 @@
 description: Vector implementation workflow
 alwaysApply: true
 ---
-Read AGENTS.md and P0 docs before coding. Read docs/26 when the work touches onboarding, domains, hosting, delivery, launch, or scaling.
+Read AGENTS.md and P0 docs before coding. Read docs/26 when the work touches onboarding, domains, hosting, delivery, launch, or scaling. Read docs/27 when the work touches public frontend, funnels, landing pages, conversion, motion, or CRO.
 Implement one bounded vertical slice at a time. Do not build the whole platform in one change.
 Before changes: state the goal, affected modules, security or tenancy impact, and tests to add.
 If the work is onboarding, domains, analytics, or automation, ask whether it supports repeatable client launch without custom engineering.

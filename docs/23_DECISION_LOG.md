@@ -119,3 +119,27 @@ Measure 24 hours from signing; skip readiness gating; promise Vector 24 to every
 ### Consequences
 
 Onboarding, domain, analytics, email, social, QA, and publication must be productized. Commercial wording must stay qualified.
+
+---
+
+## ADR-0005
+
+### Date
+
+22 August 2026
+
+### Status
+
+Accepted
+
+### Decision
+
+`docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` is the standing public frontend, UX, and sales-funnel quality standard. It governs Delivery Plane marketing experiences. Control Plane stays operational. Client brand and offer override visual style; they do not lower the quality bar. Security, legal, accessibility, performance, and tenant isolation override decorative experimentation.
+
+### Alternatives considered
+
+Treat frontend quality as per-client taste; copy reference sites; generate arbitrary HTML from the model.
+
+### Consequences
+
+Funnel work uses shared tokens and section variants. AI proposes schemas and variants, not production markup. Public pages pass the Frontend Release Gate before publication. Vector 24 remains reusable engine, original client experience.

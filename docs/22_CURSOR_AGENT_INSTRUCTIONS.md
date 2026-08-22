@@ -2,7 +2,7 @@
 
 ## Read before coding
 
-`AGENTS.md`, all P0 documents, and `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` whenever the work touches onboarding, domains, hosting, delivery, launch, or scaling.
+`AGENTS.md`, all P0 documents, and `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` whenever the work touches onboarding, domains, hosting, delivery, launch, or scaling. Read `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` before creating or materially editing public frontend, funnels, landing pages, conversion, motion, or CRO variants.
 
 ## Work method
 
@@ -14,6 +14,7 @@ Before changes:
 2. Identify architecture or security implications.
 3. State tests to add.
 4. If the work is onboarding, deployment, domain management, analytics, or automation, answer: does this architecture support repeatable client launch without custom engineering?
+5. If the work is public frontend, state audience, primary conversion, page narrative, brand direction, proof, selected `docs/27` references, components to reuse, mobile behavior, and analytics events before coding.
 
 After changes:
 
@@ -34,3 +35,11 @@ No provider specific concepts leaking into core domain without an adapter.
 No per-client application fork or deployment for a normal client.
 No 24-hour launch promise from contract signing.
 No architecture that cannot leave a single physical server later.
+No generic AI-style public marketing page.
+No production publication of a public page that fails the Frontend Release Gate in `docs/27`.
+
+## Public frontend work item
+
+For substantial public UI, fill the Frontend Work Item in `docs/27` §85: business objective, audience, primary and secondary conversion, narrative, brand, reference principles, proof, existing components, new reusable capability, motion, mobile, analytics, SEO/AEO, accessibility, performance, acceptance criteria.
+
+Workflow: business context → conversion strategy → visual direction → component selection → implementation → QA → measurement. Not: prompt → generic template → launch.

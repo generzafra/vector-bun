@@ -11,7 +11,7 @@ Operators oversee many clients by exception. A single tenant cannot exhaust shar
 
 ## Exit gate
 
-Portfolio operations work by exception, including Vector 24 clocks. Noisy-neighbor controls are enforced.
+Portfolio operations work by exception, including Vector 24 clocks. Noisy-neighbor controls are enforced. Multiple clients launch from the same engine without appearing to share one templated website.
 
 ## In scope
 

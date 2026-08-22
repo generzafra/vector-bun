@@ -12,6 +12,14 @@ Authenticated management of clients, brand data, funnels, campaigns, agents, app
 
 Public funnel rendering, lead endpoints, webhooks, analytics ingestion, asset delivery, provider calls, experiments, and scheduled execution. One logical Delivery Plane serves many client custom domains by hostname lookup.
 
+Public rendering path:
+
+```text
+Client Knowledge → Brand Configuration → Funnel / Page Schema → Approved Component Variants → SvelteKit Delivery Renderer → Client Custom Domain
+```
+
+Visual quality, conversion narrative, motion, and anti-generic rules live in `docs/27`. Page schema, publishing, and safe composition live in `docs/09`.
+
 ## Product topology
 
 ```text

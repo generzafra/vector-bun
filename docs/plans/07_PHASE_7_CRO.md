@@ -17,7 +17,7 @@ One full experiment completes: hypothesis, variants, exposure, predetermined met
 
 - Experiment proposal fields: problem, evidence, hypothesis, audience, primary metric, guardrails, min duration, sample, decision rule, rollback
 - PostHog flags / experiments for assignment
-- Variant lifecycle on immutable page versions
+- Variant lifecycle on immutable page versions; variants still pass `docs/27` quality, not generic AI restyles
 - Guardrails: no early stop, no metric swap after launch, bot and source imbalance checks
 - Learning objects from validated outcomes only
 

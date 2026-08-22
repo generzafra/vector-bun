@@ -37,6 +37,7 @@ This document is the detailed appendix for decisions that were later folded into
 - `21_ROADMAP_ACCEPTANCE_GATES.md` — phase work items required by Vector 24
 - `22_CURSOR_AGENT_INSTRUCTIONS.md`, `23_DECISION_LOG.md`, `24_RISK_REGISTER.md`, `25_GLOSSARY.md`
 - `VECTOR_MASTER_IMPLEMENTATION_PLAN.md`
+- `27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` — public experience quality; reusable engine, original client experience. Where that standard is more specific on frontend, UX, and conversion, it governs.
 
 Where this appendix is more specific, it should govern unless superseded by a later accepted ADR.
 
@@ -275,6 +276,8 @@ Vector does not force:
 - Identical funnel strategy.
 
 The engine is shared. The brand and strategy are client-specific.
+
+Vector 24 depends on reusable frontend infrastructure that does not produce cloned sites. Repeated manual frontend launch work should become a component, variant, token, onboarding field, QA check, or publishing action. Public quality is governed by `docs/27`. Operating goal: **reusable engine, original client experience.**
 
 ---
 

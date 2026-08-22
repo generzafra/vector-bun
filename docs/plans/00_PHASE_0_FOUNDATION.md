@@ -1,6 +1,6 @@
 # Phase 0 — Foundation
 
-**Status:** Not started  
+**Status:** Exit met (22 August 2026)  
 **Depth:** Deep execution plan  
 **Prerequisite:** None. This is the first implementation slice.  
 **Do not start later phases until this exit gate is met.**
@@ -180,7 +180,7 @@ Minimum screens:
 - Client list and authorized create
 - Membership list for the current client
 
-Svelte 5 runes only. Validate new `.svelte` with Svelte MCP `svelte-autofixer`.
+Svelte 5 runes only. Validate new `.svelte` with Svelte MCP `svelte-autofixer`. Control is operational, not cinematic. The public quality bar in `docs/27` starts with Phase 1 Delivery funnels.
 
 ### Delivery (`apps/delivery`)
 

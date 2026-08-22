@@ -13,3 +13,4 @@ Public delivery pages SSR. Do not fetch internal APIs from public components.
 Sanitize untrusted HTML before `{@html}`. Never put secrets in `PUBLIC_` env.
 Validate new `.svelte` with Svelte MCP `svelte-autofixer`.
 Every list needs skeleton, empty, and error states. Honor `prefers-reduced-motion`. Never fake metrics.
+Public marketing, funnel, and conversion UI must also follow `docs/27` and `.cursor/rules/frontend-funnel-quality.mdc`.

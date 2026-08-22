@@ -19,7 +19,7 @@ Every AI action is typed, versioned, auditable, tenant-scoped, and cost-attribut
 - Cursor Grok remains the software development agent only
 - Zod / JSON Schema structured outputs; natural language is not the execution contract
 - Prompt and agent version registry
-- Research, Copy, and Analytics agents (Funnel Strategist may draft only)
+- Research, Copy, and Analytics agents (Funnel Strategist may draft only; page drafts use approved schemas and `docs/27` variants, never arbitrary HTML)
 - Approval queue; default autonomy levels 0–2
 - `ai_runs`, `ai_decisions`, `ai_cost_events`, tool-call audit
 - No unrestricted SQL, shell, filesystem, HTTP, or secrets

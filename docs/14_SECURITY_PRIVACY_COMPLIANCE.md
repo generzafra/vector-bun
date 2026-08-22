@@ -10,11 +10,11 @@ Cross tenant access tests are a hard release gate. Unknown hostnames fail closed
 
 ## AI security
 
-No secrets in prompts. Retrieved content is untrusted. Tool permissions exist outside the model.
+No secrets in prompts. Retrieved content is untrusted. Tool permissions exist outside the model. Public frontend generation follows schema and approved variants, not arbitrary HTML or scripts (`docs/07`, `docs/27`).
 
 ## Consent
 
-Maintain a purpose based consent ledger and suppression records.
+Maintain a purpose based consent ledger and suppression records. Public forms must include required privacy acknowledgement and must not hide consent behind animation or unreadable placeholders (`docs/27`).
 
 ## Retention
 

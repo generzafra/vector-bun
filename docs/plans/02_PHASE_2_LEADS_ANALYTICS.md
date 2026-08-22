@@ -11,7 +11,7 @@ A visitor from a tracked source can submit a lead that becomes a tenant-scoped c
 
 ## Exit gate
 
-Acquisition source can be traced to a lead. Operators can see readiness-to-live timing events.
+Acquisition source can be traced to a lead. Operators can see readiness-to-live timing events. Public conversion elements emit the Vector event taxonomy; do not invent ad-hoc names in components.
 
 ## In scope
 

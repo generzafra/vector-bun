@@ -1,0 +1,19 @@
+{
+	"name": "@vector/domain",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit -p tsconfig.json"
+	},
+	"dependencies": {
+		"@vector/auth": "workspace:*",
+		"@vector/config": "workspace:*",
+		"@vector/contracts": "workspace:*",
+		"@vector/db": "workspace:*",
+		"@vector/observability": "workspace:*",
+		"drizzle-orm": "^0.44.5"
+	}
+}

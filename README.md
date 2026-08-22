@@ -1,4 +1,6 @@
-# Vector Documentation Starter Pack
+# Vector
+
+Autonomous Growth Operating System for Maximum Global Exposure.
 
 Start with:
 
@@ -6,13 +8,32 @@ Start with:
 2. `AGENTS.md`
 3. P0 documents in `/docs`
 4. `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` for MGE/Vector split, shared hosting, scaling, and Vector 24
-5. Phase 0 in `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
-6. Execution plans in `docs/plans/` — start with `docs/plans/00_PHASE_0_FOUNDATION.md`
+5. `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` for public frontend, UX, and conversion quality
+6. Phase 0 in `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
+7. Execution plans in `docs/plans/` — start with `docs/plans/00_PHASE_0_FOUNDATION.md`
 
 The `/docs` files are initial charters. Expand them as implementation decisions become concrete, but preserve their governing principles unless an ADR explicitly supersedes a decision.
 
 The `.cursor/rules` files give Cursor persistent high priority project constraints.
 
-Format with `bun run format`. Check with `bun run format:check`.
+## Phase 0 local run
 
-Recommended first implementation instruction: use the "First Cursor Kickoff Prompt" in the master plan and execute only [docs/plans/00_PHASE_0_FOUNDATION.md](docs/plans/00_PHASE_0_FOUNDATION.md).
+Copy `.env.example` to `.env`. Ports avoid the MGE stack: Control `5183`, Delivery `5184`, API `3011`, Postgres `5436`, Redis `6382`.
+
+```bash
+bun install
+bun run dev:db
+bun run db:migrate
+bun run db:seed
+bun test
+bun run dev:control
+```
+
+Seed accounts (see `.env.example`):
+
+- `admin@vector.test` — org-wide MGE Super Admin
+- `usera@vector.test` — Client Admin on Alpha only
+
+Control signs in at `http://localhost:5183/login`. Delivery `/health` is public; every other host path fail-closes as 404.
+
+Format with `bun run format`. Check with `bun run format:check`.

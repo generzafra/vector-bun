@@ -1,0 +1,29 @@
+{
+	"name": "@vector/control",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "bun --bun vite dev --port 5183 --strictPort",
+		"build": "bun --bun vite build",
+		"preview": "bun --bun vite preview --port 5183 --strictPort",
+		"prepare": "svelte-kit sync || echo ''",
+		"typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+	},
+	"dependencies": {
+		"@vector/auth": "workspace:*",
+		"@vector/config": "workspace:*",
+		"@vector/contracts": "workspace:*",
+		"@vector/db": "workspace:*",
+		"@vector/domain": "workspace:*",
+		"@vector/observability": "workspace:*",
+		"@vector/ui": "workspace:*"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-node": "^5.5.4",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"svelte": "^5.38.0",
+		"svelte-check": "^4.3.1",
+		"vite": "^7.1.0"
+	}
+}

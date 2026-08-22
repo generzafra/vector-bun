@@ -31,3 +31,7 @@
 **Launch State** — Auditable client launch status such as `onboarding`, `vector_ready`, `generating`, `qa`, `live`, or `paused`.
 
 **Preview Hostname** — Private pre-launch URL for a client site. Must be `noindex` and must not publish production email or social.
+
+**Frontend Release Gate** — Production checklist in `docs/27` covering offer clarity, visual quality, conversion, mobile, accessibility, performance, SEO/AEO, analytics, and tenant safety.
+
+**Section Variant** — Named approved composition of a funnel capability (`hero-split`, `services-editorial`). Shared capability, client-specific art direction.

@@ -15,7 +15,7 @@ Vector can produce a prioritized SEO/AEO backlog grounded in client knowledge, n
 
 ## In scope
 
-- Crawlable SSR HTML, status codes, canonicals, sitemap, robots, metadata, OG
+- Crawlable SSR HTML, status codes, canonicals, sitemap, robots, metadata, OG (`docs/27` motion and visuals must not hide essential copy)
 - Accurate structured data only (no fake ratings, authors, or credentials)
 - AEO: clear entities, direct answers, source-backed FAQs
 - Search property connections when approved (Search Console / Bing)
