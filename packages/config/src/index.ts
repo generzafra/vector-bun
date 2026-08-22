@@ -59,7 +59,11 @@ const schema = z.object({
 	R2_BUCKET: z.string().optional(),
 	R2_ENDPOINT: z.string().optional(),
 	POSTHOG_API_KEY: z.string().optional(),
-	POSTHOG_HOST: z.string().url().default('https://us.i.posthog.com')
+	POSTHOG_HOST: z.string().url().default('https://us.i.posthog.com'),
+	RESEND_API_KEY: z.string().optional(),
+	RESEND_WEBHOOK_SECRET: z.string().optional(),
+	EMAIL_UNSUBSCRIBE_SECRET: z.string().min(16).default('vector-unsubscribe-test-secret'),
+	EMAIL_SENDING_PAUSED: z.boolean().default(false)
 });
 
 export const isProd = process.env.NODE_ENV === 'production';
@@ -93,7 +97,12 @@ export const env = schema.parse({
 	R2_BUCKET: emptyToUndefined(process.env.R2_BUCKET),
 	R2_ENDPOINT: emptyToUndefined(process.env.R2_ENDPOINT),
 	POSTHOG_API_KEY: emptyToUndefined(process.env.POSTHOG_API_KEY),
-	POSTHOG_HOST: process.env.POSTHOG_HOST
+	POSTHOG_HOST: process.env.POSTHOG_HOST,
+	RESEND_API_KEY: emptyToUndefined(process.env.RESEND_API_KEY),
+	RESEND_WEBHOOK_SECRET: emptyToUndefined(process.env.RESEND_WEBHOOK_SECRET),
+	EMAIL_UNSUBSCRIBE_SECRET: process.env.EMAIL_UNSUBSCRIBE_SECRET,
+	EMAIL_SENDING_PAUSED:
+		process.env.EMAIL_SENDING_PAUSED === 'true' || process.env.EMAIL_SENDING_PAUSED === '1'
 });
 
 function emptyToUndefined(value: string | undefined) {

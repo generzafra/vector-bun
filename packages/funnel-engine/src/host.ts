@@ -14,6 +14,10 @@ export function isSitemapPath(pathname: string) {
 	return pathname === '/sitemap.xml';
 }
 
+export function isUnsubscribePath(pathname: string) {
+	return pathname === '/unsubscribe' || pathname === '/unsubscribe/';
+}
+
 export function isPreviewReservedHostname(hostname: string) {
 	return hostname.startsWith('preview-');
 }

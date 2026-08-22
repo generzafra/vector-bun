@@ -23,7 +23,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (
 		decision.kind === 'domain_challenge' ||
 		decision.kind === 'robots' ||
-		decision.kind === 'sitemap'
+		decision.kind === 'sitemap' ||
+		decision.kind === 'unsubscribe'
 	) {
 		const response = await resolve(event);
 		if (decision.kind !== 'domain_challenge' && decision.domainKind === 'preview') {

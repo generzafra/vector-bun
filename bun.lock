@@ -7,11 +7,13 @@
       "dependencies": {
         "@vector/analytics": "workspace:*",
         "@vector/auth": "workspace:*",
+        "@vector/automation": "workspace:*",
         "@vector/compliance": "workspace:*",
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
         "@vector/domain": "workspace:*",
+        "@vector/email": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
         "@vector/storage": "workspace:*",
         "@vector/ui": "workspace:*",
@@ -94,6 +96,13 @@
         "drizzle-orm": "^0.44.5",
       },
     },
+    "packages/automation": {
+      "name": "@vector/automation",
+      "dependencies": {
+        "@vector/contracts": "workspace:*",
+        "zod": "^4.1.5",
+      },
+    },
     "packages/compliance": {
       "name": "@vector/compliance",
       "dependencies": {
@@ -131,14 +140,24 @@
       "dependencies": {
         "@vector/analytics": "workspace:*",
         "@vector/auth": "workspace:*",
+        "@vector/automation": "workspace:*",
         "@vector/compliance": "workspace:*",
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
+        "@vector/email": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
         "@vector/observability": "workspace:*",
         "@vector/storage": "workspace:*",
         "drizzle-orm": "^0.44.5",
+      },
+    },
+    "packages/email": {
+      "name": "@vector/email",
+      "dependencies": {
+        "@vector/config": "workspace:*",
+        "@vector/contracts": "workspace:*",
+        "@vector/observability": "workspace:*",
       },
     },
     "packages/funnel-engine": {
@@ -326,6 +345,8 @@
 
     "@vector/auth": ["@vector/auth@workspace:packages/auth"],
 
+    "@vector/automation": ["@vector/automation@workspace:packages/automation"],
+
     "@vector/compliance": ["@vector/compliance@workspace:packages/compliance"],
 
     "@vector/config": ["@vector/config@workspace:packages/config"],
@@ -339,6 +360,8 @@
     "@vector/delivery": ["@vector/delivery@workspace:apps/delivery"],
 
     "@vector/domain": ["@vector/domain@workspace:packages/domain"],
+
+    "@vector/email": ["@vector/email@workspace:packages/email"],
 
     "@vector/funnel-engine": ["@vector/funnel-engine@workspace:packages/funnel-engine"],
 

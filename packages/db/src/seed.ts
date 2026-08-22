@@ -15,6 +15,9 @@ import {
 	claims,
 	clientSettings,
 	clients,
+	emailSequenceSteps,
+	emailSequences,
+	emailTopics,
 	memberships,
 	offers,
 	services,
@@ -344,6 +347,96 @@ async function main() {
 		roleIds: [],
 		requestId: 'seed'
 	});
+
+	async function seedWelcomeSequence(
+		clientId: string,
+		fromName: string,
+		subjects: [string, string],
+		bodies: [string, string]
+	) {
+		const [topic] = await db
+			.select()
+			.from(emailTopics)
+			.where(and(eq(emailTopics.clientId, clientId), eq(emailTopics.slug, 'welcome')))
+			.limit(1);
+		if (!topic) {
+			await db.insert(emailTopics).values({
+				organizationId: org.id,
+				clientId,
+				slug: 'welcome',
+				name: 'Welcome'
+			});
+		}
+		let [sequence] = await db
+			.select()
+			.from(emailSequences)
+			.where(and(eq(emailSequences.clientId, clientId), eq(emailSequences.key, 'welcome_v1')))
+			.limit(1);
+		if (!sequence) {
+			[sequence] = await db
+				.insert(emailSequences)
+				.values({
+					organizationId: org.id,
+					clientId,
+					key: 'welcome_v1',
+					name: 'Welcome nurture',
+					status: 'approved',
+					version: 1,
+					approvedAt: new Date()
+				})
+				.returning();
+		}
+		const steps = await db
+			.select()
+			.from(emailSequenceSteps)
+			.where(eq(emailSequenceSteps.sequenceId, sequence.id));
+		if (steps.length === 0) {
+			await db.insert(emailSequenceSteps).values([
+				{
+					organizationId: org.id,
+					clientId,
+					sequenceId: sequence.id,
+					stepIndex: 0,
+					delayMinutes: 0,
+					topic: 'welcome',
+					subject: subjects[0],
+					textBody: bodies[0],
+					htmlBody: `<p>${bodies[0]}</p>`
+				},
+				{
+					organizationId: org.id,
+					clientId,
+					sequenceId: sequence.id,
+					stepIndex: 1,
+					delayMinutes: 1440,
+					topic: 'welcome',
+					subject: subjects[1],
+					textBody: bodies[1],
+					htmlBody: `<p>${bodies[1]}</p>`
+				}
+			]);
+		}
+		return fromName;
+	}
+
+	await seedWelcomeSequence(
+		clientA.id,
+		'Client Alpha Dental',
+		['We received your consult request', 'Next step for your implant consult'],
+		[
+			'Thanks for contacting Client Alpha Dental. A teammate will review your request.',
+			'If you still want an implant consult, reply to this email with a preferred time.'
+		]
+	);
+	await seedWelcomeSequence(
+		clientB.id,
+		'Client Beta Logistics',
+		['We received your assessment request', 'Next step for your warehouse assessment'],
+		[
+			'Thanks for contacting Client Beta Logistics. A teammate will review your request.',
+			'If you still want a warehouse assessment, reply with the site address and dock hours.'
+		]
+	);
 
 	console.info(
 		JSON.stringify({

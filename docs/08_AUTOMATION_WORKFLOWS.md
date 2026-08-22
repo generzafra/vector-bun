@@ -16,6 +16,8 @@ Trigger, input schema, tenant, idempotency, retry, timeout, concurrency, approva
 - Lead captured
 - Lead score changed
 - Nurture sequence
+- Enroll eligible leads after sending-domain readiness
+- Nurture due-step sweep
 - Email webhook ingestion
 - Weekly performance review
 - Recommendation generation
@@ -23,6 +25,8 @@ Trigger, input schema, tenant, idempotency, retry, timeout, concurrency, approva
 - Experiment lifecycle
 - Provider token health check
 - Data retention/deletion jobs
+
+Phase 3 contracts live in `packages/automation` (`lead-captured`, `nurture-step`, `enroll-eligible`, `nurture-due-sweep`) and run in-process. Trigger.dev cloud registration is a later slice.
 
 ## Idempotency
 

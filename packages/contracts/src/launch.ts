@@ -47,7 +47,7 @@ export const ALLOWED_LAUNCH_TRANSITIONS: Record<LaunchState, LaunchState[]> = {
 	]
 };
 
-export const LIVE_REQUIRED_ITEM_KEYS = ['domain.production'] as const;
+export const LIVE_REQUIRED_ITEM_KEYS = ['domain.production', 'email.sending'] as const;
 
 export type ReadinessItemSource = 'automatic' | 'operator';
 

@@ -12,6 +12,7 @@ import {
 	isHealthPath,
 	isRobotsPath,
 	isSitemapPath,
+	isUnsubscribePath,
 	parsePageDocument
 } from '@vector/funnel-engine';
 import { logInfo } from '@vector/observability';
@@ -24,6 +25,13 @@ export type DeliveryResolution =
 	| { kind: 'domain_challenge'; hostname: string; token: string }
 	| { kind: 'robots'; hostname: string; domainKind: DeliveryDomainKind }
 	| { kind: 'sitemap'; hostname: string; domainKind: DeliveryDomainKind }
+	| {
+			kind: 'unsubscribe';
+			hostname: string;
+			domainKind: DeliveryDomainKind;
+			clientId: string;
+			organizationId: string;
+	  }
 	| { kind: 'redirect'; hostname: string; targetHostname: string }
 	| {
 			kind: 'page';
@@ -76,6 +84,15 @@ export async function resolveDeliveryPage(
 	if (isSitemapPath(pathname)) {
 		if (domain.kind !== 'production') return { kind: 'unknown_host', host: hostHeader };
 		return { kind: 'sitemap', hostname: domain.hostname, domainKind: domain.kind };
+	}
+	if (isUnsubscribePath(pathname)) {
+		return {
+			kind: 'unsubscribe',
+			hostname: domain.hostname,
+			domainKind: domain.kind,
+			clientId: domain.clientId,
+			organizationId: domain.organizationId
+		};
 	}
 	if (pathname !== '/' && pathname !== '') {
 		return { kind: 'unknown_host', host: hostHeader };

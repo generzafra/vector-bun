@@ -61,6 +61,24 @@ attribution_results
 
 Email identity is unique per tenant. The same email on two clients is two contacts. Preview submits set `is_test`. Consent is a purpose ledger at form submit (`lead_follow_up` required, `marketing` granted or denied). Analytics sessions are not auth `sessions`. Postgres is the source of truth for leads and outcomes. Attribution v1 stores first touch and last non-direct; it is not presented as multi-touch truth.
 
+Phase 3 email (tenant-owned, `client_id` required except global suppressions):
+
+```text
+email_connections
+email_domains
+email_contacts
+email_topics
+email_sequences
+email_sequence_steps
+email_sequence_enrollments
+email_messages
+email_events
+email_suppressions
+consent_events
+```
+
+`email_suppressions.scope = global` is platform-owned and has a null `client_id`. Client suppressions never merge across tenants. Sending-domain readiness stores SPF, DKIM, DMARC, and approved From as machine-checked fields. Published welcome sequences are approved versions (`welcome_v1`). Preview/`is_test` messages are not production sends. Engagement counts are derived from tenant-scoped `email_messages` and `email_events`. `email_contacts` sync from leads even when a send is skipped.
+
 ## Launch and readiness
 
 Required for Vector 24 and operator launch tracking:

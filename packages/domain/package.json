@@ -11,7 +11,9 @@
 	"dependencies": {
 		"@vector/analytics": "workspace:*",
 		"@vector/auth": "workspace:*",
+		"@vector/automation": "workspace:*",
 		"@vector/compliance": "workspace:*",
+		"@vector/email": "workspace:*",
 		"@vector/config": "workspace:*",
 		"@vector/contracts": "workspace:*",
 		"@vector/db": "workspace:*",

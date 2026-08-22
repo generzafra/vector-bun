@@ -8,3 +8,4 @@ export * from './assets';
 export * from './domains';
 export * from './leads';
 export * from './analytics';
+export * from './email';

@@ -198,6 +198,55 @@ export const leadClientIdSchema = z
 	})
 	.strict();
 
+export const EMAIL_SUPPRESSION_REASONS = [
+	'unsubscribe',
+	'bounce',
+	'complaint',
+	'operator'
+] as const;
+export type EmailSuppressionReason = (typeof EMAIL_SUPPRESSION_REASONS)[number];
+
+export const upsertEmailDomainSchema = z
+	.object({
+		domain: z
+			.string()
+			.trim()
+			.toLowerCase()
+			.min(3)
+			.max(253)
+			.regex(/^[a-z0-9.-]+$/),
+		fromAddress: z.string().trim().email().max(254),
+		fromName: z.string().trim().min(1).max(120),
+		fromApproved: z.boolean(),
+		dkimSelector: z.string().trim().min(1).max(80).default('resend')
+	})
+	.strict();
+
+export const emailDomainIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
+export const addEmailSuppressionSchema = z
+	.object({
+		email: z.string().trim().email().max(254),
+		reason: z.enum(['unsubscribe', 'operator'])
+	})
+	.strict();
+
+export const emailClientIdSchema = z
+	.object({
+		clientId: z.string().uuid()
+	})
+	.strict();
+
+export const unsubscribeTokenSchema = z
+	.object({
+		token: z.string().min(16).max(500)
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

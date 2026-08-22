@@ -25,6 +25,14 @@ import {
 	getLaunch,
 	listLeads,
 	listClientsForActor,
+	addClientSuppression,
+	enrollEligibleLeadsForOperator,
+	getEmailOverview,
+	processDueNurtureForOperator,
+	processEmailWebhook,
+	recheckSendingDomain,
+	unsubscribeByToken,
+	upsertSendingDomain,
 	login,
 	publishFunnel,
 	recalculateReadiness,
@@ -403,6 +411,111 @@ app.get('/v1/leads/:clientId', async (c) => {
 	actorCan(session, 'leads.read');
 	const ctx = contextFor(session, requestId);
 	return c.json({ requestId, data: await listLeads(session, ctx, c.req.param('clientId')) });
+});
+
+app.get('/v1/email', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'email.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getEmailOverview(session, ctx) });
+});
+
+app.get('/v1/email/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'email.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getEmailOverview(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/email/domains', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'email.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await upsertSendingDomain(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/email/domains/:id/recheck', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'email.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await recheckSendingDomain(session, ctx, { id: c.req.param('id') }, requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.post('/v1/email/suppressions', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'email.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await addClientSuppression(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/email/nurture/process-due', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'email.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await processDueNurtureForOperator(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/email/nurture/enroll-eligible', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'email.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await enrollEligibleLeadsForOperator(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/webhooks/resend', async (c) => {
+	const requestId = createRequestId();
+	const payload = await c.req.text();
+	const headers: Record<string, string | undefined> = {
+		'svix-id': c.req.header('svix-id'),
+		'svix-timestamp': c.req.header('svix-timestamp'),
+		'svix-signature': c.req.header('svix-signature')
+	};
+	const data = await processEmailWebhook(
+		headers,
+		payload,
+		requestId,
+		c.req.header('x-forwarded-for') ?? '127.0.0.1'
+	);
+	return c.json({ requestId, data }, 202);
+});
+
+app.post('/v1/public/email/unsubscribe', async (c) => {
+	const requestId = createRequestId();
+	const body = await c.req.json();
+	const data = await unsubscribeByToken(
+		body,
+		requestId,
+		undefined,
+		c.req.header('x-forwarded-for') ?? '127.0.0.1'
+	);
+	return c.json({ requestId, data });
 });
 
 app.post('/v1/leads/:id/status', async (c) => {

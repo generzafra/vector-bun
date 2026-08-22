@@ -86,6 +86,7 @@ There is not yet a shared `Button.svelte` or form-control package. Control nativ
 | Knowledge | `apps/control/src/routes/knowledge/+page.svelte` |
 | Funnel    | `apps/control/src/routes/funnel/+page.svelte`    |
 | Leads     | `apps/control/src/routes/leads/+page.svelte`     |
+| Email     | `apps/control/src/routes/email/+page.svelte`     |
 | Analytics | `apps/control/src/routes/analytics/+page.svelte` |
 | Launch    | `apps/control/src/routes/launch/+page.svelte`    |
 | Members   | `apps/control/src/routes/members/+page.svelte`   |
@@ -95,4 +96,4 @@ Future modules (Opportunities, Campaigns, Intelligence, Automation) follow maste
 
 ## Delivery public routes
 
-Hostname-selected `apps/delivery/src/routes/+page.svelte`. Unknown hosts fail closed.
+Hostname-selected `apps/delivery/src/routes/+page.svelte`. Known-host `apps/delivery/src/routes/unsubscribe/+page.svelte` for marketing preference changes. Unknown hosts fail closed. Control `/email` reports Postgres engagement and operator enroll / due-step actions; it is not a tenant theme.

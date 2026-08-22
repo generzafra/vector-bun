@@ -50,3 +50,22 @@ Authenticated session cookie. Tenant context is the active client, never a route
 - `GET /v1/analytics/:clientId` — same report only when the actor already owns that client
 
 Postgres is the source of truth for leads and conversion counts. PostHog is an optional production fan-out.
+
+## Phase 3 Control API
+
+Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
+
+- `GET /v1/email` — sending domain, sequence, enrollments, messages, suppressions, engagement (`email.read`)
+- `GET /v1/email/:clientId` — same overview only when the actor already owns that client
+- `POST /v1/email/domains` — upsert sending domain and run DNS checks (`email.manage`, CSRF)
+- `POST /v1/email/domains/:id/recheck` — repeat SPF/DKIM/DMARC checks
+- `POST /v1/email/suppressions` — add a client suppression
+- `POST /v1/email/nurture/enroll-eligible` — sync contacts and enroll waiting production leads
+- `POST /v1/email/nurture/process-due` — send due approved-sequence steps
+
+Public, signature or token authenticated:
+
+- `POST /v1/webhooks/resend` — verify Svix signature (memory adapter accepts unsigned JSON in tests), dedupe event ids, apply bounce/complaint
+- `POST /v1/public/email/unsubscribe` — HMAC token; records marketing denied + client suppression
+
+Delivery `GET/POST /unsubscribe` on a known hostname. Token `clientId` must match the host tenant.

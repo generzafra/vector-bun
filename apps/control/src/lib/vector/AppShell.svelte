@@ -10,6 +10,7 @@
 		{ href: '/knowledge', label: 'Knowledge' },
 		{ href: '/funnel', label: 'Funnel' },
 		{ href: '/leads', label: 'Leads' },
+		{ href: '/email', label: 'Email' },
 		{ href: '/analytics', label: 'Analytics' },
 		{ href: '/launch', label: 'Launch' },
 		{ href: '/members', label: 'Members' }

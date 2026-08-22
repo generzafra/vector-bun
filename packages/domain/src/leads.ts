@@ -39,6 +39,7 @@ import {
 import { logError, logInfo } from '@vector/observability';
 import { getAnalyticsProvider } from './analytics';
 import { recordAudit } from './audit';
+import { tryEnrollCapturedLead } from './email';
 import type { Actor } from './auth-service';
 
 export function deliveryTenantContext(
@@ -290,6 +291,7 @@ export async function captureLead(
 		created: persisted.created,
 		isTest
 	});
+	const nurture = await tryEnrollCapturedLead(required, persisted.lead.id);
 	for (const event of persisted.events) {
 		if (!persisted.created && event.name === 'lead_created') continue;
 		await fanout(getAnalyticsProvider(), {
@@ -315,7 +317,8 @@ export async function captureLead(
 			firstTouch,
 			lastNonDirect
 		},
-		events: persisted.events
+		events: persisted.events,
+		nurture
 	};
 }
 

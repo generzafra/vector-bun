@@ -68,6 +68,7 @@ export const clientSettings = pgTable(
 			.references(() => clients.id),
 		displayName: text('display_name').notNull(),
 		timezone: text('timezone').notNull().default('UTC'),
+		jurisdictionProfile: text('jurisdiction_profile').notNull().default('us_can_spam'),
 		createdAt: createdAt(),
 		updatedAt: updatedAt()
 	},
@@ -1011,5 +1012,336 @@ export const attributionResults = pgTable(
 	(t) => [
 		uniqueIndex('attribution_results_lead_idx').on(t.leadId),
 		index('attribution_results_client_idx').on(t.clientId)
+	]
+);
+
+export const emailConnectionStatus = pgEnum('email_connection_status', ['active', 'paused']);
+export const emailDomainStatus = pgEnum('email_domain_status', ['pending', 'ready', 'failed']);
+export const emailSequenceStatus = pgEnum('email_sequence_status', [
+	'draft',
+	'approved',
+	'retired'
+]);
+export const emailEnrollmentStatus = pgEnum('email_enrollment_status', [
+	'active',
+	'completed',
+	'cancelled',
+	'suppressed'
+]);
+export const emailMessageStatus = pgEnum('email_message_status', [
+	'queued',
+	'sent',
+	'delivered',
+	'bounced',
+	'complained',
+	'skipped',
+	'failed'
+]);
+export const emailSuppressionScope = pgEnum('email_suppression_scope', ['global', 'client']);
+export const emailSuppressionReason = pgEnum('email_suppression_reason', [
+	'unsubscribe',
+	'bounce',
+	'complaint',
+	'operator'
+]);
+
+export type EmailTopicPreferences = {
+	welcome?: boolean;
+	marketing?: boolean;
+};
+
+export type EmailDomainCheckDetail = {
+	spf?: string;
+	dkim?: string;
+	dmarc?: string;
+	fromMatchesDomain?: boolean;
+};
+
+export const emailConnections = pgTable(
+	'email_connections',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		provider: text('provider').notNull().default('resend'),
+		status: emailConnectionStatus('status').notNull().default('active'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [uniqueIndex('email_connections_client_idx').on(t.clientId)]
+);
+
+export const emailDomains = pgTable(
+	'email_domains',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		domain: text('domain').notNull(),
+		fromAddress: text('from_address').notNull(),
+		fromName: text('from_name').notNull(),
+		fromApproved: boolean('from_approved').notNull().default(false),
+		dkimSelector: text('dkim_selector').notNull().default('resend'),
+		status: emailDomainStatus('status').notNull().default('pending'),
+		spfReady: boolean('spf_ready').notNull().default(false),
+		dkimReady: boolean('dkim_ready').notNull().default(false),
+		dmarcReady: boolean('dmarc_ready').notNull().default(false),
+		checkDetail: jsonb('check_detail').$type<EmailDomainCheckDetail>().notNull().default({}),
+		lastCheckedAt: timestamp('last_checked_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('email_domains_client_domain_idx').on(t.clientId, t.domain),
+		index('email_domains_client_idx').on(t.clientId)
+	]
+);
+
+export const emailTopics = pgTable(
+	'email_topics',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		slug: text('slug').notNull(),
+		name: text('name').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [uniqueIndex('email_topics_client_slug_idx').on(t.clientId, t.slug)]
+);
+
+export const emailContacts = pgTable(
+	'email_contacts',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		contactId: uuid('contact_id')
+			.notNull()
+			.references(() => contacts.id),
+		email: text('email').notNull(),
+		topicPreferences: jsonb('topic_preferences').$type<EmailTopicPreferences>().notNull().default({
+			welcome: true
+		}),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('email_contacts_client_email_idx').on(t.clientId, t.email),
+		uniqueIndex('email_contacts_contact_idx').on(t.contactId),
+		index('email_contacts_client_idx').on(t.clientId)
+	]
+);
+
+export const emailSequences = pgTable(
+	'email_sequences',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		key: text('key').notNull(),
+		name: text('name').notNull(),
+		status: emailSequenceStatus('status').notNull().default('draft'),
+		version: integer('version').notNull().default(1),
+		approvedAt: timestamp('approved_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [uniqueIndex('email_sequences_client_key_idx').on(t.clientId, t.key)]
+);
+
+export const emailSequenceSteps = pgTable(
+	'email_sequence_steps',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		sequenceId: uuid('sequence_id')
+			.notNull()
+			.references(() => emailSequences.id),
+		stepIndex: integer('step_index').notNull(),
+		delayMinutes: integer('delay_minutes').notNull().default(0),
+		topic: text('topic').notNull().default('welcome'),
+		subject: text('subject').notNull(),
+		textBody: text('text_body').notNull(),
+		htmlBody: text('html_body').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('email_sequence_steps_unique_idx').on(t.sequenceId, t.stepIndex),
+		index('email_sequence_steps_client_idx').on(t.clientId)
+	]
+);
+
+export const emailSequenceEnrollments = pgTable(
+	'email_sequence_enrollments',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		sequenceId: uuid('sequence_id')
+			.notNull()
+			.references(() => emailSequences.id),
+		contactId: uuid('contact_id')
+			.notNull()
+			.references(() => contacts.id),
+		leadId: uuid('lead_id')
+			.notNull()
+			.references(() => leads.id),
+		email: text('email').notNull(),
+		status: emailEnrollmentStatus('status').notNull().default('active'),
+		currentStepIndex: integer('current_step_index').notNull().default(0),
+		nextStepAt: timestamp('next_step_at', { withTimezone: true }),
+		completedAt: timestamp('completed_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('email_enrollments_lead_sequence_idx').on(t.leadId, t.sequenceId),
+		index('email_enrollments_client_idx').on(t.clientId),
+		index('email_enrollments_due_idx').on(t.clientId, t.status, t.nextStepAt)
+	]
+);
+
+export const emailMessages = pgTable(
+	'email_messages',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		contactId: uuid('contact_id')
+			.notNull()
+			.references(() => contacts.id),
+		leadId: uuid('lead_id').references(() => leads.id),
+		enrollmentId: uuid('enrollment_id').references(() => emailSequenceEnrollments.id),
+		sequenceId: uuid('sequence_id').references(() => emailSequences.id),
+		stepIndex: integer('step_index'),
+		toAddress: text('to_address').notNull(),
+		fromAddress: text('from_address').notNull(),
+		subject: text('subject').notNull(),
+		status: emailMessageStatus('status').notNull().default('queued'),
+		provider: text('provider').notNull().default('resend'),
+		providerMessageId: text('provider_message_id'),
+		idempotencyKey: text('idempotency_key').notNull(),
+		skipReason: text('skip_reason'),
+		isTest: boolean('is_test').notNull().default(false),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('email_messages_idempotency_idx').on(t.clientId, t.idempotencyKey),
+		index('email_messages_client_idx').on(t.clientId),
+		index('email_messages_provider_idx').on(t.providerMessageId)
+	]
+);
+
+export const emailEvents = pgTable(
+	'email_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		messageId: uuid('message_id')
+			.notNull()
+			.references(() => emailMessages.id),
+		providerEventId: text('provider_event_id').notNull(),
+		type: text('type').notNull(),
+		payload: jsonb('payload')
+			.$type<Record<string, string | number | boolean | null>>()
+			.notNull()
+			.default({}),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('email_events_provider_idx').on(t.clientId, t.providerEventId),
+		index('email_events_client_idx').on(t.clientId)
+	]
+);
+
+export const emailSuppressions = pgTable(
+	'email_suppressions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id').references(() => organizations.id),
+		clientId: uuid('client_id').references(() => clients.id),
+		email: text('email').notNull(),
+		scope: emailSuppressionScope('scope').notNull(),
+		reason: emailSuppressionReason('reason').notNull(),
+		source: text('source').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('email_suppressions_global_email_idx')
+			.on(t.email)
+			.where(sql`${t.scope} = 'global'`),
+		uniqueIndex('email_suppressions_client_email_idx')
+			.on(t.clientId, t.email)
+			.where(sql`${t.scope} = 'client'`),
+		index('email_suppressions_client_idx').on(t.clientId),
+		index('email_suppressions_email_idx').on(t.email)
+	]
+);
+
+export const consentEvents = pgTable(
+	'consent_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		contactId: uuid('contact_id')
+			.notNull()
+			.references(() => contacts.id),
+		purpose: consentPurpose('purpose').notNull(),
+		decision: consentDecision('decision').notNull(),
+		source: text('source').notNull(),
+		copyVersion: integer('copy_version').notNull(),
+		requestId: text('request_id').notNull(),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('consent_events_client_idx').on(t.clientId),
+		index('consent_events_contact_idx').on(t.contactId)
 	]
 );

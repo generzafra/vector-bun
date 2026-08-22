@@ -22,6 +22,8 @@ import {
 	getProductionDomainForTenant,
 	getPublishedHomeForTenant,
 	getReadinessForTenant,
+	getReadyEmailDomainForTenant,
+	getEmailConnectionForTenant,
 	insertLaunchApprovalForTenant,
 	insertLaunchEventForTenant,
 	listBrandAssetsForTenant,
@@ -125,6 +127,11 @@ async function evaluateAutomatic(ctx: TenantContext) {
 	const assets = await listBrandAssetsForTenant(ctx);
 	const approved = claims.some((claim) => claim.kind === 'approved');
 	const prohibited = claims.some((claim) => claim.kind === 'prohibited');
+	const [emailConnection, emailDomain] = await Promise.all([
+		getEmailConnectionForTenant(ctx),
+		getReadyEmailDomainForTenant(ctx)
+	]);
+	const emailReady = Boolean(emailConnection?.status === 'active' && emailDomain);
 	return {
 		'brand.identity': {
 			complete: Boolean(brand?.displayName),
@@ -164,7 +171,12 @@ async function evaluateAutomatic(ctx: TenantContext) {
 			complete: Boolean(production),
 			detail: production ? 'Production domain is active' : 'Production domain is not active'
 		},
-		'email.sending': { complete: false, detail: 'Email adapter is not connected in this slice' },
+		'email.sending': {
+			complete: emailReady,
+			detail: emailReady
+				? `Sending domain ${emailDomain?.domain} is ready`
+				: 'SPF, DKIM, DMARC, or approved From is missing'
+		},
 		'social.access': { complete: false, detail: 'Social adapter is not connected in this slice' },
 		'analytics.connected': {
 			complete: false,
@@ -433,8 +445,11 @@ export async function transitionLaunch(
 		const missing = LIVE_REQUIRED_ITEM_KEYS.filter(
 			(key) => items.find((item) => item.key === key)?.status !== 'complete'
 		);
-		if (missing.length) {
+		if (missing.includes('domain.production')) {
 			throw new ValidationError('Production domain is required before live launch');
+		}
+		if (missing.includes('email.sending')) {
+			throw new ValidationError('Email sending domain is required before live launch');
 		}
 	}
 
