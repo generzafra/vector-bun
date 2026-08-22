@@ -15,6 +15,17 @@
 
 Tenancy, identity, brand knowledge, funnel, CRM, campaigns, social, email, SEO/AEO, analytics, attribution, experiments, AI, automation, compliance, audit, launch, usage.
 
+Phase 1 knowledge (tenant-owned, `client_id` required):
+
+```text
+brands
+services
+offers
+claims
+```
+
+`brands` is one row per client: audience, offer, conversions, personality, and design tokens. Claims store approved and prohibited statements. Money on offers is integer minor units plus currency.
+
 ## Launch and readiness
 
 Required for Vector 24 and operator launch tracking:

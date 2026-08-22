@@ -1,9 +1,9 @@
-import { afterAll, expect, test } from 'bun:test';
+import { expect, test } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { cookieName, sessionCookieOptions } from '@vector/auth';
 import { env } from '@vector/config';
 import { ForbiddenError, TenantContextError } from '@vector/contracts';
-import { auditLogs, clients, closeDb, db, updateClientSettingsForTenant } from '@vector/db';
+import { auditLogs, clients, db, updateClientSettingsForTenant } from '@vector/db';
 import {
 	addMembership,
 	contextFor,
@@ -31,10 +31,6 @@ function cookieHeader(token: string) {
 function sessionCookie(res: Response) {
 	return res.headers.getSetCookie?.()[0] ?? res.headers.get('set-cookie') ?? '';
 }
-
-afterAll(async () => {
-	await closeDb();
-});
 
 test('session cookie options are HttpOnly', () => {
 	expect(sessionCookieOptions().httpOnly).toBe(true);

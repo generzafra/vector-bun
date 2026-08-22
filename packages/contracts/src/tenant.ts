@@ -24,3 +24,17 @@ export function assertSameClient(ctx: TenantContext, clientId: string) {
 	}
 	return required;
 }
+
+export function assertActorOwnsContext(
+	actor: { organizationId: string; clientId: string | null },
+	ctx: TenantContext
+) {
+	const required = requireTenantContext(ctx);
+	if (actor.organizationId !== required.organizationId) {
+		throw new TenantContextError('Organization does not match tenant context');
+	}
+	if (!actor.clientId || actor.clientId !== required.clientId) {
+		throw new TenantContextError('Actor client does not match tenant context');
+	}
+	return required;
+}

@@ -1,6 +1,6 @@
 # Phase 1 — Knowledge and Funnel
 
-**Status:** Outline  
+**Status:** In progress — knowledge slice implemented. Funnel renderer, preview host, and launch state remain.
 **Prerequisite:** Phase 0 exit met. Do not start until cross-tenant tests pass and Phase 0 CI deploy succeeds.
 
 ---
@@ -49,3 +49,12 @@ Publication updates an immutable page version and cache invalidation. It is not 
 ## Do not start until
 
 Phase 0 isolation tests, session auth, and CI are green.
+
+## Slice 1 — Client knowledge (done)
+
+Operator can capture a tenant-scoped brand profile, services, offers, and approved/prohibited claims for the active client. Same profile shape for every client. No custom engineering.
+
+- Tables: `brands`, `services`, `offers`, `claims`
+- Capabilities: `knowledge.read`, `knowledge.manage`
+- Control: `/knowledge`
+- Isolation: actor context must match the client; Alpha cannot read or write Beta knowledge

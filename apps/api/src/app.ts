@@ -6,11 +6,16 @@ import { AppError, ForbiddenError, UnauthorizedError } from '@vector/contracts';
 import {
 	actorCan,
 	contextFor,
+	addClaim,
+	addOffer,
+	addService,
 	createClient,
 	getClient,
+	getKnowledge,
 	listClientsForActor,
 	login,
 	resolveSession,
+	saveBrand,
 	updateClientSettings
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
@@ -81,6 +86,68 @@ app.patch('/v1/clients/:id', async (c) => {
 		requestId
 	);
 	return c.json({ requestId, data: row });
+});
+
+app.get('/v1/knowledge', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'knowledge.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getKnowledge(session, ctx) });
+});
+
+app.get('/v1/knowledge/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'knowledge.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getKnowledge(session, ctx, c.req.param('clientId')) });
+});
+
+app.patch('/v1/knowledge', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'knowledge.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await saveBrand(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.post('/v1/knowledge/services', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'knowledge.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await addService(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/knowledge/offers', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'knowledge.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await addOffer(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/knowledge/claims', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'knowledge.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await addClaim(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
 });
 
 app.onError((error, c) => {

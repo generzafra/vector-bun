@@ -3,9 +3,13 @@ import { env } from '@vector/config';
 import { CAPABILITIES, ROLE_CAPABILITIES, ROLE_KEYS } from '@vector/contracts';
 import { db } from './client';
 import {
+	brands,
+	claims,
 	clientSettings,
 	clients,
 	memberships,
+	offers,
+	services,
 	organizations,
 	permissions,
 	rolePermissions,
@@ -124,6 +128,127 @@ async function main() {
 
 	await upsertMembership(admin.id, superAdminRole.id, null);
 	await upsertMembership(userA.id, clientAdminRole.id, clientA.id);
+
+	async function upsertBrand(
+		clientId: string,
+		displayName: string,
+		audience: string,
+		offer: string,
+		primaryConversion: string
+	) {
+		const [existing] = await db.select().from(brands).where(eq(brands.clientId, clientId)).limit(1);
+		if (existing) return existing;
+		const [row] = await db
+			.insert(brands)
+			.values({
+				organizationId: org.id,
+				clientId,
+				displayName,
+				audience,
+				offer,
+				primaryConversion,
+				brandPersonality: 'corporate',
+				tokens: { accent: '#3b6fd9' }
+			})
+			.returning();
+		return row;
+	}
+
+	await upsertBrand(
+		clientA.id,
+		'Client Alpha Dental',
+		'Local patients who need implant consults',
+		'Guided implant consults with a clear treatment plan',
+		'Book an implant consult'
+	);
+	await upsertBrand(
+		clientB.id,
+		'Client Beta Logistics',
+		'Warehouse operators who need faster throughput',
+		'Automation that reduces dock-to-stock time',
+		'Request a warehouse assessment'
+	);
+
+	async function upsertService(
+		clientId: string,
+		name: string,
+		slug: string,
+		outcome: string,
+		summary: string
+	) {
+		const [existing] = await db
+			.select()
+			.from(services)
+			.where(and(eq(services.clientId, clientId), eq(services.slug, slug)))
+			.limit(1);
+		if (existing) return;
+		await db.insert(services).values({
+			organizationId: org.id,
+			clientId,
+			name,
+			slug,
+			outcome,
+			summary
+		});
+	}
+
+	await upsertService(
+		clientA.id,
+		'Implant consult',
+		'implant-consult',
+		'A clear implant plan in one visit',
+		'Assessment, imaging review, and next-step recommendation.'
+	);
+	await upsertService(
+		clientB.id,
+		'Warehouse assessment',
+		'warehouse-assessment',
+		'Faster dock-to-stock without extra headcount',
+		'Process review and automation recommendation.'
+	);
+
+	async function upsertOffer(clientId: string, name: string, summary: string, price: number) {
+		const rows = await db.select().from(offers).where(eq(offers.clientId, clientId));
+		if (rows.some((row) => row.name === name)) return;
+		await db.insert(offers).values({
+			organizationId: org.id,
+			clientId,
+			name,
+			summary,
+			startingPriceMinor: price,
+			currency: 'USD'
+		});
+	}
+
+	await upsertOffer(clientA.id, 'Consult package', 'Exam and written treatment plan', 15000);
+	await upsertOffer(clientB.id, 'Assessment sprint', 'Two-week operations review', 750000);
+
+	async function upsertClaim(
+		clientId: string,
+		kind: 'approved' | 'prohibited',
+		statement: string,
+		evidence?: string
+	) {
+		const rows = await db.select().from(claims).where(eq(claims.clientId, clientId));
+		if (rows.some((row) => row.statement === statement)) return;
+		await db.insert(claims).values({
+			organizationId: org.id,
+			clientId,
+			kind,
+			statement,
+			evidence: evidence ?? null
+		});
+	}
+
+	await upsertClaim(
+		clientA.id,
+		'approved',
+		'Consults include a written treatment plan',
+		'Clinic protocol 2026'
+	);
+	await upsertClaim(clientA.id, 'prohibited', 'Guaranteed implant success');
+	await upsertClaim(clientB.id, 'approved', 'Assessment covers inbound and outbound docks');
+	await upsertClaim(clientB.id, 'prohibited', 'Guaranteed 50 percent cost reduction');
 
 	console.info(
 		JSON.stringify({

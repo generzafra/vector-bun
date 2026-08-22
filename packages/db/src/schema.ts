@@ -1,12 +1,13 @@
 import {
 	index,
+	integer,
+	jsonb,
 	pgEnum,
 	pgTable,
 	text,
 	timestamp,
 	uniqueIndex,
-	uuid,
-	integer
+	uuid
 } from 'drizzle-orm/pg-core';
 import { uuidv7 } from 'uuidv7';
 
@@ -185,4 +186,105 @@ export const auditLogs = pgTable(
 		createdAt: createdAt()
 	},
 	(t) => [index('audit_logs_client_idx').on(t.clientId)]
+);
+
+export const claimKind = pgEnum('claim_kind', ['approved', 'prohibited']);
+
+export type BrandTokens = {
+	background?: string;
+	surface?: string;
+	text?: string;
+	accent?: string;
+	fontFamily?: string;
+};
+
+export const brands = pgTable(
+	'brands',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		displayName: text('display_name').notNull(),
+		tagline: text('tagline'),
+		audience: text('audience'),
+		offer: text('offer'),
+		primaryConversion: text('primary_conversion'),
+		secondaryConversion: text('secondary_conversion'),
+		brandPersonality: text('brand_personality'),
+		tokens: jsonb('tokens').$type<BrandTokens>().notNull().default({}),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('brands_client_idx').on(t.clientId),
+		index('brands_org_idx').on(t.organizationId)
+	]
+);
+
+export const services = pgTable(
+	'services',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		name: text('name').notNull(),
+		slug: text('slug').notNull(),
+		outcome: text('outcome').notNull(),
+		summary: text('summary').notNull(),
+		sortOrder: integer('sort_order').notNull().default(0),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('services_client_idx').on(t.clientId),
+		uniqueIndex('services_client_slug_idx').on(t.clientId, t.slug)
+	]
+);
+
+export const offers = pgTable(
+	'offers',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		name: text('name').notNull(),
+		summary: text('summary').notNull(),
+		startingPriceMinor: integer('starting_price_minor'),
+		currency: text('currency').notNull().default('USD'),
+		sortOrder: integer('sort_order').notNull().default(0),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [index('offers_client_idx').on(t.clientId)]
+);
+
+export const claims = pgTable(
+	'claims',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		kind: claimKind('kind').notNull(),
+		statement: text('statement').notNull(),
+		evidence: text('evidence'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [index('claims_client_idx').on(t.clientId)]
 );
