@@ -1,7 +1,11 @@
+import { ProviderError } from '@vector/contracts';
 import type { SocialPlatform } from '@vector/contracts';
 import type {
+	AuthorizationRequest,
 	ConnectionHealth,
+	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthTokenSet,
 	PostMetrics,
 	PublishRequest,
 	PublishResult,
@@ -21,6 +25,7 @@ const EMPTY_METRICS: PostMetrics = {
 export class MemorySocialProvider implements SocialProvider {
 	readonly published: PublishRequest[] = [];
 	readonly refreshed: RefreshRequest[] = [];
+	readonly exchanged: ExchangeAuthorizationCodeInput[] = [];
 	readonly metrics = new Map<string, PostMetrics>();
 	refreshFail = false;
 
@@ -37,6 +42,34 @@ export class MemorySocialProvider implements SocialProvider {
 			platform: this.platform,
 			detail: ok ? 'Memory connection is valid' : 'Access token or account id is missing',
 			externalAccountId: input.externalAccountId
+		};
+	}
+
+	createAuthorizationUrl(request: AuthorizationRequest) {
+		const url = new URL(`https://social.test/oauth/${this.platform}`);
+		url.searchParams.set('response_type', 'code');
+		url.searchParams.set('state', request.state);
+		url.searchParams.set('redirect_uri', request.redirectUri);
+		url.searchParams.set('code_challenge', request.codeChallenge);
+		url.searchParams.set('code_challenge_method', 'S256');
+		return url.toString();
+	}
+
+	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+		this.exchanged.push(input);
+		if (!input.code || !input.codeVerifier) {
+			throw new ProviderError(
+				'Memory OAuth code or verifier is missing',
+				'PROVIDER_INVALID_PAYLOAD'
+			);
+		}
+		return {
+			accessToken: `memory-oauth-${this.platform}-${input.code.slice(0, 12)}`,
+			refreshToken: `memory-oauth-rt-${this.platform}`,
+			expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+			externalAccountId: `oauth-${this.platform}-account`,
+			handle: `${this.platform}-oauth`,
+			displayName: `${this.platform} OAuth`
 		};
 	}
 
@@ -85,6 +118,7 @@ export class MemorySocialProvider implements SocialProvider {
 	reset() {
 		this.published.length = 0;
 		this.refreshed.length = 0;
+		this.exchanged.length = 0;
 		this.metrics.clear();
 		this.refreshFail = false;
 	}

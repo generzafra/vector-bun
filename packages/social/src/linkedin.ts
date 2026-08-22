@@ -2,8 +2,11 @@ import { ProviderError } from '@vector/contracts';
 import { logError, logInfo } from '@vector/observability';
 import { asBody } from './bytes';
 import type {
+	AuthorizationRequest,
 	ConnectionHealth,
+	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthTokenSet,
 	PostMetrics,
 	PublishMedia,
 	PublishRequest,
@@ -189,6 +192,107 @@ export class LinkedInSocialProvider implements SocialProvider {
 			);
 		}
 		return image;
+	}
+
+	createAuthorizationUrl(request: AuthorizationRequest) {
+		if (!this.oauth.clientId) {
+			throw new ProviderError(
+				'LinkedIn OAuth client is not configured',
+				'SOCIAL_OAUTH_UNCONFIGURED'
+			);
+		}
+		const url = new URL('https://www.linkedin.com/oauth/v2/authorization');
+		url.searchParams.set('response_type', 'code');
+		url.searchParams.set('client_id', this.oauth.clientId);
+		url.searchParams.set('redirect_uri', request.redirectUri);
+		url.searchParams.set('state', request.state);
+		url.searchParams.set('scope', 'openid profile w_member_social offline_access');
+		return url.toString();
+	}
+
+	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+		const clientId = this.oauth.clientId;
+		const clientSecret = this.oauth.clientSecret;
+		if (!clientId || !clientSecret) {
+			throw new ProviderError(
+				'LinkedIn OAuth client is not configured',
+				'SOCIAL_OAUTH_UNCONFIGURED'
+			);
+		}
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+		try {
+			const tokenResponse = await this.sendHttp('https://www.linkedin.com/oauth/v2/accessToken', {
+				method: 'POST',
+				signal: controller.signal,
+				headers: { 'content-type': 'application/x-www-form-urlencoded' },
+				body: new URLSearchParams({
+					grant_type: 'authorization_code',
+					code: input.code,
+					redirect_uri: input.redirectUri,
+					client_id: clientId,
+					client_secret: clientSecret
+				})
+			});
+			if (!tokenResponse.ok) {
+				throw new ProviderError(
+					`LinkedIn OAuth exchange failed (${tokenResponse.status})`,
+					'PROVIDER_TEMPORARY_FAILURE'
+				);
+			}
+			const tokens = (await tokenResponse.json()) as {
+				access_token?: string;
+				refresh_token?: string;
+				expires_in?: number;
+				scope?: string;
+			};
+			if (!tokens.access_token) {
+				throw new ProviderError(
+					'LinkedIn OAuth exchange returned no access token',
+					'PROVIDER_INVALID_PAYLOAD'
+				);
+			}
+			const profileResponse = await this.sendHttp('https://api.linkedin.com/v2/userinfo', {
+				method: 'GET',
+				signal: controller.signal,
+				headers: { authorization: `Bearer ${tokens.access_token}` }
+			});
+			if (!profileResponse.ok) {
+				throw new ProviderError(
+					`LinkedIn profile lookup failed (${profileResponse.status})`,
+					'PROVIDER_TEMPORARY_FAILURE'
+				);
+			}
+			const profile = (await profileResponse.json()) as {
+				sub?: string;
+				name?: string;
+				email?: string;
+			};
+			if (!profile.sub) {
+				throw new ProviderError(
+					'LinkedIn profile returned no account id',
+					'PROVIDER_INVALID_PAYLOAD'
+				);
+			}
+			const externalAccountId = profile.sub.startsWith('urn:')
+				? profile.sub
+				: `urn:li:person:${profile.sub}`;
+			return {
+				accessToken: tokens.access_token,
+				refreshToken: tokens.refresh_token,
+				expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : undefined,
+				scopes: tokens.scope,
+				externalAccountId,
+				handle: profile.email ?? profile.name ?? 'linkedin',
+				displayName: profile.name ?? 'LinkedIn'
+			};
+		} catch (error) {
+			if (error instanceof ProviderError) throw error;
+			logError('social.linkedin.oauth', error, {});
+			throw new ProviderError('LinkedIn OAuth exchange failed', 'PROVIDER_TEMPORARY_FAILURE');
+		} finally {
+			clearTimeout(timer);
+		}
 	}
 
 	async fetchPostMetrics(_request: MetricsRequest): Promise<PostMetrics> {

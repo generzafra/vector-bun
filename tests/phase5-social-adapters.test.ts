@@ -350,3 +350,250 @@ test('official Meta metrics map Graph fields and fail closed to zeros', async ()
 		})
 	).toEqual({ impressions: 0, likes: 0, comments: 0, shares: 0, clicks: 0 });
 });
+
+test('official LinkedIn and X OAuth fail closed without credentials and exchange official codes', async () => {
+	const unconfigured = new LinkedInSocialProvider(async () => jsonResponse(200, {}));
+	let linkedinConfigError: unknown;
+	try {
+		unconfigured.createAuthorizationUrl({
+			state: 'state-1',
+			redirectUri: 'http://localhost:5183/social/oauth/callback',
+			codeChallenge: 'challenge-1'
+		});
+	} catch (caught) {
+		linkedinConfigError = caught;
+	}
+	expect(linkedinConfigError).toBeInstanceOf(ProviderError);
+	expect((linkedinConfigError as ProviderError).code).toBe('SOCIAL_OAUTH_UNCONFIGURED');
+
+	const linkedinCalls: string[] = [];
+	const linkedin = new LinkedInSocialProvider(
+		async (input) => {
+			const url = String(input);
+			linkedinCalls.push(url);
+			if (url.includes('/oauth/v2/accessToken')) {
+				return jsonResponse(200, {
+					access_token: 'linkedin-oauth-access',
+					refresh_token: 'linkedin-oauth-refresh',
+					expires_in: 3600
+				});
+			}
+			if (url.includes('/v2/userinfo')) {
+				return jsonResponse(200, { sub: 'person-9', name: 'Li Member', email: 'li@example.test' });
+			}
+			return jsonResponse(404, {});
+		},
+		{ clientId: 'li-client', clientSecret: 'li-secret' }
+	);
+	const linkedinUrl = new URL(
+		linkedin.createAuthorizationUrl({
+			state: 'li-state',
+			redirectUri: 'http://localhost:5183/social/oauth/callback',
+			codeChallenge: 'li-challenge'
+		})
+	);
+	expect(linkedinUrl.origin).toBe('https://www.linkedin.com');
+	expect(linkedinUrl.searchParams.get('client_id')).toBe('li-client');
+	expect(linkedinUrl.searchParams.get('scope')?.includes('w_member_social')).toBe(true);
+	const linkedinTokens = await linkedin.exchangeAuthorizationCode({
+		code: 'li-code',
+		redirectUri: 'http://localhost:5183/social/oauth/callback',
+		codeVerifier: 'li-verifier'
+	});
+	expect(linkedinTokens.accessToken).toBe('linkedin-oauth-access');
+	expect(linkedinTokens.externalAccountId).toBe('urn:li:person:person-9');
+	expect(linkedinCalls.some((call) => call.includes('/oauth/v2/accessToken'))).toBe(true);
+	expect(linkedinCalls.some((call) => call.includes('/v2/userinfo'))).toBe(true);
+
+	const xBare = new XSocialProvider(async () => jsonResponse(200, {}));
+	let xConfigError: unknown;
+	try {
+		await xBare.exchangeAuthorizationCode({
+			code: 'x-code',
+			redirectUri: 'http://localhost:5183/social/oauth/callback',
+			codeVerifier: 'x-verifier'
+		});
+	} catch (caught) {
+		xConfigError = caught;
+	}
+	expect(xConfigError).toBeInstanceOf(ProviderError);
+	expect((xConfigError as ProviderError).code).toBe('SOCIAL_OAUTH_UNCONFIGURED');
+
+	const xCalls: string[] = [];
+	const x = new XSocialProvider(
+		async (input) => {
+			const url = String(input);
+			xCalls.push(url);
+			if (url.includes('/oauth2/token')) {
+				return jsonResponse(200, {
+					access_token: 'x-oauth-access',
+					refresh_token: 'x-oauth-refresh',
+					expires_in: 7200
+				});
+			}
+			if (url.includes('/users/me')) {
+				return jsonResponse(200, {
+					data: { id: 'x-user-9', username: 'vectorx', name: 'Vector X' }
+				});
+			}
+			return jsonResponse(404, {});
+		},
+		{ clientId: 'x-client', clientSecret: 'x-secret' }
+	);
+	const xUrl = new URL(
+		x.createAuthorizationUrl({
+			state: 'x-state',
+			redirectUri: 'http://localhost:5183/social/oauth/callback',
+			codeChallenge: 'x-challenge'
+		})
+	);
+	expect(xUrl.origin).toBe('https://x.com');
+	expect(xUrl.searchParams.get('code_challenge_method')).toBe('S256');
+	const xTokens = await x.exchangeAuthorizationCode({
+		code: 'x-code',
+		redirectUri: 'http://localhost:5183/social/oauth/callback',
+		codeVerifier: 'x-verifier'
+	});
+	expect(xTokens.accessToken).toBe('x-oauth-access');
+	expect(xTokens.handle).toBe('vectorx');
+	expect(xCalls.some((call) => call.includes('https://api.x.com/2/oauth2/token'))).toBe(true);
+});
+
+test('official Meta OAuth stores the Page token and fails closed without a Page or Instagram account', async () => {
+	const unconfigured = new MetaSocialProvider('facebook', async () => jsonResponse(200, {}));
+	let metaConfigError: unknown;
+	try {
+		unconfigured.createAuthorizationUrl({
+			state: 'meta-state',
+			redirectUri: 'http://localhost:5183/social/oauth/callback',
+			codeChallenge: 'meta-challenge'
+		});
+	} catch (caught) {
+		metaConfigError = caught;
+	}
+	expect(metaConfigError).toBeInstanceOf(ProviderError);
+	expect((metaConfigError as ProviderError).code).toBe('SOCIAL_OAUTH_UNCONFIGURED');
+
+	const facebookCalls: string[] = [];
+	const facebook = new MetaSocialProvider(
+		'facebook',
+		async (input) => {
+			const url = String(input);
+			facebookCalls.push(url);
+			if (url.includes('redirect_uri=')) {
+				return jsonResponse(200, { access_token: 'meta-short' });
+			}
+			if (url.includes('fb_exchange_token')) {
+				return jsonResponse(200, { access_token: 'meta-long', expires_in: 5184000 });
+			}
+			if (url.includes('/me/accounts')) {
+				return jsonResponse(200, {
+					data: [{ id: 'page-9', name: 'Vector Page', access_token: 'page-token-9' }]
+				});
+			}
+			return jsonResponse(404, {});
+		},
+		{ appId: 'meta-app', appSecret: 'meta-secret' }
+	);
+	const facebookUrl = new URL(
+		facebook.createAuthorizationUrl({
+			state: 'fb-state',
+			redirectUri: 'http://localhost:5183/social/oauth/callback',
+			codeChallenge: 'fb-challenge'
+		})
+	);
+	expect(facebookUrl.origin).toBe('https://www.facebook.com');
+	expect(facebookUrl.pathname).toContain('/dialog/oauth');
+	const facebookTokens = await facebook.exchangeAuthorizationCode({
+		code: 'fb-code',
+		redirectUri: 'http://localhost:5183/social/oauth/callback',
+		codeVerifier: 'fb-verifier'
+	});
+	expect(facebookTokens.accessToken).toBe('page-token-9');
+	expect(facebookTokens.externalAccountId).toBe('page-9');
+	expect(facebookCalls.some((call) => call.includes('/me/accounts'))).toBe(true);
+
+	const noPage = new MetaSocialProvider(
+		'facebook',
+		async (input) => {
+			const url = String(input);
+			if (url.includes('redirect_uri=')) return jsonResponse(200, { access_token: 'meta-short' });
+			if (url.includes('fb_exchange_token'))
+				return jsonResponse(200, { access_token: 'meta-long' });
+			if (url.includes('/me/accounts')) return jsonResponse(200, { data: [] });
+			return jsonResponse(404, {});
+		},
+		{ appId: 'meta-app', appSecret: 'meta-secret' }
+	);
+	let noPageError: unknown;
+	try {
+		await noPage.exchangeAuthorizationCode({
+			code: 'fb-empty',
+			redirectUri: 'http://localhost:5183/social/oauth/callback',
+			codeVerifier: 'fb-verifier'
+		});
+	} catch (caught) {
+		noPageError = caught;
+	}
+	expect(noPageError).toBeInstanceOf(ProviderError);
+
+	const instagram = new MetaSocialProvider(
+		'instagram',
+		async (input) => {
+			const url = String(input);
+			if (url.includes('redirect_uri=')) return jsonResponse(200, { access_token: 'meta-short' });
+			if (url.includes('fb_exchange_token'))
+				return jsonResponse(200, { access_token: 'meta-long' });
+			if (url.includes('/me/accounts')) {
+				return jsonResponse(200, {
+					data: [{ id: 'page-9', name: 'Vector Page', access_token: 'page-token-9' }]
+				});
+			}
+			if (url.includes('fields=instagram_business_account')) {
+				return jsonResponse(200, { instagram_business_account: { id: 'ig-9' } });
+			}
+			if (url.includes('fields=id,username')) {
+				return jsonResponse(200, { id: 'ig-9', username: 'vectorig' });
+			}
+			return jsonResponse(404, {});
+		},
+		{ appId: 'meta-app', appSecret: 'meta-secret' }
+	);
+	const igTokens = await instagram.exchangeAuthorizationCode({
+		code: 'ig-code',
+		redirectUri: 'http://localhost:5183/social/oauth/callback',
+		codeVerifier: 'ig-verifier'
+	});
+	expect(igTokens.accessToken).toBe('page-token-9');
+	expect(igTokens.externalAccountId).toBe('ig-9');
+	expect(igTokens.handle).toBe('vectorig');
+
+	const noIg = new MetaSocialProvider(
+		'instagram',
+		async (input) => {
+			const url = String(input);
+			if (url.includes('redirect_uri=')) return jsonResponse(200, { access_token: 'meta-short' });
+			if (url.includes('fb_exchange_token'))
+				return jsonResponse(200, { access_token: 'meta-long' });
+			if (url.includes('/me/accounts')) {
+				return jsonResponse(200, {
+					data: [{ id: 'page-9', name: 'Vector Page', access_token: 'page-token-9' }]
+				});
+			}
+			if (url.includes('fields=instagram_business_account')) return jsonResponse(200, {});
+			return jsonResponse(404, {});
+		},
+		{ appId: 'meta-app', appSecret: 'meta-secret' }
+	);
+	let noIgError: unknown;
+	try {
+		await noIg.exchangeAuthorizationCode({
+			code: 'ig-empty',
+			redirectUri: 'http://localhost:5183/social/oauth/callback',
+			codeVerifier: 'ig-verifier'
+		});
+	} catch (caught) {
+		noIgError = caught;
+	}
+	expect(noIgError).toBeInstanceOf(ProviderError);
+});

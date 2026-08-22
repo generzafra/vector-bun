@@ -2,8 +2,11 @@ import { ProviderError } from '@vector/contracts';
 import { logError, logInfo } from '@vector/observability';
 import { asBody } from './bytes';
 import type {
+	AuthorizationRequest,
 	ConnectionHealth,
+	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthTokenSet,
 	PostMetrics,
 	PublishMedia,
 	PublishRequest,
@@ -78,6 +81,152 @@ export class MetaSocialProvider implements SocialProvider {
 				platform: this.platform,
 				detail: 'Meta connection check failed'
 			};
+		} finally {
+			clearTimeout(timer);
+		}
+	}
+
+	createAuthorizationUrl(request: AuthorizationRequest) {
+		if (!this.oauth.appId) {
+			throw new ProviderError('Meta app is not configured', 'SOCIAL_OAUTH_UNCONFIGURED');
+		}
+		const scopes =
+			this.platform === 'instagram'
+				? 'pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish,business_management'
+				: 'pages_show_list,pages_read_engagement,pages_manage_posts,business_management';
+		const url = new URL(`https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth`);
+		url.searchParams.set('response_type', 'code');
+		url.searchParams.set('client_id', this.oauth.appId);
+		url.searchParams.set('redirect_uri', request.redirectUri);
+		url.searchParams.set('state', request.state);
+		url.searchParams.set('scope', scopes);
+		return url.toString();
+	}
+
+	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+		const appId = this.oauth.appId;
+		const appSecret = this.oauth.appSecret;
+		if (!appId || !appSecret) {
+			throw new ProviderError('Meta app is not configured', 'SOCIAL_OAUTH_UNCONFIGURED');
+		}
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+		try {
+			const shortLived = await this.sendHttp(
+				`${GRAPH_BASE}/oauth/access_token?${new URLSearchParams({
+					client_id: appId,
+					client_secret: appSecret,
+					redirect_uri: input.redirectUri,
+					code: input.code
+				})}`,
+				{ method: 'GET', signal: controller.signal }
+			);
+			if (!shortLived.ok) {
+				throw new ProviderError(
+					`Meta OAuth exchange failed (${shortLived.status})`,
+					'PROVIDER_TEMPORARY_FAILURE'
+				);
+			}
+			const shortBody = (await shortLived.json()) as { access_token?: string };
+			if (!shortBody.access_token) {
+				throw new ProviderError(
+					'Meta OAuth exchange returned no access token',
+					'PROVIDER_INVALID_PAYLOAD'
+				);
+			}
+			const longLived = await this.sendHttp(
+				`${GRAPH_BASE}/oauth/access_token?${new URLSearchParams({
+					grant_type: 'fb_exchange_token',
+					client_id: appId,
+					client_secret: appSecret,
+					fb_exchange_token: shortBody.access_token
+				})}`,
+				{ method: 'GET', signal: controller.signal }
+			);
+			const longBody = longLived.ok
+				? ((await longLived.json()) as { access_token?: string; expires_in?: number })
+				: {};
+			const userToken = longBody.access_token ?? shortBody.access_token;
+			const pagesResponse = await this.sendHttp(`${GRAPH_BASE}/me/accounts`, {
+				method: 'GET',
+				signal: controller.signal,
+				headers: { authorization: `Bearer ${userToken}` }
+			});
+			if (!pagesResponse.ok) {
+				throw new ProviderError(
+					`Meta page lookup failed (${pagesResponse.status})`,
+					'PROVIDER_TEMPORARY_FAILURE'
+				);
+			}
+			const pages = (await pagesResponse.json()) as {
+				data?: Array<{ id?: string; name?: string; access_token?: string }>;
+			};
+			const page = (pages.data ?? []).find((row) => row.id && row.access_token);
+			if (!page?.id || !page.access_token) {
+				throw new ProviderError(
+					'Meta OAuth found no Page with a publish token',
+					'PROVIDER_INVALID_PAYLOAD'
+				);
+			}
+			if (this.platform === 'facebook') {
+				return {
+					accessToken: page.access_token,
+					refreshToken: page.access_token,
+					expiresAt: longBody.expires_in
+						? new Date(Date.now() + longBody.expires_in * 1000)
+						: undefined,
+					externalAccountId: page.id,
+					handle: page.name ?? 'facebook',
+					displayName: page.name ?? 'Facebook'
+				};
+			}
+			const igLookup = await this.sendHttp(
+				`${GRAPH_BASE}/${encodeURIComponent(page.id)}?fields=instagram_business_account`,
+				{
+					method: 'GET',
+					signal: controller.signal,
+					headers: { authorization: `Bearer ${page.access_token}` }
+				}
+			);
+			if (!igLookup.ok) {
+				throw new ProviderError(
+					`Instagram account lookup failed (${igLookup.status})`,
+					'PROVIDER_TEMPORARY_FAILURE'
+				);
+			}
+			const igBody = (await igLookup.json()) as {
+				instagram_business_account?: { id?: string };
+			};
+			const igUserId = igBody.instagram_business_account?.id;
+			if (!igUserId) {
+				throw new ProviderError(
+					'Meta OAuth found no Instagram professional account on the Page',
+					'PROVIDER_INVALID_PAYLOAD'
+				);
+			}
+			const igProfile = await this.sendHttp(
+				`${GRAPH_BASE}/${encodeURIComponent(igUserId)}?fields=id,username`,
+				{
+					method: 'GET',
+					signal: controller.signal,
+					headers: { authorization: `Bearer ${page.access_token}` }
+				}
+			);
+			const ig = igProfile.ok ? ((await igProfile.json()) as { username?: string }) : {};
+			return {
+				accessToken: page.access_token,
+				refreshToken: page.access_token,
+				expiresAt: longBody.expires_in
+					? new Date(Date.now() + longBody.expires_in * 1000)
+					: undefined,
+				externalAccountId: igUserId,
+				handle: ig.username ?? 'instagram',
+				displayName: ig.username ?? page.name ?? 'Instagram'
+			};
+		} catch (error) {
+			if (error instanceof ProviderError) throw error;
+			logError('social.meta.oauth', error, { platform: this.platform });
+			throw new ProviderError('Meta OAuth exchange failed', 'PROVIDER_TEMPORARY_FAILURE');
 		} finally {
 			clearTimeout(timer);
 		}

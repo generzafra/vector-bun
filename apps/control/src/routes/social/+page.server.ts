@@ -1,4 +1,4 @@
-import { fail } from '@sveltejs/kit';
+import { fail, isRedirect, redirect } from '@sveltejs/kit';
 import { AppError } from '@vector/contracts';
 import {
 	approveCreativeAsset,
@@ -10,20 +10,52 @@ import {
 	publishSocialPost,
 	refreshSocialConnection,
 	scheduleSocialPost,
+	startSocialOAuth,
 	syncSocialMetricsForOperator,
 	transitionSocialPost,
 	uploadCreativeAsset,
 	upsertSocialConnection
 } from '@vector/domain';
 
-export async function load({ locals }) {
+export async function load({ locals, url }) {
 	const session = locals.session!;
-	if (!session.clientId) return { overview: null, needsClient: true };
+	if (!session.clientId) return { overview: null, needsClient: true, oauthNotice: null };
 	const ctx = contextFor(session, locals.requestId);
-	return { overview: await getSocialOverview(session, ctx), needsClient: false };
+	const oauth = url.searchParams.get('oauth');
+	return {
+		overview: await getSocialOverview(session, ctx),
+		needsClient: false,
+		oauthNotice:
+			oauth === 'connected'
+				? 'Official OAuth connection stored. Tokens stay encrypted and are not shown.'
+				: oauth === 'error'
+					? 'Official OAuth did not complete. Start the connect flow again.'
+					: null
+	};
 }
 
 export const actions = {
+	startOAuth: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			const started = await startSocialOAuth(
+				session,
+				contextFor(session, locals.requestId),
+				{
+					platform: String(form.get('platform') ?? ''),
+					required: form.get('required') === 'on'
+				},
+				locals.requestId
+			);
+			throw redirect(303, started.authorizeUrl);
+		} catch (error) {
+			if (isRedirect(error)) throw error;
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not start official OAuth' });
+		}
+	},
 	connect: async ({ request, locals }) => {
 		const session = locals.session!;
 		if (!session.clientId) return fail(400, { error: 'Select a client first' });

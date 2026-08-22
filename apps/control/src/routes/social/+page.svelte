@@ -40,7 +40,7 @@
 <PageHeader
 	eyebrow="Growth"
 	title="Social"
-	description="Approved posts publish to LinkedIn, X, Facebook, and Instagram through official APIs. Approved C0 images upload through those APIs. Instagram Graph requires an image. Tokens stay encrypted and refresh on the server. Scheduled posts, metrics, and social-to-lead tracking use the existing attribution path."
+	description="Connect LinkedIn, X, Facebook, and Instagram through official OAuth. Approved posts and C0 images publish through those APIs. Instagram Graph requires an image. Tokens stay encrypted and refresh on the server. Scheduled posts, metrics, and social-to-lead tracking use the existing attribution path."
 />
 
 {#if form?.error}
@@ -48,6 +48,9 @@
 {/if}
 {#if form?.notice}
 	<Alert tone="info">{form.notice}</Alert>
+{/if}
+{#if data.oauthNotice}
+	<Alert tone="info">{data.oauthNotice}</Alert>
 {/if}
 
 {#if data.needsClient || !overview}
@@ -79,8 +82,10 @@
 	<section>
 		<h2>Connections</h2>
 		<p>
-			Required accounts block Vector Ready when social is in the package. Tokens are never shown.
+			Required accounts block Vector Ready when social is in the package. Official OAuth stores
+			encrypted tokens on the server. Tokens are never shown.
 		</p>
+		<p>Redirect URI: {overview.oauth.redirectUri}</p>
 		{#if overview.accounts.length === 0}
 			<EmptyState title="No social accounts connected." />
 		{:else}
@@ -131,8 +136,32 @@
 			</table>
 		{/if}
 		{#if canManage}
+			<form method="post" action="?/startOAuth">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Platform
+					<select name="platform" required>
+						<option value="linkedin">LinkedIn</option>
+						<option value="x">X</option>
+						<option value="facebook">Facebook</option>
+						<option value="instagram">Instagram</option>
+					</select>
+				</label>
+				<label>
+					<input name="required" type="checkbox" checked />
+					Required for Vector Ready
+				</label>
+				<button type="submit">Connect with official OAuth</button>
+			</form>
+			<p>
+				LinkedIn {overview.oauth.configured.linkedin ? 'ready' : 'needs credentials'} · X
+				{overview.oauth.configured.x ? 'ready' : 'needs credentials'} · Facebook
+				{overview.oauth.configured.facebook ? 'ready' : 'needs credentials'} · Instagram
+				{overview.oauth.configured.instagram ? 'ready' : 'needs credentials'}
+			</p>
 			<form method="post" action="?/connect">
 				<input type="hidden" name="_csrf" value={data.csrf} />
+				<p>Advanced: paste a token only when official OAuth cannot run.</p>
 				<label>
 					Platform
 					<select name="platform" required>

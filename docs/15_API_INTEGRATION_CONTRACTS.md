@@ -92,8 +92,10 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 
 Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
 
-- `GET /v1/social` — connections, accounts, posts, publications, Creative C0 library, readiness (`social.read`)
+- `GET /v1/social` — connections, accounts, posts, publications, Creative C0 library, readiness, OAuth redirect URI (`social.read`)
 - `GET /v1/social/:clientId` — same overview only when the actor already owns that client
+- `POST /v1/social/oauth/start` — encrypted PKCE state plus official authorize URL (`social.manage`, CSRF)
+- `POST /v1/social/oauth/complete` — exchange the code and store encrypted tokens (`social.manage`, CSRF)
 - `POST /v1/social/connections` — store an encrypted platform token and required account (`social.manage`, CSRF)
 - `POST /v1/social/connections/:id/refresh` — rotate encrypted tokens through the platform adapter (`social.manage`, CSRF)
 - `POST /v1/social/posts` — create an idea or draft; optional approved creative asset
@@ -107,4 +109,4 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/creative/assets/:id/rights` — confirm rights
 - `POST /v1/creative/assets/:id/approve` — approve after rights are confirmed
 
-`SocialProvider` lives in `packages/social`. Memory is the default. Official LinkedIn, X, and Meta (Facebook / Instagram) adapters run when `SOCIAL_ADAPTER=official`. Tokens are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in JSON. Refresh uses official OAuth token endpoints when client or app credentials are configured. Official adapters upload approved C0 images. `GET /v1/public/social-media` serves a short-lived HMAC grant so Instagram can fetch tenant-scoped bytes; forged, expired, or cross-tenant grants fail closed. Official Instagram Graph publish is media-required. `social-due-sweep` is tenant-scoped; `social-due-sweep-platform` fans out one job per client with due posts.
+`SocialProvider` lives in `packages/social`. Memory is the default. Official LinkedIn, X, and Meta (Facebook / Instagram) adapters run when `SOCIAL_ADAPTER=official`. Official OAuth start/complete uses `createAuthorizationUrl` and `exchangeAuthorizationCode`. Tokens are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in JSON. Refresh uses official OAuth token endpoints when client or app credentials are configured. Official adapters upload approved C0 images. `GET /v1/public/social-media` serves a short-lived HMAC grant so Instagram can fetch tenant-scoped bytes; forged, expired, or cross-tenant grants fail closed. Official Instagram Graph publish is media-required. `social-due-sweep` is tenant-scoped; `social-due-sweep-platform` fans out one job per client with due posts.

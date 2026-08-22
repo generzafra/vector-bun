@@ -5,15 +5,18 @@ import {
 	socialPublishInputSchema,
 	workflowRuntime
 } from '@vector/automation';
-import { env } from '@vector/config';
+import { env, isTest } from '@vector/config';
 import {
+	ForbiddenError,
 	NotFoundError,
 	ValidationError,
 	assertActorOwnsContext,
+	completeSocialOAuthSchema,
 	createSocialPostSchema,
 	parseContract,
 	publishSocialPostSchema,
 	refreshSocialConnectionSchema,
+	startSocialOAuthSchema,
 	scheduleSocialPostSchema,
 	socialClientIdSchema,
 	socialPostIdSchema,
@@ -58,17 +61,21 @@ import {
 	SOCIAL_SIMILARITY_WINDOW_DAYS,
 	assertFrequencyAllowed,
 	assertNotSimilar,
+	createPkcePair,
 	createSocialMediaGrant,
+	createSocialOAuthState,
 	decryptSecret,
 	encryptSecret,
 	memorySocialProvider,
 	parseSocialAttributionContent,
 	parseSocialMediaGrant,
+	requireOAuthState,
 	resetSocialProvider,
 	setSocialProvider,
 	similarityHash,
 	socialAttributionParams,
 	socialMediaPublicUrl,
+	socialOAuthRedirectUri,
 	socialProvider,
 	type PublishMedia,
 	type SocialProvider
@@ -81,6 +88,14 @@ import { dispatchWorkflow } from './workflows';
 
 const TOKEN_REFRESH_SKEW_MS = 5 * 60_000;
 const SOCIAL_MEDIA_GRANT_TTL_MS = 15 * 60_000;
+const SOCIAL_OAUTH_STATE_TTL_MS = 10 * 60_000;
+
+function oauthCredentialsConfigured(platform: SocialPlatform) {
+	if (isTest || env.SOCIAL_ADAPTER === 'memory') return true;
+	if (platform === 'linkedin') return Boolean(env.LINKEDIN_CLIENT_ID && env.LINKEDIN_CLIENT_SECRET);
+	if (platform === 'x') return Boolean(env.X_CLIENT_ID && env.X_CLIENT_SECRET);
+	return Boolean(env.META_APP_ID && env.META_APP_SECRET);
+}
 
 async function loadPublishMedia(
 	ctx: TenantContext,
@@ -305,6 +320,15 @@ export async function getSocialOverview(actor: Actor, ctx: TenantContext, client
 				? 'Outbound social publishing is paused'
 				: 'LinkedIn, X, Facebook, and Instagram adapters are registered'
 		},
+		oauth: {
+			redirectUri: socialOAuthRedirectUri(env.CONTROL_ORIGIN, env.SOCIAL_OAUTH_REDIRECT_URI),
+			configured: {
+				linkedin: oauthCredentialsConfigured('linkedin'),
+				x: oauthCredentialsConfigured('x'),
+				facebook: oauthCredentialsConfigured('facebook'),
+				instagram: oauthCredentialsConfigured('instagram')
+			}
+		},
 		paused: env.SOCIAL_PUBLISHING_PAUSED,
 		creative,
 		workflows: workflowRuntime().health(),
@@ -399,6 +423,105 @@ export async function upsertSocialConnection(
 		reason: parsed.platform
 	});
 	return { connection: publicConnection(connection), account, health };
+}
+
+export async function startSocialOAuth(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'social.manage');
+	consumeRateLimit(`social-oauth-start:${ctx.clientId}`, 10, 60_000);
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(startSocialOAuthSchema, input);
+	if (!oauthCredentialsConfigured(parsed.platform)) {
+		throw new ValidationError(`${parsed.platform} OAuth is not configured`);
+	}
+	const redirectUri = socialOAuthRedirectUri(env.CONTROL_ORIGIN, env.SOCIAL_OAUTH_REDIRECT_URI);
+	const pkce = createPkcePair();
+	const state = createSocialOAuthState(env.TOKEN_ENCRYPTION_KEY, {
+		clientId: required.clientId,
+		organizationId: required.organizationId,
+		userId: actor.userId,
+		platform: parsed.platform,
+		redirectUri,
+		codeVerifier: pkce.verifier,
+		required: parsed.required,
+		exp: Date.now() + SOCIAL_OAUTH_STATE_TTL_MS
+	});
+	const authorizeUrl = getDomainSocialProvider(parsed.platform).createAuthorizationUrl({
+		state,
+		redirectUri,
+		codeChallenge: pkce.challenge
+	});
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'social.oauth.start',
+		entityType: 'social_connection',
+		requestId,
+		reason: parsed.platform
+	});
+	return { authorizeUrl, platform: parsed.platform };
+}
+
+export async function completeSocialOAuth(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'social.manage');
+	consumeRateLimit(`social-oauth-complete:${ctx.clientId}`, 10, 60_000);
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(completeSocialOAuthSchema, input);
+	const state = requireOAuthState(env.TOKEN_ENCRYPTION_KEY, parsed.state);
+	if (state.clientId !== required.clientId || state.organizationId !== required.organizationId) {
+		throw new ForbiddenError('Social OAuth state does not match this tenant');
+	}
+	if (state.userId !== actor.userId) {
+		throw new ForbiddenError('Social OAuth state does not match this operator');
+	}
+	const tokens = await getDomainSocialProvider(state.platform).exchangeAuthorizationCode({
+		code: parsed.code,
+		redirectUri: state.redirectUri,
+		codeVerifier: state.codeVerifier
+	});
+	const stored = await upsertSocialConnection(
+		actor,
+		required,
+		{
+			platform: state.platform,
+			accessToken: tokens.accessToken,
+			refreshToken: tokens.refreshToken ?? null,
+			externalAccountId: tokens.externalAccountId,
+			handle: tokens.handle,
+			displayName: tokens.displayName,
+			required: state.required
+		},
+		requestId
+	);
+	if (tokens.expiresAt) {
+		const patched = await patchSocialConnectionForTenant(required, stored.connection.id, {
+			tokenExpiresAt: tokens.expiresAt
+		});
+		if (patched) stored.connection = publicConnection(patched);
+	}
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'social.oauth.complete',
+		entityType: 'social_connection',
+		entityId: stored.connection.id,
+		requestId,
+		reason: state.platform
+	});
+	return stored;
 }
 
 export async function refreshSocialConnection(

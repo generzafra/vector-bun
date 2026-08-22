@@ -48,16 +48,20 @@ import {
 	setDomainSocialProvider,
 	memorySocialProvider,
 	resolveSession,
+	startSocialOAuth,
 	switchActiveClient,
 	syncSocialMetrics,
 	transitionSocialPost,
 	uploadCreativeAsset,
-	upsertSocialConnection
+	upsertSocialConnection,
+	completeSocialOAuth
 } from '@vector/domain';
 import {
 	assertFrequencyAllowed,
 	assertNotSimilar,
 	createSocialMediaGrant,
+	createSocialOAuthState,
+	decryptSecret,
 	parseSocialMediaGrant,
 	similarityHash,
 	socialAttributionParams
@@ -811,4 +815,160 @@ test('social UTMs persist leads on the existing attribution path', async () => {
 	const betaOverview = await getSocialOverview(betaActor, betaCtx);
 	expect(alphaAfter.posts.find((row) => row.id === post.id)?.attributedLeadCount).toBe(1);
 	expect(betaOverview.attributedLeads.some((row) => row.postId === post.id)).toBe(false);
+});
+
+function assertNoSocialOAuthSecrets(payload: string, extras: string[] = []) {
+	expect(payload.includes('encryptedAccessToken')).toBe(false);
+	expect(payload.includes('codeVerifier')).toBe(false);
+	expect(payload.includes('TOKEN_ENCRYPTION_KEY')).toBe(false);
+	expect(payload.includes('memory-oauth-')).toBe(false);
+	for (const extra of extras) expect(payload.includes(extra)).toBe(false);
+}
+
+test('official OAuth start and complete store encrypted tokens without leaking them', async () => {
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '127.0.0.75', 'social-oauth');
+	const ctx = contextFor(actor, 'social-oauth');
+	const code = `oauth-code-${crypto.randomUUID().slice(0, 8)}`;
+	const started = await startSocialOAuth(
+		actor,
+		ctx,
+		{ platform: 'linkedin', required: true },
+		'social-oauth-start'
+	);
+	const authorize = new URL(started.authorizeUrl);
+	expect(authorize.origin).toBe('https://social.test');
+	expect(authorize.pathname).toBe('/oauth/linkedin');
+	expect(authorize.searchParams.get('code_challenge_method')).toBe('S256');
+	expect(authorize.searchParams.get('redirect_uri')?.endsWith('/social/oauth/callback')).toBe(true);
+	const startJson = JSON.stringify(started);
+	assertNoSocialOAuthSecrets(startJson, [code, env.TOKEN_ENCRYPTION_KEY]);
+	expect(startJson.includes('authorizeUrl')).toBe(true);
+	const completed = await completeSocialOAuth(
+		actor,
+		ctx,
+		{ code, state: authorize.searchParams.get('state') ?? '' },
+		'social-oauth-complete'
+	);
+	expect(completed.account.platform).toBe('linkedin');
+	expect(completed.account.handle).toBe('linkedin-oauth');
+	expect(completed.connection.status).toBe('active');
+	expect(completed.connection.tokenExpiresAt).toBeTruthy();
+	assertNoSocialOAuthSecrets(JSON.stringify(completed), [code]);
+	const exchanged = memorySocialProvider('linkedin').exchanged.at(-1);
+	expect(exchanged?.code).toBe(code);
+	expect(exchanged?.codeVerifier?.length).toBeGreaterThan(10);
+	const [row] = await db
+		.select()
+		.from(socialConnections)
+		.where(
+			and(eq(socialConnections.clientId, alpha.id), eq(socialConnections.platform, 'linkedin'))
+		)
+		.limit(1);
+	expect(row?.encryptedAccessToken?.startsWith('v1:')).toBe(true);
+	expect(decryptSecret(env.TOKEN_ENCRYPTION_KEY, row?.encryptedAccessToken ?? '')).toContain(
+		'memory-oauth-linkedin'
+	);
+	const overview = await getSocialOverview(actor, ctx);
+	expect(overview.oauth.redirectUri).toContain('/social/oauth/callback');
+	expect(overview.oauth.configured.linkedin).toBe(true);
+	assertNoSocialOAuthSecrets(JSON.stringify(overview), [code, exchanged?.codeVerifier ?? '']);
+	const cookie = `${cookieName()}=${actor.token}`;
+	const apiStart = await app.request('/v1/social/oauth/start', {
+		method: 'POST',
+		headers: {
+			cookie,
+			'content-type': 'application/json',
+			'x-csrf-token': actor.csrf
+		},
+		body: JSON.stringify({ platform: 'x', required: true })
+	});
+	expect(apiStart.status).toBe(200);
+	const apiStartBody = await apiStart.json();
+	const apiAuthorize = new URL(apiStartBody.data.authorizeUrl);
+	assertNoSocialOAuthSecrets(JSON.stringify(apiStartBody));
+	const apiComplete = await app.request('/v1/social/oauth/complete', {
+		method: 'POST',
+		headers: {
+			cookie,
+			'content-type': 'application/json',
+			'x-csrf-token': actor.csrf
+		},
+		body: JSON.stringify({
+			code: `api-${code}`,
+			state: apiAuthorize.searchParams.get('state')
+		})
+	});
+	expect(apiComplete.status).toBe(200);
+	const apiCompleteText = await apiComplete.text();
+	assertNoSocialOAuthSecrets(apiCompleteText, [`api-${code}`]);
+	const apiOverview = await app.request('/v1/social', { headers: { cookie } });
+	expect(apiOverview.status).toBe(200);
+	assertNoSocialOAuthSecrets(await apiOverview.text(), [`api-${code}`]);
+});
+
+test('Alpha OAuth state cannot complete as Beta and forged state fails closed', async () => {
+	const { alpha, beta } = await seededClients();
+	const alphaActor = await adminOn(alpha.id, '127.0.0.76', 'social-oauth-a');
+	const betaActor = await adminOn(beta.id, '127.0.0.77', 'social-oauth-b');
+	const alphaCtx = contextFor(alphaActor, 'social-oauth-a');
+	const betaCtx = contextFor(betaActor, 'social-oauth-b');
+	const started = await startSocialOAuth(
+		alphaActor,
+		alphaCtx,
+		{ platform: 'facebook', required: true },
+		'social-oauth-a-start'
+	);
+	const state = new URL(started.authorizeUrl).searchParams.get('state') ?? '';
+	let stolen: unknown;
+	try {
+		await completeSocialOAuth(
+			betaActor,
+			betaCtx,
+			{ code: 'stolen-code-value', state },
+			'social-oauth-stolen'
+		);
+	} catch (error) {
+		stolen = error;
+	}
+	expect(stolen).toBeInstanceOf(ForbiddenError);
+	let forged: unknown;
+	try {
+		await completeSocialOAuth(
+			alphaActor,
+			alphaCtx,
+			{ code: 'forged-code-value', state: 'not-a-valid-oauth-state' },
+			'social-oauth-forged'
+		);
+	} catch (error) {
+		forged = error;
+	}
+	expect(forged).toBeInstanceOf(ValidationError);
+	let expired: unknown;
+	try {
+		await completeSocialOAuth(
+			alphaActor,
+			alphaCtx,
+			{
+				code: 'expired-code-value',
+				state: createSocialOAuthState(env.TOKEN_ENCRYPTION_KEY, {
+					clientId: alpha.id,
+					organizationId: alphaActor.organizationId,
+					userId: alphaActor.userId,
+					platform: 'facebook',
+					redirectUri: 'http://localhost:5183/social/oauth/callback',
+					codeVerifier: 'expired-verifier-value',
+					required: true,
+					exp: Date.now() - 1000
+				})
+			},
+			'social-oauth-expired'
+		);
+	} catch (error) {
+		expired = error;
+	}
+	expect(expired).toBeInstanceOf(ValidationError);
+	const betaOverview = await getSocialOverview(betaActor, betaCtx);
+	expect(betaOverview.accounts.some((account) => account.handle === 'facebook-oauth')).toBe(false);
+	expect(JSON.stringify(betaOverview).includes('stolen-code-value')).toBe(false);
 });

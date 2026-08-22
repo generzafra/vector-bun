@@ -2,7 +2,7 @@
 
 ## Architecture
 
-Use `SocialProvider` adapters in `packages/social`. LinkedIn, X, Facebook, and Instagram are registered. Memory is the test/default adapter. Official API adapters run when `SOCIAL_ADAPTER=official`. Official token refresh needs `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET`, `X_CLIENT_ID` / `X_CLIENT_SECRET`, or `META_APP_ID` / `META_APP_SECRET`. Official LinkedIn, X, and Facebook adapters upload approved C0 image bytes. Official Instagram Graph publish requires media plus a short-lived signed fetch URL and fails closed for text-only. `SOCIAL_PUBLISHING_PAUSED` disables outbound publish but still allows validate, refresh, and metrics through the inner adapter.
+Use `SocialProvider` adapters in `packages/social`. LinkedIn, X, Facebook, and Instagram are registered. Memory is the test/default adapter. Official API adapters run when `SOCIAL_ADAPTER=official`. Official OAuth install and token refresh need `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET`, `X_CLIENT_ID` / `X_CLIENT_SECRET`, or `META_APP_ID` / `META_APP_SECRET`. The Control callback is `${CONTROL_ORIGIN}/social/oauth/callback`, overridable with `SOCIAL_OAUTH_REDIRECT_URI`. Official LinkedIn, X, and Facebook adapters upload approved C0 image bytes. Official Instagram Graph publish requires media plus a short-lived signed fetch URL and fails closed for text-only. `SOCIAL_PUBLISHING_PAUSED` disables outbound publish but still allows validate, refresh, OAuth, and metrics through the inner adapter.
 
 ## Initial priority
 
@@ -14,7 +14,7 @@ Connection validation, publish, scheduled publish if supported, metrics, token r
 
 ## Security
 
-OAuth tokens encrypted at rest and never given to the model or browser.
+OAuth tokens encrypted at rest and never given to the model or browser. Official install uses PKCE S256 and an encrypted pending-state blob. Authorization codes are exchanged on the server. Paste-token upsert remains a fallback.
 
 ## Lifecycle
 

@@ -345,6 +345,20 @@ export const socialConnectionIdSchema = z
 
 export const refreshSocialConnectionSchema = socialConnectionIdSchema;
 
+export const startSocialOAuthSchema = z
+	.object({
+		platform: z.enum(SOCIAL_PLATFORMS),
+		required: z.boolean().default(true)
+	})
+	.strict();
+
+export const completeSocialOAuthSchema = z
+	.object({
+		code: z.string().trim().min(1).max(4000),
+		state: z.string().trim().min(8).max(8000)
+	})
+	.strict();
+
 export const createSocialPostSchema = z
 	.object({
 		body: z.string().trim().min(1).max(2000),

@@ -73,12 +73,36 @@ export type RefreshResult = ConnectionHealth & {
 	expiresAt?: Date;
 };
 
+export type AuthorizationRequest = {
+	state: string;
+	redirectUri: string;
+	codeChallenge: string;
+};
+
+export type ExchangeAuthorizationCodeInput = {
+	code: string;
+	redirectUri: string;
+	codeVerifier: string;
+};
+
+export type OAuthTokenSet = {
+	accessToken: string;
+	refreshToken?: string;
+	expiresAt?: Date;
+	scopes?: string;
+	externalAccountId: string;
+	handle: string;
+	displayName: string;
+};
+
 export interface SocialProvider {
 	platform: SocialPlatform;
 	validateConnection(input: {
 		accessToken: string;
 		externalAccountId: string;
 	}): Promise<ConnectionHealth>;
+	createAuthorizationUrl(request: AuthorizationRequest): string;
+	exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet>;
 	publish(request: PublishRequest): Promise<PublishResult>;
 	schedule?(request: ScheduleRequest): Promise<ScheduleResult>;
 	fetchPostMetrics(request: MetricsRequest): Promise<PostMetrics>;

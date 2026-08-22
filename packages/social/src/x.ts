@@ -2,8 +2,11 @@ import { ProviderError } from '@vector/contracts';
 import { logError, logInfo } from '@vector/observability';
 import { asBody } from './bytes';
 import type {
+	AuthorizationRequest,
 	ConnectionHealth,
+	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthTokenSet,
 	PostMetrics,
 	PublishMedia,
 	PublishRequest,
@@ -66,6 +69,99 @@ export class XSocialProvider implements SocialProvider {
 				platform: this.platform,
 				detail: 'X connection check failed'
 			};
+		} finally {
+			clearTimeout(timer);
+		}
+	}
+
+	createAuthorizationUrl(request: AuthorizationRequest) {
+		if (!this.oauth.clientId) {
+			throw new ProviderError('X OAuth client is not configured', 'SOCIAL_OAUTH_UNCONFIGURED');
+		}
+		const url = new URL('https://x.com/i/oauth2/authorize');
+		url.searchParams.set('response_type', 'code');
+		url.searchParams.set('client_id', this.oauth.clientId);
+		url.searchParams.set('redirect_uri', request.redirectUri);
+		url.searchParams.set('state', request.state);
+		url.searchParams.set('scope', 'tweet.read tweet.write users.read offline.access');
+		url.searchParams.set('code_challenge', request.codeChallenge);
+		url.searchParams.set('code_challenge_method', 'S256');
+		return url.toString();
+	}
+
+	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+		const clientId = this.oauth.clientId;
+		const clientSecret = this.oauth.clientSecret;
+		if (!clientId || !clientSecret) {
+			throw new ProviderError('X OAuth client is not configured', 'SOCIAL_OAUTH_UNCONFIGURED');
+		}
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+		try {
+			const basic = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+			const tokenResponse = await this.sendHttp('https://api.x.com/2/oauth2/token', {
+				method: 'POST',
+				signal: controller.signal,
+				headers: {
+					authorization: `Basic ${basic}`,
+					'content-type': 'application/x-www-form-urlencoded'
+				},
+				body: new URLSearchParams({
+					grant_type: 'authorization_code',
+					code: input.code,
+					redirect_uri: input.redirectUri,
+					code_verifier: input.codeVerifier,
+					client_id: clientId
+				})
+			});
+			if (!tokenResponse.ok) {
+				throw new ProviderError(
+					`X OAuth exchange failed (${tokenResponse.status})`,
+					'PROVIDER_TEMPORARY_FAILURE'
+				);
+			}
+			const tokens = (await tokenResponse.json()) as {
+				access_token?: string;
+				refresh_token?: string;
+				expires_in?: number;
+				scope?: string;
+			};
+			if (!tokens.access_token) {
+				throw new ProviderError(
+					'X OAuth exchange returned no access token',
+					'PROVIDER_INVALID_PAYLOAD'
+				);
+			}
+			const profileResponse = await this.sendHttp('https://api.x.com/2/users/me', {
+				method: 'GET',
+				signal: controller.signal,
+				headers: { authorization: `Bearer ${tokens.access_token}` }
+			});
+			if (!profileResponse.ok) {
+				throw new ProviderError(
+					`X profile lookup failed (${profileResponse.status})`,
+					'PROVIDER_TEMPORARY_FAILURE'
+				);
+			}
+			const profile = (await profileResponse.json()) as {
+				data?: { id?: string; username?: string; name?: string };
+			};
+			if (!profile.data?.id) {
+				throw new ProviderError('X profile returned no account id', 'PROVIDER_INVALID_PAYLOAD');
+			}
+			return {
+				accessToken: tokens.access_token,
+				refreshToken: tokens.refresh_token,
+				expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : undefined,
+				scopes: tokens.scope,
+				externalAccountId: profile.data.id,
+				handle: profile.data.username ?? 'x',
+				displayName: profile.data.name ?? profile.data.username ?? 'X'
+			};
+		} catch (error) {
+			if (error instanceof ProviderError) throw error;
+			logError('social.x.oauth', error, {});
+			throw new ProviderError('X OAuth exchange failed', 'PROVIDER_TEMPORARY_FAILURE');
 		} finally {
 			clearTimeout(timer);
 		}

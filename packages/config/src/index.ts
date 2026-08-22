@@ -83,7 +83,8 @@ const schema = z.object({
 	X_CLIENT_ID: z.string().optional(),
 	X_CLIENT_SECRET: z.string().optional(),
 	META_APP_ID: z.string().optional(),
-	META_APP_SECRET: z.string().optional()
+	META_APP_SECRET: z.string().optional(),
+	SOCIAL_OAUTH_REDIRECT_URI: z.string().url().optional()
 });
 
 export const isProd = process.env.NODE_ENV === 'production';
@@ -144,7 +145,8 @@ export const env = schema.parse({
 	X_CLIENT_ID: emptyToUndefined(process.env.X_CLIENT_ID),
 	X_CLIENT_SECRET: emptyToUndefined(process.env.X_CLIENT_SECRET),
 	META_APP_ID: emptyToUndefined(process.env.META_APP_ID),
-	META_APP_SECRET: emptyToUndefined(process.env.META_APP_SECRET)
+	META_APP_SECRET: emptyToUndefined(process.env.META_APP_SECRET),
+	SOCIAL_OAUTH_REDIRECT_URI: emptyToUndefined(process.env.SOCIAL_OAUTH_REDIRECT_URI)
 });
 
 function emptyToUndefined(value: string | undefined) {

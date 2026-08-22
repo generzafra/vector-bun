@@ -1,6 +1,6 @@
 # Phase 5 — Social
 
-**Status:** Slices 1–4 done — Creative C0 library, LinkedIn, X, Facebook, and Instagram publish (memory in tests; official adapters registered), official C0 image upload, token refresh, scheduled due sweep, metrics sync, and social → lead on the existing attribution path. Required social connections are readiness-gated. Phase 5 exit is not met until production tokens publish reliably on at least two official platforms.  
+**Status:** Slices 1–5 done — Creative C0 library, LinkedIn, X, Facebook, and Instagram publish (memory in tests; official adapters registered), official C0 image upload, official OAuth install, token refresh, scheduled due sweep, metrics sync, and social → lead on the existing attribution path. Required social connections are readiness-gated. Phase 5 exit is not met until production tokens publish reliably on at least two official platforms.  
 **Prerequisite:** Phase 4 exit met. Do not start until AI actions are typed, approved, and costed.
 
 ---
@@ -76,3 +76,7 @@ Facebook and Instagram are first-class `SocialProvider` platforms (`social_platf
 ## Slice 4 — Official C0 media publish (done)
 
 Domain loads approved, rights-confirmed C0 bytes through tenant-scoped `StorageProvider.getObject`. Official LinkedIn, X, and Facebook adapters upload those bytes. Official Instagram Graph creates a container from a short-lived signed `/v1/public/social-media` grant (HMAC, expiry, tenant key check) so Instagram can fetch the image without a second object store. Raw storage keys are not authorization. Grants and bytes never appear in Control or API JSON. Production OAuth install, YouTube, and TikTok stay later. This does not accept the Phase 5 exit.
+
+## Slice 5 — Official OAuth install (done)
+
+Control starts official OAuth for LinkedIn, X, Facebook, and Instagram. The server encrypts a short-lived PKCE state (no new table), exchanges the code, and stores tokens with `TOKEN_ENCRYPTION_KEY`. Tokens, verifiers, and grants never appear in Control or API JSON. Alpha state cannot complete as Beta. Forged or expired state fails closed. Official adapters fail closed without client or app credentials. Meta stores the first Page token; Instagram also requires that Page’s professional account. Paste-token upsert stays as an advanced fallback. YouTube, TikTok, and a Page picker stay later. This does not accept the Phase 5 exit.

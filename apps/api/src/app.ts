@@ -58,6 +58,8 @@ import {
 	refreshSocialConnection,
 	scheduleSocialPost,
 	serveSocialMediaGrant,
+	startSocialOAuth,
+	completeSocialOAuth,
 	syncSocialMetricsForOperator,
 	transitionSocialPost,
 	uploadCreativeAsset,
@@ -655,6 +657,28 @@ app.get('/v1/social/:clientId', async (c) => {
 		requestId,
 		data: await getSocialOverview(session, ctx, c.req.param('clientId'))
 	});
+});
+
+app.post('/v1/social/oauth/start', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await startSocialOAuth(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/social/oauth/complete', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'social.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await completeSocialOAuth(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
 });
 
 app.post('/v1/social/connections', async (c) => {

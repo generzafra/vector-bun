@@ -1,8 +1,11 @@
 import { ProviderError } from '@vector/contracts';
 import type { SocialPlatform } from '@vector/contracts';
 import type {
+	AuthorizationRequest,
 	ConnectionHealth,
+	ExchangeAuthorizationCodeInput,
 	MetricsRequest,
+	OAuthTokenSet,
 	PostMetrics,
 	PublishRequest,
 	PublishResult,
@@ -29,6 +32,16 @@ export class DisabledSocialProvider implements SocialProvider {
 			platform: this.platform,
 			detail: this.detail
 		};
+	}
+
+	createAuthorizationUrl(request: AuthorizationRequest) {
+		if (this.inner) return this.inner.createAuthorizationUrl(request);
+		throw new ProviderError(this.detail, 'SOCIAL_PUBLISHING_PAUSED');
+	}
+
+	async exchangeAuthorizationCode(input: ExchangeAuthorizationCodeInput): Promise<OAuthTokenSet> {
+		if (this.inner) return this.inner.exchangeAuthorizationCode(input);
+		throw new ProviderError(this.detail, 'SOCIAL_PUBLISHING_PAUSED');
 	}
 
 	async publish(_request: PublishRequest): Promise<PublishResult> {
