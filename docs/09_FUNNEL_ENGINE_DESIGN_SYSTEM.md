@@ -37,3 +37,5 @@ Cache static assets, stable public pages, and prerendered content at the edge wh
 Agents may configure approved components and theme tokens. They may not inject arbitrary unsafe HTML, scripts, or unreviewed CSS.
 
 Theme tokens cover color, surface, type, spacing, radius, motion, and z-index. Client tokens change appearance; they do not fork the renderer. A published page must pass the Frontend Release Gate in `docs/27` before it is treated as production-ready.
+
+Capability tokens (spacing, radius, motion, section variants) are the shared engine. Identity tokens are per plane: Delivery uses the client palette; Control uses `docs/28`. Do not import Control identity tokens into the Delivery renderer.

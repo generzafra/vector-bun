@@ -49,4 +49,4 @@ AI may recommend copy, page structure, and component variants. It may not write 
 
 Preferred path: recommendation → validated page/section schema → approved variant → approved tokens → renderer → preview → approval → publication.
 
-New shared components enter the codebase through engineering review and tests, not a model dump. Public recommendations must respect brand, `docs/27`, accessibility, conversion, and approval policy.
+New shared components enter the codebase through engineering review and tests, not a model dump. Public recommendations must respect brand, `docs/27`, accessibility, conversion, and approval policy. Control recommendation, activity, and intelligence surfaces use `docs/28` explainability patterns when those screens exist.

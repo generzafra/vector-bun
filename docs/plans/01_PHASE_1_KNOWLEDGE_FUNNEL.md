@@ -107,7 +107,7 @@ Operator submits a tenant-scoped production or redirect hostname, verifies owner
 
 ## Slice 6 — Frontend Release Gate, MVP set (done)
 
-The seeded preview funnels meet the Phase 1 subset of `docs/27` §88: tokens, accessible nav/forms, hero/proof/CTA, mobile-first, metadata. Same renderer for every client. Client tokens and personality keep Alpha and Beta distinct. No cloned reference sites. No Control restyle.
+The seeded preview funnels meet the Phase 1 subset of `docs/27` §88: tokens, accessible nav/forms, hero/proof/CTA, mobile-first, metadata. Same renderer for every client. Client tokens and personality keep Alpha and Beta distinct. No cloned reference sites. Control may later adopt `docs/28` without changing this Delivery exit.
 
 - Preview: `noindex`, no public canonical
 - Production: indexable canonical from the request origin

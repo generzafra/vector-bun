@@ -35,3 +35,11 @@
 **Frontend Release Gate** — Production checklist in `docs/27` covering offer clarity, visual quality, conversion, mobile, accessibility, performance, SEO/AEO, analytics, and tenant safety.
 
 **Section Variant** — Named approved composition of a funnel capability (`hero-split`, `services-editorial`). Shared capability, client-specific art direction.
+
+**Vector Visual Language** — Control / Vector-identity contract in `docs/28`. Dark operational chrome, signal-to-growth grammar, shared tokens. Not the default look of client sites.
+
+**Capability tokens** — Shared engine values (spacing, radius, motion, section variants) used by Delivery and Control.
+
+**Identity tokens** — Plane-specific color/brand values. Control uses Vector Black / Blue / Cyan / Mint. Delivery uses the client brand profile.
+
+**Signal-to-growth grammar** — Visual vocabulary: dots = signals, lines = relationships, convergence = intelligence, arrow/V = direction, mint = successful outcome.

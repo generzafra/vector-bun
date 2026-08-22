@@ -1,0 +1,79 @@
+:root,
+[data-theme='vector-dark'] {
+	--vector-black: #070a0f;
+	--vector-graphite: #111720;
+	--vector-blue: #1677ff;
+	--vector-cyan: #35d9ff;
+	--vector-mint: #32e6a1;
+	--vector-white: #f4f7fa;
+	--vector-steel: #8995a5;
+
+	--bg-0: #070a0f;
+	--bg-1: #0a0f16;
+	--bg-2: #0d131c;
+	--surface-1: #111720;
+	--surface-2: #151d28;
+	--surface-3: #1a2430;
+
+	--text-primary: #f4f7fa;
+	--text-secondary: #a9b3c0;
+	--text-tertiary: #748091;
+	--text-disabled: #566171;
+
+	--border-subtle: rgba(164, 184, 207, 0.1);
+	--border-default: rgba(164, 184, 207, 0.16);
+	--border-strong: rgba(164, 184, 207, 0.26);
+
+	--blue-500: #1677ff;
+	--blue-400: #3e8eff;
+	--cyan-400: #35d9ff;
+	--mint-400: #32e6a1;
+	--amber-400: #f4b860;
+	--red-400: #ff6b6b;
+
+	--blue-glow: rgba(22, 119, 255, 0.32);
+	--cyan-glow: rgba(53, 217, 255, 0.24);
+	--mint-glow: rgba(50, 230, 161, 0.22);
+
+	--vector-action-primary: var(--blue-500);
+	--vector-action-primary-hover: var(--blue-400);
+	--vector-signal: var(--cyan-400);
+	--vector-intelligence: var(--cyan-400);
+	--vector-outcome-positive: var(--mint-400);
+	--vector-risk-warning: var(--amber-400);
+	--vector-risk-danger: var(--red-400);
+	--vector-surface-canvas: var(--bg-0);
+	--vector-surface-panel: var(--surface-1);
+	--vector-surface-raised: var(--surface-2);
+	--vector-text-primary: var(--text-primary);
+	--vector-text-secondary: var(--text-secondary);
+
+	--vector-radius-sm: 8px;
+	--vector-radius-md: 12px;
+	--vector-radius-lg: 16px;
+
+	--vector-space-1: 4px;
+	--vector-space-2: 8px;
+	--vector-space-3: 12px;
+	--vector-space-4: 16px;
+	--vector-space-5: 20px;
+	--vector-space-6: 24px;
+	--vector-space-8: 32px;
+	--vector-space-10: 40px;
+	--vector-space-12: 48px;
+
+	--vector-border: rgba(164, 184, 207, 0.12);
+	--vector-border-strong: rgba(164, 184, 207, 0.24);
+	--vector-shadow-card: 0 12px 34px rgba(0, 0, 0, 0.24);
+
+	--vector-control-hover: 120ms;
+	--vector-panel-enter: 200ms;
+	--ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+	--ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+	--vector-sidebar: 232px;
+	--vector-topbar: 64px;
+	--vector-font: Inter, Geist, 'Segoe UI', system-ui, sans-serif;
+	--vector-font-mono: 'IBM Plex Mono', 'Geist Mono', ui-monospace, monospace;
+}

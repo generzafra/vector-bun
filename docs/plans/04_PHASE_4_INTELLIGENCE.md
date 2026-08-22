@@ -20,6 +20,7 @@ Every AI action is typed, versioned, auditable, tenant-scoped, and cost-attribut
 - Zod / JSON Schema structured outputs; natural language is not the execution contract
 - Prompt and agent version registry
 - Research, Copy, and Analytics agents (Funnel Strategist may draft only; page drafts use approved schemas and `docs/27` variants, never arbitrary HTML)
+- Control recommendation / approval / activity UI, when added, follows `docs/28` and master plan §28.3
 - Approval queue; default autonomy levels 0–2
 - `ai_runs`, `ai_decisions`, `ai_cost_events`, tool-call audit
 - No unrestricted SQL, shell, filesystem, HTTP, or secrets

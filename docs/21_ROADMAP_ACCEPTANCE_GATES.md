@@ -20,7 +20,7 @@ Client knowledge, assets, funnel engine, custom domains, forms, client readiness
 
 **Exit:** one client can publish a production lead funnel, including a private preview hostname and tracked launch state. That funnel must meet the Frontend Release Gate in `docs/27` for the MVP component set (tokens, accessible nav/forms, hero/proof/CTA, mobile-first, metadata).
 
-**Status (22 August 2026):** Phase 1 exit is met for the MVP component set. Seeded Alpha/Beta publish to private preview hosts with tracked launch state. Delivery uses client tokens, skip-link navigation, labeled lead form states (error / loading / success), hero/proof/CTA/services, mobile overflow and reduced-motion rules, and hostname-aware metadata (preview `noindex`, production canonical). Analytics events and structured data stay in later phases. Control was not restyled.
+**Status (22 August 2026):** Phase 1 exit is met for the MVP component set. Seeded Alpha/Beta publish to private preview hosts with tracked launch state. Delivery uses client tokens, skip-link navigation, labeled lead form states (error / loading / success), hero/proof/CTA/services, mobile overflow and reduced-motion rules, and hostname-aware metadata (preview `noindex`, production canonical). Analytics events and structured data stay in later phases. Control later adopted `docs/28` identity on existing operator screens; that restyle does not reopen this gate and does not apply Vector identity to Delivery.
 
 ## Phase 2
 
@@ -44,7 +44,7 @@ Plan: [plans/04_PHASE_4_INTELLIGENCE.md](plans/04_PHASE_4_INTELLIGENCE.md).
 
 Production `AIProvider` and xAI Grok API, prompts, structured outputs, initial agents, approvals, cost ledger.
 
-**Exit:** all AI actions are typed, auditable, tenant scoped, cost attributable. Frontend recommendations and draft page structures respect brand, `docs/27`, accessibility, conversion, and approval policy.
+**Exit:** all AI actions are typed, auditable, tenant scoped, cost attributable. Frontend recommendations and draft page structures respect brand, `docs/27`, accessibility, conversion, and approval policy. Control recommendation UI, when built, follows `docs/28` plus master plan §28.3.
 
 ## Phase 5
 
@@ -84,7 +84,7 @@ Plan: [plans/09_PHASE_9_SCALE.md](plans/09_PHASE_9_SCALE.md).
 
 Multi-client operational scale: usage quotas, noisy-neighbor controls, scaling alerts, portfolio launch dashboard, cost dashboards, client-level SLAs, bulk monitoring.
 
-**Exit:** operators can oversee many clients by exception, including Vector 24 clocks, and a single tenant cannot exhaust shared resources. Multiple clients can launch from the same engine without appearing to use the same templated website.
+**Exit:** operators can oversee many clients by exception, including Vector 24 clocks, and a single tenant cannot exhaust shared resources. Multiple clients can launch from the same engine without appearing to use the same templated website. The portfolio dashboard uses `docs/28` operational density. Client sites still must not share Vector product chrome.
 
 ## Vector 24
 

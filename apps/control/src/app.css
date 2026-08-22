@@ -1,42 +1,69 @@
-:root {
-	color: #e8edf5;
-	background: #12161d;
-	font-family:
-		Segoe UI,
-		system-ui,
-		sans-serif;
-	line-height: 1.5;
-}
+@import '@vector/ui/tokens.css';
 
+html,
 body {
 	margin: 0;
+	min-height: 100%;
+	background: var(--vector-surface-canvas);
+	color: var(--vector-text-primary);
+	font-family: var(--vector-font);
+	line-height: 1.55;
+}
+
+* {
+	box-sizing: border-box;
 }
 
 a {
-	color: #9ec5ff;
+	color: var(--blue-400);
 }
 
-.shell {
-	max-width: 960px;
-	margin: 0 auto;
-	padding: 1.5rem;
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+	outline: 3px solid color-mix(in srgb, var(--vector-action-primary) 55%, transparent);
+	outline-offset: 2px;
 }
 
-.top {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 2rem;
+h1,
+h2,
+h3 {
+	line-height: 1.2;
 }
 
-.top nav {
-	display: flex;
-	gap: 1rem;
+h2 {
+	margin: 0 0 var(--vector-space-4);
+	font-size: 1.05rem;
+}
+
+p {
+	color: var(--text-secondary);
+}
+
+code {
+	font-family: var(--vector-font-mono);
+	font-size: 0.85em;
+}
+
+section {
+	margin: 0 0 var(--vector-space-6);
+	padding: var(--vector-space-6);
+	border: 1px solid var(--vector-border);
+	border-radius: var(--vector-radius-md);
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0.012) 100%),
+		var(--vector-surface-panel);
+	box-shadow:
+		var(--vector-shadow-card),
+		inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
 form {
 	display: grid;
-	gap: 0.75rem;
+	gap: var(--vector-space-3);
 	max-width: 28rem;
 }
 
@@ -44,22 +71,42 @@ form.wide {
 	max-width: 40rem;
 }
 
-section {
-	margin: 2rem 0;
+.actions,
+.inline-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--vector-space-3);
+}
+
+.actions form,
+.inline-actions form,
+td form {
+	max-width: none;
+	margin: 0;
+}
+
+td form {
+	display: flex;
 }
 
 label {
 	display: grid;
-	gap: 0.25rem;
+	gap: var(--vector-space-1);
+	color: var(--text-secondary);
+	font-size: 0.92rem;
 }
 
 input,
 select,
 textarea {
-	padding: 0.5rem 0.6rem;
-	border: 1px solid #334;
-	background: #1b212b;
-	color: inherit;
+	width: 100%;
+	min-height: 40px;
+	padding: 0.5rem 0.7rem;
+	border: 1px solid var(--border-default);
+	border-radius: var(--vector-radius-sm);
+	background: var(--bg-2);
+	color: var(--vector-text-primary);
+	font: inherit;
 }
 
 textarea {
@@ -67,16 +114,51 @@ textarea {
 	resize: vertical;
 }
 
+input::placeholder,
+textarea::placeholder {
+	color: var(--text-tertiary);
+}
+
 button {
 	width: fit-content;
+	min-height: 40px;
 	padding: 0.5rem 0.9rem;
 	border: 0;
-	background: #3b6fd9;
-	color: white;
+	border-radius: var(--vector-radius-sm);
+	background: var(--vector-action-primary);
+	color: var(--vector-white);
+	font: inherit;
+	cursor: pointer;
+	transition:
+		background var(--vector-control-hover) var(--ease-standard),
+		transform var(--vector-control-hover) var(--ease-standard);
+}
+
+button:hover {
+	background: var(--vector-action-primary-hover);
+}
+
+button.secondary {
+	background: transparent;
+	border: 1px solid var(--border-default);
+	color: var(--vector-text-primary);
+}
+
+button.secondary:hover {
+	background: var(--surface-2);
+}
+
+button.danger {
+	background: color-mix(in srgb, var(--vector-risk-danger) 88%, black);
+}
+
+td button {
+	min-height: 32px;
+	padding: 0 0.65rem;
 }
 
 .err {
-	color: #ff8b8b;
+	color: var(--vector-risk-danger);
 }
 
 table {
@@ -87,6 +169,56 @@ table {
 th,
 td {
 	text-align: left;
-	border-bottom: 1px solid #2a3140;
-	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--border-subtle);
+	padding: 0.7rem 0.4rem;
+	vertical-align: middle;
+}
+
+th {
+	color: var(--text-tertiary);
+	font-size: 12px;
+	font-weight: 550;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+tr:hover td {
+	background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+}
+
+.assets {
+	display: grid;
+	gap: var(--vector-space-3);
+	padding: 0;
+	margin: 0 0 var(--vector-space-4);
+	list-style: none;
+}
+
+.assets li {
+	display: flex;
+	align-items: center;
+	gap: var(--vector-space-3);
+}
+
+.assets img {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+	border-radius: var(--vector-radius-sm);
+	border: 1px solid var(--vector-border);
+}
+
+.meta {
+	display: grid;
+	gap: var(--vector-space-2);
+}
+
+.meta p {
+	margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	button {
+		transition: none;
+	}
 }

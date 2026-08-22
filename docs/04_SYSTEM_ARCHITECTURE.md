@@ -18,7 +18,7 @@ Public rendering path:
 Client Knowledge → Brand Configuration → Funnel / Page Schema → Approved Component Variants → SvelteKit Delivery Renderer → Client Custom Domain
 ```
 
-Visual quality, conversion narrative, motion, and anti-generic rules live in `docs/27`. Page schema, publishing, and safe composition live in `docs/09`.
+Visual quality, conversion narrative, motion, and anti-generic rules live in `docs/27`. Page schema, publishing, and safe composition live in `docs/09`. Control / Vector product identity lives in `docs/28`. Delivery appearance stays client-specific.
 
 ## Product topology
 

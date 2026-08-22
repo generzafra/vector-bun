@@ -277,7 +277,7 @@ Vector does not force:
 
 The engine is shared. The brand and strategy are client-specific.
 
-Vector 24 depends on reusable frontend infrastructure that does not produce cloned sites. Repeated manual frontend launch work should become a component, variant, token, onboarding field, QA check, or publishing action. Public quality is governed by `docs/27`. Operating goal: **reusable engine, original client experience.**
+Vector 24 depends on reusable frontend infrastructure that does not produce cloned sites. Repeated manual frontend launch work should become a component, variant, token, onboarding field, QA check, or publishing action. Public quality is governed by `docs/27`. Control identity is governed by `docs/28` and must not be copied onto tenant domains. Operating goal: **reusable engine, original client experience.**
 
 ---
 

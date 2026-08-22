@@ -1,22 +1,28 @@
 <script lang="ts">
+	import Alert from '$lib/vector/Alert.svelte';
+	import EmptyState from '$lib/vector/EmptyState.svelte';
+	import PageHeader from '$lib/vector/PageHeader.svelte';
+
 	let { data, form } = $props();
 	const canManage = $derived(data.permissions.includes('knowledge.manage'));
 </script>
 
-<h1>Knowledge</h1>
-<p>
-	Capture brand, assets, offer, services, and approved claims for the active client. This profile is
-	reused at launch instead of custom engineering.
-</p>
+<PageHeader
+	eyebrow="Client inputs"
+	title="Knowledge"
+	description="Capture brand, assets, offer, services, and approved claims for the active client. This profile is reused at launch instead of custom engineering."
+/>
 
 {#if form?.error}
-	<p class="err">{form.error}</p>
+	<Alert>{form.error}</Alert>
 {/if}
 
 {#if data.needsClient}
-	<p>Select a client on Overview first.</p>
+	<section>
+		<EmptyState title="Select a client on Overview first." />
+	</section>
 {:else if !data.knowledge}
-	<p class="err">Knowledge could not be loaded.</p>
+	<Alert>Knowledge could not be loaded.</Alert>
 {:else}
 	<section>
 		<h2>Brand</h2>

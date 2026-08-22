@@ -18,6 +18,8 @@ A client launch is not complete until automated checks cover broken links, metad
 
 The Design Review Checklist and Frontend Release Gate in `docs/27` are part of frontend QA. Release review of a public page must include mobile, tablet, desktop, keyboard navigation, reduced motion, form states, loading/error/success, accessibility, performance, conversion path, metadata, and analytics instrumentation. A page that merely renders is not production-ready.
 
+Control visual QA uses the `docs/28` checklists and `docs/frontend/VECTOR_UI_MIGRATION_STATUS.md`. Do not treat a Control restyle as a Delivery identity change.
+
 ## Infrastructure tests
 
 Before claiming support for 20 ordinary clients, load-test cached and uncached public traffic, concurrent lead submissions, analytics ingestion, webhook bursts, database concurrency, Control Plane use under public traffic, and deploy-while-serving.

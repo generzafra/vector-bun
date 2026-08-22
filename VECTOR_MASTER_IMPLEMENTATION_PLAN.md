@@ -12,7 +12,7 @@
 **Document status:** Pre implementation master plan  
 **Version:** 1.1  
 **Prepared:** 22 August 2026  
-**Appendix folded:** `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` (MGE/Vector split, shared hosting, scaling, Vector 24). Public frontend quality: `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`.
+**Appendix folded:** `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` (MGE/Vector split, shared hosting, scaling, Vector 24). Public frontend quality: `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`. Control / Vector product identity: `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`.
 
 ---
 
@@ -231,6 +231,7 @@ Primary UI:
 - Authenticated.
 - Tenant aware.
 - Role based.
+- Visual identity follows `docs/28`. Operational density, not cinematic marketing. Do not apply this identity to Delivery client sites.
 
 Primary API:
 
@@ -2163,7 +2164,7 @@ The first screen should answer:
 4. What requires approval?
 5. What is likely to improve performance next?
 
-Do not overload the homepage with every metric.
+Do not overload the homepage with every metric. When this dashboard is built, use `docs/28` operational composition and shared Control primitives.
 
 ## 28.3 Recommendation card
 
@@ -2179,6 +2180,8 @@ Every recommendation should display:
 - Whether human approval is required.
 - Supporting data.
 - Action buttons.
+
+Presentation follows `docs/28` opportunity / recommendation fields plus the list above. Cost and required approval stay visible.
 
 ---
 
@@ -3006,7 +3009,7 @@ Use this only after Cursor has access to the repository and the documents in thi
 ```text
 You are implementing Vector, an Autonomous Growth Operating System.
 
-Read AGENTS.md, all P0 documents in /docs, and docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md before writing code that touches onboarding, domains, delivery, or launch. Read docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md before public frontend, funnel, or conversion work.
+Read AGENTS.md, all P0 documents in /docs, and docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md before writing code that touches onboarding, domains, delivery, or launch. Read docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md before public frontend, funnel, or conversion work. Read docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md before Control Plane or Vector-identity UI work.
 
 Do not implement the entire product at once.
 

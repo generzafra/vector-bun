@@ -1,11 +1,20 @@
 <script lang="ts">
+	import Alert from '$lib/vector/Alert.svelte';
+	import PageHeader from '$lib/vector/PageHeader.svelte';
+
 	let { form } = $props();
 </script>
 
-<h1>Sign in</h1>
+<PageHeader
+	eyebrow="Authenticated access"
+	title="Sign in"
+	description="Operator and client access to Vector Control."
+/>
+
 {#if form?.error}
-	<p class="err">{form.error}</p>
+	<Alert>{form.error}</Alert>
 {/if}
+
 <form method="post">
 	<label>
 		Email

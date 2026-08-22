@@ -28,6 +28,8 @@ Low-risk workflows and selected launch steps auto-execute inside policy and stay
 - Auto legal, refund, DNS, domain, pricing, or destructive data actions
 - Letting Cursor Automations replace Trigger.dev
 
+Automation operator UI, when built, reuses `docs/28` orchestration primitives. Do not invent a second node language.
+
 ## New packages and tables
 
 - Policy tables on existing `ai_*` and `automation_*`

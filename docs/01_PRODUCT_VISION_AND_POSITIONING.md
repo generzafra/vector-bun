@@ -87,3 +87,5 @@ Do not become a fork-per-client hosting company or a single physical-server arch
 Strategic positioning must be immediately understandable on public pages: offer, audience, why it matters, next action.
 
 `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` translates positioning into narrative, hierarchy, proof, and conversion. It is a quality bar, not a single visual identity. Client brand and offer stay specific. The MGE marketing site, once operated as a Vector tenant, is governed by the same public-experience standard.
+
+Vector product chrome — Control Plane and any future Vector software-marketing surface — uses `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`. That identity must not become the default look of client sites.

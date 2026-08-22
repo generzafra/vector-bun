@@ -180,7 +180,7 @@ Minimum screens:
 - Client list and authorized create
 - Membership list for the current client
 
-Svelte 5 runes only. Validate new `.svelte` with Svelte MCP `svelte-autofixer`. Control is operational, not cinematic. The public quality bar in `docs/27` starts with Phase 1 Delivery funnels.
+Svelte 5 runes only. Validate new `.svelte` with Svelte MCP `svelte-autofixer`. Control is operational, not cinematic. Later Control chrome follows `docs/28`. The public quality bar in `docs/27` starts with Phase 1 Delivery funnels.
 
 ### Delivery (`apps/delivery`)
 

@@ -11,7 +11,7 @@ Keep external vendors behind adapters.
 One Delivery Plane serves many client custom domains. Do not deploy an app per client.
 MGE website and Vector application are separate products.
 Control Plane is authenticated. Delivery Plane is public. Do not mix those security postures.
-Public Delivery experiences follow `docs/27`. Do not clone reference sites or generate generic AI marketing pages.
+Public Delivery experiences follow `docs/27`. Control identity follows `docs/28`. Do not clone reference sites, generate generic AI marketing pages, or paint client domains with Vector product chrome.
 Vector 24 measures Vector Ready to live, not contract signing to live.
 Do not implement the entire roadmap. Phase 0 first, then vertical slices.
 Do not add infrastructure because it is fashionable. Require an ADR for new major infrastructure.

@@ -11,7 +11,7 @@ Before implementation establish audience, primary and secondary conversion, page
 
 Do not create generic AI-style landing pages: no default purple/blue glow, fake logos, three identical feature cards, oversized radius, or buzzword headlines.
 
-Use shared Vector tokens and section variants (`hero-split`, `services-editorial`) without making every client look the same. Prefer Outcome → Visual → Explanation → Proof → CTA.
+Use shared Vector capability tokens and section variants (`hero-split`, `services-editorial`) without making every client look the same. Do not apply `docs/28` Vector identity (black/blue signal-to-growth chrome) to client Delivery pages. Prefer Outcome → Visual → Explanation → Proof → CTA.
 
 Respect `prefers-reduced-motion`. Keep essential copy in crawlable HTML. Never fake metrics or invent analytics event names.
 

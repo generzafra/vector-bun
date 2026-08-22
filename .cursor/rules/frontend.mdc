@@ -7,10 +7,12 @@ Svelte 5 runes only: `$state`, `$derived`, `$effect`, `$props()`, `$bindable()`.
 No legacy stores in new code, no `on:click`, no `export let`, no `<slot>`.
 Callback props, `{#snippet}` / `{@render}`. Keyed each on ids or slugs.
 `$effect` only for attach, analytics, or browser APIs.
-Control UI is authenticated and operational. Delivery UI uses the client brand tokens.
+Control UI is authenticated and operational and uses `docs/28` identity tokens. Delivery UI uses the client brand tokens.
 Do not import Maximum Global Exposure cream or cinema marketing tokens into Vector.
+Do not import Control Vector identity tokens into Delivery.
 Public delivery pages SSR. Do not fetch internal APIs from public components.
 Sanitize untrusted HTML before `{@html}`. Never put secrets in `PUBLIC_` env.
 Validate new `.svelte` with Svelte MCP `svelte-autofixer`.
 Every list needs skeleton, empty, and error states. Honor `prefers-reduced-motion`. Never fake metrics.
 Public marketing, funnel, and conversion UI must also follow `docs/27` and `.cursor/rules/frontend-funnel-quality.mdc`.
+Control product UI must also follow `docs/28` and `.cursor/rules/vector-visual-language.mdc`.

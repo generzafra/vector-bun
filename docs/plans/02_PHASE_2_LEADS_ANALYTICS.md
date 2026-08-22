@@ -27,6 +27,9 @@ Acquisition source can be traced to a lead. Operators can see readiness-to-live 
 - Multi-touch attribution, revenue warehouse, session replay unless privacy config exists
 - Resend sends, Grok API, social
 - Changing success metrics after the fact
+- Applying Vector Control identity tokens to Delivery funnels
+
+If Control gains operator analytics views in this phase, style them with `docs/28` chart/token rules. Public conversion UI stays `docs/27`.
 
 ## New packages and tables
 

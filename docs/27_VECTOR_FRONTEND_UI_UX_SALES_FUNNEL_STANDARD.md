@@ -7,7 +7,8 @@
 **Last updated:** 22 August 2026
 **Vector implementation role:** Cross-cutting frontend, funnel, conversion, and public-experience governance standard  
 **Recommended repository location:** `/docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`  
-**Required by:** `AGENTS.md`, frontend Cursor rules, funnel-engine work, Vector 24 launch workflows, CRO, and frontend Definition of Done
+**Required by:** `AGENTS.md`, frontend Cursor rules, funnel-engine work, Vector 24 launch workflows, CRO, and frontend Definition of Done  
+**Companion Control identity standard:** `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`
 
 ---
 
@@ -3907,7 +3908,7 @@ Use performance history as evidence while continuing to respect each client's br
 
 # 92. Required Integration Actions
 
-**Integration status (22 August 2026):** Folded into `AGENTS.md`, `.cursor/rules/frontend-funnel-quality.mdc`, `.cursor/rules/frontend.mdc`, `.cursor/rules/implementation.mdc`, `.cursor/rules/delivery.mdc`, and charters `01`, `02`, `04`, `07`, `09`, `10`, `13`, `17`, `18`, `21`, `22`, `23`, `25`, `26`, plus Phase 1/2/4/6/7/9 plans. This file remains the detailed public-experience standard.
+**Integration status (22 August 2026):** Folded into `AGENTS.md`, `.cursor/rules/frontend-funnel-quality.mdc`, `.cursor/rules/frontend.mdc`, `.cursor/rules/implementation.mdc`, `.cursor/rules/delivery.mdc`, and charters `01`, `02`, `04`, `07`, `09`, `10`, `13`, `17`, `18`, `21`, `22`, `23`, `25`, `26`, plus Phase 1/2/4/6/7/9 plans. This file remains the detailed public-experience standard. Vector product identity for Control is a separate charter: `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`. Do not treat this file as a license to restyle Control cinema, and do not treat `docs/28` as Delivery identity.
 
 When this document is added to the Vector repository, perform the following once:
 

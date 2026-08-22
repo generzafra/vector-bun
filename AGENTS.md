@@ -19,6 +19,7 @@ Before implementation, read:
 11. `docs/plans/README.md` and the plan for the current phase. Phase 0 is `docs/plans/00_PHASE_0_FOUNDATION.md`.
 12. `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` when the work touches onboarding, domains, hosting, delivery, launch, or scaling. Its decisions are folded into `01`, `03`, `04`, `05`, `16`, `17`, `19`, and `21`; where it is more specific, it governs.
 13. `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` when the work touches public frontend, marketing sites, funnels, landing pages, conversion, motion, or CRO variants. Its quality bar is folded into `01`, `02`, `04`, `07`, `09`, `10`, `13`, `17`, `18`, `21`, `22`, and `26`; where it is more specific on public experience, it governs.
+14. `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` when the work touches Control Plane UI, Vector product chrome, or Vector-native intelligence / opportunity / automation visuals. Living paths live in `docs/frontend/`. This is Control / Vector identity, not client Delivery identity.
 
 ## Non negotiable architecture
 
@@ -68,7 +69,7 @@ All public frontend work must:
 - preserve semantic HTML, accessibility, performance, SEO, and analytics
 - pass the Frontend Release Gate in `docs/27` before publication
 
-Control Plane UI stays authenticated and operational. Do not apply MGE cream/cinema tokens or cinematic marketing art direction to Control.
+Control Plane UI stays authenticated and operational. Do not apply MGE cream/cinema tokens or cinematic marketing art direction to Control. Control identity follows `docs/28`. Delivery client sites keep client brand tokens and `docs/27`; do not paint tenants with Vector Black / Blue.
 
 Security, privacy, legal, tenant isolation, accessibility, and performance override decorative experimentation.
 

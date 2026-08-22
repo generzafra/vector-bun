@@ -1,10 +1,22 @@
 <script lang="ts">
+	import Alert from '$lib/vector/Alert.svelte';
+	import EmptyState from '$lib/vector/EmptyState.svelte';
+	import PageHeader from '$lib/vector/PageHeader.svelte';
+	import StatusChip from '$lib/vector/StatusChip.svelte';
+
 	let { data, form } = $props();
 	const canManage = $derived(data.permissions.includes('launch.manage'));
 	const canManageDomains = $derived(data.permissions.includes('pages.manage'));
 	const managedDomains = $derived(
 		data.domains.filter((domain) => domain.kind === 'production' || domain.kind === 'redirect')
 	);
+
+	function domainTone(status: string) {
+		if (status === 'active') return 'success' as const;
+		if (status === 'verified') return 'info' as const;
+		if (status === 'pending') return 'warning' as const;
+		return 'muted' as const;
+	}
 	const clocks = $derived(
 		data.launch
 			? [
@@ -25,21 +37,22 @@
 	const openBlocks = $derived(data.launch?.blocks.filter((block) => !block.resolvedAt) ?? []);
 </script>
 
-<h1>Launch</h1>
-<p>
-	Track readiness and launch state for the active client. The same checklist and states apply to
-	every client. Clock fields are recorded. A 24-hour SLA is not measured in this slice. Preview
-	stays private. Production hostnames are verified, then activated on the shared Delivery Plane.
-</p>
+<PageHeader
+	eyebrow="Vector 24 readiness"
+	title="Launch"
+	description="Track readiness and launch state for the active client. The same checklist and states apply to every client. Clock fields are recorded. A 24-hour SLA is not measured in this slice. Preview stays private. Production hostnames are verified, then activated on the shared Delivery Plane."
+/>
 
 {#if form?.error}
-	<p class="err">{form.error}</p>
+	<Alert>{form.error}</Alert>
 {/if}
 
 {#if data.needsClient}
-	<p>Select a client on Overview first.</p>
+	<section>
+		<EmptyState title="Select a client on Overview first." />
+	</section>
 {:else if !data.launch}
-	<p class="err">Launch could not be loaded.</p>
+	<Alert>Launch could not be loaded.</Alert>
 {:else}
 	<section>
 		<h2>Production domain</h2>
@@ -65,7 +78,7 @@
 						<tr>
 							<td>{domain.hostname}</td>
 							<td>{domain.kind}</td>
-							<td>{domain.status}</td>
+							<td><StatusChip label={domain.status} tone={domainTone(domain.status)} /></td>
 							<td><code>{domain.verificationToken ?? '—'}</code></td>
 							{#if canManageDomains}
 								<td>
@@ -87,7 +100,7 @@
 										<form method="post" action="?/disableDomain">
 											<input type="hidden" name="_csrf" value={data.csrf} />
 											<input type="hidden" name="id" value={domain.id} />
-											<button type="submit">Disable</button>
+											<button class="secondary" type="submit">Disable</button>
 										</form>
 									{/if}
 								</td>
@@ -125,7 +138,13 @@
 		<p>
 			Optional: {data.launch.readiness.optionalComplete} / {data.launch.readiness.optionalTotal}
 		</p>
-		<p>Vector Ready: {data.launch.readiness.vectorReady ? 'yes' : 'no'}</p>
+		<p>
+			Vector Ready:
+			<StatusChip
+				label={data.launch.readiness.vectorReady ? 'yes' : 'no'}
+				tone={data.launch.readiness.vectorReady ? 'success' : 'muted'}
+			/>
+		</p>
 		{#if canManage}
 			<form method="post" action="?/recalculate">
 				<input type="hidden" name="_csrf" value={data.csrf} />
@@ -168,7 +187,10 @@
 
 	<section>
 		<h2>State</h2>
-		<p>Status: {data.launch.launch.status}</p>
+		<p>
+			Status:
+			<StatusChip label={data.launch.launch.status} tone="info" />
+		</p>
 		<p>Class: {data.launch.launch.launchClass}</p>
 		<p>Paused seconds: {data.launch.launch.pausedSeconds}</p>
 		{#if data.launch.launch.failureReason}

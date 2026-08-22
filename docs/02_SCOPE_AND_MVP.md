@@ -47,3 +47,5 @@ A visitor can arrive through a tracked source, view a client funnel, submit a le
 The first client uses a preview hostname and a tracked launch state. Vector 24 is a later operational target, not an MVP acceptance criterion.
 
 The first production frontend does not need every visual variant in `docs/27`. It does need design tokens, responsive primitives, accessible navigation and forms, several hero variants, trust/proof/CTA/FAQ/case-study support, metadata, analytics hooks, mobile-first behavior, and frontend QA. Advanced cinematic experiences wait for a real client or reusable product need.
+
+Control visual language (`docs/28`) may be adopted incrementally on existing operator screens. It is not an MVP exit blocker and must not restyle Delivery client sites.

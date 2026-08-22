@@ -9,8 +9,9 @@ Start with:
 3. P0 documents in `/docs`
 4. `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` for MGE/Vector split, shared hosting, scaling, and Vector 24
 5. `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` for public frontend, UX, and conversion quality
-6. Phase 0 in `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
-7. Execution plans in `docs/plans/` — start with `docs/plans/00_PHASE_0_FOUNDATION.md`
+6. `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` for Control / Vector product identity
+7. Phase 0 in `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
+8. Execution plans in `docs/plans/` — start with `docs/plans/00_PHASE_0_FOUNDATION.md`
 
 The `/docs` files are initial charters. Expand them as implementation decisions become concrete, but preserve their governing principles unless an ADR explicitly supersedes a decision.
 
@@ -34,6 +35,6 @@ Seed accounts (see `.env.example`):
 - `admin@vector.test` — org-wide MGE Super Admin
 - `usera@vector.test` — Client Admin on Alpha only
 
-Control signs in at `http://localhost:5183/login`. After seed, preview funnels are on `http://preview-alpha.localhost:5184` and `http://preview-beta.localhost:5184` (`bun run dev:delivery`). Unknown hosts fail closed as 404. Launch readiness and production domain activation live at `/launch`; Vector 24 is not measured yet. Brand assets upload on `/knowledge` and default to `.data/storage` until R2 env vars are set. Phase 1 public pages meet the `docs/27` MVP Frontend Release Gate (tokens, nav/forms, hero/proof/CTA, mobile, metadata).
+Control signs in at `http://localhost:5183/login`. After seed, preview funnels are on `http://preview-alpha.localhost:5184` and `http://preview-beta.localhost:5184` (`bun run dev:delivery`). Unknown hosts fail closed as 404. Launch readiness and production domain activation live at `/launch`; Vector 24 is not measured yet. Brand assets upload on `/knowledge` and default to `.data/storage` until R2 env vars are set. Phase 1 public pages meet the `docs/27` MVP Frontend Release Gate (tokens, nav/forms, hero/proof/CTA, mobile, metadata). Control uses `docs/28` identity tokens; official PNG brand assets may replace the interim SVG mark later.
 
 Format with `bun run format`. Check with `bun run format:check`.

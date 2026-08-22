@@ -143,3 +143,45 @@ Treat frontend quality as per-client taste; copy reference sites; generate arbit
 ### Consequences
 
 Funnel work uses shared tokens and section variants. AI proposes schemas and variants, not production markup. Public pages pass the Frontend Release Gate before publication. Vector 24 remains reusable engine, original client experience.
+
+---
+
+## ADR-0006
+
+### Date
+
+22 August 2026
+
+### Status
+
+Accepted
+
+### Decision
+
+`docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` is the standing Vector product visual-language standard. It governs Control Plane identity and Vector-native product motifs (intelligence, opportunity, automation, activity). It does not replace `docs/27` and does not become the visual identity of Delivery client sites or the MGE marketing site.
+
+Capability tokens (spacing, radius, motion, section variants) stay in the shared engine. Identity tokens are per plane: Control uses the Vector palette; Delivery uses client tokens.
+
+Recommended `src/lib/vector/` paths in the visual contract map to `packages/ui` tokens and `apps/control/src/lib/vector` in this monorepo.
+
+Official PNG/SVG artwork may replace the interim Control mark later.
+
+### Alternatives considered
+
+Apply the Vector hero and black/blue identity to every Delivery funnel; keep Control unstyled indefinitely; create a competing `docs/frontend` copy of `docs/27`.
+
+### Consequences
+
+Control can look like VECTOR without cloning Vector onto `theircompany.com`. Agents must read `docs/28` for Control work and `docs/27` for public Delivery work.
+
+### Security impact
+
+Visual only. No change to tenant scoping, CSRF, or capabilities.
+
+### Operational impact
+
+Existing Control screens adopt shared tokens incrementally. No new product modules are required to accept this ADR.
+
+### Reversal path
+
+Revert Control to local CSS and stop importing `@vector/ui/tokens.css`. Delivery is unaffected.

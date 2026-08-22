@@ -18,7 +18,7 @@ Portfolio operations work by exception, including Vector 24 clocks. Noisy-neighb
 - Per-client API, workflow, AI, email, upload, and analytics limits
 - Usage and cost dashboards; cost per qualified lead where possible
 - Scaling alerts (CPU, memory, queue delay, origin p95, one-tenant imbalance)
-- Portfolio launch dashboard (status, SLA clock, blocker, owner, class, readiness)
+- Portfolio launch dashboard (status, SLA clock, blocker, owner, class, readiness) using `docs/28` operational density, not cinematic marketing
 - Client templates and operational queues
 - Optional dedicated delivery / DB as premium — not the default
 - Load tests before claiming support for 20 ordinary clients
