@@ -1,0 +1,11 @@
+---
+description: Mandatory tenant isolation rules
+alwaysApply: true
+---
+All tenant owned data requires client_id.
+Every domain/repository operation on tenant data receives explicit TenantContext.
+Never trust route IDs alone.
+Never retrieve embeddings or knowledge across clients.
+Hostname routing fails closed. Preview hosts must not serve another tenant.
+Add cross tenant tests for every new tenant owned resource.
+Fail closed when tenant context is missing.

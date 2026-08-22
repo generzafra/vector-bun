@@ -1,0 +1,11 @@
+---
+description: Vector implementation workflow
+alwaysApply: true
+---
+Read AGENTS.md and P0 docs before coding. Read docs/26 when the work touches onboarding, domains, hosting, delivery, launch, or scaling.
+Implement one bounded vertical slice at a time. Do not build the whole platform in one change.
+Before changes: state the goal, affected modules, security or tenancy impact, and tests to add.
+If the work is onboarding, domains, analytics, or automation, ask whether it supports repeatable client launch without custom engineering.
+After changes: run relevant tests, update docs, and record material ADRs.
+If a repeated manual launch step appears, record it, automate it if safe, add a test, and update Vector 24 metrics.
+Match sibling files. No drive-by refactors. Do not invent files to store chat analysis.

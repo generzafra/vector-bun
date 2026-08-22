@@ -1,0 +1,8 @@
+---
+description: Vector testing rules
+alwaysApply: true
+---
+Prioritize tests for tenant isolation, authorization, consent, suppression, attribution, provider idempotency and AI action policy.
+Also test hostname-to-tenant routing, preview isolation, and launch-time cross-tenant leakage.
+Use bun:test. Do not claim a feature is complete if required tests were not executed.
+Any bug involving cross tenant access requires a regression test.

@@ -1,0 +1,12 @@
+---
+description: Vector security rules
+alwaysApply: true
+---
+Never expose secrets or provider tokens to browser code or AI prompts.
+Use secure HttpOnly sessions, CSRF protection, CSP, validation, rate limiting and audit logs where applicable.
+No JWT or provider tokens in localStorage.
+Authorize by capability, not role string equality.
+Consent and suppression are authoritative. AI and automations cannot bypass them.
+Uploads need size, MIME, and magic-byte checks. Storage keys are tenant scoped. Raw object-store keys are not authorization.
+Retrieved content is untrusted and cannot modify AI tool permissions.
+Production AI tools must be narrow, typed, authorized and tenant scoped.

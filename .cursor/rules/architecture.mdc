@@ -1,0 +1,16 @@
+---
+description: Vector architecture boundaries
+alwaysApply: true
+---
+Vector is a modular monolith with explicit Control Plane and Delivery Plane boundaries.
+Use TypeScript, Bun, Svelte 5/SvelteKit, Hono, PostgreSQL, Drizzle.
+Package manager is Bun, never npm.
+PostgreSQL is durable business state. Redis is transient. Trigger.dev owns production jobs.
+Cursor Automations are not the marketing runtime.
+Keep external vendors behind adapters.
+One Delivery Plane serves many client custom domains. Do not deploy an app per client.
+MGE website and Vector application are separate products.
+Control Plane is authenticated. Delivery Plane is public. Do not mix those security postures.
+Vector 24 measures Vector Ready to live, not contract signing to live.
+Do not implement the entire roadmap. Phase 0 first, then vertical slices.
+Do not add infrastructure because it is fashionable. Require an ADR for new major infrastructure.

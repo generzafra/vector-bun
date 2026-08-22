@@ -1,0 +1,11 @@
+---
+description: Vector AI implementation rules
+alwaysApply: true
+---
+AI proposes, policy decides, trusted software executes.
+Prefer structured outputs validated by Zod.
+Record provider, model, prompt version, schema version, cost, tool calls and actor.
+No irreversible or high risk action without the configured approval policy.
+Never let model confidence alone authorize a sensitive action.
+Never give production agents unrestricted SQL, shell, filesystem, arbitrary HTTP, or secrets.
+Kill switches can pause AI per client or globally. Confidence cannot override a pause.

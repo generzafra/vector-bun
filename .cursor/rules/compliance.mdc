@@ -1,0 +1,10 @@
+---
+description: Consent, suppression, and jurisdiction rules
+alwaysApply: true
+---
+Maintain a purpose-based consent ledger and suppression records.
+Before every marketing send: global suppression, client suppression, consent, topic preference, jurisdiction, then campaign eligibility.
+AI must never bypass suppression, consent, or approval policy.
+Do not hardcode one global privacy regime. Use client jurisdiction profiles.
+Retention is per data class. Do not keep all data forever.
+Legal, refund, dispute, material negotiation, and unapproved pricing replies stay human-reviewed.

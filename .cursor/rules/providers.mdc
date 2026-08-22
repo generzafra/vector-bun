@@ -1,0 +1,11 @@
+---
+description: Provider adapter and integration rules
+alwaysApply: true
+---
+Domain models are provider independent. Talk to vendors only through Vector adapters.
+Required adapter families: AIProvider, EmailProvider, SocialProvider, AnalyticsProvider, StorageProvider, SearchProvider.
+Grok is the first AI implementation, not a hard-coded dependency throughout the domain.
+Use official provider APIs. Do not drive production publishing through browser automation.
+Encrypt provider tokens at rest. Never send them to the browser, logs, or the model.
+Every adapter needs typed IO, timeout, retry, idempotency, normalized errors, health, audit, and metrics.
+Webhooks verify signatures, deduplicate event IDs, ack quickly, and finish work in durable jobs.

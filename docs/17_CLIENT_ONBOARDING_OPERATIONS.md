@@ -1,0 +1,101 @@
+# Client Onboarding and Operations
+
+## Gates
+
+Commercial → Business knowledge → Technical connection → Baseline → Growth plan → Launch → Autonomy graduation.
+
+These gates nest with Vector 24:
+
+```text
+Commercial                     → signed_at
+Business + technical + claims  → readiness items → VECTOR READY → clock starts
+Generation / QA / approvals    → internal build
+Baseline                       → may run in parallel
+Growth plan                    → part of generation
+Launch                         → launching / live
+Autonomy graduation            → after live, outside the 24-hour clock
+```
+
+## Vector 24
+
+A normal, fully ready client should move from completed onboarding to a live initial Vector Growth System within 24 hours.
+
+Commercial wording: launch within 24 hours after all Vector Readiness requirements are complete. Do not measure the SLA from contract signing.
+
+This is a mature-state architectural constraint, not a first-client promise. Every recurring manual launch step should be evaluated for automation or standardization.
+
+Detail: `26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md`.
+
+## Vector Readiness Gate
+
+The 24-hour period begins only at **VECTOR READY**.
+
+Required categories: business facts, brand assets, approved and prohibited claims, audience and competitors, domain access, email sending access, social access, legal and compliance, approval contacts.
+
+Vector calculates readiness, shows blockers, and distinguishes optional from blocking items. Missing critical requirements prevent the SLA clock from starting.
+
+## Onboarding wizard
+
+Provide a structured wizard that saves progress and scores readiness:
+
+1. Business
+2. Products and Services
+3. Customers
+4. Locations
+5. Pricing
+6. Offers
+7. Competitors
+8. Brand
+9. Claims and Proof
+10. Domain
+11. Email
+12. Social
+13. Analytics
+14. Compliance
+15. Approvals
+16. Readiness Review
+
+Clients may upload logos, catalogs, pricing, photos, testimonials, legal pages, and existing-site references. Extracted facts need authority classification and may require approval before publication.
+
+## Required client decisions
+
+Goals, conversion definitions, approval contacts, approved claims, prohibited claims, markets, communication policy, email consent policy, social channels, reporting cadence.
+
+## Launch classes
+
+- **A — Simple local service:** 1–4 hours after readiness.
+- **B — Standard professional or service:** 4–12 hours.
+- **C — Complex business:** 12–24 hours.
+- **D — Regulated or complex enterprise:** may exceed 24 hours; do not promise Vector 24 blindly.
+
+## First client ramp
+
+Client 1 human-led. Client 2 heavily assisted. Client 3 workflow-driven. Clients 4–5 measure cycle time. Later clients target Vector Ready → live within 24 hours. Do not force the first implementations into the final SLA.
+
+## Launch state machine
+
+`draft` → `onboarding` → `blocked` | `vector_ready` → `generating` → `qa` → `awaiting_client_approval` → `awaiting_domain` → `launching` → `live` | `launch_failed` | `paused`.
+
+Every transition is auditable. Operators need a portfolio launch dashboard with status, SLA clock, blocker, owner, next action, class, and readiness score.
+
+## SLA measurement
+
+Report separately: contract → readiness, readiness → internal build complete, build complete → client approval, approval → domain ready, domain ready → live.
+
+Vector 24 KPI: `vector_ready_at` → `live_at`, excluding documented client-caused pauses.
+
+## Human review
+
+Fast launch is not zero review. Before first production launch: verify facts, claims, pricing, offer, lead destination, legal links, forms, mobile, email sender, tracking, custom domain, and no cross-tenant leakage. Use exception-based review, not a full manual rebuild.
+
+## Successful launch
+
+A homepage load is not a launch. Launch requires production custom domain, HTTPS, approved copy, working lead form and storage, lead notification, attribution, analytics events, SEO metadata, correct sitemap and robots, included email and social programs ready, provider health, audit events, mobile QA, no tenant leakage, and recorded client launch approval.
+
+## Launch principle
+
+New clients begin under high supervision. Autonomy increases by workflow class after demonstrated reliability.
+
+## Operator model
+
+Operate by exception. Surface approvals, anomalies, failures, and opportunities rather than requiring constant manual dashboard monitoring.

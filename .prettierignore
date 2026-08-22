@@ -1,0 +1,24 @@
+# Package managers
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+bun.lockb
+
+# Dependencies and outputs
+node_modules
+.svelte-kit
+.output
+build
+dist
+coverage
+playwright-report
+test-results
+.turbo
+.cache
+
+# Generated or local
+storage
+backups
+*.min.js
+*.min.css
