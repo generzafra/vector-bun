@@ -9,13 +9,13 @@ let cached: EmailProvider | null = null;
 let dnsLookup: DnsTxtLookup = lookupTxtRecords;
 
 export function createEmailProvider(): EmailProvider {
+	const inner = env.RESEND_API_KEY
+		? new ResendEmailProvider(env.RESEND_API_KEY, env.RESEND_WEBHOOK_SECRET)
+		: new MemoryEmailProvider();
 	if (env.EMAIL_SENDING_PAUSED) {
-		return new DisabledEmailProvider('Outbound email is paused');
+		return new DisabledEmailProvider('Outbound email is paused', inner);
 	}
-	if (env.RESEND_API_KEY) {
-		return new ResendEmailProvider(env.RESEND_API_KEY, env.RESEND_WEBHOOK_SECRET);
-	}
-	return new MemoryEmailProvider();
+	return inner;
 }
 
 export function emailProvider() {

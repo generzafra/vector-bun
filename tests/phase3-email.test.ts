@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from 'bun:test';
 import { eq } from 'drizzle-orm';
-import { evaluateSendEligibility } from '@vector/compliance';
+import { classifyInboundReply, evaluateSendEligibility } from '@vector/compliance';
 import { env } from '@vector/config';
 import {
 	ForbiddenError,
@@ -17,6 +17,7 @@ import {
 	getPublishedHomeForTenant,
 	getSiteForTenant,
 	listEmailMessagesForTenant,
+	listInboundMessagesForTenant,
 	listSuppressionsForTenant
 } from '@vector/db';
 import {
@@ -33,6 +34,7 @@ import {
 	processDueNurtureSteps,
 	processEmailWebhook,
 	recalculateReadiness,
+	reviewInboundMessage,
 	resetDomainEmailProvider,
 	resolveSession,
 	setDomainEmailProvider,
@@ -197,6 +199,7 @@ test('missing TenantContext cannot read email records', () => {
 	expect(countEmailEventsByTypeForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 	expect(processDueNurtureSteps(null as never)).rejects.toBeInstanceOf(TenantContextError);
 	expect(enrollEligibleLeads(null as never)).rejects.toBeInstanceOf(TenantContextError);
+	expect(listInboundMessagesForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 });
 
 test('user on client A cannot read client B email', async () => {
@@ -256,6 +259,14 @@ test('missing email.manage returns 403', async () => {
 	await expect(processDueNurtureForOperator(actor, ctx, 'email-cap-due')).rejects.toBeInstanceOf(
 		ForbiddenError
 	);
+	await expect(
+		reviewInboundMessage(
+			actor,
+			ctx,
+			{ id: '00000000-0000-4000-8000-000000000001' },
+			'email-cap-inbound'
+		)
+	).rejects.toBeInstanceOf(ForbiddenError);
 });
 
 test('preview and denied-marketing leads do not send production email', async () => {
@@ -636,4 +647,151 @@ test('eligible leads waiting on a sending domain enroll without a custom script'
 	expect(overview.enrollments.some((row) => row.email === email && row.status === 'active')).toBe(
 		true
 	);
+});
+
+test('inbound classifier flags human-review classes and never allows auto-reply', () => {
+	expect(classifyInboundReply('Hello', 'Thanks for the consult.').classification).toBe('general');
+	expect(classifyInboundReply('Refund please', 'I want my money back').classification).toBe(
+		'refund'
+	);
+	expect(classifyInboundReply('Lawsuit', 'I hired an attorney').requiresHumanReview).toBe(true);
+	expect(classifyInboundReply('Refund please', 'I want my money back').autoReplyAllowed).toBe(
+		false
+	);
+});
+
+test('inbound replies stay drafts on the recipient tenant and never send', async () => {
+	setDomainEmailProvider(memory);
+	const { alpha, beta } = await seededClients();
+	const alphaActor = await adminOn(alpha.id, '10.0.3.20', 'email-in-a');
+	const alphaCtx = contextFor(alphaActor, 'email-in-a');
+	const domain = `mail-${crypto.randomUUID().slice(0, 8)}.alpha.test`;
+	await readyDomain(alphaActor, alphaCtx, domain);
+	const from = `reply-${crypto.randomUUID()}@alpha.test`;
+	const sentBefore = memory.sent.length;
+	const applied = await processEmailWebhook(
+		{},
+		JSON.stringify({
+			type: 'email.received',
+			created_at: new Date().toISOString(),
+			data: {
+				email_id: `inb-${crypto.randomUUID()}`,
+				from,
+				to: [`hello@${domain}`],
+				subject: 'I want a refund',
+				text: 'Please refund this consult. <script>alert(1)</script>'
+			}
+		}),
+		'email-inbound-a',
+		'10.0.3.21'
+	);
+	expect(applied[0]).toMatchObject({
+		ok: true,
+		clientId: alpha.id,
+		classification: 'refund',
+		autoReply: false,
+		sent: false
+	});
+	expect(memory.sent).toHaveLength(sentBefore);
+
+	const alphaOverview = await getEmailOverview(alphaActor, alphaCtx);
+	const inbound = alphaOverview.inbound.find((row) => row.fromAddress === from);
+	expect(inbound?.classification).toBe('refund');
+	expect(inbound?.requiresHumanReview).toBe(true);
+	expect(inbound?.status).toBe('received');
+	expect(inbound?.textBody).not.toContain('<script>');
+	expect(inbound?.textBody).toContain('Please refund this consult.');
+
+	const betaActor = await adminOn(beta.id, '10.0.3.22', 'email-in-b');
+	const betaCtx = contextFor(betaActor, 'email-in-b');
+	const betaOverview = await getEmailOverview(betaActor, betaCtx);
+	expect(betaOverview.inbound.some((row) => row.fromAddress === from)).toBe(false);
+	expect(JSON.stringify(betaOverview)).not.toContain(from);
+
+	const reviewed = await reviewInboundMessage(
+		alphaActor,
+		alphaCtx,
+		{ id: inbound?.id },
+		'email-in-review'
+	);
+	expect(reviewed.status).toBe('reviewed');
+	expect(reviewed.autoReply).toBe(false);
+	expect(memory.sent).toHaveLength(sentBefore);
+});
+
+test('unknown or ambiguous inbound recipients fail closed', async () => {
+	setDomainEmailProvider(memory);
+	const { alpha, beta } = await seededClients();
+	const unknown = await processEmailWebhook(
+		{},
+		JSON.stringify({
+			type: 'email.received',
+			created_at: new Date().toISOString(),
+			data: {
+				email_id: `inb-${crypto.randomUUID()}`,
+				from: 'stranger@example.test',
+				to: ['nobody@unknown-inbound.test'],
+				subject: 'Hello',
+				text: 'Anyone there?'
+			}
+		}),
+		'email-inbound-unknown',
+		'10.0.3.23'
+	);
+	expect(unknown[0]).toMatchObject({
+		skipped: true,
+		reason: 'unknown_recipient',
+		autoReply: false
+	});
+
+	const shared = `shared-${crypto.randomUUID().slice(0, 8)}.test`;
+	const alphaActor = await adminOn(alpha.id, '10.0.3.24', 'email-in-amb-a');
+	const betaActor = await adminOn(beta.id, '10.0.3.25', 'email-in-amb-b');
+	setDnsLookup(readyLookup(shared));
+	await upsertSendingDomain(
+		alphaActor,
+		contextFor(alphaActor, 'email-in-amb-a'),
+		{
+			domain: shared,
+			fromAddress: `hello@${shared}`,
+			fromName: 'Alpha',
+			fromApproved: true,
+			dkimSelector: 'resend'
+		},
+		'email-in-amb-a'
+	);
+	await upsertSendingDomain(
+		betaActor,
+		contextFor(betaActor, 'email-in-amb-b'),
+		{
+			domain: shared,
+			fromAddress: `hello@${shared}`,
+			fromName: 'Beta',
+			fromApproved: true,
+			dkimSelector: 'resend'
+		},
+		'email-in-amb-b'
+	);
+	const ambiguous = await processEmailWebhook(
+		{},
+		JSON.stringify({
+			type: 'email.received',
+			created_at: new Date().toISOString(),
+			data: {
+				email_id: `inb-${crypto.randomUUID()}`,
+				from: 'shared-sender@example.test',
+				to: [`hello@${shared}`],
+				subject: 'Which tenant?',
+				text: 'Do not attach this to the wrong client.'
+			}
+		}),
+		'email-inbound-ambiguous',
+		'10.0.3.26'
+	);
+	expect(ambiguous[0]).toMatchObject({
+		skipped: true,
+		reason: 'ambiguous_recipient',
+		autoReply: false
+	});
+	expect(memory.sent).toHaveLength(0);
 });

@@ -3,6 +3,7 @@ import { parseResendWebhookPayload } from './webhook';
 import type {
 	EmailHealth,
 	EmailProvider,
+	EmailWebhookResult,
 	NormalizedEmailEvent,
 	SendEmailInput,
 	SendEmailResult
@@ -33,10 +34,10 @@ export class MemoryEmailProvider implements EmailProvider {
 	async verifyWebhook(
 		_headers: Record<string, string | undefined>,
 		payload: string
-	): Promise<NormalizedEmailEvent[]> {
-		const events = parseResendWebhookPayload(payload, `mem-${crypto.randomUUID()}`);
-		this.events.push(...events);
-		return events;
+	): Promise<EmailWebhookResult> {
+		const parsed = parseResendWebhookPayload(payload, `mem-${crypto.randomUUID()}`);
+		this.events.push(...parsed.delivery);
+		return parsed;
 	}
 
 	emit(event: NormalizedEmailEvent) {

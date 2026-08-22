@@ -1,6 +1,6 @@
 # Phase 3 — Email and Nurture
 
-**Status:** Slices 1–2 done — EmailProvider, consent/suppression gate, machine-checked sending domains, welcome sequence, webhooks, unsubscribe, contact sync, engagement reporting, and operator due-step / backfill enroll.  
+**Status:** Slices 1–3 done — EmailProvider, consent/suppression gate, machine-checked sending domains, welcome sequence, webhooks, unsubscribe, contact sync, engagement reporting, operator due-step / backfill enroll, and inbound drafts.  
 **Prerequisite:** Phase 2 exit met. Do not start until a lead can be attributed from source.
 
 ---
@@ -37,7 +37,8 @@ Eligible lead completes an approved nurture safely. Sending-domain readiness is 
 - `email_connections`, `email_domains`, `email_contacts`, `email_topics`
 - `email_sequences`, `email_sequence_steps`, `email_sequence_enrollments`, `email_messages`, `email_events`
 - `email_suppressions`, `consent_events`
-- Reserved for later slices: `email_segments`, `email_campaigns`, `email_inbound_messages`
+- `email_inbound_messages`
+- Reserved for later slices: `email_segments`, `email_campaigns`
 
 ## Vector 24 hook
 
@@ -65,3 +66,12 @@ Operators can see tenant-scoped sent → delivered → opened → clicked from P
 - API: `POST /v1/email/nurture/enroll-eligible`, `POST /v1/email/nurture/process-due`
 - Isolation: Alpha opened/clicked counts do not include Beta events
 - Trigger.dev cloud hosting remains a later slice; sweep contracts run in-process
+
+## Slice 3 — Inbound replies as drafts (done)
+
+Inbound `email.received` webhooks store a tenant-scoped draft. Recipient matching uses the sending domain or From address and fails closed when the host is unknown or claimed by more than one client. Classification is rule-based (`legal`, `refund`, `dispute`, `pricing`, `complaint`, `negotiation`, `general`). Vector never auto-replies. Operators can mark a draft reviewed. Alpha cannot read Beta inbound. HTML/script from the provider is stored as text only.
+
+- Table: `email_inbound_messages`
+- Control `/email` inbound drafts
+- API: existing `POST /v1/webhooks/resend` plus `POST /v1/email/inbound/:id/review`
+- Isolation: unknown and ambiguous recipients are skipped; route client id cannot leak inbound

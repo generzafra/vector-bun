@@ -1,6 +1,7 @@
 import { consumeRateLimit, requireCapability } from '@vector/auth';
 import {
 	ENROLL_ELIGIBLE_WORKFLOW,
+	INBOUND_EMAIL_WORKFLOW,
 	LEAD_CAPTURED_WORKFLOW,
 	NURTURE_DUE_SWEEP_WORKFLOW,
 	NURTURE_STEP_WORKFLOW,
@@ -9,6 +10,7 @@ import {
 } from '@vector/automation';
 import {
 	CONSENT_COPY_VERSION,
+	classifyInboundReply,
 	evaluateSendEligibility,
 	parseJurisdictionProfile,
 	type SendEligibilityInput
@@ -21,6 +23,7 @@ import {
 	addEmailSuppressionSchema,
 	assertActorOwnsContext,
 	emailDomainIdSchema,
+	emailInboundIdSchema,
 	parseContract,
 	requireTenantContext,
 	unsubscribeTokenSchema,
@@ -38,11 +41,14 @@ import {
 	ensureEmailConnectionForTenant,
 	ensureWelcomeTopicForTenant,
 	findContactForUnsubscribe,
+	findEmailDomainsByRecipient,
 	findEmailMessageByProviderId,
 	getApprovedWelcomeSequenceForTenant,
 	getClientSettingsForTenant,
+	getContactByEmailForTenant,
 	getContactForTenant,
 	getEmailConnectionForTenant,
+	getInboundMessageForTenant,
 	getEmailContactForTenant,
 	getEmailDomainForTenant,
 	getEmailMessageByIdempotency,
@@ -56,16 +62,19 @@ import {
 	insertEmailEventForTenant,
 	insertEmailMessageForTenant,
 	insertEnrollmentForTenant,
+	insertInboundMessageForTenant,
 	insertGlobalSuppression,
 	isEmailSuppressed,
 	latestMarketingConsentForContact,
 	listDueEnrollmentsForTenant,
 	listEmailDomainsForTenant,
+	listInboundMessagesForTenant,
 	listEmailEnrollmentsForTenant,
 	listEmailMessagesForTenant,
 	listEmailSequencesForTenant,
 	listSuppressionsForTenant,
 	listUnenrolledProductionLeadsForTenant,
+	markInboundReviewedForTenant,
 	syncEmailContactsFromLeadsForTenant,
 	updateEmailDomainCheckForTenant,
 	updateEmailMessageForTenant,
@@ -81,7 +90,8 @@ import {
 	lookupSendingDomainRecords,
 	parseUnsubscribeToken,
 	type EmailProvider,
-	type NormalizedEmailEvent
+	type NormalizedEmailEvent,
+	type NormalizedInboundEmail
 } from '@vector/email';
 import { previewOrigin as deliveryOriginForHost } from '@vector/funnel-engine';
 import { logError, logInfo } from '@vector/observability';
@@ -293,17 +303,27 @@ export async function getEmailOverview(actor: Actor, ctx: TenantContext, clientI
 	requireCapability(actor.permissions, 'email.read');
 	const required = assertActorOwnsContext(actor, ctx);
 	if (clientId) assertEmailClient(required, clientId);
-	const [connection, domains, sequences, enrollments, messages, suppressions, health, engagement] =
-		await Promise.all([
-			getEmailConnectionForTenant(required),
-			listEmailDomainsForTenant(required),
-			listEmailSequencesForTenant(required),
-			listEmailEnrollmentsForTenant(required),
-			listEmailMessagesForTenant(required),
-			listSuppressionsForTenant(required),
-			getDomainEmailProvider().health(),
-			emailEngagementForTenant(required)
-		]);
+	const [
+		connection,
+		domains,
+		sequences,
+		enrollments,
+		messages,
+		suppressions,
+		health,
+		engagement,
+		inbound
+	] = await Promise.all([
+		getEmailConnectionForTenant(required),
+		listEmailDomainsForTenant(required),
+		listEmailSequencesForTenant(required),
+		listEmailEnrollmentsForTenant(required),
+		listEmailMessagesForTenant(required),
+		listSuppressionsForTenant(required),
+		getDomainEmailProvider().health(),
+		emailEngagementForTenant(required),
+		listInboundMessagesForTenant(required)
+	]);
 	return {
 		connection,
 		domains,
@@ -311,6 +331,7 @@ export async function getEmailOverview(actor: Actor, ctx: TenantContext, clientI
 		enrollments,
 		messages,
 		suppressions,
+		inbound,
 		provider: health,
 		readiness: await emailSendingReadiness(required),
 		engagement
@@ -772,12 +793,40 @@ export async function processEmailWebhook(
 	ip = '127.0.0.1'
 ) {
 	consumeRateLimit(`email-hook:${ip}`, 120, 60_000);
-	const events = await getDomainEmailProvider().verifyWebhook(headers, payload);
+	const parsed = await getDomainEmailProvider().verifyWebhook(headers, payload);
 	const applied = [];
-	for (const event of events) {
+	for (const event of parsed.delivery) {
 		applied.push(await applyProviderEvent(event, requestId));
 	}
+	for (const inbound of parsed.inbound) {
+		applied.push(await applyInboundMessage(inbound, requestId));
+	}
 	return applied;
+}
+
+export async function reviewInboundMessage(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'email.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(emailInboundIdSchema, input);
+	const existing = await getInboundMessageForTenant(required, parsed.id);
+	if (!existing) throw new NotFoundError('Inbound message not found');
+	const row = await markInboundReviewedForTenant(required, existing.id);
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'email.inbound.review',
+		entityType: 'email_inbound_message',
+		entityId: existing.id,
+		requestId
+	});
+	return { ...row, autoReply: false };
 }
 
 async function applyProviderEvent(event: NormalizedEmailEvent, requestId: string) {
@@ -824,4 +873,68 @@ async function applyProviderEvent(event: NormalizedEmailEvent, requestId: string
 		await cancelActiveEnrollmentsForEmail(ctx, message.toAddress);
 	}
 	return { ok: true, clientId: ctx.clientId, type: event.type };
+}
+
+async function applyInboundMessage(inbound: NormalizedInboundEmail, requestId: string) {
+	const domains = await findEmailDomainsByRecipient(inbound.toAddress);
+	const clientIds = [...new Set(domains.map((row) => row.clientId))];
+	if (clientIds.length !== 1) {
+		logInfo('email.inbound.unresolved', {
+			requestId,
+			toAddress: inbound.toAddress,
+			matches: clientIds.length
+		});
+		return {
+			skipped: true,
+			reason: clientIds.length === 0 ? 'unknown_recipient' : 'ambiguous_recipient',
+			autoReply: false
+		};
+	}
+	const domain = domains[0]!;
+	const ctx: TenantContext = {
+		organizationId: domain.organizationId,
+		clientId: domain.clientId,
+		roleIds: [],
+		requestId
+	};
+	const contact = await getContactByEmailForTenant(ctx, inbound.fromAddress);
+	const classified = classifyInboundReply(inbound.subject, inbound.textBody);
+	const inserted = await insertInboundMessageForTenant(ctx, {
+		contactId: contact?.id ?? null,
+		fromAddress: inbound.fromAddress,
+		toAddress: inbound.toAddress,
+		subject: inbound.subject,
+		textBody: inbound.textBody,
+		classification: classified.classification,
+		requiresHumanReview: classified.requiresHumanReview,
+		provider: 'resend',
+		providerEventId: inbound.providerEventId,
+		providerMessageId: inbound.providerMessageId,
+		occurredAt: inbound.occurredAt
+	});
+	if (inserted.duplicate) {
+		return { duplicate: true, clientId: ctx.clientId, autoReply: false };
+	}
+	await recordAudit({
+		organizationId: ctx.organizationId,
+		clientId: ctx.clientId,
+		actorType: 'automation',
+		actorId: INBOUND_EMAIL_WORKFLOW.name,
+		action: 'email.inbound.receive',
+		entityType: 'email_inbound_message',
+		entityId: inserted.message.id,
+		requestId,
+		reason: INBOUND_EMAIL_WORKFLOW.idempotencyKey({
+			clientId: ctx.clientId,
+			providerEventId: inbound.providerEventId
+		})
+	});
+	return {
+		ok: true,
+		clientId: ctx.clientId,
+		inboundId: inserted.message.id,
+		classification: classified.classification,
+		autoReply: classified.autoReplyAllowed,
+		sent: false
+	};
 }

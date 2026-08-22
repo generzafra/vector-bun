@@ -9,6 +9,7 @@ import {
 	emailContacts,
 	emailDomains,
 	emailEvents,
+	emailInboundMessages,
 	emailMessages,
 	emailSequenceEnrollments,
 	emailSequenceSteps,
@@ -782,6 +783,97 @@ export async function getLeadWithContactForTenant(ctx: TenantContext, leadId: st
 		.innerJoin(contacts, eq(contacts.id, leads.contactId))
 		.where(and(eq(leads.id, leadId), eq(leads.clientId, required.clientId)))
 		.limit(1);
+	return row ?? null;
+}
+
+export async function findEmailDomainsByRecipient(toAddress: string) {
+	const normalized = toAddress.trim().toLowerCase();
+	const domain = normalized.split('@')[1];
+	if (!domain) return [];
+	return db
+		.select()
+		.from(emailDomains)
+		.where(or(eq(emailDomains.fromAddress, normalized), eq(emailDomains.domain, domain)));
+}
+
+export async function listInboundMessagesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(emailInboundMessages)
+		.where(eq(emailInboundMessages.clientId, required.clientId))
+		.orderBy(desc(emailInboundMessages.createdAt))
+		.limit(50);
+}
+
+export async function insertInboundMessageForTenant(
+	ctx: TenantContext,
+	input: {
+		contactId?: string | null;
+		fromAddress: string;
+		toAddress: string;
+		subject: string;
+		textBody: string;
+		classification:
+			'general' | 'legal' | 'refund' | 'dispute' | 'pricing' | 'complaint' | 'negotiation';
+		requiresHumanReview: boolean;
+		provider: string;
+		providerEventId: string;
+		providerMessageId: string;
+		occurredAt: Date;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [existing] = await db
+		.select()
+		.from(emailInboundMessages)
+		.where(
+			and(
+				eq(emailInboundMessages.clientId, required.clientId),
+				eq(emailInboundMessages.providerEventId, input.providerEventId)
+			)
+		)
+		.limit(1);
+	if (existing) return { message: existing, duplicate: true };
+	const [row] = await db
+		.insert(emailInboundMessages)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			status: 'received',
+			...input
+		})
+		.returning();
+	return { message: row, duplicate: false };
+}
+
+export async function getInboundMessageForTenant(ctx: TenantContext, inboundId: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(emailInboundMessages)
+		.where(
+			and(
+				eq(emailInboundMessages.id, inboundId),
+				eq(emailInboundMessages.clientId, required.clientId)
+			)
+		)
+		.limit(1);
+	return row ?? null;
+}
+
+export async function markInboundReviewedForTenant(ctx: TenantContext, inboundId: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.update(emailInboundMessages)
+		.set({ status: 'reviewed', updatedAt: new Date() })
+		.where(
+			and(
+				eq(emailInboundMessages.id, inboundId),
+				eq(emailInboundMessages.clientId, required.clientId)
+			)
+		)
+		.returning();
 	return row ?? null;
 }
 

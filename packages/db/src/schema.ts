@@ -1345,3 +1345,46 @@ export const consentEvents = pgTable(
 		index('consent_events_contact_idx').on(t.contactId)
 	]
 );
+
+export const emailInboundStatus = pgEnum('email_inbound_status', ['received', 'reviewed']);
+export const emailInboundClass = pgEnum('email_inbound_class', [
+	'general',
+	'legal',
+	'refund',
+	'dispute',
+	'pricing',
+	'complaint',
+	'negotiation'
+]);
+
+export const emailInboundMessages = pgTable(
+	'email_inbound_messages',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		contactId: uuid('contact_id').references(() => contacts.id),
+		fromAddress: text('from_address').notNull(),
+		toAddress: text('to_address').notNull(),
+		subject: text('subject').notNull(),
+		textBody: text('text_body').notNull(),
+		classification: emailInboundClass('classification').notNull().default('general'),
+		requiresHumanReview: boolean('requires_human_review').notNull().default(true),
+		status: emailInboundStatus('status').notNull().default('received'),
+		provider: text('provider').notNull().default('resend'),
+		providerEventId: text('provider_event_id').notNull(),
+		providerMessageId: text('provider_message_id').notNull(),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('email_inbound_provider_idx').on(t.clientId, t.providerEventId),
+		index('email_inbound_client_idx').on(t.clientId),
+		index('email_inbound_status_idx').on(t.clientId, t.status)
+	]
+);

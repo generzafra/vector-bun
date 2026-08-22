@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { UnauthorizedError, ValidationError } from '@vector/contracts';
-import type { NormalizedEmailEvent } from './types';
+import type { EmailWebhookResult, NormalizedEmailEvent, NormalizedInboundEmail } from './types';
 
 const EVENT_MAP = {
 	'email.sent': 'sent',
@@ -11,12 +11,18 @@ const EVENT_MAP = {
 	'email.clicked': 'clicked'
 } as const;
 
+const INBOUND_TEXT_MAX = 8_000;
+
 type ResendWebhookBody = {
 	type?: string;
 	created_at?: string;
 	data?: {
 		email_id?: string;
+		from?: string;
 		to?: string[] | string;
+		subject?: string;
+		text?: string;
+		html?: string;
 		created_at?: string;
 	};
 };
@@ -43,24 +49,65 @@ export function verifyResendSignature(input: {
 	});
 }
 
-function normalizeOne(body: ResendWebhookBody, fallbackId: string): NormalizedEmailEvent | null {
+export function inboundTextFromPayload(text?: string, html?: string) {
+	const raw = (text ?? '').trim() || html || '';
+	return stripTags(raw).slice(0, INBOUND_TEXT_MAX);
+}
+
+function stripTags(html: string) {
+	return html
+		.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, ' ')
+		.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, ' ')
+		.replace(/<[^>]+>/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function firstAddress(value: string[] | string | undefined) {
+	if (Array.isArray(value)) return value[0];
+	return value;
+}
+
+function normalizeDelivery(
+	body: ResendWebhookBody,
+	fallbackId: string
+): NormalizedEmailEvent | null {
 	const mapped = body.type ? EVENT_MAP[body.type as keyof typeof EVENT_MAP] : undefined;
 	const providerMessageId = body.data?.email_id;
 	if (!mapped || !providerMessageId) return null;
-	const recipient = Array.isArray(body.data?.to) ? body.data.to[0] : body.data?.to;
 	return {
 		providerEventId: fallbackId,
 		providerMessageId,
 		type: mapped,
 		occurredAt: new Date(body.created_at ?? body.data?.created_at ?? Date.now()),
-		recipient
+		recipient: firstAddress(body.data?.to)
+	};
+}
+
+function normalizeInbound(
+	body: ResendWebhookBody,
+	fallbackId: string
+): NormalizedInboundEmail | null {
+	if (body.type !== 'email.received') return null;
+	const providerMessageId = body.data?.email_id;
+	const fromAddress = body.data?.from?.trim().toLowerCase();
+	const toAddress = firstAddress(body.data?.to)?.trim().toLowerCase();
+	if (!providerMessageId || !fromAddress || !toAddress) return null;
+	return {
+		providerEventId: fallbackId,
+		providerMessageId,
+		fromAddress,
+		toAddress,
+		subject: (body.data?.subject ?? '(no subject)').slice(0, 500),
+		textBody: inboundTextFromPayload(body.data?.text, body.data?.html),
+		occurredAt: new Date(body.created_at ?? body.data?.created_at ?? Date.now())
 	};
 }
 
 export function parseResendWebhookPayload(
 	payload: string,
 	providerEventId: string
-): NormalizedEmailEvent[] {
+): EmailWebhookResult {
 	let parsed: unknown;
 	try {
 		parsed = JSON.parse(payload) as unknown;
@@ -68,13 +115,23 @@ export function parseResendWebhookPayload(
 		throw new ValidationError('Invalid webhook payload');
 	}
 	const items = Array.isArray(parsed) ? parsed : [parsed];
-	const events: NormalizedEmailEvent[] = [];
+	const delivery: NormalizedEmailEvent[] = [];
+	const inbound: NormalizedInboundEmail[] = [];
 	items.forEach((item, index) => {
-		const event = normalizeOne(item as ResendWebhookBody, `${providerEventId}:${index}`);
-		if (event) events.push(event);
+		const body = item as ResendWebhookBody;
+		const id = `${providerEventId}:${index}`;
+		const inboundEvent = normalizeInbound(body, id);
+		if (inboundEvent) {
+			inbound.push(inboundEvent);
+			return;
+		}
+		const event = normalizeDelivery(body, id);
+		if (event) delivery.push(event);
 	});
-	if (events.length === 0) throw new ValidationError('Unsupported webhook event');
-	return events;
+	if (delivery.length === 0 && inbound.length === 0) {
+		throw new ValidationError('Unsupported webhook event');
+	}
+	return { delivery, inbound };
 }
 
 export function requireResendWebhookEvents(

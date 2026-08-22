@@ -40,7 +40,7 @@ Resend, suppression, nurture, inbound events, automated email domain readiness c
 
 **Exit:** eligible lead completes approved nurture safely, and sending-domain readiness is machine-checked.
 
-**Status (22 August 2026):** Slices 1–2 are implemented. An eligible production lead can complete seeded `welcome_v1` without bypassing consent or suppression. SPF/DKIM/DMARC/From are machine-checked. Preview leads do not send. `email.sending` is required for live launch and does not block VECTOR READY. Operators see Postgres engagement, sync contacts from leads, process due steps, and enroll leads that waited on a sending domain. Trigger.dev cloud hosting is not registered; workflow contracts run in-process.
+**Status (22 August 2026):** Slices 1–3 are implemented. An eligible production lead can complete seeded `welcome_v1` without bypassing consent or suppression. SPF/DKIM/DMARC/From are machine-checked. Preview leads do not send. `email.sending` is required for live launch and does not block VECTOR READY. Operators see Postgres engagement, sync contacts, process due steps, enroll waiting leads, and review inbound drafts. Inbound never auto-replies. Trigger.dev cloud hosting is not registered; workflow contracts run in-process.
 
 ## Phase 4
 

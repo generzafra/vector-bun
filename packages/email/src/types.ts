@@ -34,6 +34,21 @@ export type NormalizedEmailEvent = {
 	recipient?: string;
 };
 
+export type NormalizedInboundEmail = {
+	providerEventId: string;
+	providerMessageId: string;
+	fromAddress: string;
+	toAddress: string;
+	subject: string;
+	textBody: string;
+	occurredAt: Date;
+};
+
+export type EmailWebhookResult = {
+	delivery: NormalizedEmailEvent[];
+	inbound: NormalizedInboundEmail[];
+};
+
 export type DomainDnsRecords = {
 	apex: string[];
 	dkim: string[];
@@ -65,5 +80,5 @@ export interface EmailProvider {
 	verifyWebhook(
 		headers: Record<string, string | undefined>,
 		payload: string
-	): Promise<NormalizedEmailEvent[]>;
+	): Promise<EmailWebhookResult>;
 }

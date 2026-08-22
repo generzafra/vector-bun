@@ -247,6 +247,12 @@ export const unsubscribeTokenSchema = z
 	})
 	.strict();
 
+export const emailInboundIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

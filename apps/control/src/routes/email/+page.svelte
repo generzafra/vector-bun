@@ -106,6 +106,65 @@
 	</section>
 
 	<section>
+		<h2>Inbound drafts</h2>
+		<p>
+			Replies are stored as drafts. Vector never auto-replies. Legal, refund, dispute, pricing, and
+			complaint classes stay human-reviewed.
+		</p>
+		{#if overview.inbound.length === 0}
+			<EmptyState title="No inbound messages." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>From</th>
+						<th>Subject</th>
+						<th>Class</th>
+						<th>Status</th>
+						{#if canManage}<th>Review</th>{/if}
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.inbound as inbound (inbound.id)}
+						<tr>
+							<td>{inbound.fromAddress}</td>
+							<td>{inbound.subject}</td>
+							<td>
+								<StatusChip
+									label={inbound.classification}
+									tone={inbound.requiresHumanReview ? 'warning' : 'muted'}
+								/>
+							</td>
+							<td>
+								<StatusChip
+									label={inbound.status}
+									tone={inbound.status === 'reviewed' ? 'success' : 'info'}
+								/>
+							</td>
+							{#if canManage}
+								<td>
+									{#if inbound.status === 'received'}
+										<form method="post" action="?/reviewInbound">
+											<input type="hidden" name="_csrf" value={data.csrf} />
+											<input type="hidden" name="id" value={inbound.id} />
+											<button type="submit">Mark reviewed</button>
+										</form>
+									{:else}
+										—
+									{/if}
+								</td>
+							{/if}
+						</tr>
+						<tr>
+							<td colspan={canManage ? 5 : 4}>{inbound.textBody || '(empty body)'}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+	</section>
+
+	<section>
 		<h2>Sending domains</h2>
 		{#if overview.domains.length === 0}
 			<EmptyState

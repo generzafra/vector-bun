@@ -16,11 +16,13 @@ Preview/test → global pause → global suppression → client suppression → 
 
 ## Workflows
 
-`packages/automation` defines Trigger.dev contracts for `lead-captured`, `nurture-step`, `enroll-eligible`, and `nurture-due-sweep` with idempotency keys. Slice 1–2 run them in-process from lead capture, operator enroll-eligible, and due-step processing. Postgres is the source of truth for engagement (sent, delivered, opened, clicked). Provider dashboards are not.
+`packages/automation` defines Trigger.dev contracts for `lead-captured`, `nurture-step`, `enroll-eligible`, `nurture-due-sweep`, and `inbound-email` with idempotency keys. Slices 1–3 run them in-process. Postgres is the source of truth for engagement and inbound drafts. Provider dashboards are not.
+
+Inbound `email.received` events resolve the tenant from a unique sending domain or From address. Unknown or ambiguous recipients are dropped. Stored bodies are text-only. Classification is rule-based and never authorizes a send.
 
 ## Auto replies
 
-Begin as drafts. Only clearly bounded low risk classes can graduate to automatic sending.
+Begin as drafts. Slice 3 stores inbound as drafts and never sends a reply. Only clearly bounded low risk classes can graduate to automatic sending in a later phase.
 
 ## Never automatic by default
 

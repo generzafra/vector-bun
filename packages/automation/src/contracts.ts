@@ -68,6 +68,26 @@ export const ENROLL_ELIGIBLE_WORKFLOW = {
 	concurrency: { key: 'clientId', limit: 1 }
 } as const;
 
+export const inboundEmailInputSchema = z
+	.object({
+		organizationId: z.string().uuid(),
+		clientId: z.string().uuid(),
+		providerEventId: z.string().min(1),
+		requestId: z.string().min(1)
+	})
+	.strict();
+
+export type InboundEmailInput = z.infer<typeof inboundEmailInputSchema>;
+
+export const INBOUND_EMAIL_WORKFLOW = {
+	name: 'inbound-email',
+	trigger: 'provider inbound webhook',
+	idempotencyKey: (input: Pick<InboundEmailInput, 'clientId' | 'providerEventId'>) =>
+		`inbound-email:${input.clientId}:${input.providerEventId}`,
+	retry: { maxAttempts: 5, timeoutMs: 30_000 },
+	concurrency: { key: 'clientId', limit: 4 }
+} as const;
+
 export const NURTURE_DUE_SWEEP_WORKFLOW = {
 	name: 'nurture-due-sweep',
 	trigger: 'operator or scheduled due-step sweep',

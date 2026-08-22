@@ -7,6 +7,7 @@ import {
 	getEmailOverview,
 	processDueNurtureForOperator,
 	recheckSendingDomain,
+	reviewInboundMessage,
 	upsertSendingDomain
 } from '@vector/domain';
 
@@ -109,6 +110,23 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not enroll eligible leads' });
+		}
+	},
+	reviewInbound: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			await reviewInboundMessage(
+				session,
+				contextFor(session, locals.requestId),
+				{ id: String(form.get('id') ?? '') },
+				locals.requestId
+			);
+			return { ok: true, notice: 'Inbound marked reviewed. Vector did not send a reply.' };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not review inbound message' });
 		}
 	}
 };

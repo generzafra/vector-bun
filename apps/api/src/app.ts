@@ -30,6 +30,7 @@ import {
 	getEmailOverview,
 	processDueNurtureForOperator,
 	processEmailWebhook,
+	reviewInboundMessage,
 	recheckSendingDomain,
 	unsubscribeByToken,
 	upsertSendingDomain,
@@ -475,6 +476,17 @@ app.post('/v1/email/nurture/process-due', async (c) => {
 	actorCan(session, 'email.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await processDueNurtureForOperator(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/email/inbound/:id/review', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'email.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await reviewInboundMessage(session, ctx, { id: c.req.param('id') }, requestId);
 	return c.json({ requestId, data });
 });
 
