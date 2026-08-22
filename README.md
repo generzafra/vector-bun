@@ -37,4 +37,6 @@ Seed accounts (see `.env.example`):
 
 Control signs in at `http://localhost:5183/login`. After seed, preview funnels are on `http://preview-alpha.localhost:5184` and `http://preview-beta.localhost:5184` (`bun run dev:delivery`). Unknown hosts fail closed as 404. Launch readiness and production domain activation live at `/launch`; Vector 24 is not measured yet. Brand assets upload on `/knowledge` and default to `.data/storage` until R2 env vars are set. Phase 1 public pages meet the `docs/27` MVP Frontend Release Gate (tokens, nav/forms, hero/proof/CTA, mobile, metadata). Control uses `docs/28` identity tokens; official PNG brand assets may replace the interim SVG mark later.
 
+Optional Trigger.dev: set `TRIGGER_SECRET_KEY` and `TRIGGER_PROJECT_REF`, then `bun run dev:jobs`. Tests stay in-process.
+
 Format with `bun run format`. Check with `bun run format:check`.

@@ -22,7 +22,7 @@
 <PageHeader
 	eyebrow="Nurture"
 	title="Email"
-	description="Sending-domain readiness is machine-checked. Preview and test leads never send. Consent and suppression are checked before every step. Engagement is counted from Postgres, not the provider dashboard."
+	description="Sending-domain readiness is machine-checked. Preview and test leads never send. Consent and suppression are checked before every step. Engagement is counted from Postgres, not the provider dashboard. Workflows run in-process unless Trigger.dev is configured."
 />
 
 {#if form?.error}
@@ -47,6 +47,7 @@
 			{overview.readiness.detail}
 		</p>
 		<p>Provider: {overview.provider.adapter} — {overview.provider.detail}</p>
+		<p>Workflows: {overview.workflows.adapter} — {overview.workflows.detail}</p>
 		<p>
 			Contacts synced: {overview.engagement.contacts}. Waiting to enroll: {overview.engagement
 				.waiting}.

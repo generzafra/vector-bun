@@ -6,7 +6,7 @@ Unit, integration, end to end, security, tenant isolation, provider contract, AI
 
 ## Highest priority invariants
 
-Tenant isolation, authorization, consent, suppression, lead deduplication, attribution correctness, provider idempotency, approval policies, hostname-to-tenant routing, preview isolation, launch-time cross-tenant leakage.
+Tenant isolation, authorization, consent, suppression, lead deduplication, attribution correctness, provider idempotency, approval policies, hostname-to-tenant routing, preview isolation, launch-time cross-tenant leakage, workflow tenant payloads.
 
 ## AI evaluation
 

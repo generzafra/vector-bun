@@ -36,6 +36,7 @@ import {
 	recalculateReadiness,
 	reviewInboundMessage,
 	resetDomainEmailProvider,
+	resetWorkflowRuntime,
 	resolveSession,
 	setDomainEmailProvider,
 	switchActiveClient,
@@ -121,6 +122,7 @@ async function readyDomain(
 afterEach(() => {
 	resetDnsLookup();
 	resetDomainEmailProvider();
+	resetWorkflowRuntime();
 	memory.reset();
 });
 
@@ -342,6 +344,7 @@ test('eligible production lead completes the approved welcome sequence', async (
 	expect(
 		overview.enrollments.some((row) => row.email === email && row.status === 'completed')
 	).toBe(true);
+	expect(overview.workflows.adapter).toBe('in-process');
 	expect(JSON.stringify(overview)).not.toContain(beta.id);
 	expect(memory.skipped).toHaveLength(0);
 });

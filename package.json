@@ -10,6 +10,7 @@
 		"dev:control": "bun run --filter @vector/control dev",
 		"dev:delivery": "bun run --filter @vector/delivery dev",
 		"dev:api": "bun run --filter @vector/api dev",
+		"dev:jobs": "bun run --filter @vector/jobs dev",
 		"dev:db": "docker compose -f infra/docker/docker-compose.yml up -d",
 		"db:generate": "bun run --filter @vector/db generate",
 		"db:migrate": "bun run --filter @vector/db migrate",

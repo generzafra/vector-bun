@@ -51,6 +51,8 @@ GitHub Actions with type check, tests, build, migration validation, deployment, 
 
 Development must not perform real client side effects. Use provider sandboxes or explicit test accounts. Preview must not send production email or social or become indexed.
 
+Optional Trigger.dev: set `TRIGGER_SECRET_KEY` and `TRIGGER_PROJECT_REF`, then `bun run dev:jobs`. Tests ignore the secret key and stay in-process. The task host is `apps/jobs`, not a separate Vector product.
+
 ## Kubernetes
 
 Not planned until demonstrated scaling or availability requirements justify it.

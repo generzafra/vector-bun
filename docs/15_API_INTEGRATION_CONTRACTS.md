@@ -55,7 +55,7 @@ Postgres is the source of truth for leads and conversion counts. PostHog is an o
 
 Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
 
-- `GET /v1/email` — sending domain, sequence, enrollments, messages, suppressions, engagement, inbound drafts (`email.read`)
+- `GET /v1/email` — sending domain, sequence, enrollments, messages, suppressions, engagement, inbound drafts, workflow runner (`email.read`)
 - `GET /v1/email/:clientId` — same overview only when the actor already owns that client
 - `POST /v1/email/domains` — upsert sending domain and run DNS checks (`email.manage`, CSRF)
 - `POST /v1/email/domains/:id/recheck` — repeat SPF/DKIM/DMARC checks

@@ -68,15 +68,29 @@ export const ENROLL_ELIGIBLE_WORKFLOW = {
 	concurrency: { key: 'clientId', limit: 1 }
 } as const;
 
+export const inboundEmailPayloadSchema = z
+	.object({
+		providerEventId: z.string().min(1),
+		providerMessageId: z.string().min(1),
+		fromAddress: z.string().min(1),
+		toAddress: z.string().min(1),
+		subject: z.string(),
+		textBody: z.string(),
+		occurredAt: z.coerce.date()
+	})
+	.strict();
+
 export const inboundEmailInputSchema = z
 	.object({
 		organizationId: z.string().uuid(),
 		clientId: z.string().uuid(),
 		providerEventId: z.string().min(1),
-		requestId: z.string().min(1)
+		requestId: z.string().min(1),
+		inbound: inboundEmailPayloadSchema
 	})
 	.strict();
 
+export type InboundEmailPayload = z.infer<typeof inboundEmailPayloadSchema>;
 export type InboundEmailInput = z.infer<typeof inboundEmailInputSchema>;
 
 export const INBOUND_EMAIL_WORKFLOW = {
@@ -96,3 +110,30 @@ export const NURTURE_DUE_SWEEP_WORKFLOW = {
 	retry: { maxAttempts: 8, timeoutMs: 60_000 },
 	concurrency: { key: 'clientId', limit: 1 }
 } as const;
+
+export const platformDueSweepInputSchema = z
+	.object({
+		requestId: z.string().min(1)
+	})
+	.strict();
+
+export type PlatformDueSweepInput = z.infer<typeof platformDueSweepInputSchema>;
+
+export const NURTURE_DUE_SWEEP_PLATFORM_WORKFLOW = {
+	name: 'nurture-due-sweep-platform',
+	trigger: 'scheduled due-step fan-out',
+	idempotencyKey: (input: { windowStart: string }) => `nurture-due-platform:${input.windowStart}`,
+	retry: { maxAttempts: 5, timeoutMs: 60_000 },
+	concurrency: { key: 'platform', limit: 1 }
+} as const;
+
+export const TENANT_WORKFLOW_NAMES = [
+	LEAD_CAPTURED_WORKFLOW.name,
+	NURTURE_STEP_WORKFLOW.name,
+	ENROLL_ELIGIBLE_WORKFLOW.name,
+	NURTURE_DUE_SWEEP_WORKFLOW.name,
+	INBOUND_EMAIL_WORKFLOW.name
+] as const;
+
+export type TenantWorkflowName = (typeof TENANT_WORKFLOW_NAMES)[number];
+export type WorkflowName = TenantWorkflowName | typeof NURTURE_DUE_SWEEP_PLATFORM_WORKFLOW.name;

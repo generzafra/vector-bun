@@ -27,7 +27,7 @@ Trigger, input schema, tenant, idempotency, retry, timeout, concurrency, approva
 - Provider token health check
 - Data retention/deletion jobs
 
-Phase 3 contracts live in `packages/automation` (`lead-captured`, `nurture-step`, `enroll-eligible`, `nurture-due-sweep`, `inbound-email`) and run in-process. Trigger.dev cloud registration is a later slice. Inbound work records a draft only.
+Phase 3 contracts live in `packages/automation` (`lead-captured`, `nurture-step`, `enroll-eligible`, `nurture-due-sweep`, `inbound-email`, `nurture-due-sweep-platform`). A Vector-owned `WorkflowRuntime` runs them. Tests and local default to in-process. `TRIGGER_SECRET_KEY` selects the Trigger.dev adapter. Task definitions live in `apps/jobs` and only call domain handlers. Inbound work records a draft only. The platform due-sweep returns tenant IDs, then each tenant job uses explicit `TenantContext`.
 
 ## Idempotency
 

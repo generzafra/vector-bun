@@ -234,6 +234,21 @@ export async function listDueEnrollmentsForTenant(ctx: TenantContext, now: Date)
 		.limit(50);
 }
 
+export async function listTenantsWithDueNurtureSteps(now: Date) {
+	return db
+		.selectDistinct({
+			organizationId: emailSequenceEnrollments.organizationId,
+			clientId: emailSequenceEnrollments.clientId
+		})
+		.from(emailSequenceEnrollments)
+		.where(
+			and(
+				eq(emailSequenceEnrollments.status, 'active'),
+				lte(emailSequenceEnrollments.nextStepAt, now)
+			)
+		);
+}
+
 export async function getEnrollmentForTenant(ctx: TenantContext, enrollmentId: string) {
 	const required = requireTenantContext(ctx);
 	const [row] = await db

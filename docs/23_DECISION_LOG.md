@@ -185,3 +185,39 @@ Existing Control screens adopt shared tokens incrementally. No new product modul
 ### Reversal path
 
 Revert Control to local CSS and stop importing `@vector/ui/tokens.css`. Delivery is unaffected.
+
+---
+
+## ADR-0007
+
+### Date
+
+22 August 2026
+
+### Status
+
+Accepted
+
+### Decision
+
+Trigger.dev is the production workflow host for Phase 3 email contracts. Vector owns a `WorkflowRuntime` adapter. In-process is the default when `TRIGGER_SECRET_KEY` is unset and for every `bun test` run. Official tasks live in `apps/jobs` and only call domain handlers. Tenant workflows require `organizationId`, `clientId`, and `requestId`. The platform due-sweep may list tenant IDs that have due work, then each tenant job runs with explicit `TenantContext`.
+
+### Alternatives considered
+
+Keep in-process forever; call Trigger.dev APIs from domain modules; run a Vector-owned queue/worker microservice.
+
+### Consequences
+
+Local and CI do not need a Trigger.dev project. Production can enqueue lead-captured, inbound, and due-sweep work without changing consent or send order. Secrets stay in env.
+
+### Security impact
+
+Tasks have no unrestricted SQL, shell, filesystem, HTTP, or secrets. Inbound workers re-validate the recipient tenant. Missing tenant fields fail closed.
+
+### Operational impact
+
+Operators still process due steps from Control. Trigger.dev cron is optional and does not change VECTOR READY.
+
+### Reversal path
+
+Unset `TRIGGER_SECRET_KEY`. The factory returns the in-process runtime.

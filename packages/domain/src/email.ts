@@ -5,8 +5,10 @@ import {
 	LEAD_CAPTURED_WORKFLOW,
 	NURTURE_DUE_SWEEP_WORKFLOW,
 	NURTURE_STEP_WORKFLOW,
+	inboundEmailInputSchema,
 	leadCapturedInputSchema,
-	nurtureStepInputSchema
+	nurtureStepInputSchema,
+	workflowRuntime
 } from '@vector/automation';
 import {
 	CONSENT_COPY_VERSION,
@@ -96,6 +98,7 @@ import {
 import { previewOrigin as deliveryOriginForHost } from '@vector/funnel-engine';
 import { logError, logInfo } from '@vector/observability';
 import { recordAudit } from './audit';
+import { dispatchWorkflow } from './workflows';
 import type { Actor } from './auth-service';
 
 let providerOverride: EmailProvider | null = null;
@@ -333,6 +336,7 @@ export async function getEmailOverview(actor: Actor, ctx: TenantContext, clientI
 		suppressions,
 		inbound,
 		provider: health,
+		workflows: workflowRuntime().health(),
 		readiness: await emailSendingReadiness(required),
 		engagement
 	};
@@ -717,12 +721,16 @@ export async function enrollEligibleLeadsForOperator(
 
 export async function tryEnrollCapturedLead(ctx: TenantContext, leadId: string) {
 	try {
-		return await processLeadCapturedWorkflow({
+		const dispatched = await dispatchWorkflow('lead-captured', {
 			organizationId: ctx.organizationId,
 			clientId: ctx.clientId,
 			leadId,
 			requestId: ctx.requestId
 		});
+		if (dispatched.queued) {
+			return { enrolled: false, reason: 'queued', queued: true as const };
+		}
+		return dispatched.result as Awaited<ReturnType<typeof processLeadCapturedWorkflow>>;
 	} catch (error) {
 		logError('email.nurture.enroll', error, { clientId: ctx.clientId, leadId });
 		return { enrolled: false, reason: 'error' };
@@ -799,9 +807,64 @@ export async function processEmailWebhook(
 		applied.push(await applyProviderEvent(event, requestId));
 	}
 	for (const inbound of parsed.inbound) {
-		applied.push(await applyInboundMessage(inbound, requestId));
+		applied.push(await enqueueInboundMessage(inbound, requestId));
 	}
 	return applied;
+}
+
+async function enqueueInboundMessage(inbound: NormalizedInboundEmail, requestId: string) {
+	const domains = await findEmailDomainsByRecipient(inbound.toAddress);
+	const clientIds = [...new Set(domains.map((row) => row.clientId))];
+	if (clientIds.length !== 1) {
+		logInfo('email.inbound.unresolved', {
+			requestId,
+			toAddress: inbound.toAddress,
+			matches: clientIds.length
+		});
+		return {
+			skipped: true,
+			reason: clientIds.length === 0 ? 'unknown_recipient' : 'ambiguous_recipient',
+			autoReply: false
+		};
+	}
+	const domain = domains[0]!;
+	const dispatched = await dispatchWorkflow('inbound-email', {
+		organizationId: domain.organizationId,
+		clientId: domain.clientId,
+		providerEventId: inbound.providerEventId,
+		requestId,
+		inbound
+	});
+	if (dispatched.queued) {
+		return { queued: true, clientId: domain.clientId, autoReply: false, sent: false };
+	}
+	return dispatched.result;
+}
+
+export async function processInboundEmailWorkflow(input: unknown) {
+	const parsed = parseContract(inboundEmailInputSchema, input);
+	const ctx = tenantFrom(parsed);
+	const domains = await findEmailDomainsByRecipient(parsed.inbound.toAddress);
+	const clientIds = [...new Set(domains.map((row) => row.clientId))];
+	if (clientIds.length !== 1 || clientIds[0] !== ctx.clientId) {
+		logInfo('email.inbound.unresolved', {
+			requestId: parsed.requestId,
+			toAddress: parsed.inbound.toAddress,
+			matches: clientIds.length,
+			expectedClientId: ctx.clientId
+		});
+		return {
+			skipped: true,
+			reason:
+				clientIds.length === 0
+					? 'unknown_recipient'
+					: clientIds[0] !== ctx.clientId
+						? 'tenant_mismatch'
+						: 'ambiguous_recipient',
+			autoReply: false
+		};
+	}
+	return applyInboundMessage(parsed.inbound, parsed.requestId);
 }
 
 export async function reviewInboundMessage(

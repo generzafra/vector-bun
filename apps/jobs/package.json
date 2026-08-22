@@ -1,17 +1,19 @@
 {
-	"name": "@vector/automation",
+	"name": "@vector/jobs",
 	"private": true,
 	"type": "module",
 	"exports": {
 		".": "./src/index.ts"
 	},
 	"scripts": {
+		"dev": "bunx trigger.dev@latest dev",
 		"typecheck": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
 		"@trigger.dev/sdk": "^4.3.2",
+		"@vector/automation": "workspace:*",
 		"@vector/config": "workspace:*",
 		"@vector/contracts": "workspace:*",
-		"zod": "^4.1.5"
+		"@vector/domain": "workspace:*"
 	}
 }

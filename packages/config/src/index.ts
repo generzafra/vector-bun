@@ -63,7 +63,10 @@ const schema = z.object({
 	RESEND_API_KEY: z.string().optional(),
 	RESEND_WEBHOOK_SECRET: z.string().optional(),
 	EMAIL_UNSUBSCRIBE_SECRET: z.string().min(16).default('vector-unsubscribe-test-secret'),
-	EMAIL_SENDING_PAUSED: z.boolean().default(false)
+	EMAIL_SENDING_PAUSED: z.boolean().default(false),
+	TRIGGER_SECRET_KEY: z.string().optional(),
+	TRIGGER_PROJECT_REF: z.string().optional(),
+	TRIGGER_API_URL: z.string().url().optional()
 });
 
 export const isProd = process.env.NODE_ENV === 'production';
@@ -102,7 +105,10 @@ export const env = schema.parse({
 	RESEND_WEBHOOK_SECRET: emptyToUndefined(process.env.RESEND_WEBHOOK_SECRET),
 	EMAIL_UNSUBSCRIBE_SECRET: process.env.EMAIL_UNSUBSCRIBE_SECRET,
 	EMAIL_SENDING_PAUSED:
-		process.env.EMAIL_SENDING_PAUSED === 'true' || process.env.EMAIL_SENDING_PAUSED === '1'
+		process.env.EMAIL_SENDING_PAUSED === 'true' || process.env.EMAIL_SENDING_PAUSED === '1',
+	TRIGGER_SECRET_KEY: emptyToUndefined(process.env.TRIGGER_SECRET_KEY),
+	TRIGGER_PROJECT_REF: emptyToUndefined(process.env.TRIGGER_PROJECT_REF),
+	TRIGGER_API_URL: emptyToUndefined(process.env.TRIGGER_API_URL)
 });
 
 function emptyToUndefined(value: string | undefined) {

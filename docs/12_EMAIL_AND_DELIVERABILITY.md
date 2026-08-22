@@ -16,7 +16,7 @@ Preview/test → global pause → global suppression → client suppression → 
 
 ## Workflows
 
-`packages/automation` defines Trigger.dev contracts for `lead-captured`, `nurture-step`, `enroll-eligible`, `nurture-due-sweep`, and `inbound-email` with idempotency keys. Slices 1–3 run them in-process. Postgres is the source of truth for engagement and inbound drafts. Provider dashboards are not.
+`packages/automation` defines Trigger.dev contracts for `lead-captured`, `nurture-step`, `enroll-eligible`, `nurture-due-sweep`, `inbound-email`, and `nurture-due-sweep-platform` with idempotency keys. Slice 4 runs them through `WorkflowRuntime`: in-process by default, Trigger.dev when `TRIGGER_SECRET_KEY` is set. Postgres is the source of truth for engagement and inbound drafts. Provider dashboards are not.
 
 Inbound `email.received` events resolve the tenant from a unique sending domain or From address. Unknown or ambiguous recipients are dropped. Stored bodies are text-only. Classification is rule-based and never authorizes a send.
 

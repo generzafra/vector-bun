@@ -96,4 +96,4 @@ Future modules (Opportunities, Campaigns, Intelligence, Automation) follow maste
 
 ## Delivery public routes
 
-Hostname-selected `apps/delivery/src/routes/+page.svelte`. Known-host `apps/delivery/src/routes/unsubscribe/+page.svelte` for marketing preference changes. Unknown hosts fail closed. Control `/email` reports Postgres engagement, inbound drafts, and operator enroll / due-step / review actions; it is not a tenant theme. Inbound bodies render as text, never as HTML.
+Hostname-selected `apps/delivery/src/routes/+page.svelte`. Known-host `apps/delivery/src/routes/unsubscribe/+page.svelte` for marketing preference changes. Unknown hosts fail closed. Control `/email` reports Postgres engagement, inbound drafts, the workflow runner, and operator enroll / due-step / review actions; it is not a tenant theme. Inbound bodies render as text, never as HTML.
