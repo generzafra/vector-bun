@@ -16,7 +16,8 @@ Before implementation, read:
 8. `docs/14_SECURITY_PRIVACY_COMPLIANCE.md`
 9. `docs/18_QA_TEST_STRATEGY.md`
 10. `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
-11. `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` when the work touches onboarding, domains, hosting, delivery, launch, or scaling. Its decisions are folded into `01`, `03`, `04`, `05`, `16`, `17`, `19`, and `21`; where it is more specific, it governs.
+11. `docs/plans/README.md` and the plan for the current phase. Phase 0 is `docs/plans/00_PHASE_0_FOUNDATION.md`.
+12. `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` when the work touches onboarding, domains, hosting, delivery, launch, or scaling. Its decisions are folded into `01`, `03`, `04`, `05`, `16`, `17`, `19`, and `21`; where it is more specific, it governs.
 
 ## Non negotiable architecture
 
