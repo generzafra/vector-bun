@@ -1,3 +1,4 @@
+export * from './apply-recommendation';
 export * from './compose';
 export * from './host';
 export * from './meta';

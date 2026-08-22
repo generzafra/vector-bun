@@ -30,15 +30,15 @@ Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. O
 
 ## Future Control modules
 
-| Module                          | Status                                       |
-| ------------------------------- | -------------------------------------------- |
-| Opportunities / recommendations | `/intelligence` recommendation cards shipped |
-| Campaigns                       | planned                                      |
-| Analytics / charts              | tables shipped; chart theme still planned    |
-| Automation canvas               | planned (Phase 8)                            |
-| Intelligence explainability     | `/intelligence` finding / evidence / cost    |
-| Portfolio dashboard             | planned (Phase 9)                            |
-| Vector marketing hero           | not in this repo                             |
+| Module                          | Status                                           |
+| ------------------------------- | ------------------------------------------------ |
+| Opportunities / recommendations | `/intelligence` recommendation cards shipped     |
+| Campaigns                       | planned                                          |
+| Analytics / charts              | tables shipped; chart theme still planned        |
+| Automation canvas               | planned (Phase 8)                                |
+| Intelligence explainability     | `/intelligence` cards, activity, draft artifacts |
+| Portfolio dashboard             | planned (Phase 9)                                |
+| Vector marketing hero           | not in this repo                                 |
 
 ## Remaining follow-up
 

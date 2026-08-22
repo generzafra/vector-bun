@@ -29,12 +29,17 @@
 		if (status === 'paused') return 'warning' as const;
 		return 'muted' as const;
 	}
+
+	function atLabel(value: Date | string) {
+		const iso = value instanceof Date ? value.toISOString() : value;
+		return iso.replace('T', ' ').slice(0, 16);
+	}
 </script>
 
 <PageHeader
 	eyebrow="Vector Intelligence"
 	title="Intelligence"
-	description="Agents research, draft, and recommend. They never execute. Every run is typed, versioned, tenant-scoped, and cost-attributed. Confidence cannot approve an action or override a pause."
+	description="Agents research, draft, and recommend. Approving funnel or copy writes an unpublished page draft only. Nothing publishes, sends, or goes live. Confidence cannot approve an action or override a pause."
 />
 
 {#if form?.error}
@@ -83,8 +88,9 @@
 	<section>
 		<h2>Run a draft</h2>
 		<p>
-			Research, copy, analytics, and funnel plans stay drafts. Copy cannot include HTML. Funnel
-			plans use approved section types only.
+			Research, copy, analytics, and funnel plans stay recommendations until an operator decides.
+			Approving funnel or copy writes an unpublished page version from the composer. Copy cannot
+			include HTML. Funnel plans use approved section types only.
 		</p>
 		{#if canManage}
 			<form method="post" action="?/run" class="wide">
@@ -114,7 +120,7 @@
 		{#if pending.length === 0}
 			<EmptyState
 				title="No pending recommendations."
-				detail="Successful runs appear here until an operator approves or rejects. Approval still does not execute."
+				detail="Successful runs appear here until an operator approves or rejects. Approving funnel or copy writes an unpublished draft. It still does not publish, send, or go live."
 			/>
 		{:else}
 			<div class="queue">
@@ -147,6 +153,69 @@
 					</RecommendationCard>
 				{/each}
 			</div>
+		{/if}
+	</section>
+
+	<section>
+		<h2>Unpublished drafts</h2>
+		<p>
+			Approved funnel and copy artifacts stay drafts. Preview remains noindex. Publication is a
+			separate operator action.
+		</p>
+		{#if overview.artifacts.length === 0}
+			<EmptyState title="No unpublished page drafts from approvals." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Agent</th>
+						<th>Version</th>
+						<th>Status</th>
+						<th>noindex</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.artifacts as artifact (artifact.pageVersionId)}
+						<tr>
+							<td>{artifact.agentKey}</td>
+							<td>{artifact.version}</td>
+							<td>
+								<StatusChip
+									label={artifact.status}
+									tone={artifact.status === 'draft' ? 'warning' : 'muted'}
+								/>
+							</td>
+							<td>{artifact.noindex ? 'yes' : 'no'}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+	</section>
+
+	<section>
+		<h2>Activity</h2>
+		{#if overview.activity.length === 0}
+			<EmptyState title="No intelligence activity for this client." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>When</th>
+						<th>Kind</th>
+						<th>Summary</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.activity as item (item.id)}
+						<tr>
+							<td>{atLabel(item.at)}</td>
+							<td>{item.kind}</td>
+							<td>{item.summary}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		{/if}
 	</section>
 

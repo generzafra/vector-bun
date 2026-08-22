@@ -1,6 +1,6 @@
 # Phase 4 — Vector Intelligence
 
-**Status:** Slice 1 done — `AIProvider` (memory / xAI Grok / disabled), prompt and agent version registry, Research / Copy / Analytics / Funnel Strategist drafts, cost ledger, client and platform kill switches, approval queue that never executes.  
+**Status:** Slice 2 done — Slice 1 plus approved funnel/copy recommendations materialize as unpublished tenant-scoped page drafts. Research/analytics stay recommendation-only. Approvals still do not publish, send, or go live.  
 **Prerequisite:** Phase 3 exit met. Do not start until nurture can complete safely.
 
 ---
@@ -57,3 +57,12 @@ An operator can run Research, Copy, Analytics, or Funnel Strategist through `AIP
 - Control: `/intelligence` with `docs/28` recommendation cards
 - API: `GET /v1/intelligence`, `POST /v1/intelligence/runs`, `POST /v1/intelligence/approvals/:id/decide`, `POST /v1/intelligence/pause`
 - Isolation: missing TenantContext fails closed; route client id cannot leak the other tenant
+
+## Slice 2 — Approved drafts become unpublished artifacts (done)
+
+Approving a Funnel Strategist or Copy recommendation writes a new `page_versions` row with `status: 'draft'`. The document is composed from tenant knowledge through the existing funnel composer, then filtered/overlaid with the approved plan or copy variant. Preview `seo.noindex` stays true. Published version id, preview/production domain status, and email sends do not change. Research and Analytics approvals record feedback only. Reject records negative feedback and creates no draft. Alpha cannot create or read a Beta draft. `/intelligence` lists unpublished drafts and a short activity feed (detected → recommended → approved/rejected → draft created / not executed).
+
+- Apply helpers: `packages/funnel-engine/src/apply-recommendation.ts`
+- Artifact link: `ai_runs.artifact_kind`, `ai_runs.artifact_page_version_id` (migration `0010_phase4_artifacts`)
+- Feedback: `ai_feedback` on every decide (`+1` approve, `-1` reject)
+- Control: unpublished drafts + activity on `/intelligence`

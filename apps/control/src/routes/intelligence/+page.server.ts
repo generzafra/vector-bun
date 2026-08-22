@@ -58,7 +58,9 @@ export const actions = {
 				ok: true,
 				notice: result.executed
 					? 'Unexpected execution'
-					: `Marked ${result.recorded.decision}. Vector did not publish, send, or execute.`
+					: result.artifact?.kind === 'page_draft'
+						? `Marked ${result.recorded.decision}. Unpublished page draft created. Vector did not publish, send, or go live.`
+						: `Marked ${result.recorded.decision}. Vector did not publish, send, or execute.`
 			};
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });

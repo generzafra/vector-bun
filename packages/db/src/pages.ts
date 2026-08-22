@@ -114,6 +114,28 @@ export async function getLatestDraftForTenant(ctx: TenantContext) {
 	return row ?? null;
 }
 
+export async function insertDraftPageVersionForTenant(ctx: TenantContext, document: PageDocument) {
+	const required = requireTenantContext(ctx);
+	const page = await getHomePageForTenant(required);
+	if (!page) return null;
+	const [versionRow] = await db
+		.select({ version: max(pageVersions.version) })
+		.from(pageVersions)
+		.where(and(eq(pageVersions.clientId, required.clientId), eq(pageVersions.pageId, page.id)));
+	const [draft] = await db
+		.insert(pageVersions)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			pageId: page.id,
+			version: (versionRow?.version ?? 0) + 1,
+			status: 'draft',
+			document
+		})
+		.returning();
+	return draft ?? null;
+}
+
 export async function getPublishedHomeForTenant(ctx: TenantContext) {
 	const required = requireTenantContext(ctx);
 	const page = await getHomePageForTenant(required);

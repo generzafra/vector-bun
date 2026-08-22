@@ -2,8 +2,10 @@ import { consumeRateLimit, requireCapability } from '@vector/auth';
 import {
 	aiProvider,
 	copyContainsMarkup,
+	copyOutputSchema,
 	evaluateAiGate,
 	formatCostUsd,
+	funnelPlanOutputSchema,
 	schemaForAgent,
 	type AIProvider,
 	type AgentOutput,
@@ -30,6 +32,7 @@ import {
 } from '@vector/contracts';
 import {
 	assertAiClient,
+	attachAiRunArtifactForTenant,
 	countAnalyticsEventsForTenant,
 	countPublishedPageVersionsForTenant,
 	ensureAiSettingsForTenant,
@@ -38,16 +41,23 @@ import {
 	getAiRunForTenant,
 	getApprovalRequestForTenant,
 	getBrandForTenant,
+	getClientForTenant,
+	getHomePageForTenant,
+	getPageVersionForTenant,
+	getPreviewDomainForTenant,
 	getPublishedAgentByKey,
 	insertAiCostEventForTenant,
 	insertAiDecisionForTenant,
+	insertAiFeedbackForTenant,
 	insertAiMessageForTenant,
 	insertAiRunForTenant,
 	insertApprovalDecisionForTenant,
 	insertApprovalRequestForTenant,
+	insertDraftPageVersionForTenant,
 	listAiAgents,
 	listAiCostEventsForTenant,
 	listAiDecisionsForTenant,
+	listAiFeedbackForTenant,
 	listAiRunsForTenant,
 	listApprovalDecisionsForTenant,
 	listApprovalRequestsForTenant,
@@ -60,9 +70,31 @@ import {
 	updateAiSettingsForTenant,
 	updateApprovalRequestStatusForTenant
 } from '@vector/db';
+import {
+	applyApprovedCopy,
+	applyApprovedFunnelPlan,
+	canMaterializeCopyDraft,
+	composeLeadPage
+} from '@vector/funnel-engine';
 import { logError, logInfo } from '@vector/observability';
 import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
+
+type IntelligenceArtifact = {
+	kind: 'page_draft';
+	pageVersionId: string;
+	version: number;
+	status: 'draft';
+};
+
+type IntelligenceActivity = {
+	id: string;
+	at: Date;
+	kind: 'run' | 'approval' | 'feedback' | 'artifact';
+	summary: string;
+	runId: string | null;
+	status: string | null;
+};
 
 let providerOverride: AIProvider | null = null;
 
@@ -153,22 +185,154 @@ function assertCopyPolicy(output: AgentOutput, schemaName: string) {
 	}
 }
 
+async function loadComposeSnapshot(ctx: TenantContext) {
+	const client = await getClientForTenant(ctx, ctx.clientId);
+	if (!client) throw new NotFoundError('Client not found');
+	const [brand, services, offers, claims] = await Promise.all([
+		getBrandForTenant(ctx),
+		listServicesForTenant(ctx),
+		listOffersForTenant(ctx),
+		listClaimsForTenant(ctx)
+	]);
+	if (!brand) throw new ValidationError('Brand profile is required');
+	return { clientSlug: client.slug, brand, services, offers, claims };
+}
+
+async function materializeApprovedArtifact(
+	ctx: TenantContext,
+	run: {
+		id: string;
+		agentKey: string;
+		output: unknown;
+	}
+): Promise<IntelligenceArtifact | null> {
+	if (!run.output || typeof run.output !== 'object') return null;
+
+	if (run.agentKey === 'funnel_strategist') {
+		const plan = funnelPlanOutputSchema.parse(run.output);
+		const document = applyApprovedFunnelPlan(
+			composeLeadPage(await loadComposeSnapshot(ctx), { preview: true }),
+			plan
+		);
+		const draft = await insertDraftPageVersionForTenant(ctx, document);
+		if (!draft) throw new ValidationError('Lead page is missing; approval cannot create a draft');
+		await attachAiRunArtifactForTenant(ctx, run.id, {
+			artifactKind: 'page_draft',
+			artifactPageVersionId: draft.id
+		});
+		return {
+			kind: 'page_draft',
+			pageVersionId: draft.id,
+			version: draft.version,
+			status: 'draft'
+		};
+	}
+
+	if (run.agentKey === 'copy') {
+		const copy = copyOutputSchema.parse(run.output);
+		assertCopyPolicy(copy, 'copy.v1');
+		if (!canMaterializeCopyDraft(copy.kind)) return null;
+		const document = applyApprovedCopy(
+			composeLeadPage(await loadComposeSnapshot(ctx), { preview: true }),
+			copy
+		);
+		const draft = await insertDraftPageVersionForTenant(ctx, document);
+		if (!draft) throw new ValidationError('Lead page is missing; approval cannot create a draft');
+		await attachAiRunArtifactForTenant(ctx, run.id, {
+			artifactKind: 'page_draft',
+			artifactPageVersionId: draft.id
+		});
+		return {
+			kind: 'page_draft',
+			pageVersionId: draft.id,
+			version: draft.version,
+			status: 'draft'
+		};
+	}
+
+	return null;
+}
+
+function buildIntelligenceActivity(input: {
+	runs: Awaited<ReturnType<typeof listAiRunsForTenant>>;
+	approvalHistory: Awaited<ReturnType<typeof listApprovalDecisionsForTenant>>;
+	feedback: Awaited<ReturnType<typeof listAiFeedbackForTenant>>;
+}): IntelligenceActivity[] {
+	const items: IntelligenceActivity[] = [];
+	for (const run of input.runs) {
+		items.push({
+			id: `run:${run.id}`,
+			at: run.createdAt,
+			kind: 'run',
+			summary: `${run.agentKey} ${run.status}`,
+			runId: run.id,
+			status: run.status
+		});
+		if (run.artifactPageVersionId) {
+			items.push({
+				id: `artifact:${run.id}`,
+				at: run.updatedAt,
+				kind: 'artifact',
+				summary: 'Unpublished page draft created. Not published or sent.',
+				runId: run.id,
+				status: run.artifactKind
+			});
+		}
+	}
+	for (const row of input.approvalHistory) {
+		items.push({
+			id: `approval:${row.id}`,
+			at: row.createdAt,
+			kind: 'approval',
+			summary: `Marked ${row.decision}. Did not execute.`,
+			runId: null,
+			status: row.decision
+		});
+	}
+	for (const row of input.feedback) {
+		items.push({
+			id: `feedback:${row.id}`,
+			at: row.createdAt,
+			kind: 'feedback',
+			summary: row.rating > 0 ? 'Accepted recommendation' : 'Rejected recommendation',
+			runId: row.runId,
+			status: String(row.rating)
+		});
+	}
+	return items.sort((left, right) => right.at.getTime() - left.at.getTime()).slice(0, 20);
+}
+
 export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, clientId?: string) {
 	requireCapability(actor.permissions, 'ai.read');
 	const required = assertActorOwnsContext(actor, ctx);
 	if (clientId) assertAiClient(required, clientId);
 	const settings = await ensureAiSettingsForTenant(required);
-	const [agents, runs, decisions, approvals, approvalHistory, costs, costTotal, health] =
+	const [agents, runs, decisions, approvals, approvalHistory, feedback, costs, costTotal, health] =
 		await Promise.all([
 			listAiAgents(),
 			listAiRunsForTenant(required),
 			listAiDecisionsForTenant(required),
 			listApprovalRequestsForTenant(required),
 			listApprovalDecisionsForTenant(required),
+			listAiFeedbackForTenant(required),
 			listAiCostEventsForTenant(required),
 			sumAiCostMicrosForTenant(required),
 			getDomainAIProvider().health()
 		]);
+	const artifacts = [];
+	for (const run of runs) {
+		if (!run.artifactPageVersionId) continue;
+		const version = await getPageVersionForTenant(required, run.artifactPageVersionId);
+		if (!version) continue;
+		artifacts.push({
+			runId: run.id,
+			agentKey: run.agentKey,
+			pageVersionId: version.id,
+			version: version.version,
+			status: version.status,
+			noindex: version.document.seo.noindex
+		});
+	}
 	return {
 		settings,
 		provider: health,
@@ -179,6 +343,9 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 		decisions,
 		approvals,
 		approvalHistory,
+		feedback,
+		artifacts,
+		activity: buildIntelligenceActivity({ runs, approvalHistory, feedback }),
 		costs,
 		costTotalMicros: costTotal,
 		costTotalLabel: formatCostUsd(costTotal)
@@ -403,7 +570,17 @@ export async function decideIntelligenceApproval(
 	if (approval.status !== 'pending') throw new ValidationError('Approval is already decided');
 	const run = await getAiRunForTenant(required, approval.runId);
 	if (!run) throw new NotFoundError('AI run not found');
-	const pagesBefore = await countPublishedPageVersionsForTenant(required);
+	const [pagesBefore, homeBefore, previewBefore] = await Promise.all([
+		countPublishedPageVersionsForTenant(required),
+		getHomePageForTenant(required),
+		getPreviewDomainForTenant(required)
+	]);
+	const publishedIdBefore = homeBefore?.publishedVersionId ?? null;
+	const previewStatusBefore = previewBefore?.status ?? null;
+
+	const artifact =
+		parsed.decision === 'approved' ? await materializeApprovedArtifact(required, run) : null;
+
 	const updated = await updateApprovalRequestStatusForTenant(
 		required,
 		approval.id,
@@ -416,9 +593,22 @@ export async function decideIntelligenceApproval(
 		note: parsed.note ?? null,
 		actorId: actor.userId
 	});
-	const pagesAfter = await countPublishedPageVersionsForTenant(required);
-	if (pagesAfter !== pagesBefore) {
+	const feedback = await insertAiFeedbackForTenant(required, {
+		runId: run.id,
+		rating: parsed.decision === 'approved' ? 1 : -1,
+		note: parsed.note ?? null,
+		actorId: actor.userId
+	});
+	const [pagesAfter, homeAfter, previewAfter] = await Promise.all([
+		countPublishedPageVersionsForTenant(required),
+		getHomePageForTenant(required),
+		getPreviewDomainForTenant(required)
+	]);
+	if (pagesAfter !== pagesBefore || (homeAfter?.publishedVersionId ?? null) !== publishedIdBefore) {
 		throw new ForbiddenError('Approval must not publish pages');
+	}
+	if ((previewAfter?.status ?? null) !== previewStatusBefore) {
+		throw new ForbiddenError('Approval must not activate a domain');
 	}
 	await recordAudit({
 		organizationId: required.organizationId,
@@ -435,9 +625,16 @@ export async function decideIntelligenceApproval(
 		clientId: required.clientId,
 		approvalId: approval.id,
 		decision: parsed.decision,
+		artifactKind: artifact?.kind ?? null,
 		executed: false
 	});
-	return { approval: updated ?? approval, recorded, executed: false as const };
+	return {
+		approval: updated ?? approval,
+		recorded,
+		feedback,
+		artifact,
+		executed: false as const
+	};
 }
 
 export async function pauseIntelligence(

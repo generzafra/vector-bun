@@ -18,13 +18,19 @@ import {
 } from '@vector/contracts';
 import {
 	clients,
+	countDraftPageVersionsForTenant,
 	countPublishedPageVersionsForTenant,
 	db,
 	emailMessages,
+	getHomePageForTenant,
+	getPageVersionForTenant,
+	getPreviewDomainForTenant,
 	listAiCostEventsForTenant,
+	listAiFeedbackForTenant,
 	listAiRunsForTenant,
 	listApprovalRequestsForTenant
 } from '@vector/db';
+import { isApprovedSectionType } from '@vector/funnel-engine';
 import {
 	contextFor,
 	decideIntelligenceApproval,
@@ -101,6 +107,8 @@ test('missing TenantContext cannot read AI records', () => {
 	expect(listAiRunsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 	expect(listAiCostEventsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 	expect(listApprovalRequestsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
+	expect(listAiFeedbackForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
+	expect(countDraftPageVersionsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 });
 
 test('research run is typed, versioned, costed, and never executes', async () => {
@@ -303,6 +311,7 @@ test('approval records a decision and does not publish or send', async () => {
 		'ai-approve-decide'
 	);
 	expect(decided.executed).toBe(false);
+	expect(decided.artifact).toBeNull();
 	expect(decided.recorded.confidenceIgnored).toBe(true);
 	expect(await countPublishedPageVersionsForTenant(ctx)).toBe(pagesBefore);
 	const sentAfter = await db
@@ -312,6 +321,162 @@ test('approval records a decision and does not publish or send', async () => {
 	expect(sentAfter.length).toBe(sentBefore.length);
 	const overview = await getIntelligenceOverview(actor, ctx);
 	expect(overview.approvals.find((row) => row.id === result.approval!.id)?.status).toBe('approved');
+	expect(overview.feedback.some((row) => row.runId === result.run.id && row.rating === 1)).toBe(
+		true
+	);
+	expect(overview.activity.some((row) => row.kind === 'approval')).toBe(true);
+});
+
+test('approving a funnel plan writes an unpublished tenant draft only', async () => {
+	setDomainAIProvider(memory);
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.4.20', 'ai-funnel-approve');
+	const ctx = contextFor(actor, 'ai-funnel-approve');
+	const pagesBefore = await countPublishedPageVersionsForTenant(ctx);
+	const draftsBefore = await countDraftPageVersionsForTenant(ctx);
+	const homeBefore = await getHomePageForTenant(ctx);
+	const previewBefore = await getPreviewDomainForTenant(ctx);
+	const sentBefore = await db
+		.select()
+		.from(emailMessages)
+		.where(eq(emailMessages.clientId, alpha.id));
+	const result = await runIntelligence(
+		actor,
+		ctx,
+		{ agentKey: 'funnel_strategist' },
+		'ai-funnel-approve'
+	);
+	const decided = await decideIntelligenceApproval(
+		actor,
+		ctx,
+		{ id: result.approval!.id, decision: 'approved', note: 'Compose a draft' },
+		'ai-funnel-approve-decide'
+	);
+	expect(decided.executed).toBe(false);
+	expect(decided.artifact?.kind).toBe('page_draft');
+	expect(decided.artifact?.status).toBe('draft');
+	const version = await getPageVersionForTenant(ctx, decided.artifact!.pageVersionId);
+	expect(version?.status).toBe('draft');
+	expect(version?.document.seo.noindex).toBe(true);
+	expect(version?.document.sections.every((section) => isApprovedSectionType(section.type))).toBe(
+		true
+	);
+	expect(version?.document.sections.some((section) => section.type === 'lead-form')).toBe(true);
+	expect(await countPublishedPageVersionsForTenant(ctx)).toBe(pagesBefore);
+	expect(await countDraftPageVersionsForTenant(ctx)).toBe(draftsBefore + 1);
+	const homeAfter = await getHomePageForTenant(ctx);
+	expect(homeAfter?.publishedVersionId ?? null).toBe(homeBefore?.publishedVersionId ?? null);
+	expect((await getPreviewDomainForTenant(ctx))?.status ?? null).toBe(
+		previewBefore?.status ?? null
+	);
+	const sentAfter = await db
+		.select()
+		.from(emailMessages)
+		.where(eq(emailMessages.clientId, alpha.id));
+	expect(sentAfter.length).toBe(sentBefore.length);
+	const overview = await getIntelligenceOverview(actor, ctx);
+	expect(overview.artifacts.some((row) => row.pageVersionId === version?.id)).toBe(true);
+	expect(overview.activity.some((row) => row.kind === 'artifact')).toBe(true);
+});
+
+test('approving copy writes a noindex headline draft without markup or publish', async () => {
+	setDomainAIProvider(memory);
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.4.21', 'ai-copy-approve');
+	const ctx = contextFor(actor, 'ai-copy-approve');
+	const pagesBefore = await countPublishedPageVersionsForTenant(ctx);
+	const result = await runIntelligence(actor, ctx, { agentKey: 'copy' }, 'ai-copy-approve');
+	const decided = await decideIntelligenceApproval(
+		actor,
+		ctx,
+		{ id: result.approval!.id, decision: 'approved' },
+		'ai-copy-approve-decide'
+	);
+	expect(decided.executed).toBe(false);
+	expect(decided.artifact?.kind).toBe('page_draft');
+	const version = await getPageVersionForTenant(ctx, decided.artifact!.pageVersionId);
+	const hero = version?.document.sections.find(
+		(section) => section.type === 'hero-minimal' || section.type === 'hero-split'
+	);
+	expect(hero && 'headline' in hero ? hero.headline : '').toContain('Client Alpha Dental');
+	expect(copyContainsMarkup([{ text: hero && 'headline' in hero ? hero.headline : '' }])).toBe(
+		false
+	);
+	expect(version?.status).toBe('draft');
+	expect(version?.document.seo.noindex).toBe(true);
+	expect(await countPublishedPageVersionsForTenant(ctx)).toBe(pagesBefore);
+});
+
+test('rejecting a funnel plan records feedback and does not create a draft', async () => {
+	setDomainAIProvider(memory);
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.4.22', 'ai-funnel-reject');
+	const ctx = contextFor(actor, 'ai-funnel-reject');
+	const draftsBefore = await countDraftPageVersionsForTenant(ctx);
+	const result = await runIntelligence(
+		actor,
+		ctx,
+		{ agentKey: 'funnel_strategist' },
+		'ai-funnel-reject'
+	);
+	const decided = await decideIntelligenceApproval(
+		actor,
+		ctx,
+		{ id: result.approval!.id, decision: 'rejected', note: 'Keep current page' },
+		'ai-funnel-reject-decide'
+	);
+	expect(decided.executed).toBe(false);
+	expect(decided.artifact).toBeNull();
+	expect(decided.feedback.rating).toBe(-1);
+	expect(await countDraftPageVersionsForTenant(ctx)).toBe(draftsBefore);
+});
+
+test('approving research does not create a page draft', async () => {
+	setDomainAIProvider(memory);
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.4.23', 'ai-research-approve');
+	const ctx = contextFor(actor, 'ai-research-approve');
+	const draftsBefore = await countDraftPageVersionsForTenant(ctx);
+	const result = await runIntelligence(actor, ctx, { agentKey: 'research' }, 'ai-research-approve');
+	const decided = await decideIntelligenceApproval(
+		actor,
+		ctx,
+		{ id: result.approval!.id, decision: 'approved' },
+		'ai-research-approve-decide'
+	);
+	expect(decided.executed).toBe(false);
+	expect(decided.artifact).toBeNull();
+	expect(await countDraftPageVersionsForTenant(ctx)).toBe(draftsBefore);
+});
+
+test('alpha funnel approval cannot create or expose a beta draft', async () => {
+	setDomainAIProvider(memory);
+	const { alpha, beta } = await seededClients();
+	const alphaActor = await adminOn(alpha.id, '10.0.4.24', 'ai-iso-artifact');
+	const alphaCtx = contextFor(alphaActor, 'ai-iso-artifact');
+	const betaActor = await adminOn(beta.id, '10.0.4.25', 'ai-iso-artifact-beta');
+	const betaCtx = contextFor(betaActor, 'ai-iso-artifact-beta');
+	const betaDraftsBefore = await countDraftPageVersionsForTenant(betaCtx);
+	const result = await runIntelligence(
+		alphaActor,
+		alphaCtx,
+		{ agentKey: 'funnel_strategist' },
+		'ai-iso-artifact'
+	);
+	const decided = await decideIntelligenceApproval(
+		alphaActor,
+		alphaCtx,
+		{ id: result.approval!.id, decision: 'approved' },
+		'ai-iso-artifact-decide'
+	);
+	expect(decided.artifact?.pageVersionId).toBeTruthy();
+	expect(await countDraftPageVersionsForTenant(betaCtx)).toBe(betaDraftsBefore);
+	expect(await getPageVersionForTenant(betaCtx, decided.artifact!.pageVersionId)).toBeNull();
+	const betaOverview = await getIntelligenceOverview(betaActor, betaCtx);
+	expect(
+		betaOverview.artifacts.every((row) => row.pageVersionId !== decided.artifact?.pageVersionId)
+	).toBe(true);
+	expect(JSON.stringify(betaOverview)).not.toContain(decided.artifact!.pageVersionId);
 });
 
 test('idempotent run keys do not double-charge', async () => {

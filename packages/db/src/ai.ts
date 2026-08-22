@@ -7,6 +7,7 @@ import {
 	aiClientSettings,
 	aiCostEvents,
 	aiDecisions,
+	aiFeedback,
 	aiMessages,
 	aiRuns,
 	approvalDecisions,
@@ -145,6 +146,27 @@ export async function insertAiRunForTenant(
 		})
 		.returning();
 	return row;
+}
+
+export async function attachAiRunArtifactForTenant(
+	ctx: TenantContext,
+	runId: string,
+	input: {
+		artifactKind: 'page_draft';
+		artifactPageVersionId: string;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.update(aiRuns)
+		.set({
+			artifactKind: input.artifactKind,
+			artifactPageVersionId: input.artifactPageVersionId,
+			updatedAt: new Date()
+		})
+		.where(and(eq(aiRuns.id, runId), eq(aiRuns.clientId, required.clientId)))
+		.returning();
+	return row ?? null;
 }
 
 export async function updateAiRunForTenant(
@@ -392,6 +414,45 @@ export async function countPublishedPageVersionsForTenant(ctx: TenantContext) {
 		.from(pageVersions)
 		.where(and(eq(pageVersions.clientId, required.clientId), eq(pageVersions.status, 'published')));
 	return Number(row?.total ?? 0);
+}
+
+export async function countDraftPageVersionsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select({ total: count() })
+		.from(pageVersions)
+		.where(and(eq(pageVersions.clientId, required.clientId), eq(pageVersions.status, 'draft')));
+	return Number(row?.total ?? 0);
+}
+
+export async function insertAiFeedbackForTenant(
+	ctx: TenantContext,
+	input: {
+		runId: string;
+		rating: number;
+		note?: string | null;
+		actorId?: string | null;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(aiFeedback)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			...input
+		})
+		.returning();
+	return row;
+}
+
+export async function listAiFeedbackForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(aiFeedback)
+		.where(eq(aiFeedback.clientId, required.clientId))
+		.orderBy(desc(aiFeedback.createdAt));
 }
 
 export async function upsertPromptTemplate(key: string, name: string) {

@@ -75,10 +75,10 @@ Delivery `GET/POST /unsubscribe` on a known hostname. Token `clientId` must matc
 
 Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
 
-- `GET /v1/intelligence` — agents, runs, decisions, approvals, cost ledger, provider and pause status (`ai.read`)
+- `GET /v1/intelligence` — agents, runs, decisions, approvals, feedback, unpublished artifacts, activity, cost ledger, provider and pause status (`ai.read`)
 - `GET /v1/intelligence/:clientId` — same overview only when the actor already owns that client
 - `POST /v1/intelligence/runs` — start a typed draft (`ai.manage`, CSRF). Body: `agentKey`, optional `brief`, optional `idempotencyKey`
-- `POST /v1/intelligence/approvals/:id/decide` — approve or reject; never executes (`ai.manage`, CSRF)
+- `POST /v1/intelligence/approvals/:id/decide` — approve or reject; may write an unpublished page draft for funnel/copy; never publishes, sends, or executes (`ai.manage`, CSRF)
 - `POST /v1/intelligence/pause` — set the client AI kill switch (`ai.manage`, CSRF)
 
 `AIProvider` lives in `packages/ai`. Memory is the default. xAI Grok is selected when `XAI_API_KEY` is present. `AI_EXECUTION_PAUSED` wraps the adapter as disabled. Tokens stay in env, not the browser, logs, or prompts.

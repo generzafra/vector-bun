@@ -1528,13 +1528,16 @@ export const aiRuns = pgTable(
 		requestId: text('request_id').notNull(),
 		actorId: text('actor_id'),
 		latencyMs: integer('latency_ms'),
+		artifactKind: text('artifact_kind'),
+		artifactPageVersionId: uuid('artifact_page_version_id').references(() => pageVersions.id),
 		createdAt: createdAt(),
 		updatedAt: updatedAt()
 	},
 	(t) => [
 		uniqueIndex('ai_runs_idempotency_idx').on(t.clientId, t.idempotencyKey),
 		index('ai_runs_client_created_idx').on(t.clientId, t.createdAt),
-		index('ai_runs_org_idx').on(t.organizationId)
+		index('ai_runs_org_idx').on(t.organizationId),
+		index('ai_runs_artifact_idx').on(t.clientId, t.artifactPageVersionId)
 	]
 );
 

@@ -39,6 +39,6 @@ Control signs in at `http://localhost:5183/login`. After seed, preview funnels a
 
 Optional Trigger.dev: set `TRIGGER_SECRET_KEY` and `TRIGGER_PROJECT_REF`, then `bun run dev:jobs`. Tests stay in-process.
 
-Optional xAI Grok: set `XAI_API_KEY`. Tests and local default stay on the memory AI adapter. Control `/intelligence` drafts recommendations only; approval does not execute.
+Optional xAI Grok: set `XAI_API_KEY`. Tests and local default stay on the memory AI adapter. Control `/intelligence` drafts recommendations; approving funnel or copy writes an unpublished page draft only and does not publish, send, or go live.
 
 Format with `bun run format`. Check with `bun run format:check`.
