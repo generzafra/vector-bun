@@ -1,6 +1,6 @@
 # Phase 5 — Social
 
-**Status:** Slices 1–6 done — Creative C0 library, LinkedIn, X, Facebook, and Instagram publish (memory in tests; official adapters registered), official C0 image upload, official OAuth install, Meta Page picker, token refresh, scheduled due sweep, metrics sync, and social → lead on the existing attribution path. Required social connections are readiness-gated. Phase 5 exit is not met until production tokens publish reliably on at least two official platforms.  
+**Status:** Exit met (23 August 2026, ADR-0010). Slices 1–6 done. Slice 7 (LinkedIn Company Page picker) is withdrawn — LinkedIn official OAuth stores the member profile (`w_member_social`, `urn:li:person:{id}`). Creative C0, LinkedIn / X / Facebook / Instagram adapters, official C0 upload, official OAuth, Meta Page picker, refresh, due sweep, metrics, and social → lead are in. Required social connections gate `social.access`. Live official LinkedIn member publish is confirmed. Official X OAuth and adapter work; live tweet is blocked only by provider HTTP 402.  
 **Prerequisite:** Phase 4 exit met. Do not start until AI actions are typed, approved, and costed.
 
 ---
@@ -12,6 +12,8 @@ Approved social content can publish reliably to at least two priority platforms 
 ## Exit gate
 
 Approved content publishes to two platforms. Required social connections are readiness-gated.
+
+Accepted 23 August 2026 via ADR-0010: live official LinkedIn member publish, plus official X OAuth/adapter with live write blocked only by provider HTTP 402.
 
 Creative C0 is in scope so Social does not invent a second media store. `ImageProvider`, composition, generated social families, funnel hero generation, video, and Creative QuickStart are **not** the Phase 5 exit.
 
@@ -84,3 +86,7 @@ Control starts official OAuth for LinkedIn, X, Facebook, and Instagram. The serv
 ## Slice 6 — Meta Page picker (done)
 
 When Facebook or Instagram OAuth finds more than one eligible Page, Control asks the operator to pick one. The pending user token stays in an encrypted HttpOnly cookie / selection blob. Public page names go to the UI; Page tokens never do. A single eligible Page still connects immediately. Instagram choices are Pages that already have a professional account. Alpha cannot finish Beta’s selection. YouTube and TikTok stay later. This does not accept the Phase 5 exit.
+
+## Slice 7 — LinkedIn Company Page picker (withdrawn)
+
+Withdrawn. LinkedIn stays on the member profile (`w_member_social`, `urn:li:person:{id}`). Company Page ACLs and `w_organization_social` are later work. The Meta Page picker is unchanged.

@@ -20,7 +20,8 @@ import type {
 import { oauthConnected } from './types';
 
 const TIMEOUT_MS = 10_000;
-const VERSION = '202401';
+const VERSION = '202608';
+const LINKEDIN_SCOPES = 'openid profile w_member_social';
 
 export class LinkedInSocialProvider implements SocialProvider {
 	readonly platform = 'linkedin' as const;
@@ -209,7 +210,7 @@ export class LinkedInSocialProvider implements SocialProvider {
 		url.searchParams.set('client_id', this.oauth.clientId);
 		url.searchParams.set('redirect_uri', request.redirectUri);
 		url.searchParams.set('state', request.state);
-		url.searchParams.set('scope', 'openid profile w_member_social offline_access');
+		url.searchParams.set('scope', LINKEDIN_SCOPES);
 		return url.toString();
 	}
 

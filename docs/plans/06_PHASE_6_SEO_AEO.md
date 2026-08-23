@@ -1,7 +1,7 @@
 # Phase 6 — SEO and AEO
 
 **Status:** Outline  
-**Prerequisite:** Phase 5 exit met. Do not start until two social platforms can publish approved content. If a client has no social in-scope, Phase 5 exit may be waived by ADR — do not skip tenant and approval foundations.
+**Prerequisite:** Phase 5 exit met (ADR-0010). Do not start until two social platforms can publish approved content. If a client has no social in-scope, Phase 5 exit may be waived by ADR — do not skip tenant and approval foundations.
 
 ---
 

@@ -512,6 +512,7 @@ export async function completeSocialOAuth(
 			userId: actor.userId,
 			platform: state.platform,
 			userAccessToken: exchanged.userAccessToken,
+			userRefreshToken: exchanged.userRefreshToken,
 			expiresAt: exchanged.expiresAt?.getTime(),
 			required: state.required,
 			pages: exchanged.pages,
@@ -571,6 +572,9 @@ export async function selectSocialOAuthPage(
 		userAccessToken: selection.userAccessToken,
 		pageId: parsed.pageId
 	});
+	if (!tokens.refreshToken && selection.userRefreshToken) {
+		tokens.refreshToken = selection.userRefreshToken;
+	}
 	if (selection.expiresAt && !tokens.expiresAt) {
 		tokens.expiresAt = new Date(selection.expiresAt);
 	}

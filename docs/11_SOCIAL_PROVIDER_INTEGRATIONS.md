@@ -14,7 +14,7 @@ Connection validation, publish, scheduled publish if supported, metrics, token r
 
 ## Security
 
-OAuth tokens encrypted at rest and never given to the model or browser. Official install uses PKCE S256 and an encrypted pending-state blob. Authorization codes are exchanged on the server. Facebook and Instagram may require a Page pick; the pending user token stays encrypted and Page tokens never enter Control or API JSON. Paste-token upsert remains a fallback.
+OAuth tokens encrypted at rest and never given to the model or browser. Official install uses PKCE S256 and an encrypted pending-state blob. Authorization codes are exchanged on the server. Facebook and Instagram may require a Page pick; the pending user token stays encrypted and Page tokens never enter Control or API JSON. LinkedIn connects the member profile (`urn:li:person:{id}`). Paste-token upsert remains a fallback.
 
 ## Official app setup and tokens
 
@@ -26,8 +26,9 @@ Operators should use Control **Connect with official OAuth**. Do not paste produ
 2. Add the **Sign In with LinkedIn using OpenID Connect** and **Share on LinkedIn** products.
 3. Auth → authorized redirect URL: `http://localhost:5183/social/oauth/callback` locally, or the production Control callback.
 4. Copy **Client ID** and **Client Secret** into `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET`.
-5. Vector scopes: `openid profile w_member_social offline_access`.
-6. In Control, connect LinkedIn. Vector stores the member access token as `urn:li:person:{sub}`.
+5. Vector scopes: `openid profile w_member_social`. Standard LinkedIn apps do not grant `offline_access`; member access tokens last about two months. Programmatic refresh tokens are partner-only. Do not request `w_organization_social` unless a later slice adds Company Page publishing.
+6. In Control, connect LinkedIn. Vector stores the member token with `urn:li:person:{id}` from `/v2/userinfo` and publishes as that member. Company Page posting is out of this Phase 5 slice.
+7. Official Posts API calls send `Linkedin-Version: 202608`. A retired version returns HTTP 426.
 
 ### X
 

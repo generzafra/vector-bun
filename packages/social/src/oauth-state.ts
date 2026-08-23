@@ -75,6 +75,7 @@ export type SocialOAuthSelection = {
 	userId: string;
 	platform: Extract<SocialPlatform, 'facebook' | 'instagram'>;
 	userAccessToken: string;
+	userRefreshToken?: string;
 	expiresAt?: number;
 	required: boolean;
 	pages: OAuthPageChoice[];
@@ -139,6 +140,10 @@ export function parseSocialOAuthSelection(
 		userId: parsed.userId,
 		platform: parsed.platform,
 		userAccessToken: parsed.userAccessToken,
+		userRefreshToken:
+			typeof parsed.userRefreshToken === 'string' && parsed.userRefreshToken.length > 0
+				? parsed.userRefreshToken
+				: undefined,
 		expiresAt: typeof parsed.expiresAt === 'number' ? parsed.expiresAt : undefined,
 		required: parsed.required,
 		pages,

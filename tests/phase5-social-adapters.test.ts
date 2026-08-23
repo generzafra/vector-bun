@@ -193,6 +193,8 @@ test('official LinkedIn and X publish approved media through official upload end
 		if (url.includes('dm-uploads')) return new Response(null, { status: 201 });
 		if (url.includes('/rest/posts')) {
 			expect(String(init?.body)).toContain('urn:li:image:abc');
+			const headers = new Headers(init?.headers);
+			expect(headers.get('linkedin-version')).toBe('202608');
 			return new Response(null, { status: 201, headers: { 'x-restli-id': 'urn:li:share:1' } });
 		}
 		return jsonResponse(404, {});
@@ -394,7 +396,8 @@ test('official LinkedIn and X OAuth fail closed without credentials and exchange
 	);
 	expect(linkedinUrl.origin).toBe('https://www.linkedin.com');
 	expect(linkedinUrl.searchParams.get('client_id')).toBe('li-client');
-	expect(linkedinUrl.searchParams.get('scope')?.includes('w_member_social')).toBe(true);
+	expect(linkedinUrl.searchParams.get('scope')).toBe('openid profile w_member_social');
+	expect(linkedinUrl.searchParams.get('scope')?.includes('offline_access')).toBe(false);
 	const linkedinTokens = await linkedin.exchangeAuthorizationCode({
 		code: 'li-code',
 		redirectUri: 'http://localhost:5183/social/oauth/callback',
@@ -403,8 +406,11 @@ test('official LinkedIn and X OAuth fail closed without credentials and exchange
 	if (linkedinTokens.kind !== 'connected') throw new Error('expected LinkedIn connected');
 	expect(linkedinTokens.tokens.accessToken).toBe('linkedin-oauth-access');
 	expect(linkedinTokens.tokens.externalAccountId).toBe('urn:li:person:person-9');
+	expect(linkedinTokens.tokens.handle).toBe('li@example.test');
+	expect(linkedinTokens.tokens.displayName).toBe('Li Member');
 	expect(linkedinCalls.some((call) => call.includes('/oauth/v2/accessToken'))).toBe(true);
 	expect(linkedinCalls.some((call) => call.includes('/v2/userinfo'))).toBe(true);
+	expect(linkedinCalls.some((call) => call.includes('organizationAcls'))).toBe(false);
 
 	const xBare = new XSocialProvider(async () => jsonResponse(200, {}));
 	let xConfigError: unknown;
@@ -636,4 +642,22 @@ test('official Meta OAuth asks for a Page when more than one eligible Page exist
 	});
 	expect(selected.accessToken).toBe('page-token-b');
 	expect(selected.externalAccountId).toBe('page-b');
+});
+
+test('official LinkedIn OAuth does not use Page selection', async () => {
+	const linkedin = new LinkedInSocialProvider(async () => jsonResponse(200, {}), {
+		clientId: 'li-client',
+		clientSecret: 'li-secret'
+	});
+	let pageError: unknown;
+	try {
+		await linkedin.resolveOAuthPage({
+			userAccessToken: 'linkedin-user-token',
+			pageId: 'urn:li:organization:22'
+		});
+	} catch (caught) {
+		pageError = caught;
+	}
+	expect(pageError).toBeInstanceOf(ProviderError);
+	expect((pageError as ProviderError).code).toBe('SOCIAL_PAGE_SELECTION_UNSUPPORTED');
 });

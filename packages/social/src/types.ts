@@ -111,6 +111,7 @@ export type OAuthSelectPageResult = {
 	kind: 'select_page';
 	pages: OAuthPageChoice[];
 	userAccessToken: string;
+	userRefreshToken?: string;
 	expiresAt?: Date;
 };
 
@@ -128,6 +129,7 @@ export function oauthConnected(tokens: OAuthTokenSet): OAuthConnectedResult {
 export function oauthSelectPage(input: {
 	pages: OAuthPageChoice[];
 	userAccessToken: string;
+	userRefreshToken?: string;
 	expiresAt?: Date;
 }): OAuthSelectPageResult {
 	return { kind: 'select_page', ...input };

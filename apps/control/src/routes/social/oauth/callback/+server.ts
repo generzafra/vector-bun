@@ -1,5 +1,6 @@
 import { isRedirect, redirect } from '@sveltejs/kit';
 import { isProd } from '@vector/config';
+import { AppError } from '@vector/contracts';
 import {
 	completeSocialOAuth,
 	contextFor,
@@ -7,11 +8,25 @@ import {
 	SOCIAL_OAUTH_SELECTION_TTL_MS
 } from '@vector/domain';
 
+function oauthErrorRedirect(reason: string): never {
+	const safe = reason
+		.replace(/[^\w .:-]/g, ' ')
+		.trim()
+		.slice(0, 180);
+	const target = safe
+		? `/social?oauth=error&reason=${encodeURIComponent(safe)}`
+		: '/social?oauth=error';
+	throw redirect(303, target);
+}
+
 export async function GET({ url, locals, cookies }) {
 	const session = locals.session;
 	if (!session) throw redirect(303, '/login');
-	if (!session.clientId) throw redirect(303, '/social?oauth=error');
-	if (url.searchParams.get('error')) throw redirect(303, '/social?oauth=error');
+	if (!session.clientId) oauthErrorRedirect('Select a client before connecting social');
+	const providerError = url.searchParams.get('error');
+	if (providerError) {
+		oauthErrorRedirect(url.searchParams.get('error_description') || providerError);
+	}
 	const code = url.searchParams.get('code') ?? '';
 	const state = url.searchParams.get('state') ?? '';
 	try {
@@ -34,6 +49,8 @@ export async function GET({ url, locals, cookies }) {
 		throw redirect(303, '/social?oauth=connected');
 	} catch (error) {
 		if (isRedirect(error)) throw error;
-		throw redirect(303, '/social?oauth=error');
+		oauthErrorRedirect(
+			error instanceof AppError ? error.message : 'Official OAuth did not complete'
+		);
 	}
 }

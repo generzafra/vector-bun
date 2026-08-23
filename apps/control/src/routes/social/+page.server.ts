@@ -28,6 +28,11 @@ export async function load({ locals, url, cookies }) {
 	}
 	const ctx = contextFor(session, locals.requestId);
 	const oauth = url.searchParams.get('oauth');
+	const oauthReason = url.searchParams
+		.get('reason')
+		?.replace(/[^\w .:-]/g, ' ')
+		.trim()
+		.slice(0, 180);
 	const pick = cookies.get(SOCIAL_OAUTH_PAGE_PICK_COOKIE);
 	const selection = pick ? parseSocialOAuthSelection(env.TOKEN_ENCRYPTION_KEY, pick) : null;
 	const pageChoices =
@@ -49,7 +54,9 @@ export async function load({ locals, url, cookies }) {
 					: oauth === 'select'
 						? 'Page selection expired. Start official OAuth again.'
 						: oauth === 'error'
-							? 'Official OAuth did not complete. Start the connect flow again.'
+							? oauthReason
+								? `Official OAuth did not complete. ${oauthReason}`
+								: 'Official OAuth did not complete. Start the connect flow again.'
 							: null
 	};
 }

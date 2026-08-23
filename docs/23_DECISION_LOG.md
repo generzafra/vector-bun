@@ -307,3 +307,43 @@ No Outcomes code is required to accept this ADR. Phase 5 may start. Internal con
 ### Reversal path
 
 Supersede this ADR. Leave `docs/30` as historical. Keep Phase 2 lead statuses and Phase 1 `offers`.
+
+---
+
+## ADR-0010
+
+### Date
+
+23 August 2026
+
+### Status
+
+Accepted
+
+### Decision
+
+Phase 5 exit is met. Approved content publishes through official LinkedIn member OAuth (`w_member_social`, `urn:li:person:{id}`). Official X OAuth and the X adapter are installed; live tweet write is blocked only by provider HTTP 402. Required social connections gate `social.access`.
+
+LinkedIn Company Page posting (`w_organization_social`, organization ACLs) is withdrawn from this exit. Facebook and Instagram official app credentials are not part of this acceptance. C0 image attach works in adapters and tests; this live confirmation was text-only because Client Alpha had no authentic approved logo in the Social library.
+
+Do not reopen Phase 0–4. Do not start Phase 6 until this record is accepted. YouTube, TikTok, autonomous replies, C2–C9, and O1–O20 stay later.
+
+### Alternatives considered
+
+Keep Phase 5 open until a paid X write plan publishes a live tweet; require a live LinkedIn Company Page; treat memory-adapter tests as the two-platform exit.
+
+### Consequences
+
+Agents treat Phase 5 as closed. Paid X write access or a later Company Page slice can be additive. They do not reopen this exit.
+
+### Security impact
+
+Tokens stay encrypted and server-side. Official OAuth uses PKCE. Publish stays approval-gated and tenant-scoped.
+
+### Operational impact
+
+`bun test` against the shared seed database overwrites Client Alpha official social tokens. Reconnect official OAuth after those tests before another live publish.
+
+### Reversal path
+
+Supersede this ADR and reopen Phase 5 if official LinkedIn member publish regresses or if the X 402 exception is no longer accepted.
