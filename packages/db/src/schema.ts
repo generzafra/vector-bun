@@ -2916,3 +2916,82 @@ export const experimentResults = pgTable(
 		index('experiment_results_experiment_idx').on(t.experimentId)
 	]
 );
+
+export const experimentDecisionOutcome = pgEnum('experiment_decision_outcome', [
+	'keep_control',
+	'promote_challenger',
+	'inconclusive'
+]);
+
+export type ExperimentLearningConditions = {
+	horizonMet: boolean;
+	sampleMet: boolean;
+	botContamination: boolean;
+	sourceImbalance: boolean;
+	controlSample: number;
+	challengerSample: number;
+	botShareBps: number;
+};
+
+export const experimentDecisions = pgTable(
+	'experiment_decisions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		experimentId: uuid('experiment_id')
+			.notNull()
+			.references(() => experiments.id),
+		resultId: uuid('result_id')
+			.notNull()
+			.references(() => experimentResults.id),
+		outcome: experimentDecisionOutcome('outcome').notNull(),
+		winnerVariantKey: text('winner_variant_key'),
+		promotedPageVersionId: uuid('promoted_page_version_id').references(() => pageVersions.id),
+		notes: text('notes').notNull(),
+		actorId: text('actor_id'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('experiment_decisions_experiment_idx').on(t.experimentId),
+		index('experiment_decisions_client_idx').on(t.clientId)
+	]
+);
+
+export const experimentLearningObjects = pgTable(
+	'experiment_learning_objects',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		experimentId: uuid('experiment_id')
+			.notNull()
+			.references(() => experiments.id),
+		decisionId: uuid('decision_id')
+			.notNull()
+			.references(() => experimentDecisions.id),
+		clientLabel: text('client_label').notNull(),
+		industry: text('industry').notNull().default('unknown'),
+		audience: text('audience').notNull(),
+		hypothesis: text('hypothesis').notNull(),
+		change: text('change').notNull(),
+		result: text('result').notNull(),
+		confidence: text('confidence').notNull(),
+		conditions: jsonb('conditions').$type<ExperimentLearningConditions>().notNull(),
+		decision: experimentDecisionOutcome('decision').notNull(),
+		notes: text('notes').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('experiment_learning_objects_experiment_idx').on(t.experimentId),
+		index('experiment_learning_objects_client_idx').on(t.clientId)
+	]
+);

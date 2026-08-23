@@ -4,6 +4,7 @@ import {
 	ValidationError,
 	assertActorOwnsContext,
 	createExperimentProposalSchema,
+	decideExperimentSchema,
 	experimentClientIdSchema,
 	experimentIdSchema,
 	parseContract,
@@ -15,17 +16,21 @@ import {
 } from '@vector/contracts';
 import {
 	assertExperimentClient,
+	getBrandLabelForTenant,
 	getExperimentAssignmentForVisitorForTenant,
 	getExperimentForTenant,
 	getPageForTenant,
 	getPageVersionForTenant,
+	getPublishedPageVersionMetaForTenant,
 	getRunningExperimentForPageForTenant,
 	insertExperimentAssignmentForTenant,
 	insertExperimentResultForTenant,
 	listPublishedPageVersionMetaForTenant,
 	insertExperimentProposalForTenant,
 	listExperimentAssignmentsForExperimentsForTenant,
+	listExperimentDecisionsForTenant,
 	listExperimentHypothesesForTenant,
+	listExperimentLearningObjectsForTenant,
 	listExperimentMetricsForTenant,
 	listExperimentVariantsForTenant,
 	listExperimentsForTenant,
@@ -34,10 +39,13 @@ import {
 	listPublishedPageVersionsForTenant,
 	listPublishedPagesForTenant,
 	listRunningExperimentsForPageForTenant,
+	persistExperimentDecisionForTenant,
 	updateExperimentStatusForTenant
 } from '@vector/db';
 import {
+	assertCanDecideExperiment,
 	assertDistinctVariants,
+	assertExperimentDecisionOutcome,
 	assertExperimentTransition,
 	assertGuardrailMetrics,
 	assertNoConflictingExperiment,
@@ -47,6 +55,9 @@ import {
 	assertMetricsMatchPredetermined,
 	assignVariantKey,
 	computeExperimentMeasurement,
+	decisionWinnerVariantKey,
+	formatLearningResult,
+	learningConfidence,
 	nextExperimentStatuses,
 	predeterminedMetricNames,
 	type ExperimentMeasurement
@@ -89,7 +100,30 @@ function publicExperiment(input: {
 	}>;
 	metrics?: Array<{ kind: string; eventName: string }>;
 	measurement?: ExperimentMeasurement | null;
+	decision?: {
+		id: string;
+		outcome: string;
+		winnerVariantKey: string | null;
+		promotedPageVersionId: string | null;
+		notes: string;
+		createdAt: Date;
+	} | null;
+	learning?: {
+		id: string;
+		clientLabel: string;
+		industry: string;
+		audience: string;
+		hypothesis: string;
+		change: string;
+		result: string;
+		confidence: string;
+		decision: string;
+		notes: string;
+		createdAt: Date;
+	} | null;
 }) {
+	const measurement = input.measurement ?? null;
+	const status = input.experiment.status as ExperimentStatus;
 	return {
 		id: input.experiment.id,
 		pageId: input.experiment.pageId,
@@ -113,7 +147,13 @@ function publicExperiment(input: {
 		hypothesis: input.hypothesis,
 		variants: input.variants,
 		metrics: input.metrics ?? [],
-		measurement: input.measurement ?? null
+		measurement,
+		decision: input.decision ?? null,
+		learning: input.learning ?? null,
+		canDecide:
+			!input.decision &&
+			Boolean(measurement?.decisionReady) &&
+			(status === 'running' || (status === 'paused' && Boolean(input.experiment.launchedAt)))
 	};
 }
 
@@ -218,10 +258,12 @@ function measurementFor(
 async function assembledExperiments(ctx: TenantContext, now = new Date()) {
 	const rows = await listExperimentsForTenant(ctx);
 	const ids = rows.map((row) => row.id);
-	const [hypotheses, variants, measured] = await Promise.all([
+	const [hypotheses, variants, measured, decisions, learnings] = await Promise.all([
 		listExperimentHypothesesForTenant(ctx, ids),
 		listExperimentVariantsForTenant(ctx, ids),
-		measureRows(ctx, rows)
+		measureRows(ctx, rows),
+		listExperimentDecisionsForTenant(ctx, ids),
+		listExperimentLearningObjectsForTenant(ctx, ids)
 	]);
 	return rows.map((experiment) =>
 		publicExperiment({
@@ -245,7 +287,9 @@ async function assembledExperiments(ctx: TenantContext, now = new Date()) {
 				measured.assignments,
 				measured.events,
 				now
-			)
+			),
+			decision: decisions.find((row) => row.experimentId === experiment.id) ?? null,
+			learning: learnings.find((row) => row.experimentId === experiment.id) ?? null
 		})
 	);
 }
@@ -469,6 +513,122 @@ export async function assertExperimentDecisionReady(
 	if (!measured.measurement) throw new ValidationError('Experiment measurement is missing');
 	assertNotEarlyStop(measured.measurement);
 	return measured;
+}
+
+export async function decideExperiment(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string,
+	now = new Date()
+) {
+	requireCapability(actor.permissions, 'experiments.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(decideExperimentSchema, input);
+	const experiment = await getExperimentForTenant(required, parsed.id);
+	if (!experiment) throw new NotFoundError('Experiment not found');
+	assertCanDecideExperiment(experiment.status as ExperimentStatus, experiment.launchedAt);
+	const existing = await listExperimentDecisionsForTenant(required, [experiment.id]);
+	if (existing.length > 0) throw new ValidationError('Experiment is already decided');
+
+	const [hypotheses, variants, measured] = await Promise.all([
+		listExperimentHypothesesForTenant(required, [experiment.id]),
+		listExperimentVariantsForTenant(required, [experiment.id]),
+		measureRows(required, [experiment])
+	]);
+	const predetermined = measured.metrics.map((row) => row.eventName);
+	assertMetricsMatchPredetermined(
+		predetermined,
+		predeterminedMetricNames({
+			primaryMetric: experiment.primaryMetric,
+			guardrailMetrics: experiment.guardrailMetrics
+		})
+	);
+	const measurement = measurementFor(
+		experiment,
+		measured.metrics,
+		measured.assignments,
+		measured.events,
+		now
+	);
+	assertExperimentDecisionOutcome(parsed.outcome, measurement);
+	const control = variants.find((row) => row.role === 'control');
+	const challenger = variants.find((row) => row.role === 'challenger');
+	if (!control || !challenger) throw new ValidationError('Experiment variants are missing');
+	const brand = await getBrandLabelForTenant(required);
+
+	let promotedPageVersionId: string | null = null;
+	if (parsed.outcome === 'promote_challenger') {
+		promotedPageVersionId = challenger.pageVersionId;
+	} else if (parsed.outcome === 'keep_control' && experiment.rollbackRule === 'revert_to_control') {
+		promotedPageVersionId = control.pageVersionId;
+	}
+	if (promotedPageVersionId) {
+		const version = await getPublishedPageVersionMetaForTenant(required, promotedPageVersionId);
+		if (!version || version.status !== 'published' || version.pageId !== experiment.pageId) {
+			throw new ValidationError('Promotion target must be a published page version of this page');
+		}
+	}
+
+	const storedResult = await insertExperimentResultForTenant(required, {
+		experimentId: experiment.id,
+		...measurement,
+		computedAt: now
+	});
+	const persisted = await persistExperimentDecisionForTenant(required, {
+		experimentId: experiment.id,
+		pageId: experiment.pageId,
+		resultId: storedResult.id,
+		outcome: parsed.outcome,
+		winnerVariantKey: decisionWinnerVariantKey(parsed.outcome),
+		promotedPageVersionId,
+		notes: parsed.notes,
+		actorId: actor.userId,
+		clientLabel: brand?.displayName || 'unknown',
+		industry: 'unknown',
+		audience: hypotheses[0]?.audience || brand?.audience || 'unknown',
+		hypothesis: hypotheses[0]?.hypothesis || experiment.name,
+		change: `${challenger.name} versus ${control.name} on published page versions`,
+		result: formatLearningResult(experiment.primaryMetric, measurement),
+		confidence: learningConfidence(),
+		conditions: {
+			horizonMet: measurement.horizonMet,
+			sampleMet: measurement.sampleMet,
+			botContamination: measurement.botContamination,
+			sourceImbalance: measurement.sourceImbalance,
+			controlSample: measurement.controlSample,
+			challengerSample: measurement.challengerSample,
+			botShareBps: measurement.botShareBps
+		},
+		decidedAt: now
+	});
+	if (!persisted.experiment) throw new NotFoundError('Experiment not found');
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'experiments.decide',
+		entityType: 'experiment',
+		entityId: persisted.experiment.id,
+		requestId,
+		reason: parsed.outcome
+	});
+	return publicExperiment({
+		experiment: persisted.experiment,
+		hypothesis: hypotheses[0] ?? null,
+		variants: variants.map((row) => ({
+			id: row.id,
+			key: row.key,
+			name: row.name,
+			role: row.role,
+			pageVersionId: row.pageVersionId
+		})),
+		metrics: measured.metrics.map((row) => ({ kind: row.kind, eventName: row.eventName })),
+		measurement,
+		decision: persisted.decision,
+		learning: persisted.learning
+	});
 }
 
 export async function transitionExperiment(

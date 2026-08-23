@@ -3,6 +3,7 @@ import {
 	assertSameClient,
 	requireTenantContext,
 	type ExperimentAudience,
+	type ExperimentDecisionOutcome,
 	type ExperimentDecisionRule,
 	type ExperimentPrimaryMetric,
 	type ExperimentRollbackRule,
@@ -15,12 +16,16 @@ import {
 	analyticsEvents,
 	analyticsSessions,
 	experimentAssignments,
+	experimentDecisions,
 	experimentHypotheses,
+	experimentLearningObjects,
 	experimentMetrics,
 	experimentResults,
 	experimentVariants,
 	experiments,
+	pages,
 	visitors,
+	type ExperimentLearningConditions,
 	type ExperimentMetricCounts,
 	type ExperimentSourceShare
 } from './schema';
@@ -143,7 +148,7 @@ export async function getExperimentForTenant(ctx: TenantContext, id: string) {
 export async function updateExperimentStatusForTenant(
 	ctx: TenantContext,
 	id: string,
-	input: { status: ExperimentStatus; launchedAt?: Date }
+	input: { status: ExperimentStatus; launchedAt?: Date; decidedAt?: Date }
 ) {
 	const required = requireTenantContext(ctx);
 	const [row] = await db
@@ -151,6 +156,7 @@ export async function updateExperimentStatusForTenant(
 		.set({
 			status: input.status,
 			...(input.launchedAt ? { launchedAt: input.launchedAt } : {}),
+			...(input.decidedAt ? { decidedAt: input.decidedAt } : {}),
 			updatedAt: new Date()
 		})
 		.where(and(eq(experiments.id, id), eq(experiments.clientId, required.clientId)))
@@ -432,6 +438,164 @@ export async function listLatestExperimentResultsForTenant(
 		.orderBy(desc(experimentResults.computedAt));
 }
 
+export async function listExperimentDecisionsForTenant(
+	ctx: TenantContext,
+	experimentIds: string[]
+) {
+	const required = requireTenantContext(ctx);
+	if (experimentIds.length === 0) return [];
+	return db
+		.select({
+			id: experimentDecisions.id,
+			experimentId: experimentDecisions.experimentId,
+			resultId: experimentDecisions.resultId,
+			outcome: experimentDecisions.outcome,
+			winnerVariantKey: experimentDecisions.winnerVariantKey,
+			promotedPageVersionId: experimentDecisions.promotedPageVersionId,
+			notes: experimentDecisions.notes,
+			createdAt: experimentDecisions.createdAt
+		})
+		.from(experimentDecisions)
+		.where(
+			and(
+				eq(experimentDecisions.clientId, required.clientId),
+				inArray(experimentDecisions.experimentId, experimentIds)
+			)
+		);
+}
+
+export async function listExperimentLearningObjectsForTenant(
+	ctx: TenantContext,
+	experimentIds: string[]
+) {
+	const required = requireTenantContext(ctx);
+	if (experimentIds.length === 0) return [];
+	return db
+		.select({
+			id: experimentLearningObjects.id,
+			experimentId: experimentLearningObjects.experimentId,
+			decisionId: experimentLearningObjects.decisionId,
+			clientLabel: experimentLearningObjects.clientLabel,
+			industry: experimentLearningObjects.industry,
+			audience: experimentLearningObjects.audience,
+			hypothesis: experimentLearningObjects.hypothesis,
+			change: experimentLearningObjects.change,
+			result: experimentLearningObjects.result,
+			confidence: experimentLearningObjects.confidence,
+			conditions: experimentLearningObjects.conditions,
+			decision: experimentLearningObjects.decision,
+			notes: experimentLearningObjects.notes,
+			createdAt: experimentLearningObjects.createdAt
+		})
+		.from(experimentLearningObjects)
+		.where(
+			and(
+				eq(experimentLearningObjects.clientId, required.clientId),
+				inArray(experimentLearningObjects.experimentId, experimentIds)
+			)
+		);
+}
+
+export async function persistExperimentDecisionForTenant(
+	ctx: TenantContext,
+	input: {
+		experimentId: string;
+		pageId: string;
+		resultId: string;
+		outcome: ExperimentDecisionOutcome;
+		winnerVariantKey: 'control' | 'challenger' | null;
+		promotedPageVersionId: string | null;
+		notes: string;
+		actorId: string;
+		clientLabel: string;
+		industry: string;
+		audience: string;
+		hypothesis: string;
+		change: string;
+		result: string;
+		confidence: 'measured';
+		conditions: ExperimentLearningConditions;
+		decidedAt: Date;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	return db.transaction(async (tx) => {
+		if (input.promotedPageVersionId) {
+			await tx
+				.update(pages)
+				.set({ publishedVersionId: input.promotedPageVersionId, updatedAt: input.decidedAt })
+				.where(and(eq(pages.id, input.pageId), eq(pages.clientId, required.clientId)));
+		}
+		const [decision] = await tx
+			.insert(experimentDecisions)
+			.values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				experimentId: input.experimentId,
+				resultId: input.resultId,
+				outcome: input.outcome,
+				winnerVariantKey: input.winnerVariantKey,
+				promotedPageVersionId: input.promotedPageVersionId,
+				notes: input.notes,
+				actorId: input.actorId
+			})
+			.returning({
+				id: experimentDecisions.id,
+				experimentId: experimentDecisions.experimentId,
+				outcome: experimentDecisions.outcome,
+				winnerVariantKey: experimentDecisions.winnerVariantKey,
+				promotedPageVersionId: experimentDecisions.promotedPageVersionId,
+				notes: experimentDecisions.notes,
+				createdAt: experimentDecisions.createdAt
+			});
+		const [learning] = await tx
+			.insert(experimentLearningObjects)
+			.values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				experimentId: input.experimentId,
+				decisionId: decision.id,
+				clientLabel: input.clientLabel,
+				industry: input.industry,
+				audience: input.audience,
+				hypothesis: input.hypothesis,
+				change: input.change,
+				result: input.result,
+				confidence: input.confidence,
+				conditions: input.conditions,
+				decision: input.outcome,
+				notes: input.notes
+			})
+			.returning({
+				id: experimentLearningObjects.id,
+				experimentId: experimentLearningObjects.experimentId,
+				clientLabel: experimentLearningObjects.clientLabel,
+				industry: experimentLearningObjects.industry,
+				audience: experimentLearningObjects.audience,
+				hypothesis: experimentLearningObjects.hypothesis,
+				change: experimentLearningObjects.change,
+				result: experimentLearningObjects.result,
+				confidence: experimentLearningObjects.confidence,
+				conditions: experimentLearningObjects.conditions,
+				decision: experimentLearningObjects.decision,
+				notes: experimentLearningObjects.notes,
+				createdAt: experimentLearningObjects.createdAt
+			});
+		const [experiment] = await tx
+			.update(experiments)
+			.set({
+				status: 'decided',
+				decidedAt: input.decidedAt,
+				updatedAt: input.decidedAt
+			})
+			.where(
+				and(eq(experiments.id, input.experimentId), eq(experiments.clientId, required.clientId))
+			)
+			.returning();
+		return { decision, learning, experiment };
+	});
+}
+
 export async function listOpenExperimentsForPageMetricForTenant(
 	ctx: TenantContext,
 	pageId: string,
@@ -464,6 +628,22 @@ export async function deleteExperimentsForTenant(ctx: TenantContext) {
 		.where(eq(experiments.clientId, required.clientId));
 	const ids = rows.map((row) => row.id);
 	if (ids.length === 0) return;
+	await db
+		.delete(experimentLearningObjects)
+		.where(
+			and(
+				eq(experimentLearningObjects.clientId, required.clientId),
+				inArray(experimentLearningObjects.experimentId, ids)
+			)
+		);
+	await db
+		.delete(experimentDecisions)
+		.where(
+			and(
+				eq(experimentDecisions.clientId, required.clientId),
+				inArray(experimentDecisions.experimentId, ids)
+			)
+		);
 	await db
 		.delete(experimentResults)
 		.where(

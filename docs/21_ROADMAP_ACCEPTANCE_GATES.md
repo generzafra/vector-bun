@@ -88,7 +88,7 @@ CRO experiments from hypothesis through recorded learning.
 
 **Exit:** one full experiment completes with a durable learning object. Frontend experiment variants can be created, reviewed, measured, and promoted through the CRO system without lowering the `docs/27` quality bar. Creative variants (`docs/29`) may become experiment inputs when C8 exists; that is additive. Qualified-lead or revenue primary metrics (`docs/30`) are allowed only when sample size and data health support them.
 
-**Status (23 August 2026):** S0–S3 are in. `packages/experiments` validates proposal, start, sticky assignment, predetermined metrics, bot / source-imbalance checks, and no early stop. Control `/experiments` can start an approved experiment and shows measurement that is not a winner. Delivery exposes a tenant-scoped published-page variant. Preview stays test traffic. No winner promotion yet.
+**Status (23 August 2026):** S0–S4 are in and the Phase 7 exit is met. `packages/experiments` validates proposal through a policy-gated decision and tenant-scoped learning object. Control `/experiments` can start, measure, and decide. Delivery exposes a sticky published-page variant while running. Preview stays test traffic. Challenger promotion updates only that tenant's published pointer.
 
 ## Phase 8
 

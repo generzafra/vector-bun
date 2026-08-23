@@ -63,7 +63,7 @@ Phase exits in [`docs/21`](../21_ROADMAP_ACCEPTANCE_GATES.md) and [CROSS_CUTTING
 
 - `packages/experiments`
 - S0: `experiments`, `experiment_hypotheses`, `experiment_variants`
-- Later: `experiment_decisions`
+- S4: `experiment_decisions`, `experiment_learning_objects`
 
 Capabilities: `experiments.read`, `experiments.manage`. Authorize by capability.
 
@@ -85,7 +85,7 @@ First launch ships one control variant. Experiments start after live. Do not blo
 | **S1** | Approve / pause; lock fields after propose; conflict on same page + primary metric               | In       |
 | **S2** | Sticky assignment (`experiment_assignments`); Delivery exposure; PostHog adapter optional        | In       |
 | **S3** | Predetermined metrics, bot / source-imbalance checks, no early stop                              | In       |
-| **S4** | Decision record + durable learning object; promote only under policy                             | Exit     |
+| **S4** | Decision record + durable learning object; promote only under policy                             | In       |
 | **S5** | Creative C8 / outcome metrics when coverage exists                                               | Additive |
 
 Phase 7 may exit after **S4**. S5 does not reopen that exit.
@@ -137,6 +137,16 @@ One experiment + learning object is the exit. Variants still pass `docs/27`. Cre
 - Source mix that exceeds 70% on one variant for a source with at least 10 eligible visitors fails the source-imbalance guardrail.
 - Bot share above 20% of production assignments fails the bot-contamination guardrail.
 - Horizon and per-variant sample must both be met. A higher primary count on a small sample is not a win.
-- `decisionReady` stays false until those checks pass. Early stop is blocked. Decision records and learning objects stay S4.
+- `decisionReady` stays false until those checks pass. Early stop is blocked.
 
-**Status (23 August 2026):** S0–S3 are in. Operators can start an approved experiment. Delivery assigns a sticky published-page variant per visitor. Preview stays test traffic. Measurement uses predetermined metrics and blocks early stop when horizon, sample, bots, or source mix fail. Decisions and learning objects stay later.
+## 13. S4 rules
+
+- Decide is allowed from `running`, or from `paused` when `launchedAt` is set. Proposed or approved-only rows cannot decide.
+- Measurement must be decision-ready. Early stop still blocks the decision.
+- Outcomes are `keep_control`, `promote_challenger`, or `inconclusive`. Challenger promotion requires a higher predetermined primary count, not a rate on a tiny sample.
+- `promote_challenger` points this tenant's `pages.published_version_id` at the already-published challenger version. It does not compose a new page or copy Vector Control identity.
+- `keep_control` with `revert_to_control` restores the published pointer to the control version.
+- One decision and one learning object per experiment. Status becomes `decided`, exposure stops, and the page + primary metric slot is freed.
+- Learning objects are tenant-scoped measured evidence. Industry stays `unknown` unless a real industry field exists. One client's win is not a global visual rule.
+
+**Status (23 August 2026):** S0–S4 are in. Phase 7 exit is met: one governed experiment can run from hypothesis through a recorded learning object. Promotion is policy-gated. Creative C8 and outcome metrics stay additive.

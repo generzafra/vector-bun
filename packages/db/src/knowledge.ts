@@ -13,6 +13,19 @@ export async function getBrandForTenant(ctx: TenantContext) {
 	return row ?? null;
 }
 
+export async function getBrandLabelForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select({
+			displayName: brands.displayName,
+			audience: brands.audience
+		})
+		.from(brands)
+		.where(eq(brands.clientId, required.clientId))
+		.limit(1);
+	return row ?? null;
+}
+
 export async function upsertBrandForTenant(
 	ctx: TenantContext,
 	input: {

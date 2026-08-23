@@ -10,24 +10,32 @@ import {
 	requireTenantContext
 } from '@vector/contracts';
 import {
+	analyticsEvents,
 	clients,
 	db,
 	deleteExperimentsForTenant,
+	experimentAssignments,
 	experiments,
 	getExperimentAssignmentForVisitorForTenant,
+	getPageForTenant,
 	getPublishedPageVersionMetaForTenant,
 	getRunningExperimentForPageForTenant,
 	insertAnalyticsEventForTenant,
 	insertExperimentAssignmentForTenant,
+	listExperimentDecisionsForTenant,
+	listExperimentLearningObjectsForTenant,
 	listExperimentMetricsForTenant,
 	listExperimentsForTenant,
 	listLatestExperimentResultsForTenant,
 	listOpenExperimentsForPageMetricForTenant,
-	persistDeliveryVisit
+	persistDeliveryVisit,
+	visitors
 } from '@vector/db';
 import {
 	assertCanChangePrimaryMetric,
+	assertCanDecideExperiment,
 	assertCanMutateExperimentDefinition,
+	assertExperimentDecisionOutcome,
 	assertExperimentTransition,
 	assertMetricsMatchPredetermined,
 	assertNoConflictingExperiment,
@@ -46,6 +54,7 @@ import {
 	contextFor,
 	assertExperimentDecisionReady,
 	createExperimentProposal,
+	decideExperiment,
 	exposeDeliveryPage,
 	getExperimentOverview,
 	login,
@@ -99,6 +108,16 @@ async function twoPublishedVersions(
 	}
 	if (versions.length < 2) throw new Error('need two published versions');
 	return { page, control: versions[1]!, challenger: versions[0]! };
+}
+
+function liveControlAndChallenger(
+	page: { publishedVersionId: string | null },
+	versions: Array<{ id: string }>
+) {
+	const liveId = page.publishedVersionId;
+	const other = versions.find((row) => row.id !== liveId);
+	if (!liveId || !other) throw new Error('need a live version and a distinct challenger');
+	return { controlPageVersionId: liveId, challengerPageVersionId: other.id };
 }
 
 function proposalInput(
@@ -164,6 +183,12 @@ test('missing TenantContext cannot list experiment rows', () => {
 		TenantContextError
 	);
 	expect(listLatestExperimentResultsForTenant(null as never, ['x'])).rejects.toBeInstanceOf(
+		TenantContextError
+	);
+	expect(listExperimentDecisionsForTenant(null as never, ['x'])).rejects.toBeInstanceOf(
+		TenantContextError
+	);
+	expect(listExperimentLearningObjectsForTenant(null as never, ['x'])).rejects.toBeInstanceOf(
 		TenantContextError
 	);
 });
@@ -249,6 +274,24 @@ test('revenue and qualified-lead metrics stay closed until coverage exists', () 
 	expect(ready.decisionReady).toBe(true);
 	expect(ready.earlyStopBlocked).toBe(false);
 	expect(() => assertNotEarlyStop(ready)).not.toThrow();
+	expect(() => assertCanDecideExperiment('proposed', null)).toThrow(ValidationError);
+	expect(() => assertCanDecideExperiment('running', new Date())).not.toThrow();
+	expect(() => assertExperimentDecisionOutcome('promote_challenger', early)).toThrow(
+		ValidationError
+	);
+	expect(() => assertExperimentDecisionOutcome('promote_challenger', ready)).toThrow(
+		ValidationError
+	);
+	const challengerAhead = {
+		...ready,
+		controlPrimaryCount: 10,
+		challengerPrimaryCount: 18
+	};
+	expect(() =>
+		assertExperimentDecisionOutcome('promote_challenger', challengerAhead)
+	).not.toThrow();
+	expect(() => assertExperimentDecisionOutcome('keep_control', challengerAhead)).not.toThrow();
+	expect(() => assertExperimentDecisionOutcome('inconclusive', challengerAhead)).not.toThrow();
 });
 
 test(
@@ -959,4 +1002,279 @@ test(
 		).toBe(0);
 	},
 	{ timeout: 30_000 }
+);
+
+async function seedDecisionReadyTraffic(
+	ctx: ReturnType<typeof contextFor>,
+	input: {
+		experimentId: string;
+		pageId: string;
+		control: { id: string; key: string; pageVersionId: string };
+		challenger: { id: string; key: string; pageVersionId: string };
+		controlConverts: number;
+		challengerConverts: number;
+	}
+) {
+	const controlIds = Array.from({ length: 100 }, () => crypto.randomUUID());
+	const challengerIds = Array.from({ length: 100 }, () => crypto.randomUUID());
+	const people = await db
+		.insert(visitors)
+		.values(
+			[...controlIds, ...challengerIds].map((anonymousId) => ({
+				organizationId: ctx.organizationId,
+				clientId: ctx.clientId,
+				anonymousId
+			}))
+		)
+		.returning({ id: visitors.id, anonymousId: visitors.anonymousId });
+	await db.insert(experimentAssignments).values(
+		people.map((row) => {
+			const variant = controlIds.includes(row.anonymousId) ? input.control : input.challenger;
+			return {
+				organizationId: ctx.organizationId,
+				clientId: ctx.clientId,
+				experimentId: input.experimentId,
+				visitorAnonymousId: row.anonymousId,
+				variantId: variant.id,
+				variantKey: variant.key,
+				pageVersionId: variant.pageVersionId,
+				isTest: false
+			};
+		})
+	);
+	const converters = [
+		...people.filter((row) => controlIds.includes(row.anonymousId)).slice(0, input.controlConverts),
+		...people
+			.filter((row) => challengerIds.includes(row.anonymousId))
+			.slice(0, input.challengerConverts)
+	];
+	if (converters.length === 0) return;
+	await db.insert(analyticsEvents).values(
+		converters.map((row) => {
+			const variant = controlIds.includes(row.anonymousId) ? input.control : input.challenger;
+			return {
+				organizationId: ctx.organizationId,
+				clientId: ctx.clientId,
+				eventId: crypto.randomUUID(),
+				name: 'form_started',
+				taxonomyVersion: 1,
+				visitorId: row.id,
+				pageId: input.pageId,
+				pageVersionId: variant.pageVersionId,
+				properties: {
+					experimentId: input.experimentId,
+					experimentVariant: variant.key,
+					userAgent: 'Mozilla/5.0'
+				},
+				isTest: false
+			};
+		})
+	);
+}
+
+test(
+	'policy-ready decide records a learning object and promotes only this tenant',
+	async () => {
+		const { alpha, beta } = await seededClients();
+		const alphaActor = await adminOn(alpha.id, '10.7.0.41', 'exp-s4-a');
+		const betaActor = await adminOn(beta.id, '10.7.0.42', 'exp-s4-b');
+		const alphaCtx = contextFor(alphaActor, 'exp-s4-a');
+		const betaCtx = contextFor(betaActor, 'exp-s4-b');
+		const alphaVersions = await twoPublishedVersions(alphaActor, alphaCtx);
+		const betaVersions = await twoPublishedVersions(betaActor, betaCtx);
+		const alphaPair = liveControlAndChallenger(alphaVersions.page, [
+			alphaVersions.control,
+			alphaVersions.challenger
+		]);
+		const created = await createExperimentProposal(
+			alphaActor,
+			alphaCtx,
+			proposalInput(
+				alphaVersions.page.id,
+				alphaPair.controlPageVersionId,
+				alphaPair.challengerPageVersionId,
+				{
+					minSamplePerVariant: 100
+				}
+			),
+			'exp-s4-create'
+		);
+		await expect(
+			decideExperiment(
+				alphaActor,
+				alphaCtx,
+				{
+					id: created.id,
+					outcome: 'promote_challenger',
+					notes: 'Looks better already.'
+				},
+				'exp-s4-too-soon'
+			)
+		).rejects.toBeInstanceOf(ValidationError);
+
+		await transitionExperiment(
+			alphaActor,
+			alphaCtx,
+			{ id: created.id, to: 'approved' },
+			'exp-s4-approve'
+		);
+		const started = await transitionExperiment(
+			alphaActor,
+			alphaCtx,
+			{ id: created.id, to: 'running' },
+			'exp-s4-start'
+		);
+		await expect(
+			decideExperiment(
+				alphaActor,
+				alphaCtx,
+				{
+					id: started.id,
+					outcome: 'promote_challenger',
+					notes: 'Tiny sample looks better.'
+				},
+				'exp-s4-early'
+			)
+		).rejects.toBeInstanceOf(ValidationError);
+
+		const control = created.variants.find((row) => row.role === 'control');
+		const challenger = created.variants.find((row) => row.role === 'challenger');
+		if (!control || !challenger) throw new Error('variants missing');
+		await seedDecisionReadyTraffic(alphaCtx, {
+			experimentId: created.id,
+			pageId: alphaVersions.page.id,
+			control,
+			challenger,
+			controlConverts: 10,
+			challengerConverts: 18
+		});
+		await db
+			.update(experiments)
+			.set({ launchedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000) })
+			.where(eq(experiments.id, created.id));
+
+		const reader = {
+			...alphaActor,
+			permissions: alphaActor.permissions.filter((cap) => cap !== 'experiments.manage')
+		};
+		await expect(
+			decideExperiment(
+				reader,
+				alphaCtx,
+				{
+					id: created.id,
+					outcome: 'promote_challenger',
+					notes: 'Challenger primary count is higher after the horizon.'
+				},
+				'exp-s4-no-manage'
+			)
+		).rejects.toBeInstanceOf(ForbiddenError);
+
+		const before = await getPageForTenant(alphaCtx, alphaVersions.page.id);
+		const decided = await decideExperiment(
+			alphaActor,
+			alphaCtx,
+			{
+				id: created.id,
+				outcome: 'promote_challenger',
+				notes: 'Challenger primary count is higher after the horizon.'
+			},
+			'exp-s4-decide'
+		);
+		expect(decided.status).toBe('decided');
+		expect(decided.decidedAt).not.toBeNull();
+		expect(decided.canDecide).toBe(false);
+		expect(decided.decision?.outcome).toBe('promote_challenger');
+		expect(decided.decision?.promotedPageVersionId).toBe(challenger.pageVersionId);
+		expect(decided.learning?.confidence).toBe('measured');
+		expect(decided.learning?.industry).toBe('unknown');
+		expect(decided.learning?.result).toContain('form_started control 10 / challenger 18');
+		expect(decided.learning?.hypothesis).toContain('form_started');
+		const after = await getPageForTenant(alphaCtx, alphaVersions.page.id);
+		expect(after?.publishedVersionId).toBe(challenger.pageVersionId);
+		expect(after?.publishedVersionId).not.toBe(before?.publishedVersionId);
+
+		await expect(
+			decideExperiment(
+				alphaActor,
+				alphaCtx,
+				{
+					id: created.id,
+					outcome: 'keep_control',
+					notes: 'Already decided.'
+				},
+				'exp-s4-again'
+			)
+		).rejects.toBeInstanceOf(ValidationError);
+
+		const open = await listOpenExperimentsForPageMetricForTenant(
+			alphaCtx,
+			alphaVersions.page.id,
+			'form_started'
+		);
+		expect(open).toHaveLength(0);
+		const followOn = await createExperimentProposal(
+			alphaActor,
+			alphaCtx,
+			proposalInput(alphaVersions.page.id, alphaVersions.control.id, alphaVersions.challenger.id, {
+				name: 'Next hypothesis after decide'
+			}),
+			'exp-s4-follow'
+		);
+		expect(followOn.status).toBe('proposed');
+
+		const betaPage = await getPageForTenant(betaCtx, betaVersions.page.id);
+		expect(betaPage?.publishedVersionId).not.toBe(challenger.pageVersionId);
+		expect((await listExperimentLearningObjectsForTenant(betaCtx, [created.id])).length).toBe(0);
+		expect((await listExperimentDecisionsForTenant(betaCtx, [created.id])).length).toBe(0);
+		expect(
+			(await getExperimentOverview(betaActor, betaCtx)).experiments.some(
+				(row) => row.learning?.id === decided.learning?.id
+			)
+		).toBe(false);
+
+		const preview = await resolveDeliveryPage(
+			previewHostname('alpha', env.DELIVERY_PREVIEW_PARENT_HOST),
+			'/',
+			'exp-s4-preview'
+		);
+		if (preview.kind !== 'page') throw new Error('expected alpha page');
+		const exposed = await exposeDeliveryPage(preview, crypto.randomUUID(), 'exp-s4-expose');
+		expect(exposed.experiment).toBeUndefined();
+
+		const betaCreated = await createExperimentProposal(
+			betaActor,
+			betaCtx,
+			proposalInput(betaVersions.page.id, betaVersions.control.id, betaVersions.challenger.id),
+			'exp-s4-beta-create'
+		);
+		await expect(
+			decideExperiment(
+				alphaActor,
+				alphaCtx,
+				{
+					id: betaCreated.id,
+					outcome: 'keep_control',
+					notes: 'Cross tenant'
+				},
+				'exp-s4-cross'
+			)
+		).rejects.toBeInstanceOf(NotFoundError);
+
+		const stolen = await app.request('/v1/experiments/decide', {
+			method: 'POST',
+			headers: {
+				cookie: `${cookieName()}=${alphaActor.token}`,
+				'content-type': 'application/json',
+				'x-csrf-token': alphaActor.csrf
+			},
+			body: JSON.stringify({
+				id: betaCreated.id,
+				outcome: 'keep_control',
+				notes: 'Cross tenant API'
+			})
+		});
+		expect(stolen.status).toBeGreaterThanOrEqual(400);
+	},
+	{ timeout: 40_000 }
 );

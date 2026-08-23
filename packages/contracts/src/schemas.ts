@@ -722,6 +722,21 @@ export type ExperimentDecisionRule = (typeof EXPERIMENT_DECISION_RULES)[number];
 export const EXPERIMENT_ROLLBACK_RULES = ['revert_to_control', 'pause_experiment'] as const;
 export type ExperimentRollbackRule = (typeof EXPERIMENT_ROLLBACK_RULES)[number];
 
+export const EXPERIMENT_DECISION_OUTCOMES = [
+	'keep_control',
+	'promote_challenger',
+	'inconclusive'
+] as const;
+export type ExperimentDecisionOutcome = (typeof EXPERIMENT_DECISION_OUTCOMES)[number];
+
+export const decideExperimentSchema = z
+	.object({
+		id: z.string().uuid(),
+		outcome: z.enum(EXPERIMENT_DECISION_OUTCOMES),
+		notes: z.string().trim().min(1).max(800)
+	})
+	.strict();
+
 export const createExperimentProposalSchema = z
 	.object({
 		name: z.string().trim().min(1).max(160),

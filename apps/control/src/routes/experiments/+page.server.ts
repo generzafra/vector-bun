@@ -3,6 +3,7 @@ import { AppError } from '@vector/contracts';
 import {
 	contextFor,
 	createExperimentProposal,
+	decideExperiment,
 	getExperimentOverview,
 	transitionExperiment
 } from '@vector/domain';
@@ -88,6 +89,31 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not update the experiment status' });
+		}
+	},
+	decide: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			await decideExperiment(
+				session,
+				contextFor(session, locals.requestId),
+				{
+					id: formString(form, 'id'),
+					outcome: formString(form, 'outcome'),
+					notes: formString(form, 'notes')
+				},
+				locals.requestId
+			);
+			return {
+				ok: true,
+				notice:
+					'Decision recorded. The learning object is tenant-scoped. Promotion ran only when policy allowed.'
+			};
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not record the experiment decision' });
 		}
 	}
 };

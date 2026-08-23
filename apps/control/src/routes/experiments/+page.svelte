@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		EXPERIMENT_DECISION_OUTCOMES,
 		EXPERIMENT_DECISION_RULES,
 		EXPERIMENT_GUARDRAIL_METRICS,
 		EXPERIMENT_PRIMARY_METRICS,
@@ -20,7 +21,8 @@
 	}
 
 	function experimentTone(status: string) {
-		if (status === 'approved' || status === 'running') return 'success' as const;
+		if (status === 'decided' || status === 'approved' || status === 'running')
+			return 'success' as const;
 		if (status === 'paused') return 'warning' as const;
 		if (status === 'proposed') return 'info' as const;
 		return 'muted' as const;
@@ -47,7 +49,7 @@
 <PageHeader
 	eyebrow="Conversion"
 	title="Experiments"
-	description="Record a governed proposal before anyone sees a variant. Fields lock after it is recorded. Approve does not start assignment. Start gives visitors a sticky published-page variant. Measurement uses predetermined metrics only. A higher percentage on a tiny sample is not a win."
+	description="Record a governed proposal before anyone sees a variant. Fields lock after it is recorded. Approve does not start assignment. Start gives visitors a sticky published-page variant. Measurement uses predetermined metrics only. A decision and learning object are recorded only when policy is ready. A higher percentage on a tiny sample is not a win."
 />
 
 {#if form?.error}
@@ -72,7 +74,8 @@
 			and primary metric reserved. Qualified-lead and revenue metrics stay closed until coverage
 			exists. Preview traffic is test traffic and is not a production result. Measurement excludes
 			bots and test traffic. Source imbalance and an unmet horizon or sample block a decision. Early
-			stop is not allowed.
+			stop is not allowed. Promote the challenger only when the predetermined primary count is
+			higher and policy is ready. One client's learning is not a global visual rule.
 		</p>
 	</section>
 
@@ -145,7 +148,7 @@
 			<h2>Measurement</h2>
 			<p>
 				Counts are observed on predetermined metrics. Test traffic and bots are excluded. A higher
-				count is not a winner. Decision records stay later.
+				count is not a winner. Record a decision only when the row is ready.
 			</p>
 			<table>
 				<thead>
@@ -199,6 +202,72 @@
 								{:else}
 									<StatusChip label="None" tone="muted" />
 								{/if}
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</section>
+	{/if}
+
+	{#if canManage && overview.experiments.some((row) => row.canDecide)}
+		<section>
+			<h2>Record a decision</h2>
+			<p>
+				Policy decides. Horizon, sample, bots, and source mix must already pass. Promoting the
+				challenger points this client's published page at that already-published version.
+			</p>
+			{#each overview.experiments.filter((row) => row.canDecide) as experiment (experiment.id)}
+				<form class="wide" method="post" action="?/decide">
+					<input type="hidden" name="_csrf" value={data.csrf} />
+					<input type="hidden" name="id" value={experiment.id} />
+					<p>{experiment.name}</p>
+					<label>
+						Outcome
+						<select name="outcome" required>
+							{#each EXPERIMENT_DECISION_OUTCOMES as outcome (outcome)}
+								<option value={outcome}>{outcome}</option>
+							{/each}
+						</select>
+					</label>
+					<label>
+						Notes
+						<textarea name="notes" required maxlength="800"></textarea>
+					</label>
+					<button type="submit">Record decision</button>
+				</form>
+			{/each}
+		</section>
+	{/if}
+
+	{#if overview.experiments.some((row) => row.learning)}
+		<section>
+			<h2>Learning objects</h2>
+			<p>
+				Validated outcomes only. Confidence is measured. This is evidence for this client, not a
+				universal style rule.
+			</p>
+			<table>
+				<thead>
+					<tr>
+						<th>Client</th>
+						<th>Hypothesis</th>
+						<th>Result</th>
+						<th>Decision</th>
+						<th>Confidence</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.experiments.filter((row) => row.learning) as experiment (experiment.id)}
+						<tr>
+							<td>{experiment.learning?.clientLabel}</td>
+							<td>{experiment.learning?.hypothesis}</td>
+							<td>{experiment.learning?.result}</td>
+							<td>
+								<StatusChip label={experiment.learning?.decision ?? ''} tone="success" />
+							</td>
+							<td>
+								<StatusChip label={experiment.learning?.confidence ?? ''} tone="info" />
 							</td>
 						</tr>
 					{/each}
