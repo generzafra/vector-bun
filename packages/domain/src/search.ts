@@ -16,6 +16,7 @@ import {
 } from '@vector/contracts';
 import {
 	assertSearchClient,
+	getBrandForTenant,
 	getSeoIssueForTenant,
 	getSeoOpportunityForTenant,
 	getSeoPropertyForTenant,
@@ -23,16 +24,25 @@ import {
 	insertSeoAuditForTenant,
 	insertSeoIssueForTenant,
 	insertSeoOpportunityForTenant,
+	listAnswerTargetsForTenant,
 	listClaimsForTenant,
+	listContentBriefsForTenant,
+	listOffersForTenant,
 	listPublishedPageDocumentsForTenant,
+	listSchemaEntitiesForTenant,
 	listSeoIssuesForTenant,
 	listSeoKeywordsForTenant,
 	listSeoOpportunitiesForTenant,
 	listSeoPagesForTenant,
 	listSeoPropertiesForTenant,
 	listSeoQueriesForTenant,
+	listServicesForTenant,
+	markMissingSchemaEntitiesStaleForTenant,
 	patchSeoPropertyForTenant,
 	updateSeoOpportunityForTenant,
+	upsertAnswerTargetForTenant,
+	upsertContentBriefForTenant,
+	upsertSchemaEntityForTenant,
 	upsertSeoKeywordForTenant,
 	upsertSeoPageForTenant,
 	upsertSeoPropertyForTenant,
@@ -41,16 +51,20 @@ import {
 import { logInfo } from '@vector/observability';
 import {
 	canMarkPublishReady,
+	coverAnswerTarget,
 	decryptSecret,
 	detectTechnicalIssues,
 	encryptSecret,
 	isoDate,
 	memorySearchProvider,
+	proposeAnswerTargets,
+	proposeSchemaEntities,
 	resetSearchProvider,
 	scoreOpportunity,
 	searchProvider,
 	setSearchProvider,
 	unsupportedGenerativeVisibility,
+	type PublishedFaq,
 	type SearchProvider
 } from '@vector/search';
 import { recordAudit } from './audit';
@@ -161,17 +175,31 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		parseContract(searchClientIdSchema, { clientId });
 		assertSearchClient(required, clientId);
 	}
-	const [properties, issues, opportunities, queries, pages, keywords, claims, readiness] =
-		await Promise.all([
-			listSeoPropertiesForTenant(required),
-			listSeoIssuesForTenant(required),
-			listSeoOpportunitiesForTenant(required),
-			listSeoQueriesForTenant(required),
-			listSeoPagesForTenant(required),
-			listSeoKeywordsForTenant(required),
-			listClaimsForTenant(required),
-			searchPropertyReadiness(required)
-		]);
+	const [
+		properties,
+		issues,
+		opportunities,
+		queries,
+		pages,
+		keywords,
+		claims,
+		entities,
+		targets,
+		briefs,
+		readiness
+	] = await Promise.all([
+		listSeoPropertiesForTenant(required),
+		listSeoIssuesForTenant(required),
+		listSeoOpportunitiesForTenant(required),
+		listSeoQueriesForTenant(required),
+		listSeoPagesForTenant(required),
+		listSeoKeywordsForTenant(required),
+		listClaimsForTenant(required),
+		listSchemaEntitiesForTenant(required),
+		listAnswerTargetsForTenant(required),
+		listContentBriefsForTenant(required),
+		searchPropertyReadiness(required)
+	]);
 	const overview = {
 		properties: properties.map(publicProperty),
 		issues,
@@ -179,6 +207,14 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		queries,
 		pages,
 		keywords,
+		entities,
+		answerTargets: targets,
+		briefs,
+		answerReadiness: {
+			targets: targets.length,
+			mapped: targets.filter((row) => row.status === 'mapped').length,
+			gaps: targets.filter((row) => row.status === 'gap').length
+		},
 		claims: claims
 			.filter((claim) => claim.kind === 'approved')
 			.map((claim) => ({ id: claim.id, statement: claim.statement })),
@@ -436,6 +472,146 @@ export async function runTechnicalSearchAudit(actor: Actor, ctx: TenantContext, 
 		reason: audit.summary
 	});
 	return { audit, issues };
+}
+
+function publishedFaqsFromPages(
+	pages: { id: string; path: string; document: { sections: { type: string; items?: unknown }[] } }[]
+): PublishedFaq[] {
+	const faqs: PublishedFaq[] = [];
+	for (const page of pages) {
+		for (const section of page.document.sections) {
+			if (section.type !== 'faq' || !Array.isArray(section.items)) continue;
+			for (const item of section.items) {
+				if (!item || typeof item !== 'object') continue;
+				const question = 'question' in item ? String(item.question ?? '') : '';
+				const answer = 'answer' in item ? String(item.answer ?? '') : '';
+				if (!question.trim() || !answer.trim()) continue;
+				faqs.push({ pageId: page.id, path: page.path, question, answer });
+			}
+		}
+	}
+	return faqs;
+}
+
+export async function refreshAnswerReadiness(actor: Actor, ctx: TenantContext, requestId: string) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	consumeRateLimit(`search-aeo:${required.clientId}`, 8, 60_000);
+	const [brand, services, offers, claims, published, existingOpportunities] = await Promise.all([
+		getBrandForTenant(required),
+		listServicesForTenant(required),
+		listOffersForTenant(required),
+		listClaimsForTenant(required),
+		listPublishedPageDocumentsForTenant(required),
+		listSeoOpportunitiesForTenant(required)
+	]);
+	const knowledge = {
+		brand: brand
+			? {
+					id: brand.id,
+					displayName: brand.displayName,
+					tagline: brand.tagline,
+					offer: brand.offer
+				}
+			: null,
+		services,
+		offers,
+		claims
+	};
+	const proposedEntities = proposeSchemaEntities(knowledge);
+	const proposedTargets = proposeAnswerTargets(knowledge);
+	const faqs = publishedFaqsFromPages(published);
+	const homePage = published.find((page) => page.path === '/') ?? published[0] ?? null;
+
+	const entityRows = [];
+	for (const entity of proposedEntities) {
+		entityRows.push(await upsertSchemaEntityForTenant(required, entity));
+	}
+	await markMissingSchemaEntitiesStaleForTenant(
+		required,
+		entityRows.map((row) => row.id)
+	);
+
+	const targetRows = [];
+	const briefRows = [];
+	const opportunityRows = [];
+	for (const proposed of proposedTargets) {
+		const coverage = coverAnswerTarget(proposed, faqs);
+		const target = await upsertAnswerTargetForTenant(required, {
+			...proposed,
+			pageId: coverage.pageId,
+			status: coverage.status
+		});
+		targetRows.push(target);
+		if (coverage.status !== 'gap') continue;
+		const brief = await upsertContentBriefForTenant(required, {
+			answerTargetId: target.id,
+			claimId: proposed.sourceKind === 'knowledge_claim' ? proposed.sourceId : null,
+			pageId: homePage?.id ?? null,
+			title: `Answer gap: ${proposed.question}`.slice(0, 160),
+			problem: 'Published FAQs do not include this approved fact.',
+			proposedAction:
+				'Add a source-backed FAQ on an existing page. Do not create a page only for this question.'
+		});
+		briefRows.push(brief);
+		if (proposed.sourceKind !== 'knowledge_claim') continue;
+		const already = existingOpportunities.some(
+			(row) =>
+				row.channel === 'aeo' &&
+				row.sourceKind === 'knowledge_claim' &&
+				row.sourceId === proposed.sourceId &&
+				row.status !== 'rejected' &&
+				row.status !== 'done'
+		);
+		if (already) continue;
+		const created = await insertSeoOpportunityForTenant(required, {
+			channel: 'aeo',
+			title: `Answer gap: ${proposed.question}`.slice(0, 160),
+			problem: 'Published FAQs do not include this approved fact.',
+			proposedAction:
+				'Add a source-backed FAQ on an existing page. Do not create a page only for this question.',
+			evidenceClass: 'source_verified',
+			sourceKind: 'knowledge_claim',
+			sourceId: proposed.sourceId,
+			pageId: homePage?.id ?? null,
+			priority: scoreOpportunity({
+				channel: 'aeo',
+				evidenceClass: 'source_verified',
+				effort: 'low'
+			}),
+			effort: 'low'
+		});
+		opportunityRows.push(created);
+		existingOpportunities.push(created);
+	}
+
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'search.answer_readiness.refresh',
+		entityType: 'answer_target',
+		entityId: required.clientId,
+		requestId,
+		reason: `${targetRows.filter((row) => row.status === 'gap').length} FAQ gap(s) from approved knowledge`
+	});
+	logInfo('search.answer_readiness.refresh', {
+		entities: entityRows.length,
+		targets: targetRows.length,
+		gaps: targetRows.filter((row) => row.status === 'gap').length
+	});
+	return {
+		entities: entityRows,
+		answerTargets: targetRows,
+		briefs: briefRows,
+		opportunities: opportunityRows.map(publicOpportunity),
+		summary: {
+			targets: targetRows.length,
+			mapped: targetRows.filter((row) => row.status === 'mapped').length,
+			gaps: targetRows.filter((row) => row.status === 'gap').length
+		}
+	};
 }
 
 export async function createSeoOpportunity(

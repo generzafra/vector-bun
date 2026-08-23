@@ -1,3 +1,4 @@
+export * from './aeo/targets';
 export * from './audits/technical';
 export * from './bing';
 export * from './factory';

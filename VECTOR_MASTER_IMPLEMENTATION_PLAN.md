@@ -635,7 +635,7 @@ The final schema should be normalized around business concepts, not around third
 - geo_engine_observations
 - geo_citations
 
-S2 persists the SEO property, page, query, audit, issue, and opportunity tables. Answer-target and GEO observation tables wait for S3–S4. `seo_queries` are official Search Console / Bing rows when connected. Defer `seo_rank_snapshots` unless an official API provides them. `seo_opportunities.channel` is `seo | aeo | geo`. First-ship GEO tables only; later snapshot/referral/learning tables stay later. Detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
+S2 persists the SEO property, page, query, audit, issue, and opportunity tables. S3 persists `schema_entities`, `answer_targets`, and `content_briefs`. GEO observation tables wait for S4. `seo_queries` are official Search Console / Bing rows when connected. Defer `seo_rank_snapshots` unless an official API provides them. `seo_opportunities.channel` is `seo | aeo | geo`. First-ship GEO tables only; later snapshot/referral/learning tables stay later. Detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
 
 ## 8.9 Analytics and attribution
 
@@ -2702,7 +2702,7 @@ Exit gate:
 
 Live generative measurement and search → qualified-lead reporting are additive.
 
-**Status (23 August 2026):** S0–S2 are in. Delivery ships the launch-time GEO-readiness baseline. `packages/search` is the only `SearchProvider` family. Control `/search` is the operator surface. Next slice is S3 (answer targets).
+**Status (23 August 2026):** S0–S3 are in. Delivery ships the launch-time GEO-readiness baseline. `packages/search` is the only `SearchProvider` family. Control `/search` lists official search rows plus answer targets, schema entities, and source-backed FAQ gaps. Next slice is S4 (GEO query and observation schema, no live measurement).
 
 ## Phase 7 — CRO experimentation
 

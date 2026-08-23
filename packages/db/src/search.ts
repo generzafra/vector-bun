@@ -2,6 +2,12 @@ import { and, desc, eq } from 'drizzle-orm';
 import {
 	assertSameClient,
 	requireTenantContext,
+	type AnswerTargetIntent,
+	type AnswerTargetSourceKind,
+	type AnswerTargetStatus,
+	type SchemaEntityKind,
+	type SchemaEntitySourceKind,
+	type SchemaEntityStatus,
 	type SearchEngine,
 	type SeoEffort,
 	type SeoEvidenceClass,
@@ -12,6 +18,9 @@ import {
 } from '@vector/contracts';
 import { db } from './client';
 import {
+	answerTargets,
+	contentBriefs,
+	schemaEntities,
 	seoAudits,
 	seoIssues,
 	seoKeywords,
@@ -483,4 +492,215 @@ export async function updateSeoOpportunityForTenant(
 		.where(and(eq(seoOpportunities.id, id), eq(seoOpportunities.clientId, required.clientId)))
 		.returning();
 	return row ?? null;
+}
+
+export async function listSchemaEntitiesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(schemaEntities)
+		.where(eq(schemaEntities.clientId, required.clientId))
+		.orderBy(schemaEntities.name);
+}
+
+export async function upsertSchemaEntityForTenant(
+	ctx: TenantContext,
+	input: {
+		kind: SchemaEntityKind;
+		sourceKind: SchemaEntitySourceKind;
+		sourceId: string;
+		name: string;
+		fact: string;
+		status?: SchemaEntityStatus;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [existing] = await db
+		.select()
+		.from(schemaEntities)
+		.where(
+			and(
+				eq(schemaEntities.clientId, required.clientId),
+				eq(schemaEntities.kind, input.kind),
+				eq(schemaEntities.sourceKind, input.sourceKind),
+				eq(schemaEntities.sourceId, input.sourceId)
+			)
+		)
+		.limit(1);
+	if (existing) {
+		const [row] = await db
+			.update(schemaEntities)
+			.set({
+				name: input.name,
+				fact: input.fact,
+				status: input.status ?? 'current',
+				updatedAt: new Date()
+			})
+			.where(
+				and(eq(schemaEntities.id, existing.id), eq(schemaEntities.clientId, required.clientId))
+			)
+			.returning();
+		return row;
+	}
+	const [row] = await db
+		.insert(schemaEntities)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			kind: input.kind,
+			sourceKind: input.sourceKind,
+			sourceId: input.sourceId,
+			name: input.name,
+			fact: input.fact,
+			status: input.status ?? 'current'
+		})
+		.returning();
+	return row;
+}
+
+export async function markMissingSchemaEntitiesStaleForTenant(
+	ctx: TenantContext,
+	keepIds: string[]
+) {
+	const required = requireTenantContext(ctx);
+	const rows = await listSchemaEntitiesForTenant(required);
+	const kept = new Set(keepIds);
+	const stale = [];
+	for (const row of rows) {
+		if (kept.has(row.id) || row.status === 'stale') continue;
+		const [updated] = await db
+			.update(schemaEntities)
+			.set({ status: 'stale', updatedAt: new Date() })
+			.where(and(eq(schemaEntities.id, row.id), eq(schemaEntities.clientId, required.clientId)))
+			.returning();
+		if (updated) stale.push(updated);
+	}
+	return stale;
+}
+
+export async function listAnswerTargetsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(answerTargets)
+		.where(eq(answerTargets.clientId, required.clientId))
+		.orderBy(answerTargets.question);
+}
+
+export async function upsertAnswerTargetForTenant(
+	ctx: TenantContext,
+	input: {
+		sourceKind: AnswerTargetSourceKind;
+		sourceId: string;
+		intent: AnswerTargetIntent;
+		question: string;
+		answer: string;
+		pageId?: string | null;
+		status: AnswerTargetStatus;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [existing] = await db
+		.select()
+		.from(answerTargets)
+		.where(
+			and(
+				eq(answerTargets.clientId, required.clientId),
+				eq(answerTargets.sourceKind, input.sourceKind),
+				eq(answerTargets.sourceId, input.sourceId),
+				eq(answerTargets.intent, input.intent)
+			)
+		)
+		.limit(1);
+	if (existing) {
+		const [row] = await db
+			.update(answerTargets)
+			.set({
+				question: input.question,
+				answer: input.answer,
+				pageId: input.pageId ?? null,
+				status: input.status,
+				updatedAt: new Date()
+			})
+			.where(and(eq(answerTargets.id, existing.id), eq(answerTargets.clientId, required.clientId)))
+			.returning();
+		return row;
+	}
+	const [row] = await db
+		.insert(answerTargets)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			sourceKind: input.sourceKind,
+			sourceId: input.sourceId,
+			intent: input.intent,
+			question: input.question,
+			answer: input.answer,
+			pageId: input.pageId ?? null,
+			status: input.status
+		})
+		.returning();
+	return row;
+}
+
+export async function listContentBriefsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(contentBriefs)
+		.where(eq(contentBriefs.clientId, required.clientId))
+		.orderBy(desc(contentBriefs.createdAt));
+}
+
+export async function upsertContentBriefForTenant(
+	ctx: TenantContext,
+	input: {
+		answerTargetId: string;
+		claimId?: string | null;
+		pageId?: string | null;
+		title: string;
+		problem: string;
+		proposedAction: string;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [existing] = await db
+		.select()
+		.from(contentBriefs)
+		.where(
+			and(
+				eq(contentBriefs.clientId, required.clientId),
+				eq(contentBriefs.answerTargetId, input.answerTargetId)
+			)
+		)
+		.limit(1);
+	if (existing) {
+		const [row] = await db
+			.update(contentBriefs)
+			.set({
+				claimId: input.claimId ?? null,
+				pageId: input.pageId ?? null,
+				title: input.title,
+				problem: input.problem,
+				proposedAction: input.proposedAction,
+				updatedAt: new Date()
+			})
+			.where(and(eq(contentBriefs.id, existing.id), eq(contentBriefs.clientId, required.clientId)))
+			.returning();
+		return row;
+	}
+	const [row] = await db
+		.insert(contentBriefs)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			answerTargetId: input.answerTargetId,
+			claimId: input.claimId ?? null,
+			pageId: input.pageId ?? null,
+			title: input.title,
+			problem: input.problem,
+			proposedAction: input.proposedAction
+		})
+		.returning();
+	return row;
 }

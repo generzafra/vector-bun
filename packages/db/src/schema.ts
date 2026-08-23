@@ -2249,3 +2249,110 @@ export const seoOpportunities = pgTable(
 		index('seo_opportunities_client_channel_idx').on(t.clientId, t.channel)
 	]
 );
+
+export const schemaEntityKind = pgEnum('schema_entity_kind', ['organization', 'service', 'offer']);
+export const schemaEntitySourceKind = pgEnum('schema_entity_source_kind', [
+	'brand',
+	'service',
+	'offer'
+]);
+export const schemaEntityStatus = pgEnum('schema_entity_status', ['current', 'stale']);
+export const answerTargetSourceKind = pgEnum('answer_target_source_kind', [
+	'brand',
+	'service',
+	'offer',
+	'knowledge_claim'
+]);
+export const answerTargetIntent = pgEnum('answer_target_intent', ['definition', 'use_case']);
+export const answerTargetStatus = pgEnum('answer_target_status', ['mapped', 'gap']);
+export const contentBriefStatus = pgEnum('content_brief_status', ['draft']);
+
+export const schemaEntities = pgTable(
+	'schema_entities',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		kind: schemaEntityKind('kind').notNull(),
+		sourceKind: schemaEntitySourceKind('source_kind').notNull(),
+		sourceId: uuid('source_id').notNull(),
+		name: text('name').notNull(),
+		fact: text('fact').notNull(),
+		status: schemaEntityStatus('status').notNull().default('current'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('schema_entities_client_source_idx').on(
+			t.clientId,
+			t.kind,
+			t.sourceKind,
+			t.sourceId
+		),
+		index('schema_entities_client_idx').on(t.clientId)
+	]
+);
+
+export const answerTargets = pgTable(
+	'answer_targets',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		sourceKind: answerTargetSourceKind('source_kind').notNull(),
+		sourceId: uuid('source_id').notNull(),
+		intent: answerTargetIntent('intent').notNull(),
+		question: text('question').notNull(),
+		answer: text('answer').notNull(),
+		pageId: uuid('page_id').references(() => pages.id),
+		status: answerTargetStatus('status').notNull().default('gap'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('answer_targets_client_source_intent_idx').on(
+			t.clientId,
+			t.sourceKind,
+			t.sourceId,
+			t.intent
+		),
+		index('answer_targets_client_idx').on(t.clientId),
+		index('answer_targets_client_status_idx').on(t.clientId, t.status)
+	]
+);
+
+export const contentBriefs = pgTable(
+	'content_briefs',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		answerTargetId: uuid('answer_target_id')
+			.notNull()
+			.references(() => answerTargets.id),
+		claimId: uuid('claim_id').references(() => claims.id),
+		pageId: uuid('page_id').references(() => pages.id),
+		title: text('title').notNull(),
+		problem: text('problem').notNull(),
+		proposedAction: text('proposed_action').notNull(),
+		status: contentBriefStatus('status').notNull().default('draft'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('content_briefs_client_target_idx').on(t.clientId, t.answerTargetId),
+		index('content_briefs_client_idx').on(t.clientId)
+	]
+);

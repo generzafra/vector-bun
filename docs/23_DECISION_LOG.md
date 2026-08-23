@@ -392,4 +392,4 @@ Supersede this ADR. Leave `docs/10` GEO sections as historical. Keep Phase 6 exi
 
 ### Implementation note (23 August 2026)
 
-S1 Delivery GEO-readiness and S2 `packages/search` (memory default; official GSC/Bing when `SEARCH_ADAPTER=official`), `seo.read` / `seo.manage`, Control `/search`, and first-ship `seo_*` tables are in. S3 (answer targets) is next. The ADR lock is unchanged.
+S1 Delivery GEO-readiness, S2 `packages/search`, and S3 answer targets / schema entities / source-backed FAQ gaps are in. S4 (GEO query and observation schema, no live measurement) is next. The ADR lock is unchanged.

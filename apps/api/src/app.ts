@@ -69,6 +69,7 @@ import {
 	createSeoOpportunity,
 	getSearchOverview,
 	markSeoOpportunityPublishReady,
+	refreshAnswerReadiness,
 	runTechnicalSearchAudit,
 	submitSearchSitemap,
 	syncSearchProperty,
@@ -952,6 +953,17 @@ app.post('/v1/search/audits', async (c) => {
 	actorCan(session, 'seo.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await runTechnicalSearchAudit(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/answer-readiness', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await refreshAnswerReadiness(session, ctx, requestId);
 	return c.json({ requestId, data });
 });
 

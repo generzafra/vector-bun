@@ -203,6 +203,97 @@
 	</section>
 
 	<section>
+		<h2>Answer readiness</h2>
+		<p>
+			Entities and questions come from approved knowledge. A gap means a published FAQ does not yet
+			carry that fact. Vector does not create a page per question.
+		</p>
+		<p>
+			{overview.answerReadiness.mapped} mapped · {overview.answerReadiness.gaps} gap(s) ·
+			{overview.answerReadiness.targets} target(s)
+		</p>
+		{#if canManage}
+			<form method="post" action="?/answerReadiness">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<button type="submit">Refresh answer readiness</button>
+			</form>
+		{/if}
+		{#if overview.entities.length === 0}
+			<EmptyState title="No schema entities recorded yet." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Entity</th>
+						<th>Kind</th>
+						<th>Fact</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.entities as entity (entity.id)}
+						<tr>
+							<td>{entity.name}</td>
+							<td>{entity.kind}</td>
+							<td>{entity.fact}</td>
+							<td>
+								<StatusChip
+									label={entity.status}
+									tone={entity.status === 'current' ? 'success' : 'warning'}
+								/>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+		{#if overview.answerTargets.length === 0}
+			<EmptyState title="No answer targets recorded yet." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Question</th>
+						<th>Source</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.answerTargets as target (target.id)}
+						<tr>
+							<td>{target.question}</td>
+							<td>{target.sourceKind}</td>
+							<td>
+								<StatusChip
+									label={target.status}
+									tone={target.status === 'mapped' ? 'success' : 'warning'}
+								/>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+		{#if overview.briefs.length > 0}
+			<div class="cards">
+				{#each overview.briefs as brief (brief.id)}
+					<RecommendationCard
+						finding={brief.title}
+						evidence="content brief · source-backed FAQ"
+						proposedAction={brief.proposedAction}
+						expectedImpact={brief.problem}
+						confidence={1}
+						risk="low"
+						cost="No new page per question"
+						approvalRequired={true}
+						status={brief.status}
+					/>
+				{/each}
+			</div>
+		{/if}
+	</section>
+
+	<section>
 		<h2>Backlog</h2>
 		<p>
 			Publish-ready requires an approved knowledge claim or an official query. Hypothesis items stay

@@ -515,6 +515,27 @@ export const searchClientIdSchema = z
 	})
 	.strict();
 
+export const SCHEMA_ENTITY_KINDS = ['organization', 'service', 'offer'] as const;
+export type SchemaEntityKind = (typeof SCHEMA_ENTITY_KINDS)[number];
+
+export const SCHEMA_ENTITY_SOURCE_KINDS = ['brand', 'service', 'offer'] as const;
+export type SchemaEntitySourceKind = (typeof SCHEMA_ENTITY_SOURCE_KINDS)[number];
+
+export const SCHEMA_ENTITY_STATUSES = ['current', 'stale'] as const;
+export type SchemaEntityStatus = (typeof SCHEMA_ENTITY_STATUSES)[number];
+
+export const ANSWER_TARGET_SOURCE_KINDS = ['brand', 'service', 'offer', 'knowledge_claim'] as const;
+export type AnswerTargetSourceKind = (typeof ANSWER_TARGET_SOURCE_KINDS)[number];
+
+export const ANSWER_TARGET_INTENTS = ['definition', 'use_case'] as const;
+export type AnswerTargetIntent = (typeof ANSWER_TARGET_INTENTS)[number];
+
+export const ANSWER_TARGET_STATUSES = ['mapped', 'gap'] as const;
+export type AnswerTargetStatus = (typeof ANSWER_TARGET_STATUSES)[number];
+
+export const CONTENT_BRIEF_STATUSES = ['draft'] as const;
+export type ContentBriefStatus = (typeof CONTENT_BRIEF_STATUSES)[number];
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

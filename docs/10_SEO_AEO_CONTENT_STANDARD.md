@@ -2,7 +2,7 @@
 
 Standing cross-cutting content and search-quality rules. Phase 6 slices live in [`docs/plans/06_PHASE_6_SEO_AEO.md`](plans/06_PHASE_6_SEO_AEO.md).
 
-S1 Delivery GEO-readiness (canonicals, published sitemap, AI-crawler robots, factual JSON-LD, production `llms.txt`) and S2 (`packages/search`, `SearchProvider`, Control `/search`, first-ship `seo_*` tables) are in. Answer targets and GEO observation schema are S3–S4. Live generative measurement stays later.
+S1 Delivery GEO-readiness, S2 `packages/search` + Control `/search`, and S3 (`schema_entities`, `answer_targets`, source-backed FAQ gaps, `content_briefs`) are in. Answer targets map to an existing page when a published FAQ already carries the fact. Vector does not create a page per question. GEO observation schema is S4. Live generative measurement stays later.
 
 ## SEO
 
