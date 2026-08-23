@@ -343,6 +343,9 @@ export async function persistCapturedLead(
 		pageId: string;
 		pageVersionId: string;
 		landingUrl?: string | null;
+		experimentId?: string;
+		experimentVariant?: string;
+		userAgent?: string;
 		source: {
 			channel: string;
 			utmSource?: string | null;
@@ -674,7 +677,10 @@ export async function persistCapturedLead(
 					properties: {
 						hostname: input.hostname,
 						domainKind: input.domainKind,
-						landingUrl: input.landingUrl ?? undefined
+						landingUrl: input.landingUrl ?? undefined,
+						experimentId: input.experimentId,
+						experimentVariant: input.experimentVariant,
+						userAgent: input.userAgent
 					},
 					isTest: input.isTest
 				})

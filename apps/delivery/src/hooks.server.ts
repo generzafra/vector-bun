@@ -40,5 +40,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 		response.headers.set('Cache-Control', 'private, no-store');
 	}
+	const exposed = event.locals.delivery;
+	if (exposed.kind === 'page' && exposed.experiment) {
+		response.headers.set('Cache-Control', 'private, no-store');
+	}
 	return response;
 };

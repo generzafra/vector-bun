@@ -131,7 +131,10 @@ export async function recordDeliveryEvent(
 			hostname: parsed.hostname,
 			domainKind: parsed.domainKind,
 			landingUrl: parsed.landingUrl ?? undefined,
-			referrer: parsed.referrer ?? undefined
+			referrer: parsed.referrer ?? undefined,
+			experimentId: parsed.experimentId,
+			experimentVariant: parsed.experimentVariant,
+			userAgent: parsed.userAgent
 		},
 		isTest
 	});
@@ -145,7 +148,9 @@ export async function recordDeliveryEvent(
 		properties: {
 			hostname: parsed.hostname,
 			domain_kind: parsed.domainKind,
-			page_id: parsed.pageId
+			page_id: parsed.pageId,
+			experiment_id: parsed.experimentId,
+			variant_key: parsed.experimentVariant
 		}
 	});
 	return { event, visitor, session, duplicate: false };
@@ -234,6 +239,9 @@ export async function captureLead(
 		pageId: parsed.pageId,
 		pageVersionId: parsed.pageVersionId,
 		landingUrl: parsed.landingUrl,
+		experimentId: parsed.experimentId,
+		experimentVariant: parsed.experimentVariant,
+		userAgent: parsed.userAgent,
 		source: {
 			channel: lastNonDirect.channel,
 			utmSource: lastNonDirect.source,

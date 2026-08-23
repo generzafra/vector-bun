@@ -2718,7 +2718,7 @@ Exit gate:
 
 - One full experiment runs from hypothesis through recorded learning.
 
-**Status (23 August 2026):** S0–S1 are in. `packages/experiments` and Control `/experiments` record tenant-scoped proposals, approve them, and pause or resume without starting assignment. Variants bind to immutable published page versions. Assignment, metrics, decisions, and learning objects are later slices.
+**Status (23 August 2026):** S0–S3 are in. `packages/experiments` and Control `/experiments` record tenant-scoped proposals, approve them, start sticky Delivery assignment, and measure predetermined metrics. Preview stays test traffic. Early stop is blocked. Decisions and learning objects are later slices.
 
 ## Phase 8 — Progressive autonomy
 

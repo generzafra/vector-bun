@@ -28,16 +28,26 @@
 
 	function transitionLabel(status: string, to: string) {
 		if (to === 'paused') return 'Pause';
+		if (to === 'running' && status === 'approved') return 'Start';
 		if (status === 'paused') return 'Resume';
 		if (to === 'approved') return 'Approve';
 		return `Mark ${to}`;
+	}
+
+	function reasonLabel(reason: string) {
+		if (reason === 'not_launched') return 'Not launched';
+		if (reason === 'horizon_unmet') return 'Horizon unmet';
+		if (reason === 'sample_unmet') return 'Sample unmet';
+		if (reason === 'bot_contamination') return 'Bot contamination';
+		if (reason === 'source_imbalance') return 'Source imbalance';
+		return reason;
 	}
 </script>
 
 <PageHeader
 	eyebrow="Conversion"
 	title="Experiments"
-	description="Record a governed proposal before anyone sees a variant. Fields lock after it is recorded. Approve does not start assignment. Control and challenger must be published page versions of this client. A higher percentage on a tiny sample is not a win."
+	description="Record a governed proposal before anyone sees a variant. Fields lock after it is recorded. Approve does not start assignment. Start gives visitors a sticky published-page variant. Measurement uses predetermined metrics only. A higher percentage on a tiny sample is not a win."
 />
 
 {#if form?.error}
@@ -58,8 +68,11 @@
 			Variants stay on immutable published page versions and must still pass the public frontend
 			standard. Vector Control identity is not copied onto tenant pages. Primary metric, variants,
 			guardrails, and sample rules lock after the proposal is recorded. Approve does not expose a
-			variant. Pause keeps the page and primary metric reserved. Qualified-lead and revenue metrics
-			stay closed until coverage exists. Preview traffic is not a production result.
+			variant. Start begins sticky assignment on Delivery. Pause stops exposure and keeps the page
+			and primary metric reserved. Qualified-lead and revenue metrics stay closed until coverage
+			exists. Preview traffic is test traffic and is not a production result. Measurement excludes
+			bots and test traffic. Source imbalance and an unmet horizon or sample block a decision. Early
+			stop is not allowed.
 		</p>
 	</section>
 
@@ -80,6 +93,7 @@
 						<th>Min days</th>
 						<th>Min sample</th>
 						<th>Variants</th>
+						<th>Decision</th>
 						<th>Actions</th>
 					</tr>
 				</thead>
@@ -99,6 +113,15 @@
 								{/each}
 							</td>
 							<td>
+								{#if !experiment.launchedAt}
+									<StatusChip label="Not started" tone="muted" />
+								{:else if experiment.measurement?.decisionReady}
+									<StatusChip label="Ready" tone="success" />
+								{:else}
+									<StatusChip label="Early stop blocked" tone="warning" />
+								{/if}
+							</td>
+							<td>
 								{#if canManage}
 									{#each experiment.nextStatuses as next (next)}
 										<form method="post" action="?/transition">
@@ -116,6 +139,73 @@
 			</table>
 		{/if}
 	</section>
+
+	{#if overview.experiments.some((row) => row.launchedAt)}
+		<section>
+			<h2>Measurement</h2>
+			<p>
+				Counts are observed on predetermined metrics. Test traffic and bots are excluded. A higher
+				count is not a winner. Decision records stay later.
+			</p>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Horizon</th>
+						<th>Sample</th>
+						<th>Primary counts</th>
+						<th>Guardrails</th>
+						<th>Blocked because</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.experiments.filter((row) => row.launchedAt) as experiment (experiment.id)}
+						<tr>
+							<td>{experiment.name}</td>
+							<td>
+								<StatusChip
+									label={experiment.measurement?.horizonMet ? 'Met' : 'Unmet'}
+									tone={experiment.measurement?.horizonMet ? 'success' : 'warning'}
+								/>
+							</td>
+							<td>
+								control {experiment.measurement?.controlSample ?? 0} / {experiment.minSamplePerVariant}
+								· challenger {experiment.measurement?.challengerSample ?? 0} / {experiment.minSamplePerVariant}
+							</td>
+							<td>
+								{experiment.primaryMetric}: control {experiment.measurement?.controlPrimaryCount ??
+									0}
+								· challenger {experiment.measurement?.challengerPrimaryCount ?? 0}
+							</td>
+							<td>
+								<StatusChip
+									label={experiment.measurement?.botContamination
+										? 'Bot contamination'
+										: 'Bots clear'}
+									tone={experiment.measurement?.botContamination ? 'danger' : 'muted'}
+								/>
+								<StatusChip
+									label={experiment.measurement?.sourceImbalance
+										? 'Source imbalance'
+										: 'Sources balanced'}
+									tone={experiment.measurement?.sourceImbalance ? 'danger' : 'muted'}
+								/>
+							</td>
+							<td>
+								{#if experiment.measurement?.reasons.length}
+									{#each experiment.measurement.reasons as reason (reason)}
+										<StatusChip label={reasonLabel(reason)} tone="warning" />
+									{/each}
+								{:else}
+									<StatusChip label="None" tone="muted" />
+								{/if}
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</section>
+	{/if}
 
 	{#if canManage}
 		<section>

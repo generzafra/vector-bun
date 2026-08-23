@@ -147,15 +147,18 @@ search_work_items
 
 S2 persists `seo_properties`, `seo_pages`, `seo_keywords`, `seo_queries`, `seo_audits`, `seo_issues`, and `seo_opportunities`. S3 persists `schema_entities`, `answer_targets`, and `content_briefs`. S4 persists `geo_query_sets`, `geo_queries`, `geo_measurement_runs`, `geo_engine_observations`, and `geo_citations`. S5 records observations through `SearchProvider.measureGenerativeVisibility` (manual / operator-assisted). Official generative-engine APIs stay unsupported. S6 persists `geo_visibility_snapshots` and `geo_fact_representations`. S7 persists `geo_referral_events` when official search or generative UTMs are observable on the existing lead path. S8 persists `search_cadence_settings` and `search_work_items`. Monthly GEO budget and measurement cost stay integer minor units plus currency. A mention is not a referral or lead. Revenue is not assigned from a mention. A snapshot is not a GEO score. One observation is not a visibility pattern. Stale snapshots are not current. `seo_queries` are official Search Console / Bing rows when a property is connected. `seo_opportunities.channel` is `seo | aeo | geo`. Defer `seo_rank_snapshots` unless an official API provides them. Search-property tokens are encrypted at rest and are never returned to the browser or model. A backlog item cannot be `publish_ready` without a knowledge claim or official-query source. Preview hosts must not persist production GEO observations as indexable public facts. Slice detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
 
-Phase 7 CRO (tenant-owned, `client_id` required). S0 tables:
+Phase 7 CRO (tenant-owned, `client_id` required). S0–S3 tables:
 
 ```text
 experiments
 experiment_hypotheses
 experiment_variants
+experiment_assignments
+experiment_metrics
+experiment_results
 ```
 
-S0 proposals require problem, evidence, hypothesis, audience, primary metric, guardrails, min duration, min sample, decision rule, and rollback. Variants bind only to published `page_versions` of the same tenant page. Status starts at `proposed`. S1 can move `proposed` → `approved` and `approved` / `running` → `paused` without starting assignment. Definition fields lock after `proposed`. An open row, including paused, still occupies the page and primary metric. Primary metrics are taxonomy conversion events (`cta_clicked`, `form_started`, `form_submitted`, `lead_created`). Qualified-lead and revenue stay deferred. Assignment, results, decisions, and learning objects are later slices. Slice detail: `docs/plans/07_PHASE_7_CRO.md`.
+S0 proposals require problem, evidence, hypothesis, audience, primary metric, guardrails, min duration, min sample, decision rule, and rollback. Variants bind only to published `page_versions` of the same tenant page. Status starts at `proposed`. S1 can move `proposed` → `approved` and `approved` / `running` → `paused`. S2 adds `experiment_assignments` and starts `approved` → `running` with `launchedAt`. Sticky assignment is keyed by `client_id`, experiment, and visitor anonymous id. Preview assignments are `is_test`. Definition fields lock after `proposed`. An open row, including paused, still occupies the page and primary metric. Only one experiment may run on a page. Primary metrics are taxonomy conversion events (`cta_clicked`, `form_started`, `form_submitted`, `lead_created`). S3 stores those predetermined metrics on `experiment_metrics` and appends `experiment_results` snapshots. Measurement excludes test traffic and likely bots, flags source imbalance, and blocks early stop until horizon and sample are met. Qualified-lead and revenue stay deferred. Decisions and learning objects are later. Slice detail: `docs/plans/07_PHASE_7_CRO.md`.
 
 ## Launch and readiness
 

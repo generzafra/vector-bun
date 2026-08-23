@@ -58,6 +58,12 @@ export type DeliveryResolution =
 			pageId: string;
 			versionId: string;
 			document: ReturnType<typeof parsePageDocument>;
+			experiment?: {
+				experimentId: string;
+				variantKey: string;
+				variantRole: string;
+				isTest: boolean;
+			};
 	  };
 
 export async function resolveDeliveryPage(

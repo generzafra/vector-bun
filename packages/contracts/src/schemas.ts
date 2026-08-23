@@ -159,7 +159,10 @@ export const captureLeadSchema = z
 		siteId: z.string().uuid(),
 		funnelId: z.string().uuid(),
 		pageId: z.string().uuid(),
-		pageVersionId: z.string().uuid()
+		pageVersionId: z.string().uuid(),
+		experimentId: z.string().uuid().optional(),
+		experimentVariant: z.string().trim().max(40).optional(),
+		userAgent: z.string().trim().max(512).optional()
 	})
 	.strict();
 
@@ -180,7 +183,10 @@ export const recordDeliveryEventSchema = z
 		siteId: z.string().uuid(),
 		funnelId: z.string().uuid(),
 		pageId: z.string().uuid(),
-		pageVersionId: z.string().uuid()
+		pageVersionId: z.string().uuid(),
+		experimentId: z.string().uuid().optional(),
+		experimentVariant: z.string().trim().max(40).optional(),
+		userAgent: z.string().trim().max(512).optional()
 	})
 	.strict();
 

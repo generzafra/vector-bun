@@ -63,7 +63,7 @@ Phase exits in [`docs/21`](../21_ROADMAP_ACCEPTANCE_GATES.md) and [CROSS_CUTTING
 
 - `packages/experiments`
 - S0: `experiments`, `experiment_hypotheses`, `experiment_variants`
-- Later: `experiment_assignments`, `experiment_metrics`, `experiment_results`, `experiment_decisions`
+- Later: `experiment_decisions`
 
 Capabilities: `experiments.read`, `experiments.manage`. Authorize by capability.
 
@@ -83,8 +83,8 @@ First launch ships one control variant. Experiments start after live. Do not blo
 | ------ | ------------------------------------------------------------------------------------------------ | -------- |
 | **S0** | `packages/experiments`, proposal schema, published page-version variants, Control `/experiments` | In       |
 | **S1** | Approve / pause; lock fields after propose; conflict on same page + primary metric               | In       |
-| **S2** | Sticky assignment (`experiment_assignments`); Delivery exposure; PostHog adapter optional        | Next     |
-| **S3** | Predetermined metrics, bot / source-imbalance checks, no early stop                              | Later    |
+| **S2** | Sticky assignment (`experiment_assignments`); Delivery exposure; PostHog adapter optional        | In       |
+| **S3** | Predetermined metrics, bot / source-imbalance checks, no early stop                              | In       |
 | **S4** | Decision record + durable learning object; promote only under policy                             | Exit     |
 | **S5** | Creative C8 / outcome metrics when coverage exists                                               | Additive |
 
@@ -121,4 +121,22 @@ One experiment + learning object is the exit. Variants still pass `docs/27`. Cre
 - Definition fields stay locked after `proposed`. Approve and pause cannot change metric, variants, guardrails, or sample rules.
 - Transitions require `experiments.manage` and explicit `TenantContext`. Alpha cannot approve or pause a Beta experiment.
 
-**Status (23 August 2026):** S0–S1 are in. Operators can record a tenant-scoped proposal, approve it, and pause or resume it. Fields lock after the proposal is recorded. Assignment, exposure, and winner promotion stay later.
+## 11. S2 rules
+
+- Start moves `approved` → `running` and stamps `launchedAt`. Approve still does not start assignment.
+- Only one experiment may run on a page at a time.
+- Postgres `experiment_assignments` is the sticky source of truth keyed by `client_id`, experiment, and visitor anonymous id.
+- Delivery serves the assigned published page version. Pause returns the current published pointer and stops new exposure.
+- Preview assignments are `is_test` and are not production results.
+- Experiment-sensitive Delivery HTML is `private, no-store`. PostHog may receive `experiment_id` / `variant_key` on `track` when not test traffic. Flags are not the source of truth.
+
+## 12. S3 rules
+
+- Predetermined metrics are stored on `experiment_metrics` at propose time and cannot be swapped for measurement.
+- Production measurement excludes preview/`is_test` traffic and likely-bot user agents.
+- Source mix that exceeds 70% on one variant for a source with at least 10 eligible visitors fails the source-imbalance guardrail.
+- Bot share above 20% of production assignments fails the bot-contamination guardrail.
+- Horizon and per-variant sample must both be met. A higher primary count on a small sample is not a win.
+- `decisionReady` stays false until those checks pass. Early stop is blocked. Decision records and learning objects stay S4.
+
+**Status (23 August 2026):** S0–S3 are in. Operators can start an approved experiment. Delivery assigns a sticky published-page variant per visitor. Preview stays test traffic. Measurement uses predetermined metrics and blocks early stop when horizon, sample, bots, or source mix fail. Decisions and learning objects stay later.

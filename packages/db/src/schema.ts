@@ -666,6 +666,9 @@ export type AnalyticsEventProperties = {
 	domainKind?: string;
 	landingUrl?: string;
 	referrer?: string;
+	experimentId?: string;
+	experimentVariant?: string;
+	userAgent?: string;
 };
 
 export const contacts = pgTable(
@@ -2808,5 +2811,108 @@ export const experimentVariants = pgTable(
 		uniqueIndex('experiment_variants_experiment_key_idx').on(t.experimentId, t.key),
 		uniqueIndex('experiment_variants_experiment_version_idx').on(t.experimentId, t.pageVersionId),
 		index('experiment_variants_client_idx').on(t.clientId)
+	]
+);
+
+export const experimentAssignments = pgTable(
+	'experiment_assignments',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		experimentId: uuid('experiment_id')
+			.notNull()
+			.references(() => experiments.id),
+		visitorAnonymousId: text('visitor_anonymous_id').notNull(),
+		variantId: uuid('variant_id')
+			.notNull()
+			.references(() => experimentVariants.id),
+		variantKey: text('variant_key').notNull(),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		isTest: boolean('is_test').notNull().default(false),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('experiment_assignments_visitor_idx').on(
+			t.clientId,
+			t.experimentId,
+			t.visitorAnonymousId
+		),
+		index('experiment_assignments_client_idx').on(t.clientId),
+		index('experiment_assignments_experiment_idx').on(t.experimentId)
+	]
+);
+
+export const experimentMetricKind = pgEnum('experiment_metric_kind', ['primary', 'guardrail']);
+
+export type ExperimentMetricCounts = Record<string, { control: number; challenger: number }>;
+export type ExperimentSourceShare = {
+	source: string;
+	control: number;
+	challenger: number;
+};
+
+export const experimentMetrics = pgTable(
+	'experiment_metrics',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		experimentId: uuid('experiment_id')
+			.notNull()
+			.references(() => experiments.id),
+		kind: experimentMetricKind('kind').notNull(),
+		eventName: text('event_name').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('experiment_metrics_experiment_event_idx').on(t.experimentId, t.eventName),
+		index('experiment_metrics_client_idx').on(t.clientId)
+	]
+);
+
+export const experimentResults = pgTable(
+	'experiment_results',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		experimentId: uuid('experiment_id')
+			.notNull()
+			.references(() => experiments.id),
+		horizonMet: boolean('horizon_met').notNull(),
+		sampleMet: boolean('sample_met').notNull(),
+		botContamination: boolean('bot_contamination').notNull(),
+		sourceImbalance: boolean('source_imbalance').notNull(),
+		earlyStopBlocked: boolean('early_stop_blocked').notNull(),
+		decisionReady: boolean('decision_ready').notNull(),
+		botShareBps: integer('bot_share_bps').notNull(),
+		controlSample: integer('control_sample').notNull(),
+		challengerSample: integer('challenger_sample').notNull(),
+		controlPrimaryCount: integer('control_primary_count').notNull(),
+		challengerPrimaryCount: integer('challenger_primary_count').notNull(),
+		reasons: jsonb('reasons').$type<string[]>().notNull().default([]),
+		metricCounts: jsonb('metric_counts').$type<ExperimentMetricCounts>().notNull().default({}),
+		sourceShares: jsonb('source_shares').$type<ExperimentSourceShare[]>().notNull().default([]),
+		computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('experiment_results_client_idx').on(t.clientId),
+		index('experiment_results_experiment_idx').on(t.experimentId)
 	]
 );

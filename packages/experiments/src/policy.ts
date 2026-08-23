@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
 	DEFERRED_EXPERIMENT_METRICS,
 	EXPERIMENT_GUARDRAIL_METRICS,
@@ -14,7 +15,7 @@ export { EXPERIMENT_TRANSITION_TARGETS, type ExperimentTransitionTarget };
 export const ALLOWED_EXPERIMENT_TRANSITIONS: Record<ExperimentStatus, ExperimentStatus[]> = {
 	draft: ['proposed'],
 	proposed: ['approved'],
-	approved: ['paused'],
+	approved: ['paused', 'running'],
 	running: ['paused'],
 	paused: ['approved', 'running'],
 	decided: [],
@@ -34,7 +35,8 @@ export function nextExperimentStatuses(
 	launchedAt: Date | null
 ): ExperimentTransitionTarget[] {
 	if (status === 'proposed') return ['approved'];
-	if (status === 'approved' || status === 'running') return ['paused'];
+	if (status === 'approved') return ['running', 'paused'];
+	if (status === 'running') return ['paused'];
 	if (status === 'paused') return launchedAt ? ['running'] : ['approved'];
 	return [];
 }
@@ -47,11 +49,28 @@ export function assertExperimentTransition(
 	if (!ALLOWED_EXPERIMENT_TRANSITIONS[from].includes(to as ExperimentStatus)) {
 		throw new ValidationError(`Cannot move a ${from} experiment to ${to}`);
 	}
-	if (to === 'running' && (from !== 'paused' || !launchedAt)) {
+	if (to === 'running' && from === 'paused' && !launchedAt) {
 		throw new ValidationError('Assignment and exposure are not started from approve');
 	}
 	if (from === 'paused' && to === 'approved' && launchedAt) {
 		throw new ValidationError('A launched experiment resumes to running');
+	}
+	if (to === 'running' && from !== 'approved' && from !== 'paused') {
+		throw new ValidationError('Assignment starts only from an approved experiment');
+	}
+}
+
+export function assignVariantKey(
+	experimentId: string,
+	visitorId: string
+): 'control' | 'challenger' {
+	const digest = createHash('sha256').update(`${experimentId}:${visitorId}`).digest();
+	return (digest[0] ?? 0) % 2 === 0 ? 'control' : 'challenger';
+}
+
+export function assertNoRunningExperimentOnPage(runningCount: number) {
+	if (runningCount > 0) {
+		throw new ValidationError('Another experiment is already running on this page');
 	}
 }
 

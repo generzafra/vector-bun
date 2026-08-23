@@ -71,18 +71,19 @@ export const actions = {
 			if (to === 'approved') {
 				return {
 					ok: true,
-					notice: 'Status is approved. Assignment and exposure stay later.'
+					notice: 'Status is approved. Start when you are ready to assign visitors.'
 				};
 			}
 			if (to === 'paused') {
 				return {
 					ok: true,
-					notice: 'Experiment paused. The page and primary metric stay reserved.'
+					notice: 'Experiment paused. Exposure stops. The page and primary metric stay reserved.'
 				};
 			}
 			return {
 				ok: true,
-				notice: 'Experiment resumed. Assignment still requires a later launch slice.'
+				notice:
+					'Experiment is running. Visitors get a sticky published-page variant. Preview stays test traffic.'
 			};
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });

@@ -82,6 +82,7 @@ import {
 	validateSearchProperty,
 	createExperimentProposal,
 	getExperimentOverview,
+	measureExperiment,
 	transitionExperiment
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
@@ -1108,6 +1109,18 @@ app.post('/v1/experiments/transition', async (c) => {
 	actorCan(session, 'experiments.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await transitionExperiment(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/experiments/measure', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'experiments.read');
+	const ctx = contextFor(session, requestId);
+	const body = (await c.req.json()) as { id?: string };
+	const data = await measureExperiment(session, ctx, String(body.id ?? ''), requestId);
 	return c.json({ requestId, data });
 });
 

@@ -14,30 +14,49 @@ import {
 	db,
 	deleteExperimentsForTenant,
 	experiments,
+	getExperimentAssignmentForVisitorForTenant,
 	getPublishedPageVersionMetaForTenant,
+	getRunningExperimentForPageForTenant,
+	insertAnalyticsEventForTenant,
+	insertExperimentAssignmentForTenant,
+	listExperimentMetricsForTenant,
 	listExperimentsForTenant,
-	listOpenExperimentsForPageMetricForTenant
+	listLatestExperimentResultsForTenant,
+	listOpenExperimentsForPageMetricForTenant,
+	persistDeliveryVisit
 } from '@vector/db';
 import {
 	assertCanChangePrimaryMetric,
 	assertCanMutateExperimentDefinition,
 	assertExperimentTransition,
+	assertMetricsMatchPredetermined,
 	assertNoConflictingExperiment,
+	assertNotEarlyStop,
 	assertPrimaryMetricAllowed,
+	assignVariantKey,
 	canChangeLockedFields,
-	nextExperimentStatuses
+	computeExperimentMeasurement,
+	evaluateExperimentReadiness,
+	isLikelyBotUserAgent,
+	nextExperimentStatuses,
+	sourceImbalanceDetected
 } from '@vector/experiments';
 import {
 	composeFunnel,
 	contextFor,
+	assertExperimentDecisionReady,
 	createExperimentProposal,
+	exposeDeliveryPage,
 	getExperimentOverview,
 	login,
+	measureExperiment,
 	publishFunnel,
+	resolveDeliveryPage,
 	resolveSession,
 	switchActiveClient,
 	transitionExperiment
 } from '@vector/domain';
+import { previewHostname } from '@vector/funnel-engine';
 import { app } from '../apps/api/src/app';
 
 async function seededClients() {
@@ -141,6 +160,12 @@ afterEach(async () => {
 test('missing TenantContext cannot list experiment rows', () => {
 	expect(() => requireTenantContext(null)).toThrow(TenantContextError);
 	expect(listExperimentsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
+	expect(listExperimentMetricsForTenant(null as never, [])).rejects.toBeInstanceOf(
+		TenantContextError
+	);
+	expect(listLatestExperimentResultsForTenant(null as never, ['x'])).rejects.toBeInstanceOf(
+		TenantContextError
+	);
 });
 
 test('revenue and qualified-lead metrics stay closed until coverage exists', () => {
@@ -153,15 +178,77 @@ test('revenue and qualified-lead metrics stay closed until coverage exists', () 
 	expect(() => assertCanMutateExperimentDefinition('approved')).toThrow(ValidationError);
 	expect(() => assertCanMutateExperimentDefinition('draft')).not.toThrow();
 	expect(nextExperimentStatuses('proposed', null)).toEqual(['approved']);
-	expect(nextExperimentStatuses('approved', null)).toEqual(['paused']);
+	expect(nextExperimentStatuses('approved', null)).toEqual(['running', 'paused']);
 	expect(nextExperimentStatuses('paused', null)).toEqual(['approved']);
 	expect(nextExperimentStatuses('paused', new Date())).toEqual(['running']);
 	expect(() => assertExperimentTransition('proposed', 'running', null)).toThrow(ValidationError);
-	expect(() => assertExperimentTransition('approved', 'running', null)).toThrow(ValidationError);
+	expect(() => assertExperimentTransition('approved', 'running', null)).not.toThrow();
 	expect(() => assertExperimentTransition('paused', 'running', null)).toThrow(ValidationError);
 	expect(() => assertExperimentTransition('proposed', 'approved', null)).not.toThrow();
 	expect(() => assertNoConflictingExperiment(1)).toThrow(ValidationError);
 	expect(() => assertNoConflictingExperiment(0)).not.toThrow();
+	expect(isLikelyBotUserAgent('Mozilla/5.0 Chrome/120')).toBe(false);
+	expect(isLikelyBotUserAgent('GPTBot/1.0')).toBe(true);
+	expect(sourceImbalanceDetected([{ source: 'google', control: 6, challenger: 4 }])).toBe(false);
+	expect(sourceImbalanceDetected([{ source: 'google', control: 18, challenger: 2 }])).toBe(true);
+	expect(() =>
+		assertMetricsMatchPredetermined(['revenue'], ['form_started', 'page_viewed'])
+	).toThrow(ValidationError);
+	expect(() =>
+		assertMetricsMatchPredetermined(
+			['form_started', 'page_viewed'],
+			['form_started', 'page_viewed']
+		)
+	).not.toThrow();
+	const early = evaluateExperimentReadiness({
+		launchedAt: new Date('2026-08-20T00:00:00.000Z'),
+		minDurationDays: 14,
+		minSamplePerVariant: 400,
+		now: new Date('2026-08-23T00:00:00.000Z'),
+		controlSample: 12,
+		challengerSample: 11,
+		botShareBps: 0,
+		sourceImbalance: false
+	});
+	expect(early.decisionReady).toBe(false);
+	expect(early.earlyStopBlocked).toBe(true);
+	expect(early.reasons).toContain('horizon_unmet');
+	expect(early.reasons).toContain('sample_unmet');
+	expect(() => assertNotEarlyStop(early)).toThrow(ValidationError);
+	const readyAssignments = [
+		...Array.from({ length: 100 }, (_, index) => ({
+			visitorAnonymousId: `control-${index}`,
+			variantKey: 'control' as const,
+			isTest: false
+		})),
+		...Array.from({ length: 100 }, (_, index) => ({
+			visitorAnonymousId: `challenger-${index}`,
+			variantKey: 'challenger' as const,
+			isTest: false
+		}))
+	];
+	const ready = computeExperimentMeasurement({
+		experimentId: '11111111-1111-4111-8111-111111111111',
+		primaryMetric: 'form_started',
+		metrics: ['form_started', 'page_viewed'],
+		launchedAt: new Date('2026-01-01T00:00:00.000Z'),
+		minDurationDays: 7,
+		minSamplePerVariant: 100,
+		now: new Date('2026-01-15T00:00:00.000Z'),
+		assignments: readyAssignments,
+		events: readyAssignments.map((row) => ({
+			visitorAnonymousId: row.visitorAnonymousId,
+			name: 'page_viewed',
+			isTest: false,
+			userAgent: 'Mozilla/5.0',
+			utmSource: 'google',
+			experimentId: '11111111-1111-4111-8111-111111111111',
+			experimentVariant: row.variantKey
+		}))
+	});
+	expect(ready.decisionReady).toBe(true);
+	expect(ready.earlyStopBlocked).toBe(false);
+	expect(() => assertNotEarlyStop(ready)).not.toThrow();
 });
 
 test(
@@ -354,15 +441,7 @@ test(
 		expect(approved.status).toBe('approved');
 		expect(approved.launchedAt).toBeNull();
 		expect(approved.primaryMetric).toBe('form_started');
-		expect(approved.nextStatuses).toEqual(['paused']);
-		await expect(
-			transitionExperiment(
-				alphaActor,
-				alphaCtx,
-				{ id: created.id, to: 'running' },
-				'exp-s1-approved-run'
-			)
-		).rejects.toBeInstanceOf(ValidationError);
+		expect(approved.nextStatuses).toEqual(['running', 'paused']);
 		await expect(
 			createExperimentProposal(
 				alphaActor,
@@ -531,4 +610,353 @@ test(
 		expect(stolen.status).toBeGreaterThanOrEqual(400);
 	},
 	{ timeout: 20_000 }
+);
+
+test(
+	'start assigns a sticky tenant-scoped variant and preview stays test',
+	async () => {
+		const { alpha, beta } = await seededClients();
+		const alphaActor = await adminOn(alpha.id, '10.7.0.21', 'exp-s2-a');
+		const betaActor = await adminOn(beta.id, '10.7.0.22', 'exp-s2-b');
+		const alphaCtx = contextFor(alphaActor, 'exp-s2-a');
+		const betaCtx = contextFor(betaActor, 'exp-s2-b');
+		const alphaVersions = await twoPublishedVersions(alphaActor, alphaCtx);
+		const betaVersions = await twoPublishedVersions(betaActor, betaCtx);
+		expect(
+			getRunningExperimentForPageForTenant(null as never, alphaVersions.page.id)
+		).rejects.toBeInstanceOf(TenantContextError);
+
+		const created = await createExperimentProposal(
+			alphaActor,
+			alphaCtx,
+			proposalInput(alphaVersions.page.id, alphaVersions.control.id, alphaVersions.challenger.id),
+			'exp-s2-create'
+		);
+		await transitionExperiment(
+			alphaActor,
+			alphaCtx,
+			{ id: created.id, to: 'approved' },
+			'exp-s2-approve'
+		);
+		const started = await transitionExperiment(
+			alphaActor,
+			alphaCtx,
+			{ id: created.id, to: 'running' },
+			'exp-s2-start'
+		);
+		expect(started.status).toBe('running');
+		expect(started.launchedAt).not.toBeNull();
+
+		const second = await createExperimentProposal(
+			alphaActor,
+			alphaCtx,
+			proposalInput(alphaVersions.page.id, alphaVersions.control.id, alphaVersions.challenger.id, {
+				name: 'Other metric on same page',
+				primaryMetric: 'cta_clicked',
+				guardrailMetrics: ['page_viewed']
+			}),
+			'exp-s2-second'
+		);
+		await transitionExperiment(
+			alphaActor,
+			alphaCtx,
+			{ id: second.id, to: 'approved' },
+			'exp-s2-second-approve'
+		);
+		await expect(
+			transitionExperiment(
+				alphaActor,
+				alphaCtx,
+				{ id: second.id, to: 'running' },
+				'exp-s2-second-start'
+			)
+		).rejects.toBeInstanceOf(ValidationError);
+
+		const visitorA = '11111111-1111-4111-8111-111111111111';
+		const visitorB = '22222222-2222-4222-8222-222222222222';
+		const alphaHost = previewHostname('alpha', env.DELIVERY_PREVIEW_PARENT_HOST);
+		const resolved = await resolveDeliveryPage(alphaHost, '/', 'exp-s2-resolve');
+		expect(resolved.kind).toBe('page');
+		if (resolved.kind !== 'page') throw new Error('expected alpha page');
+		expect(resolved.clientId).toBe(alpha.id);
+
+		const first = await exposeDeliveryPage(resolved, visitorA, 'exp-s2-expose-a');
+		const again = await exposeDeliveryPage(resolved, visitorA, 'exp-s2-expose-a2');
+		expect(first.experiment?.experimentId).toBe(started.id);
+		expect(first.experiment?.isTest).toBe(true);
+		expect(again.experiment?.variantKey).toBe(first.experiment?.variantKey);
+		expect(again.versionId).toBe(first.versionId);
+		expect(first.experiment?.variantKey).toBe(assignVariantKey(started.id, visitorA));
+		expect(JSON.stringify(first.document)).not.toContain('warehouse');
+
+		const other = await exposeDeliveryPage(resolved, visitorB, 'exp-s2-expose-b');
+		expect(other.experiment?.variantKey).toBe(assignVariantKey(started.id, visitorB));
+		expect(other.experiment?.isTest).toBe(true);
+
+		const stored = await getExperimentAssignmentForVisitorForTenant(alphaCtx, started.id, visitorA);
+		expect(stored?.isTest).toBe(true);
+		expect(stored?.variantKey).toBe(first.experiment?.variantKey);
+		expect(
+			await getExperimentAssignmentForVisitorForTenant(betaCtx, started.id, visitorA)
+		).toBeNull();
+
+		const betaHost = previewHostname('beta', env.DELIVERY_PREVIEW_PARENT_HOST);
+		const betaPage = await resolveDeliveryPage(betaHost, '/', 'exp-s2-beta-resolve');
+		if (betaPage.kind !== 'page') throw new Error('expected beta page');
+		const betaExposed = await exposeDeliveryPage(betaPage, visitorA, 'exp-s2-beta-expose');
+		expect(betaExposed.experiment).toBeUndefined();
+		expect(betaExposed.clientId).toBe(beta.id);
+		expect(JSON.stringify(betaExposed.document)).not.toContain('implant');
+
+		await transitionExperiment(
+			alphaActor,
+			alphaCtx,
+			{ id: created.id, to: 'paused' },
+			'exp-s2-pause'
+		);
+		const paused = await exposeDeliveryPage(resolved, visitorA, 'exp-s2-paused');
+		expect(paused.experiment).toBeUndefined();
+		expect(paused.versionId).toBe(resolved.versionId);
+
+		const betaCreated = await createExperimentProposal(
+			betaActor,
+			betaCtx,
+			proposalInput(betaVersions.page.id, betaVersions.control.id, betaVersions.challenger.id),
+			'exp-s2-beta-create'
+		);
+		await transitionExperiment(
+			betaActor,
+			betaCtx,
+			{ id: betaCreated.id, to: 'approved' },
+			'exp-s2-beta-approve'
+		);
+		await expect(
+			transitionExperiment(
+				alphaActor,
+				alphaCtx,
+				{ id: betaCreated.id, to: 'running' },
+				'exp-s2-cross-start'
+			)
+		).rejects.toBeInstanceOf(NotFoundError);
+	},
+	{ timeout: 25_000 }
+);
+
+async function exposeProductionVisitor(
+	ctx: ReturnType<typeof contextFor>,
+	input: {
+		experimentId: string;
+		variant: { id: string; key: string; pageVersionId: string };
+		pageId: string;
+		visitorId: string;
+		utmSource?: string | null;
+		userAgent?: string;
+		events?: string[];
+		isTest?: boolean;
+		tagExperiment?: boolean;
+	}
+) {
+	const isTest = input.isTest ?? false;
+	await insertExperimentAssignmentForTenant(ctx, {
+		experimentId: input.experimentId,
+		visitorAnonymousId: input.visitorId,
+		variantId: input.variant.id,
+		variantKey: input.variant.key,
+		pageVersionId: input.variant.pageVersionId,
+		isTest
+	});
+	const visit = await persistDeliveryVisit(ctx, {
+		anonymousId: input.visitorId,
+		sessionId: crypto.randomUUID(),
+		utmSource: input.utmSource ?? null,
+		isTest
+	});
+	for (const name of input.events ?? ['page_viewed']) {
+		await insertAnalyticsEventForTenant(ctx, {
+			eventId: crypto.randomUUID(),
+			name,
+			taxonomyVersion: 1,
+			visitorId: visit.visitor.id,
+			sessionId: visit.session.id,
+			pageId: input.pageId,
+			pageVersionId: input.variant.pageVersionId,
+			properties: {
+				...(input.tagExperiment === false
+					? {}
+					: {
+							experimentId: input.experimentId,
+							experimentVariant: input.variant.key
+						}),
+				userAgent: input.userAgent,
+				domainKind: isTest ? 'preview' : 'production'
+			},
+			isTest
+		});
+	}
+}
+
+test(
+	'measurement locks predetermined metrics, excludes bots, and blocks early stop',
+	async () => {
+		const { alpha, beta } = await seededClients();
+		const alphaActor = await adminOn(alpha.id, '10.7.0.31', 'exp-s3-a');
+		const betaActor = await adminOn(beta.id, '10.7.0.32', 'exp-s3-b');
+		const alphaCtx = contextFor(alphaActor, 'exp-s3-a');
+		const betaCtx = contextFor(betaActor, 'exp-s3-b');
+		const alphaVersions = await twoPublishedVersions(alphaActor, alphaCtx);
+		const betaVersions = await twoPublishedVersions(betaActor, betaCtx);
+
+		const created = await createExperimentProposal(
+			alphaActor,
+			alphaCtx,
+			proposalInput(alphaVersions.page.id, alphaVersions.control.id, alphaVersions.challenger.id),
+			'exp-s3-create'
+		);
+		expect(created.metrics.map((row) => `${row.kind}:${row.eventName}`).sort()).toEqual([
+			'guardrail:page_viewed',
+			'primary:form_started'
+		]);
+		expect(listExperimentMetricsForTenant(null as never, [created.id])).rejects.toBeInstanceOf(
+			TenantContextError
+		);
+		expect((await listExperimentMetricsForTenant(betaCtx, [created.id])).length).toBe(0);
+
+		await transitionExperiment(
+			alphaActor,
+			alphaCtx,
+			{ id: created.id, to: 'approved' },
+			'exp-s3-approve'
+		);
+		await transitionExperiment(
+			alphaActor,
+			alphaCtx,
+			{ id: created.id, to: 'running' },
+			'exp-s3-start'
+		);
+		const control = created.variants.find((row) => row.role === 'control');
+		const challenger = created.variants.find((row) => row.role === 'challenger');
+		if (!control || !challenger) throw new Error('variants missing');
+
+		for (let index = 0; index < 10; index += 1) {
+			await exposeProductionVisitor(alphaCtx, {
+				experimentId: created.id,
+				variant: control,
+				pageId: alphaVersions.page.id,
+				visitorId: crypto.randomUUID(),
+				utmSource: 'google',
+				userAgent: 'Mozilla/5.0',
+				events: index < 2 ? ['page_viewed', 'form_started'] : ['page_viewed']
+			});
+		}
+		await exposeProductionVisitor(alphaCtx, {
+			experimentId: created.id,
+			variant: challenger,
+			pageId: alphaVersions.page.id,
+			visitorId: crypto.randomUUID(),
+			utmSource: 'google',
+			userAgent: 'Mozilla/5.0',
+			events: ['page_viewed', 'form_started']
+		});
+		for (let index = 0; index < 4; index += 1) {
+			await exposeProductionVisitor(alphaCtx, {
+				experimentId: created.id,
+				variant: challenger,
+				pageId: alphaVersions.page.id,
+				visitorId: crypto.randomUUID(),
+				utmSource: 'direct',
+				userAgent: 'Mozilla/5.0',
+				events: ['page_viewed', 'form_started']
+			});
+		}
+		for (let index = 0; index < 5; index += 1) {
+			await exposeProductionVisitor(alphaCtx, {
+				experimentId: created.id,
+				variant: control,
+				pageId: alphaVersions.page.id,
+				visitorId: crypto.randomUUID(),
+				utmSource: 'google',
+				userAgent: 'GPTBot/1.0',
+				events: ['page_viewed', 'form_started']
+			});
+		}
+		await exposeProductionVisitor(alphaCtx, {
+			experimentId: created.id,
+			variant: control,
+			pageId: alphaVersions.page.id,
+			visitorId: crypto.randomUUID(),
+			utmSource: 'newsletter',
+			userAgent: 'Mozilla/5.0',
+			events: ['page_viewed', 'form_started'],
+			isTest: true
+		});
+		await exposeProductionVisitor(alphaCtx, {
+			experimentId: created.id,
+			variant: control,
+			pageId: alphaVersions.page.id,
+			visitorId: crypto.randomUUID(),
+			utmSource: 'direct',
+			userAgent: 'Mozilla/5.0',
+			events: ['form_started'],
+			tagExperiment: false
+		});
+
+		const reader = {
+			...alphaActor,
+			permissions: alphaActor.permissions.filter((cap) => cap !== 'experiments.read')
+		};
+		await expect(
+			measureExperiment(reader, alphaCtx, created.id, 'exp-s3-no-read')
+		).rejects.toBeInstanceOf(ForbiddenError);
+
+		const measured = await measureExperiment(alphaActor, alphaCtx, created.id, 'exp-s3-measure');
+		expect(measured.measurement?.decisionReady).toBe(false);
+		expect(measured.measurement?.earlyStopBlocked).toBe(true);
+		expect(measured.measurement?.horizonMet).toBe(false);
+		expect(measured.measurement?.sampleMet).toBe(false);
+		expect(measured.measurement?.botContamination).toBe(true);
+		expect(measured.measurement?.sourceImbalance).toBe(true);
+		expect(measured.measurement?.controlSample).toBe(11);
+		expect(measured.measurement?.challengerSample).toBe(5);
+		expect(measured.measurement?.controlPrimaryCount).toBe(2);
+		expect(measured.measurement?.challengerPrimaryCount).toBe(5);
+		expect(measured.measurement?.challengerPrimaryCount).toBeGreaterThan(
+			measured.measurement?.controlPrimaryCount ?? 0
+		);
+		expect(measured.measurement?.reasons).toEqual(
+			expect.arrayContaining([
+				'horizon_unmet',
+				'sample_unmet',
+				'bot_contamination',
+				'source_imbalance'
+			])
+		);
+
+		const stored = await listLatestExperimentResultsForTenant(alphaCtx, [created.id]);
+		expect(stored[0]?.decisionReady).toBe(false);
+		expect(stored[0]?.earlyStopBlocked).toBe(true);
+		expect(await listLatestExperimentResultsForTenant(betaCtx, [created.id])).toEqual([]);
+
+		expect(() => assertNotEarlyStop(measured.measurement!)).toThrow(ValidationError);
+		const manager = {
+			...alphaActor,
+			permissions: alphaActor.permissions.filter((cap) => cap !== 'experiments.manage')
+		};
+		await expect(
+			assertExperimentDecisionReady(manager, alphaCtx, created.id, 'exp-s3-decide')
+		).rejects.toBeInstanceOf(ForbiddenError);
+
+		const betaCreated = await createExperimentProposal(
+			betaActor,
+			betaCtx,
+			proposalInput(betaVersions.page.id, betaVersions.control.id, betaVersions.challenger.id),
+			'exp-s3-beta-create'
+		);
+		await expect(
+			measureExperiment(alphaActor, alphaCtx, betaCreated.id, 'exp-s3-cross')
+		).rejects.toBeInstanceOf(NotFoundError);
+		expect(
+			(await getExperimentOverview(betaActor, betaCtx)).experiments[0]?.measurement?.controlSample
+		).toBe(0);
+	},
+	{ timeout: 30_000 }
 );

@@ -1,6 +1,11 @@
 import { error, fail } from '@sveltejs/kit';
 import { AppError } from '@vector/contracts';
-import { captureLead, deliveryTenantContext, recordDeliveryEvent } from '@vector/domain';
+import {
+	captureLead,
+	deliveryTenantContext,
+	exposeDeliveryPage,
+	recordDeliveryEvent
+} from '@vector/domain';
 import { jsonLdScript, publicJsonLd } from '@vector/funnel-engine';
 import { logError } from '@vector/observability';
 import {
@@ -34,13 +39,42 @@ function attributionFrom(url: URL, request: Request, form?: FormData) {
 	};
 }
 
-export async function load({ locals, cookies, url, request }) {
+function experimentFields(
+	page: { experiment?: { experimentId: string; variantKey: string } },
+	request: Request
+) {
+	const userAgent = request.headers.get('user-agent')?.trim().slice(0, 512);
+	return {
+		...(page.experiment
+			? {
+					experimentId: page.experiment.experimentId,
+					experimentVariant: page.experiment.variantKey
+				}
+			: {}),
+		...(userAgent ? { userAgent } : {})
+	};
+}
+
+async function assignedPage(
+	locals: App.Locals,
+	visitorId: string
+): Promise<Extract<App.Locals['delivery'], { kind: 'page' }>> {
+	if (locals.delivery.kind !== 'page') error(404, 'Unknown host');
+	const page = await exposeDeliveryPage(locals.delivery, visitorId, locals.requestId);
+	locals.delivery = page;
+	return page;
+}
+
+export async function load({ locals, cookies, url, request, setHeaders }) {
 	if (locals.delivery.kind !== 'page') error(404, 'Unknown host');
 	const visitorId = cookieId(cookies.get(VISITOR_COOKIE));
 	const sessionId = cookieId(cookies.get(ANALYTICS_SESSION_COOKIE));
 	cookies.set(VISITOR_COOKIE, visitorId, analyticsCookieOptions());
 	cookies.set(ANALYTICS_SESSION_COOKIE, sessionId, analyticsCookieOptions());
-	const page = locals.delivery;
+	const page = await assignedPage(locals, visitorId);
+	if (page.experiment) {
+		setHeaders({ 'cache-control': 'private, no-store' });
+	}
 	try {
 		await recordDeliveryEvent(
 			deliveryTenantContext(page, locals.requestId),
@@ -54,7 +88,8 @@ export async function load({ locals, cookies, url, request }) {
 				siteId: page.siteId,
 				funnelId: page.funnelId,
 				pageId: page.pageId,
-				pageVersionId: page.versionId
+				pageVersionId: page.versionId,
+				...experimentFields(page, request)
 			},
 			locals.requestId
 		);
@@ -83,16 +118,16 @@ export async function load({ locals, cookies, url, request }) {
 export const actions = {
 	event: async ({ request, locals, cookies, url, getClientAddress }) => {
 		if (locals.delivery.kind !== 'page') return fail(404, { error: 'Unknown host' });
-		const page = locals.delivery;
+		const visitorId = cookieId(cookies.get(VISITOR_COOKIE));
+		const sessionId = cookieId(cookies.get(ANALYTICS_SESSION_COOKIE));
+		cookies.set(VISITOR_COOKIE, visitorId, analyticsCookieOptions());
+		cookies.set(ANALYTICS_SESSION_COOKIE, sessionId, analyticsCookieOptions());
+		const page = await assignedPage(locals, visitorId);
 		const form = await request.formData();
 		const name = String(form.get('name') ?? '');
 		if (name !== 'form_started' && name !== 'cta_clicked') {
 			return fail(400, { error: 'Unknown event' });
 		}
-		const visitorId = cookieId(cookies.get(VISITOR_COOKIE));
-		const sessionId = cookieId(cookies.get(ANALYTICS_SESSION_COOKIE));
-		cookies.set(VISITOR_COOKIE, visitorId, analyticsCookieOptions());
-		cookies.set(ANALYTICS_SESSION_COOKIE, sessionId, analyticsCookieOptions());
 		try {
 			await recordDeliveryEvent(
 				deliveryTenantContext(page, locals.requestId),
@@ -106,7 +141,8 @@ export const actions = {
 					siteId: page.siteId,
 					funnelId: page.funnelId,
 					pageId: page.pageId,
-					pageVersionId: page.versionId
+					pageVersionId: page.versionId,
+					...experimentFields(page, request)
 				},
 				locals.requestId,
 				getClientAddress()
@@ -124,7 +160,6 @@ export const actions = {
 	},
 	lead: async ({ request, locals, cookies, url, getClientAddress }) => {
 		if (locals.delivery.kind !== 'page') return fail(404, { error: 'Unknown host' });
-		const page = locals.delivery;
 		const form = await request.formData();
 		const values = fieldValues(form);
 		if (!values.name.trim()) {
@@ -140,6 +175,7 @@ export const actions = {
 		const sessionId = cookieId(cookies.get(ANALYTICS_SESSION_COOKIE));
 		cookies.set(VISITOR_COOKIE, visitorId, analyticsCookieOptions());
 		cookies.set(ANALYTICS_SESSION_COOKIE, sessionId, analyticsCookieOptions());
+		const page = await assignedPage(locals, visitorId);
 		try {
 			await captureLead(
 				deliveryTenantContext(page, locals.requestId),
@@ -153,7 +189,8 @@ export const actions = {
 					siteId: page.siteId,
 					funnelId: page.funnelId,
 					pageId: page.pageId,
-					pageVersionId: page.versionId
+					pageVersionId: page.versionId,
+					...experimentFields(page, request)
 				},
 				locals.requestId,
 				getClientAddress()
