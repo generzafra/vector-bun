@@ -55,6 +55,13 @@
 	<Alert>Launch could not be loaded.</Alert>
 {:else}
 	<section>
+		<h2>Launch automation</h2>
+		<p>
+			Generate drafts, wire tracking, and queue QA are recorded as tenant-scoped policies on
+			<a href="/autonomy">Autonomy</a>. S2 does not auto-run them. Unpublished drafts only.
+		</p>
+	</section>
+	<section>
 		<h2>Production domain</h2>
 		<p>
 			Submit the client hostname, point DNS at Delivery, then verify and activate. HTTPS is issued

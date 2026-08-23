@@ -34,6 +34,7 @@ import {
 	pauseIntelligence,
 	runAutoExecute,
 	setAutonomyCeiling,
+	setLaunchAutomationPolicy,
 	processDueNurtureForOperator,
 	processEmailWebhook,
 	reviewInboundMessage,
@@ -635,6 +636,17 @@ app.post('/v1/autonomy/execute', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const data = await runAutoExecute(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data }, data.executed ? 201 : 200);
+});
+
+app.post('/v1/autonomy/launch-policy', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'ai.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await setLaunchAutomationPolicy(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
 });
 
 app.post('/v1/email/nurture/enroll-eligible', async (c) => {

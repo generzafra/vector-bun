@@ -1,15 +1,18 @@
 import { and, count, desc, eq } from 'drizzle-orm';
 import {
+	LAUNCH_AUTOMATION_ACTIONS,
 	assertSameClient,
 	requireTenantContext,
 	type DefaultActionPolicy,
 	type TenantContext
 } from '@vector/contracts';
 import { db } from './client';
+import { ensureLaunchRecordsForTenant } from './launch';
 import {
 	aiActionExecutions,
 	aiActionPolicies,
 	aiKillSwitchEvents,
+	launchAutomationPolicies,
 	type AiActionExecutionOutput
 } from './schema';
 
@@ -195,4 +198,60 @@ export async function insertAiActionExecutionForTenant(
 		})
 		.returning();
 	return row;
+}
+
+export async function listLaunchAutomationPoliciesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(launchAutomationPolicies)
+		.where(eq(launchAutomationPolicies.clientId, required.clientId))
+		.orderBy(launchAutomationPolicies.actionType);
+}
+
+export async function ensureLaunchAutomationPoliciesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const { launch } = await ensureLaunchRecordsForTenant(required);
+	if (!launch) {
+		throw new Error('Launch record missing after ensure');
+	}
+	const existing = await listLaunchAutomationPoliciesForTenant(required);
+	const have = new Set(existing.map((row) => row.actionType));
+	const missing = LAUNCH_AUTOMATION_ACTIONS.filter((actionType) => !have.has(actionType));
+	if (missing.length > 0) {
+		await db.insert(launchAutomationPolicies).values(
+			missing.map((actionType) => ({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				launchId: launch.id,
+				actionType,
+				enabled: false,
+				unpublishedDraftsOnly: true
+			}))
+		);
+	}
+	return listLaunchAutomationPoliciesForTenant(required);
+}
+
+export async function updateLaunchAutomationPolicyForTenant(
+	ctx: TenantContext,
+	input: { actionType: string; enabled: boolean }
+) {
+	const required = requireTenantContext(ctx);
+	await ensureLaunchAutomationPoliciesForTenant(required);
+	const [row] = await db
+		.update(launchAutomationPolicies)
+		.set({
+			enabled: input.enabled,
+			unpublishedDraftsOnly: true,
+			updatedAt: new Date()
+		})
+		.where(
+			and(
+				eq(launchAutomationPolicies.clientId, required.clientId),
+				eq(launchAutomationPolicies.actionType, input.actionType)
+			)
+		)
+		.returning();
+	return row ?? null;
 }

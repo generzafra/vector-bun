@@ -56,6 +56,21 @@ export const LOW_RISK_AUTO_EXECUTE_ACTIONS = [
 export const S1_AUTO_EXECUTE_ACTIONS = ['internal_weekly_report'] as const;
 export type S1AutoExecuteAction = (typeof S1_AUTO_EXECUTE_ACTIONS)[number];
 
+export const LAUNCH_AUTOMATION_ACTIONS = [
+	'launch.queue_qa',
+	'launch.wire_tracking',
+	'launch.generate_drafts'
+] as const;
+export type LaunchAutomationAction = (typeof LAUNCH_AUTOMATION_ACTIONS)[number];
+
+export const S2_LAUNCH_AUTO_EXECUTE_CANDIDATES = [
+	'launch.queue_qa',
+	'launch.wire_tracking'
+] as const;
+export type S2LaunchAutoExecuteCandidate = (typeof S2_LAUNCH_AUTO_EXECUTE_CANDIDATES)[number];
+
+export const LAUNCH_AUTOMATION_BLOCKED_STATUSES = ['live', 'launching', 'launch_failed'] as const;
+
 export type DefaultActionPolicy = {
 	actionType: AutonomyActionType;
 	name: string;

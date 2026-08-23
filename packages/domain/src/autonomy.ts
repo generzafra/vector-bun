@@ -1,15 +1,22 @@
 import { consumeRateLimit, requireCapability } from '@vector/auth';
-import { evaluateAutoExecute, type ActionPolicySnapshot } from '@vector/ai';
+import {
+	evaluateAutoExecute,
+	evaluateLaunchAutomationStep,
+	type ActionPolicySnapshot
+} from '@vector/ai';
 import { env } from '@vector/config';
 import {
+	LAUNCH_AUTOMATION_ACTIONS,
 	PHASE_4_MAX_AUTONOMY,
 	PHASE_8_MAX_AUTONOMY,
 	S1_AUTO_EXECUTE_ACTIONS,
+	S2_LAUNCH_AUTO_EXECUTE_CANDIDATES,
 	ValidationError,
 	assertActorOwnsContext,
 	parseContract,
 	runAutoExecuteSchema,
 	setAutonomyCeilingSchema,
+	setLaunchAutomationPolicySchema,
 	type TenantContext
 } from '@vector/contracts';
 import {
@@ -18,13 +25,16 @@ import {
 	countPublishedPageVersionsForTenant,
 	countSucceededAiActionExecutionsForTenant,
 	ensureAiSettingsForTenant,
+	ensureLaunchAutomationPoliciesForTenant,
 	getAiActionExecutionByIdempotency,
 	getAiActionPolicyByType,
+	getLaunchForTenant,
 	insertAiActionExecutionForTenant,
 	listAiActionExecutionsForTenant,
 	listAiActionPolicies,
 	listKillSwitchEventsForTenant,
 	updateAiSettingsForTenant,
+	updateLaunchAutomationPolicyForTenant,
 	type InternalWeeklyReportOutput
 } from '@vector/db';
 import { logInfo } from '@vector/observability';
@@ -32,6 +42,7 @@ import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
 
 const S1_ACTIONS = new Set<string>(S1_AUTO_EXECUTE_ACTIONS);
+const S2_CANDIDATES = new Set<string>(S2_LAUNCH_AUTO_EXECUTE_CANDIDATES);
 
 export function utcIsoWeekKey(at = new Date()) {
 	const date = new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate()));
@@ -98,13 +109,16 @@ export async function getAutonomyOverview(actor: Actor, ctx: TenantContext, clie
 	requireCapability(actor.permissions, 'ai.read');
 	const required = assertActorOwnsContext(actor, ctx);
 	if (clientId) assertAutonomyClient(required, clientId);
-	const [settings, policies, killSwitchEvents, executions, executedCount] = await Promise.all([
-		ensureAiSettingsForTenant(required),
-		listAiActionPolicies(),
-		listKillSwitchEventsForTenant(required),
-		listAiActionExecutionsForTenant(required),
-		countSucceededAiActionExecutionsForTenant(required)
-	]);
+	const [settings, policies, killSwitchEvents, executions, executedCount, launchPolicies] =
+		await Promise.all([
+			ensureAiSettingsForTenant(required),
+			listAiActionPolicies(),
+			listKillSwitchEventsForTenant(required),
+			listAiActionExecutionsForTenant(required),
+			countSucceededAiActionExecutionsForTenant(required),
+			ensureLaunchAutomationPoliciesForTenant(required)
+		]);
+	const launch = await getLaunchForTenant(required);
 	const pausedGlobal = env.AI_EXECUTION_PAUSED;
 	const actions = policies.map((policy) => {
 		const gate = evaluateAutoExecute({
@@ -137,6 +151,49 @@ export async function getAutonomyOverview(actor: Actor, ctx: TenantContext, clie
 			blockedBy: gate.allowed ? null : gate.blockedBy
 		};
 	});
+	const launchAutomation = {
+		launchId: launch?.id ?? null,
+		launchStatus: launch?.status ?? null,
+		unpublishedDraftsOnly: true,
+		s2Executes: false as const,
+		steps: LAUNCH_AUTOMATION_ACTIONS.map((actionType) => {
+			const catalog = policies.find((policy) => policy.actionType === actionType);
+			const row = launchPolicies.find((policy) => policy.actionType === actionType);
+			const catalogGate = evaluateAutoExecute({
+				pausedGlobal,
+				pausedClient: settings.paused,
+				autonomyCeiling: settings.autonomyCeiling,
+				requestedAutonomy: 3,
+				confidence: 100,
+				actionType,
+				policy: policySnapshot(catalog ?? null)
+			});
+			const later = evaluateLaunchAutomationStep({
+				catalog: catalogGate,
+				enabled: row?.enabled ?? false,
+				unpublishedDraftsOnly: row?.unpublishedDraftsOnly ?? true,
+				actionType,
+				launchStatus: launch?.status ?? 'draft'
+			});
+			return {
+				id: row?.id ?? null,
+				clientId: required.clientId,
+				launchId: row?.launchId ?? launch?.id ?? null,
+				actionType,
+				name: catalog?.name ?? actionType,
+				description: catalog?.description ?? '',
+				riskClass: catalog?.riskClass ?? 'content',
+				catalogAutoExecuteAllowed: catalog?.autoExecuteAllowed ?? false,
+				candidateForLaterExecute: S2_CANDIDATES.has(actionType),
+				enabled: row?.enabled ?? false,
+				unpublishedDraftsOnly: row?.unpublishedDraftsOnly ?? true,
+				catalogEligibleNow: catalogGate.allowed,
+				readyForLaterExecute: later.allowed,
+				executableNow: false,
+				blockedBy: later.allowed ? null : later.blockedBy
+			};
+		})
+	};
 	return {
 		settings,
 		pausedGlobal,
@@ -147,6 +204,7 @@ export async function getAutonomyOverview(actor: Actor, ctx: TenantContext, clie
 		executedCount,
 		actions,
 		executions: executions.slice(0, 40),
+		launchAutomation,
 		killSwitchEvents
 	};
 }
@@ -182,6 +240,41 @@ export async function setAutonomyCeiling(
 		autonomyCeiling: parsed.autonomyCeiling
 	});
 	return settings;
+}
+
+export async function setLaunchAutomationPolicy(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'ai.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	consumeRateLimit(`ai-launch-policy:${required.clientId}`, 20, 60_000);
+	const parsed = parseContract(setLaunchAutomationPolicySchema, input);
+	if (parsed.actionType === 'launch.generate_drafts' && parsed.enabled) {
+		throw new ValidationError('Launch draft generation cannot be enabled for auto-execute');
+	}
+	const policy = await updateLaunchAutomationPolicyForTenant(required, parsed);
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'ai.launch_automation_policy',
+		entityType: 'launch_automation_policy',
+		entityId: policy?.id,
+		requestId,
+		reason: `${parsed.actionType}:${parsed.enabled ? 'enabled' : 'disabled'}`
+	});
+	logInfo('ai.launch_automation.policy', {
+		clientId: required.clientId,
+		actionType: parsed.actionType,
+		enabled: parsed.enabled,
+		unpublishedDraftsOnly: true,
+		executed: false
+	});
+	return policy;
 }
 
 export async function runAutoExecute(

@@ -13,10 +13,15 @@
 		if (blockedBy === 'autonomy_ceiling' || blockedBy === 'auto_execute_disabled') {
 			return 'warning' as const;
 		}
+		if (blockedBy === 'tenant_policy_disabled' || blockedBy === 'launch_status') {
+			return 'warning' as const;
+		}
 		if (
 			blockedBy === 'global_pause' ||
 			blockedBy === 'client_pause' ||
-			blockedBy === 'forbidden_action'
+			blockedBy === 'forbidden_action' ||
+			blockedBy === 'never_auto_execute' ||
+			blockedBy === 'published_target_forbidden'
 		) {
 			return 'danger' as const;
 		}
@@ -52,7 +57,7 @@
 <PageHeader
 	eyebrow="Vector Intelligence"
 	title="Autonomy"
-	description="Low-risk classes can become eligible for Level 3 auto-execute. Policy still decides. Kill switch always wins. Confidence cannot authorize, unpause, or raise a ceiling. S1 can auto-execute an internal weekly report from observed tenant metrics only — it does not send, publish, or go live."
+	description="Low-risk classes can become eligible for Level 3 auto-execute. Policy still decides. Kill switch always wins. Confidence cannot authorize, unpause, or raise a ceiling. S1 can auto-execute an internal weekly report from observed tenant metrics only. S2 records launch automation policies and does not run them."
 />
 
 {#if form?.error}
@@ -177,6 +182,72 @@
 										<button type="submit">Run now</button>
 									</form>
 								{/if}
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+	</section>
+
+	<section>
+		<h2>Launch automation</h2>
+		<p>
+			These records bind generate drafts, wire tracking, and queue QA to this client's launch.
+			Unpublished drafts only. S2 does not execute. Generate drafts stays human-led. Launch state
+			lives on <a href="/launch">Launch</a>.
+		</p>
+		<p>
+			Launch {overview.launchAutomation.launchStatus ?? 'unknown'}. Ready for later execute is not
+			Run now.
+		</p>
+		{#if overview.launchAutomation.steps.length === 0}
+			<EmptyState title="No launch automation policies for this client." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Step</th>
+						<th>Catalog</th>
+						<th>Plan</th>
+						<th>Later execute</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.launchAutomation.steps as step (step.actionType)}
+						<tr>
+							<td>
+								<strong>{step.name}</strong>
+								<br />
+								{step.description}
+							</td>
+							<td>
+								<StatusChip
+									label={step.catalogAutoExecuteAllowed ? 'preapproved' : 'approval required'}
+									tone={step.catalogAutoExecuteAllowed ? 'success' : 'muted'}
+								/>
+							</td>
+							<td>
+								<StatusChip
+									label={step.enabled ? 'enabled' : 'opt in'}
+									tone={step.enabled ? 'success' : 'muted'}
+								/>
+								{#if canManage && step.candidateForLaterExecute}
+									<form method="post" action="?/launchPolicy">
+										<input type="hidden" name="_csrf" value={data.csrf} />
+										<input type="hidden" name="actionType" value={step.actionType} />
+										<input type="hidden" name="enabled" value={step.enabled ? 'false' : 'true'} />
+										<button type="submit" class="secondary">
+											{step.enabled ? 'Disable' : 'Enable'}
+										</button>
+									</form>
+								{/if}
+							</td>
+							<td>
+								<StatusChip
+									label={step.readyForLaterExecute ? 'ready later' : (step.blockedBy ?? 'blocked')}
+									tone={gateTone(step.readyForLaterExecute, step.blockedBy)}
+								/>
 							</td>
 						</tr>
 					{/each}

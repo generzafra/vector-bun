@@ -1,6 +1,6 @@
 # Phase 8 — Progressive Autonomy
 
-**Status:** Implementation specification — S0–S1 in  
+**Status:** Implementation specification — S0–S2 in  
 **Phase:** 8  
 **Prerequisite:** Phase 7 exit met. Risk classes and approval policies already exist from Phase 4. Do not start Level 5 or unconditioned auto-execute.
 
@@ -66,7 +66,8 @@ Phase exits in [`docs/21`](../21_ROADMAP_ACCEPTANCE_GATES.md) and [CROSS_CUTTING
 No new package. Policy evaluation lives next to the existing AI gate in `packages/ai`. Domain orchestration is `packages/domain`.
 
 - S0: `ai_action_policies` (platform catalog, no `client_id`), `ai_kill_switch_events` (tenant-owned)
-- S1: `ai_action_executions` (tenant-owned). Later: launch automation policy rows and rollback records on existing `ai_*` / workflow runtime — not a second job host
+- S1: `ai_action_executions` (tenant-owned)
+- S2: `launch_automation_policies` (tenant-owned, bound to `client_launches`). Later: rollback records on existing `ai_*` / workflow runtime — not a second job host
 
 Capabilities stay `ai.read` and `ai.manage`. Authorize by capability.
 
@@ -86,12 +87,12 @@ This is when Vector 24 becomes operationally plausible: repeated launch steps th
 | ------ | ------------------------------------------------------------------------------------------------------------ | -------- |
 | **S0** | Action policy catalog, Level 3 evaluate-only gate, privileged client kill-switch events, Control `/autonomy` | In       |
 | **S1** | First trusted auto-execute of one preapproved low-risk class; still paused by kill switch                    | In       |
-| **S2** | Launch automation policy records (generate drafts, wire tracking, queue QA)                                  | Later    |
+| **S2** | Launch automation policy records (generate drafts, wire tracking, queue QA)                                  | In       |
 | **S3** | Auto-execute selected launch steps inside policy; unpublished drafts only                                    | Later    |
 | **S4** | Automatic rollback for selected actions; Level 4 conditional (e.g. experiment promote under Phase 7)         | Later    |
 | **S5** | Autonomy × data health × goal relevance                                                                      | Additive |
 
-Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute. S1 executes only `internal_weekly_report`.
+Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute. S1 executes only `internal_weekly_report`. S2 records launch policies and does not execute them.
 
 ---
 
@@ -123,7 +124,20 @@ Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute
 
 ---
 
-## 10. Do not start until
+## 10. S2 rules
+
+- Tenant-owned `launch_automation_policies` require `client_id`, a `launch_id` on `client_launches`, and explicit `TenantContext`. Unique `(client_id, action_type)`.
+- Every client launch gets the same three records: `launch.queue_qa`, `launch.wire_tracking`, `launch.generate_drafts`. Same shape for every client. No custom engineering.
+- `unpublished_drafts_only` is always true. S2 cannot target a live page.
+- Operators with `ai.manage` may enable `launch.queue_qa` and `launch.wire_tracking` for later S3 execute. `launch.generate_drafts` is recorded and cannot be enabled for auto-execute.
+- Kill switch, ceiling, catalog, and launch status still decide `readyForLaterExecute`. Confidence cannot authorize. S2 does not execute, publish, send, or create drafts.
+- Live, launching, and launch-failed statuses are not ready for later execute.
+- Alpha cannot read or write Beta launch automation policies. Route client id cannot leak the other tenant. Missing TenantContext fails closed.
+- Control `/autonomy` shows the launch plan. `/launch` links to it. Do not ship an automation canvas.
+
+---
+
+## 11. Do not start until
 
 Phase 4 approvals and Phase 1 launch states exist. Prefer a completed Phase 7 experiment so promotion rules are real.
 

@@ -1,14 +1,16 @@
 import { expect, test } from 'bun:test';
 import { cookieName, resetRateLimits } from '@vector/auth';
 import { eq } from 'drizzle-orm';
-import { evaluateAutoExecute, evaluateAiGate } from '@vector/ai';
+import { evaluateAutoExecute, evaluateAiGate, evaluateLaunchAutomationStep } from '@vector/ai';
 import { env } from '@vector/config';
 import {
 	FORBIDDEN_AUTONOMY_ACTIONS,
 	ForbiddenError,
 	LOW_RISK_AUTO_EXECUTE_ACTIONS,
 	PHASE_8_MAX_AUTONOMY,
+	LAUNCH_AUTOMATION_ACTIONS,
 	S1_AUTO_EXECUTE_ACTIONS,
+	S2_LAUNCH_AUTO_EXECUTE_CANDIDATES,
 	TenantContextError,
 	ValidationError,
 	requireTenantContext
@@ -16,16 +18,19 @@ import {
 import {
 	clients,
 	countAnalyticsEventsForTenant,
+	countDraftPageVersionsForTenant,
 	countEmailMessagesByStatusForTenant,
 	countPublishedPageVersionsForTenant,
 	countSucceededAiActionExecutionsForTenant,
 	db,
 	getAiActionExecutionByIdempotency,
+	getLaunchForTenant,
 	insertAiActionExecutionForTenant,
 	insertAnalyticsEventForTenant,
 	listAiActionExecutionsForTenant,
 	listAiActionPolicies,
 	listKillSwitchEventsForTenant,
+	listLaunchAutomationPoliciesForTenant,
 	type InternalWeeklyReportOutput
 } from '@vector/db';
 import {
@@ -36,6 +41,7 @@ import {
 	resolveSession,
 	runAutoExecute,
 	setAutonomyCeiling,
+	setLaunchAutomationPolicy,
 	switchActiveClient,
 	utcIsoWeekKey
 } from '@vector/domain';
@@ -160,6 +166,40 @@ test('AI draft gate still blocks level 3; auto-execute gate allows only preappro
 	).toEqual({ allowed: false, blockedBy: 'risk_class' });
 });
 
+test('launch automation step stays unpublished and kill-switch gated', () => {
+	const allowed = { allowed: true as const };
+	const base = {
+		catalog: allowed,
+		enabled: true,
+		unpublishedDraftsOnly: true,
+		actionType: 'launch.queue_qa',
+		launchStatus: 'draft'
+	};
+	expect(evaluateLaunchAutomationStep(base).allowed).toBe(true);
+	expect(evaluateLaunchAutomationStep({ ...base, unpublishedDraftsOnly: false })).toEqual({
+		allowed: false,
+		blockedBy: 'published_target_forbidden'
+	});
+	expect(evaluateLaunchAutomationStep({ ...base, enabled: false })).toEqual({
+		allowed: false,
+		blockedBy: 'tenant_policy_disabled'
+	});
+	expect(evaluateLaunchAutomationStep({ ...base, launchStatus: 'live' })).toEqual({
+		allowed: false,
+		blockedBy: 'launch_status'
+	});
+	expect(evaluateLaunchAutomationStep({ ...base, actionType: 'launch.generate_drafts' })).toEqual({
+		allowed: false,
+		blockedBy: 'never_auto_execute'
+	});
+	expect(
+		evaluateLaunchAutomationStep({
+			...base,
+			catalog: { allowed: false, blockedBy: 'client_pause' }
+		})
+	).toEqual({ allowed: false, blockedBy: 'client_pause' });
+});
+
 test('missing TenantContext cannot list kill-switch events or executions', () => {
 	expect(() => requireTenantContext(null)).toThrow(TenantContextError);
 	expect(listKillSwitchEventsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
@@ -178,6 +218,9 @@ test('missing TenantContext cannot list kill-switch events or executions', () =>
 			requestId: 'ctx-missing'
 		})
 	).rejects.toBeInstanceOf(TenantContextError);
+	expect(listLaunchAutomationPoliciesForTenant(null as never)).rejects.toBeInstanceOf(
+		TenantContextError
+	);
 });
 
 test('pause without a reason fails closed', async () => {
@@ -297,6 +340,14 @@ test('missing ai.manage cannot pause or raise the ceiling', async () => {
 			'auto-cap-execute'
 		)
 	).rejects.toBeInstanceOf(ForbiddenError);
+	await expect(
+		setLaunchAutomationPolicy(
+			actor,
+			ctx,
+			{ actionType: 'launch.queue_qa', enabled: true },
+			'auto-cap-launch'
+		)
+	).rejects.toBeInstanceOf(ForbiddenError);
 });
 
 test('user on client A cannot read client B kill-switch events', async () => {
@@ -321,6 +372,7 @@ test('user on client A cannot read client B kill-switch events', async () => {
 		expect(JSON.stringify(own)).not.toContain('Beta warehouse pause must stay on Beta');
 		expect(own.killSwitchEvents.every((row) => row.clientId === alpha.id)).toBe(true);
 		expect(own.executions.every((row) => row.clientId === alpha.id)).toBe(true);
+		expect(own.launchAutomation.steps.every((row) => row.clientId === alpha.id)).toBe(true);
 		await expect(getAutonomyOverview(session, ctx, beta.id)).rejects.toBeInstanceOf(
 			TenantContextError
 		);
@@ -628,5 +680,193 @@ test('API execute records a weekly report at ceiling 3 and stays CSRF-protected'
 		expect(body.data.execution.output.published).toBe(false);
 	} finally {
 		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-s1-api-ceiling-reset');
+	}
+});
+
+test('S2 records launch automation policies without executing', async () => {
+	resetRateLimits();
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.8.21', 'auto-s2-record');
+	const ctx = contextFor(actor, 'auto-s2-record');
+	const emailsBefore = emailMessageTotal(await countEmailMessagesByStatusForTenant(ctx));
+	const pagesBefore = await countPublishedPageVersionsForTenant(ctx);
+	const draftsBefore = await countDraftPageVersionsForTenant(ctx);
+	try {
+		await setLaunchAutomationPolicy(
+			actor,
+			ctx,
+			{ actionType: 'launch.queue_qa', enabled: false },
+			'auto-s2-reset-qa'
+		);
+		await setLaunchAutomationPolicy(
+			actor,
+			ctx,
+			{ actionType: 'launch.wire_tracking', enabled: false },
+			'auto-s2-reset-track'
+		);
+		const overview = await getAutonomyOverview(actor, ctx);
+		expect(overview.launchAutomation.s2Executes).toBe(false);
+		expect(overview.launchAutomation.unpublishedDraftsOnly).toBe(true);
+		expect(overview.launchAutomation.steps.map((row) => row.actionType)).toEqual([
+			...LAUNCH_AUTOMATION_ACTIONS
+		]);
+		const qa = overview.launchAutomation.steps.find((row) => row.actionType === 'launch.queue_qa');
+		const tracking = overview.launchAutomation.steps.find(
+			(row) => row.actionType === 'launch.wire_tracking'
+		);
+		const drafts = overview.launchAutomation.steps.find(
+			(row) => row.actionType === 'launch.generate_drafts'
+		);
+		expect(qa?.enabled).toBe(false);
+		expect(qa?.readyForLaterExecute).toBe(false);
+		expect(qa?.blockedBy).toBe('autonomy_ceiling');
+		expect(qa?.executableNow).toBe(false);
+		expect(tracking?.candidateForLaterExecute).toBe(true);
+		expect(drafts?.candidateForLaterExecute).toBe(false);
+		expect(drafts?.blockedBy).toBe('forbidden_action');
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 3 }, 'auto-s2-ceiling');
+		const enabled = await setLaunchAutomationPolicy(
+			actor,
+			ctx,
+			{ actionType: 'launch.queue_qa', enabled: true },
+			'auto-s2-enable-qa'
+		);
+		expect(enabled?.enabled).toBe(true);
+		expect(enabled?.unpublishedDraftsOnly).toBe(true);
+		expect(enabled?.clientId).toBe(alpha.id);
+		const ready = await getAutonomyOverview(actor, ctx);
+		expect(
+			ready.launchAutomation.steps.find((row) => row.actionType === 'launch.queue_qa')
+				?.readyForLaterExecute
+		).toBe(true);
+		expect(
+			ready.launchAutomation.steps.find((row) => row.actionType === 'launch.wire_tracking')
+				?.readyForLaterExecute
+		).toBe(false);
+		await expect(
+			setLaunchAutomationPolicy(
+				actor,
+				ctx,
+				{ actionType: 'launch.generate_drafts', enabled: true },
+				'auto-s2-enable-drafts'
+			)
+		).rejects.toBeInstanceOf(ValidationError);
+		await expect(
+			runAutoExecute(actor, ctx, { actionType: 'launch.queue_qa' }, uniqueRequestId('auto-s2-run'))
+		).rejects.toBeInstanceOf(ValidationError);
+		expect(emailMessageTotal(await countEmailMessagesByStatusForTenant(ctx))).toBe(emailsBefore);
+		expect(await countPublishedPageVersionsForTenant(ctx)).toBe(pagesBefore);
+		expect(await countDraftPageVersionsForTenant(ctx)).toBe(draftsBefore);
+		expect(S2_LAUNCH_AUTO_EXECUTE_CANDIDATES).toEqual(['launch.queue_qa', 'launch.wire_tracking']);
+	} finally {
+		await setLaunchAutomationPolicy(
+			actor,
+			ctx,
+			{ actionType: 'launch.queue_qa', enabled: false },
+			'auto-s2-disable-qa'
+		);
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-s2-ceiling-reset');
+	}
+});
+
+test('kill switch and live launch status block later launch auto-execute', async () => {
+	resetRateLimits();
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.8.22', 'auto-s2-pause');
+	const ctx = contextFor(actor, 'auto-s2-pause');
+	try {
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 3 }, 'auto-s2-pause-ceiling');
+		await setLaunchAutomationPolicy(
+			actor,
+			ctx,
+			{ actionType: 'launch.wire_tracking', enabled: true },
+			'auto-s2-enable-track'
+		);
+		await pauseIntelligence(
+			actor,
+			ctx,
+			{ paused: true, reason: 'Pause launch automation during review' },
+			'auto-s2-pause-on'
+		);
+		const paused = await getAutonomyOverview(actor, ctx);
+		expect(
+			paused.launchAutomation.steps.find((row) => row.actionType === 'launch.wire_tracking')
+				?.blockedBy
+		).toBe('client_pause');
+		expect(
+			paused.launchAutomation.steps.find((row) => row.actionType === 'launch.wire_tracking')
+				?.readyForLaterExecute
+		).toBe(false);
+	} finally {
+		await pauseIntelligence(
+			actor,
+			ctx,
+			{ paused: false, reason: 'Resume after launch automation review' },
+			'auto-s2-pause-off'
+		);
+		await setLaunchAutomationPolicy(
+			actor,
+			ctx,
+			{ actionType: 'launch.wire_tracking', enabled: false },
+			'auto-s2-disable-track'
+		);
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-s2-pause-ceiling-reset');
+	}
+});
+
+test('user on client A cannot read or write client B launch automation policies', async () => {
+	resetRateLimits();
+	const { alpha, beta } = await seededClients();
+	const admin = await adminOn(beta.id, '10.0.8.23', 'auto-s2-beta');
+	const betaCtx = contextFor(admin, 'auto-s2-beta');
+	try {
+		await setAutonomyCeiling(admin, betaCtx, { autonomyCeiling: 3 }, 'auto-s2-beta-ceiling');
+		const betaPolicy = await setLaunchAutomationPolicy(
+			admin,
+			betaCtx,
+			{ actionType: 'launch.queue_qa', enabled: true },
+			'auto-s2-beta-enable'
+		);
+		const betaLaunch = await getLaunchForTenant(betaCtx);
+		expect(betaPolicy?.clientId).toBe(beta.id);
+		const { session } = await login(
+			{ email: env.SEED_USER_A_EMAIL, password: env.SEED_USER_A_PASSWORD },
+			'10.0.8.24'
+		);
+		const ctx = contextFor(session, 'auto-s2-iso');
+		expect(ctx.clientId).toBe(alpha.id);
+		const own = await getAutonomyOverview(session, ctx);
+		expect(JSON.stringify(own)).not.toContain(beta.id);
+		expect(JSON.stringify(own)).not.toContain(betaPolicy?.id);
+		expect(JSON.stringify(own)).not.toContain(betaLaunch?.id);
+		expect(JSON.stringify(own)).not.toContain('warehouse');
+		expect(own.launchAutomation.steps.every((row) => row.clientId === alpha.id)).toBe(true);
+		await expect(
+			setLaunchAutomationPolicy(
+				session,
+				betaCtx,
+				{ actionType: 'launch.queue_qa', enabled: true },
+				'auto-s2-steal'
+			)
+		).rejects.toBeInstanceOf(TenantContextError);
+		const leaked = await app.request(`/v1/autonomy/${beta.id}`, {
+			headers: { cookie: `${cookieName()}=${session.token}` }
+		});
+		expect(leaked.status).toBeGreaterThanOrEqual(400);
+		const leakedBody = await leaked.text();
+		expect(leakedBody.toLowerCase()).not.toContain('warehouse');
+		expect(leakedBody).not.toContain(betaPolicy?.id ?? 'missing-policy');
+		expect(leakedBody).not.toContain(betaLaunch?.id ?? 'missing-launch');
+		const alphaPolicies = await listLaunchAutomationPoliciesForTenant(ctx);
+		expect(alphaPolicies.every((row) => row.clientId === alpha.id)).toBe(true);
+		expect(alphaPolicies.some((row) => row.id === betaPolicy?.id)).toBe(false);
+	} finally {
+		await setLaunchAutomationPolicy(
+			admin,
+			betaCtx,
+			{ actionType: 'launch.queue_qa', enabled: false },
+			'auto-s2-beta-disable'
+		);
+		await setAutonomyCeiling(admin, betaCtx, { autonomyCeiling: 2 }, 'auto-s2-beta-ceiling-reset');
 	}
 });

@@ -3094,3 +3094,29 @@ export const aiActionExecutions = pgTable(
 		index('ai_action_executions_client_idx').on(t.clientId, t.createdAt)
 	]
 );
+
+export const launchAutomationPolicies = pgTable(
+	'launch_automation_policies',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		launchId: uuid('launch_id')
+			.notNull()
+			.references(() => clientLaunches.id),
+		actionType: text('action_type').notNull(),
+		enabled: boolean('enabled').notNull().default(false),
+		unpublishedDraftsOnly: boolean('unpublished_drafts_only').notNull().default(true),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('launch_automation_policies_client_action_idx').on(t.clientId, t.actionType),
+		index('launch_automation_policies_client_idx').on(t.clientId),
+		index('launch_automation_policies_launch_idx').on(t.launchId)
+	]
+);

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AUTONOMY_ACTION_TYPES, PHASE_8_MAX_AUTONOMY } from './autonomy';
+import { AUTONOMY_ACTION_TYPES, LAUNCH_AUTOMATION_ACTIONS, PHASE_8_MAX_AUTONOMY } from './autonomy';
 import { ValidationError } from './errors';
 
 export const loginSchema = z
@@ -302,6 +302,13 @@ export const runAutoExecuteSchema = z
 	.object({
 		actionType: z.enum(AUTONOMY_ACTION_TYPES),
 		idempotencyKey: z.string().trim().min(8).max(80).optional()
+	})
+	.strict();
+
+export const setLaunchAutomationPolicySchema = z
+	.object({
+		actionType: z.enum(LAUNCH_AUTOMATION_ACTIONS),
+		enabled: z.boolean()
 	})
 	.strict();
 

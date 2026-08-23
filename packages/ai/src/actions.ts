@@ -1,7 +1,9 @@
 import {
 	FORBIDDEN_AUTONOMY_ACTIONS,
+	LAUNCH_AUTOMATION_BLOCKED_STATUSES,
 	NEVER_AUTO_EXECUTE_ACTIONS,
 	PHASE_8_MAX_AUTONOMY,
+	S2_LAUNCH_AUTO_EXECUTE_CANDIDATES,
 	type AutonomyRiskClass
 } from '@vector/contracts';
 import { confidenceCannotAuthorize } from './policy';
@@ -10,6 +12,8 @@ export { PHASE_8_MAX_AUTONOMY };
 
 const FORBIDDEN = new Set<string>(FORBIDDEN_AUTONOMY_ACTIONS);
 const NEVER_AUTO = new Set<string>(NEVER_AUTO_EXECUTE_ACTIONS);
+const LAUNCH_CANDIDATES = new Set<string>(S2_LAUNCH_AUTO_EXECUTE_CANDIDATES);
+const BLOCKED_LAUNCH_STATUSES = new Set<string>(LAUNCH_AUTOMATION_BLOCKED_STATUSES);
 
 export type ActionPolicySnapshot = {
 	actionType: string;
@@ -72,6 +76,43 @@ export function evaluateAutoExecute(input: AutoExecuteInput): AutoExecuteResult 
 	}
 	if (input.requestedAutonomy > input.autonomyCeiling) {
 		return { allowed: false, blockedBy: 'autonomy_ceiling' };
+	}
+	return { allowed: true };
+}
+
+export type LaunchAutomationBlockedBy =
+	| AutoExecuteBlockedBy
+	| 'tenant_policy_disabled'
+	| 'never_auto_execute'
+	| 'published_target_forbidden'
+	| 'launch_status';
+
+export type LaunchAutomationResult =
+	{ allowed: true } | { allowed: false; blockedBy: LaunchAutomationBlockedBy };
+
+export type LaunchAutomationInput = {
+	catalog: AutoExecuteResult;
+	enabled: boolean;
+	unpublishedDraftsOnly: boolean;
+	actionType: string;
+	launchStatus: string;
+};
+
+export function evaluateLaunchAutomationStep(input: LaunchAutomationInput): LaunchAutomationResult {
+	if (!input.unpublishedDraftsOnly) {
+		return { allowed: false, blockedBy: 'published_target_forbidden' };
+	}
+	if (!input.catalog.allowed) {
+		return { allowed: false, blockedBy: input.catalog.blockedBy };
+	}
+	if (NEVER_AUTO.has(input.actionType) || !LAUNCH_CANDIDATES.has(input.actionType)) {
+		return { allowed: false, blockedBy: 'never_auto_execute' };
+	}
+	if (!input.enabled) {
+		return { allowed: false, blockedBy: 'tenant_policy_disabled' };
+	}
+	if (BLOCKED_LAUNCH_STATUSES.has(input.launchStatus)) {
+		return { allowed: false, blockedBy: 'launch_status' };
 	}
 	return { allowed: true };
 }
