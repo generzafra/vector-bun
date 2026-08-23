@@ -18,6 +18,7 @@
 		{ href: '/analytics', label: 'Analytics' },
 		{ href: '/experiments', label: 'Experiments' },
 		{ href: '/launch', label: 'Launch' },
+		{ href: '/portfolio', label: 'Portfolio' },
 		{ href: '/members', label: 'Members' }
 	] as const;
 

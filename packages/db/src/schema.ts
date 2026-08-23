@@ -3195,3 +3195,76 @@ export const launchDraftEventPlans = pgTable(
 		index('launch_draft_event_plans_launch_idx').on(t.launchId)
 	]
 );
+
+export const usageResourceFamily = pgEnum('usage_resource_family', [
+	'api',
+	'workflow',
+	'ai',
+	'email',
+	'upload',
+	'analytics'
+]);
+
+export const usageWindow = pgEnum('usage_window', ['minute', 'hour', 'day', 'month']);
+
+export const usageLimitMode = pgEnum('usage_limit_mode', ['evaluate_only', 'enforce']);
+
+export const usageEventOutcome = pgEnum('usage_event_outcome', ['recorded', 'would_deny']);
+
+export const tenantUsageLimits = pgTable(
+	'tenant_usage_limits',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		resourceFamily: usageResourceFamily('resource_family').notNull(),
+		window: usageWindow('window').notNull(),
+		hardLimit: integer('hard_limit').notNull(),
+		warningPercent: integer('warning_percent').notNull().default(80),
+		mode: usageLimitMode('mode').notNull().default('evaluate_only'),
+		overrideReason: text('override_reason'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('tenant_usage_limits_client_family_idx').on(t.clientId, t.resourceFamily),
+		index('tenant_usage_limits_client_idx').on(t.clientId)
+	]
+);
+
+export const tenantUsageEvents = pgTable(
+	'tenant_usage_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		resourceFamily: usageResourceFamily('resource_family').notNull(),
+		window: usageWindow('window').notNull(),
+		windowStartedAt: timestamp('window_started_at', { withTimezone: true }).notNull(),
+		quantity: integer('quantity').notNull(),
+		usedBefore: integer('used_before').notNull(),
+		hardLimit: integer('hard_limit').notNull(),
+		warningPercent: integer('warning_percent').notNull(),
+		mode: usageLimitMode('mode').notNull(),
+		outcome: usageEventOutcome('outcome').notNull(),
+		requestId: text('request_id').notNull(),
+		actorId: text('actor_id'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('tenant_usage_events_idempotency_idx').on(
+			t.clientId,
+			t.requestId,
+			t.resourceFamily
+		),
+		index('tenant_usage_events_window_idx').on(t.clientId, t.resourceFamily, t.windowStartedAt)
+	]
+);

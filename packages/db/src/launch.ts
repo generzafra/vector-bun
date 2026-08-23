@@ -68,6 +68,49 @@ export async function listLaunchBlocksForTenant(ctx: TenantContext) {
 		.orderBy(desc(clientLaunchBlocks.createdAt));
 }
 
+export async function listLaunchesForClientIds(organizationId: string, clientIds: string[]) {
+	if (clientIds.length === 0) return [];
+	return db
+		.select()
+		.from(clientLaunches)
+		.where(
+			and(
+				eq(clientLaunches.organizationId, organizationId),
+				inArray(clientLaunches.clientId, clientIds)
+			)
+		);
+}
+
+export async function listReadinessForClientIds(organizationId: string, clientIds: string[]) {
+	if (clientIds.length === 0) return [];
+	return db
+		.select()
+		.from(clientReadiness)
+		.where(
+			and(
+				eq(clientReadiness.organizationId, organizationId),
+				inArray(clientReadiness.clientId, clientIds)
+			)
+		);
+}
+
+export async function listOpenLaunchBlocksForClientIds(
+	organizationId: string,
+	clientIds: string[]
+) {
+	if (clientIds.length === 0) return [];
+	return db
+		.select()
+		.from(clientLaunchBlocks)
+		.where(
+			and(
+				eq(clientLaunchBlocks.organizationId, organizationId),
+				inArray(clientLaunchBlocks.clientId, clientIds),
+				isNull(clientLaunchBlocks.resolvedAt)
+			)
+		);
+}
+
 export async function listLaunchApprovalsForTenant(ctx: TenantContext) {
 	const required = requireTenantContext(ctx);
 	return db

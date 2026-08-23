@@ -110,6 +110,8 @@ Multi-client operational scale: usage quotas, noisy-neighbor controls, scaling a
 
 **Exit:** operators can oversee many clients by exception, including Vector 24 clocks, and a single tenant cannot exhaust shared resources. Multiple clients can launch from the same engine without appearing to use the same templated website. The portfolio dashboard uses `docs/28` operational density. Client sites still must not share Vector product chrome. Creative QuickStart and automated asset gap analysis (`docs/29`) are additive so a normal launch does not require hand-designing every asset. Portfolio / client-success health, entitlements, and operator exception queues (`docs/30`) are additive.
 
+**Status (23 August 2026):** S0 is in. Tenant-owned `tenant_usage_limits` and `tenant_usage_events` record the same six families for every client. The quota gate is evaluate-only: `wouldDeny` is stored and callers are not refused. Control `/portfolio` lists exceptions (usage warnings, launch failures, blockers, pauses, and Vector 24 class clocks) for clients the actor can access. KPI copy is observed ready-to-live among promised classes. Class D is unpromised. S1 will enforce. This does not claim 20-client capacity.
+
 ## Vector 24
 
 Vector 24 is a mature-state operational target after the first supervised clients, not a Phase 0–2 promise. Do not claim 24-hour launch until readiness, launch states, preview, QA, and domain activation are productized.

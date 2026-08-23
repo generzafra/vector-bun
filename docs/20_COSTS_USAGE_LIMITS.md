@@ -16,6 +16,8 @@ Monthly allowance, soft warning, hard policy threshold, operator override, per w
 
 A single client must not be able to exhaust shared resources. Enforce per-client API rate limits, workflow concurrency, AI budgets, email quotas, provider rate controls, upload limits, and analytics abuse detection.
 
+Phase 9 S0 persists those six families on `tenant_usage_limits` and records `tenant_usage_events`. The gate is evaluate-only: over-limit attempts are stored as `would_deny` and the caller is not refused. S1 enforces. Operators may override a hard limit with a written reason. Windows are fixed per family.
+
 GEO monitoring needs explicit caps: query count, measurement frequency, engine/locale limits, and monthly budget. S8 persists those caps on `search_cadence_settings` and refuses paid measurement that would exceed the month. Do not allow uncontrolled recurring generative-engine testing. Attribute GEO provider and analysis cost to the client in integer minor units plus currency.
 
 ## AI model routing

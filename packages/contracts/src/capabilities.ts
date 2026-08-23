@@ -21,7 +21,9 @@ export const CAPABILITIES = [
 	'experiments.read',
 	'experiments.manage',
 	'ai.read',
-	'ai.manage'
+	'ai.manage',
+	'scale.read',
+	'scale.manage'
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
@@ -60,7 +62,9 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'experiments.read',
 		'experiments.manage',
 		'ai.read',
-		'ai.manage'
+		'ai.manage',
+		'scale.read',
+		'scale.manage'
 	],
 	mge_operator: [
 		'clients.read',
@@ -85,7 +89,9 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'experiments.read',
 		'experiments.manage',
 		'ai.read',
-		'ai.manage'
+		'ai.manage',
+		'scale.read',
+		'scale.manage'
 	],
 	client_owner: [
 		'clients.read',
@@ -109,7 +115,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'experiments.read',
 		'experiments.manage',
 		'ai.read',
-		'ai.manage'
+		'ai.manage',
+		'scale.read'
 	],
 	client_admin: [
 		'clients.read',
@@ -132,7 +139,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'experiments.read',
 		'experiments.manage',
 		'ai.read',
-		'ai.manage'
+		'ai.manage',
+		'scale.read'
 	],
 	read_only: [
 		'clients.read',
@@ -146,6 +154,7 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'social.read',
 		'seo.read',
 		'experiments.read',
-		'ai.read'
+		'ai.read',
+		'scale.read'
 	]
 };

@@ -20,6 +20,7 @@ Identity migration applies to Control only. Delivery stays on client tokens and 
 | Social       | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + tables    | [x] first pass | [x]                |
 | Intelligence | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + cards     | [x] first pass | [x]                |
 | Autonomy     | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + tables    | [x] first pass | [x]                |
+| Portfolio    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + tables    | [ ]            | [x]                |
 | Members      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 
 Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. Official mark, wordmark, and favicon pack live under `apps/control/static/brand/vector/`.
@@ -39,7 +40,7 @@ Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. O
 | Analytics / charts              | tables shipped; chart theme still planned                                                                                                 |
 | Automation canvas               | planned (later Phase 8); `/autonomy` policy table, S1 Run now, S2 launch plan, S3 unpublished launch execute, S4 promote/rollback shipped |
 | Intelligence explainability     | `/intelligence` cards, activity, draft artifacts                                                                                          |
-| Portfolio dashboard             | planned (Phase 9)                                                                                                                         |
+| Portfolio dashboard             | `/portfolio` S0 shipped: exceptions, Vector 24 clocks, evaluate-only usage overrides                                                      |
 | Vector marketing hero           | not in this repo                                                                                                                          |
 
 ## Remaining follow-up

@@ -2758,6 +2758,8 @@ Exit gate:
 
 - Operators can oversee many clients by exception instead of manually reviewing every routine action, and a single tenant cannot exhaust shared resources.
 
+**Status (23 August 2026):** S0 is in. Tenant-owned usage limits and events cover API, workflow, AI, email, upload, and analytics. The gate is evaluate-only. Control `/portfolio` shows usage and Vector 24 clock exceptions for clients the actor can access. Class D is unpromised. See `docs/plans/09_PHASE_9_SCALE.md`.
+
 ---
 
 # 36. First Five Client Learning Strategy

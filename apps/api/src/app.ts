@@ -31,11 +31,15 @@ import {
 	getEmailOverview,
 	getIntelligenceOverview,
 	getAutonomyOverview,
+	getPortfolioClient,
+	getPortfolioOverview,
 	pauseIntelligence,
 	runAutoExecute,
 	rollbackAutoExecute,
+	recordTenantUsage,
 	setAutonomyCeiling,
 	setLaunchAutomationPolicy,
+	setTenantUsageLimit,
 	processDueNurtureForOperator,
 	processEmailWebhook,
 	reviewInboundMessage,
@@ -659,6 +663,45 @@ app.post('/v1/autonomy/rollback', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const data = await rollbackAutoExecute(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data }, data.executed ? 201 : 200);
+});
+
+app.get('/v1/portfolio', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	actorCan(session, 'scale.read');
+	return c.json({ requestId, data: await getPortfolioOverview(session, requestId) });
+});
+
+app.get('/v1/portfolio/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'scale.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getPortfolioClient(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/portfolio/usage', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'scale.read');
+	const ctx = contextFor(session, requestId);
+	const data = await recordTenantUsage(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data }, data.replayed ? 200 : 201);
+});
+
+app.post('/v1/portfolio/limits', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'scale.manage');
+	const data = await setTenantUsageLimit(session, await c.req.json(), requestId);
+	return c.json({ requestId, data });
 });
 
 app.post('/v1/email/nurture/enroll-eligible', async (c) => {
