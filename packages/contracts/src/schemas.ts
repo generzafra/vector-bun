@@ -428,6 +428,93 @@ export const confirmCreativeRightsSchema = z
 	})
 	.strict();
 
+export const SEARCH_ENGINES = ['google', 'bing'] as const;
+export type SearchEngine = (typeof SEARCH_ENGINES)[number];
+
+export const SEO_OPPORTUNITY_CHANNELS = ['seo', 'aeo', 'geo'] as const;
+export type SeoOpportunityChannel = (typeof SEO_OPPORTUNITY_CHANNELS)[number];
+
+export const SEO_EVIDENCE_CLASSES = [
+	'observed',
+	'measured',
+	'provider_reported',
+	'client_verified',
+	'source_verified',
+	'inferred',
+	'estimated',
+	'hypothesis',
+	'unknown'
+] as const;
+export type SeoEvidenceClass = (typeof SEO_EVIDENCE_CLASSES)[number];
+
+export const SEO_SOURCE_KINDS = [
+	'knowledge_claim',
+	'official_query',
+	'technical_audit',
+	'page'
+] as const;
+export type SeoSourceKind = (typeof SEO_SOURCE_KINDS)[number];
+
+export const SEO_OPPORTUNITY_STATUSES = [
+	'proposed',
+	'accepted',
+	'rejected',
+	'publish_ready',
+	'done'
+] as const;
+export type SeoOpportunityStatus = (typeof SEO_OPPORTUNITY_STATUSES)[number];
+
+export const SEO_EFFORTS = ['low', 'medium', 'high'] as const;
+export type SeoEffort = (typeof SEO_EFFORTS)[number];
+
+export const connectSearchPropertySchema = z
+	.object({
+		engine: z.enum(SEARCH_ENGINES),
+		siteUrl: z.string().trim().url().max(400),
+		credential: z.string().trim().min(8).max(8000)
+	})
+	.strict();
+
+export const searchPropertyIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
+export const submitSearchSitemapSchema = z
+	.object({
+		id: z.string().uuid(),
+		sitemapUrl: z.string().trim().url().max(400)
+	})
+	.strict();
+
+export const createSeoOpportunitySchema = z
+	.object({
+		channel: z.enum(SEO_OPPORTUNITY_CHANNELS),
+		title: z.string().trim().min(1).max(160),
+		problem: z.string().trim().min(1).max(800),
+		proposedAction: z.string().trim().min(1).max(800),
+		evidenceClass: z.enum(SEO_EVIDENCE_CLASSES),
+		sourceKind: z.enum(SEO_SOURCE_KINDS),
+		sourceId: z.string().trim().min(1).max(80),
+		pageId: z.string().uuid().optional().nullable(),
+		queryId: z.string().uuid().optional().nullable(),
+		effort: z.enum(SEO_EFFORTS).default('medium')
+	})
+	.strict();
+
+export const seoOpportunityIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
+export const searchClientIdSchema = z
+	.object({
+		clientId: z.string().uuid()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

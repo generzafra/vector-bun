@@ -42,6 +42,7 @@ import {
 } from '@vector/db';
 import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
+import { searchPropertyReadiness } from './search';
 import { socialAccessReadiness } from './social';
 
 const POST_READY_STATES = new Set<LaunchState>([
@@ -134,6 +135,7 @@ async function evaluateAutomatic(ctx: TenantContext) {
 	]);
 	const emailReady = Boolean(emailConnection?.status === 'active' && emailDomain);
 	const social = await socialAccessReadiness(ctx);
+	const search = await searchPropertyReadiness(ctx);
 	return {
 		'brand.identity': {
 			complete: Boolean(brand?.displayName),
@@ -180,6 +182,7 @@ async function evaluateAutomatic(ctx: TenantContext) {
 				: 'SPF, DKIM, DMARC, or approved From is missing'
 		},
 		'social.access': social,
+		'search.property': search,
 		'analytics.connected': {
 			complete: false,
 			detail: 'Analytics adapter is not connected in this slice'

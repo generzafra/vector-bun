@@ -78,6 +78,7 @@ const schema = z.object({
 	TOKEN_ENCRYPTION_KEY: z.string().min(32).default('vector-token-encryption-test-key-32'),
 	SOCIAL_PUBLISHING_PAUSED: z.boolean().default(false),
 	SOCIAL_ADAPTER: z.enum(['memory', 'official']).default('memory'),
+	SEARCH_ADAPTER: z.enum(['memory', 'official']).default('memory'),
 	LINKEDIN_CLIENT_ID: z.string().optional(),
 	LINKEDIN_CLIENT_SECRET: z.string().optional(),
 	X_CLIENT_ID: z.string().optional(),
@@ -140,6 +141,7 @@ export const env = schema.parse({
 	SOCIAL_PUBLISHING_PAUSED:
 		process.env.SOCIAL_PUBLISHING_PAUSED === 'true' || process.env.SOCIAL_PUBLISHING_PAUSED === '1',
 	SOCIAL_ADAPTER: process.env.SOCIAL_ADAPTER === 'official' ? 'official' : undefined,
+	SEARCH_ADAPTER: process.env.SEARCH_ADAPTER === 'official' ? 'official' : undefined,
 	LINKEDIN_CLIENT_ID: emptyToUndefined(process.env.LINKEDIN_CLIENT_ID),
 	LINKEDIN_CLIENT_SECRET: emptyToUndefined(process.env.LINKEDIN_CLIENT_SECRET),
 	X_CLIENT_ID: emptyToUndefined(process.env.X_CLIENT_ID),

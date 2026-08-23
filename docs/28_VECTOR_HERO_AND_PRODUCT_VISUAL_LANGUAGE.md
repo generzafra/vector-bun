@@ -2035,6 +2035,7 @@ Consume the canonical authenticated shell.
 | Automation    | Orchestration               |                  High |
 | CRM           | Dense operational data      |                   Low |
 | Intelligence  | Analysis/explainability     |                  High |
+| Search        | Discoverability / evidence  |                Medium |
 | Settings      | Utility                     |              Very low |
 
 This prevents both over-branding and under-branding.

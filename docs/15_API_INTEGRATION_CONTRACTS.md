@@ -113,3 +113,19 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/creative/assets/:id/approve` — approve after rights are confirmed
 
 `SocialProvider` lives in `packages/social`. Memory is the default. Official LinkedIn, X, and Meta (Facebook / Instagram) adapters run when `SOCIAL_ADAPTER=official`. Official OAuth start/complete uses `createAuthorizationUrl` and `exchangeAuthorizationCode`. Tokens are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in JSON. Refresh uses official OAuth token endpoints when client or app credentials are configured. Official adapters upload approved C0 images. `GET /v1/public/social-media` serves a short-lived HMAC grant so Instagram can fetch tenant-scoped bytes; forged, expired, or cross-tenant grants fail closed. Official Instagram Graph publish is media-required. `social-due-sweep` is tenant-scoped; `social-due-sweep-platform` fans out one job per client with due posts.
+
+## Phase 6 Control API
+
+Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
+
+- `GET /v1/search` — properties, issues, official queries, opportunities, readiness (`seo.read`)
+- `GET /v1/search/:clientId` — same overview only when the actor already owns that client
+- `POST /v1/search/properties` — store an encrypted Search Console or Bing credential (`seo.manage`, CSRF)
+- `POST /v1/search/properties/:id/validate` — property health through `SearchProvider`
+- `POST /v1/search/properties/:id/sync` — official query and page performance sync
+- `POST /v1/search/properties/:id/sitemap` — sitemap submit when the official API exists
+- `POST /v1/search/audits` — technical audit of published pages
+- `POST /v1/search/opportunities` — create a channelled backlog item with evidence
+- `POST /v1/search/opportunities/:id/publish-ready` — only when the source is an approved claim or official query
+
+`SearchProvider` lives in `packages/search`. Memory is the default. Official Google Search Console and Bing Webmaster adapters run when `SEARCH_ADAPTER=official`. Tokens and API keys are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in Control or API JSON. `measureGenerativeVisibility` returns `unsupported` in this slice. Do not invent a second search adapter family.

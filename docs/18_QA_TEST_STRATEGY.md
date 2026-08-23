@@ -16,7 +16,7 @@ Evaluate structured schema compliance, factual grounding, brand compliance, poli
 
 A client launch is not complete until automated checks cover broken links, metadata, alt text, schema, form submission, conversion events, mobile layout, status codes, canonical host, sitemap, robots (including preview `noindex` and AI-crawler policy), production `llms.txt` isolation, analytics events, email readiness when included, provider health, and no tenant leakage.
 
-Phase 6 search/GEO tests also cover: factual JSON-LD fail-closed when knowledge is missing; Alpha cannot read Beta `seo_*` / `geo_*` or search tokens; mention is not treated as citation; stale GEO snapshots are not shown as current; client-facing copy never claims guaranteed ranking or AI citation (`docs/10`, `docs/plans/06_PHASE_6_SEO_AEO.md`).
+Phase 6 search/GEO tests also cover: factual JSON-LD fail-closed when knowledge is missing; Alpha cannot read Beta `seo_*` / `geo_*` or search tokens; backlog items without a knowledge or official-query source cannot be marked publish-ready; mention is not treated as citation; stale GEO snapshots are not shown as current; client-facing copy never claims guaranteed ranking or AI citation (`docs/10`, `docs/plans/06_PHASE_6_SEO_AEO.md`).
 
 The Design Review Checklist and Frontend Release Gate in `docs/27` are part of frontend QA. Release review of a public page must include mobile, tablet, desktop, keyboard navigation, reduced motion, form states, loading/error/success, accessibility, performance, conversion path, metadata, and analytics instrumentation. A page that merely renders is not production-ready.
 

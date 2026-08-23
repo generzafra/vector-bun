@@ -26,7 +26,16 @@ export function logError(operation: string, error: unknown, fields: Record<strin
 }
 
 function sanitize(fields: Record<string, unknown>) {
-	const blocked = new Set(['password', 'token', 'secret', 'authorization', 'cookie']);
+	const blocked = new Set([
+		'password',
+		'token',
+		'secret',
+		'authorization',
+		'cookie',
+		'credential',
+		'apikey',
+		'apiKey'
+	]);
 	const out: Record<string, unknown> = {};
 	for (const [key, value] of Object.entries(fields)) {
 		if (blocked.has(key.toLowerCase())) continue;

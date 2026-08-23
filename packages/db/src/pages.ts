@@ -149,6 +149,22 @@ export async function listPublishedPagesForTenant(ctx: TenantContext) {
 		.where(and(eq(pages.clientId, required.clientId), isNotNull(pages.publishedVersionId)));
 }
 
+export async function listPublishedPageDocumentsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select({
+			id: pages.id,
+			path: pages.path,
+			title: pages.title,
+			document: pageVersions.document
+		})
+		.from(pages)
+		.innerJoin(pageVersions, eq(pageVersions.id, pages.publishedVersionId))
+		.where(
+			and(eq(pages.clientId, required.clientId), eq(pageVersions.clientId, required.clientId))
+		);
+}
+
 export async function getPublishedHomeForTenant(ctx: TenantContext) {
 	const required = requireTenantContext(ctx);
 	const page = await getHomePageForTenant(required);

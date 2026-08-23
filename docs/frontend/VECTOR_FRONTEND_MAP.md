@@ -2,7 +2,7 @@
 
 Living map of **actual** frontend paths. Update this file when canonical paths change. Do not copy the recommended `src/lib/vector/` tree from `docs/28` as if it already exists.
 
-**Last inspected:** 22 August 2026
+**Last inspected:** 23 August 2026
 
 ## Planes
 
@@ -90,13 +90,14 @@ There is not yet a shared `Button.svelte` or form-control package. Control nativ
 | Email        | `apps/control/src/routes/email/+page.svelte`               |
 | Social       | `apps/control/src/routes/social/+page.svelte`              |
 | Social OAuth | `apps/control/src/routes/social/oauth/callback/+server.ts` |
+| Search       | `apps/control/src/routes/search/+page.svelte`              |
 | Intelligence | `apps/control/src/routes/intelligence/+page.svelte`        |
 | Analytics    | `apps/control/src/routes/analytics/+page.svelte`           |
 | Launch       | `apps/control/src/routes/launch/+page.svelte`              |
 | Members      | `apps/control/src/routes/members/+page.svelte`             |
 | Login        | `apps/control/src/routes/login/+page.svelte`               |
 
-`/intelligence` is the Phase 4 Control surface for drafts, recommendation cards, approvals, unpublished page artifacts, activity, tool-call audit, and the tenant cost ledger. Approved funnel/copy drafts are reviewed on `/funnel`; publication stays a Funnel action. `/social` is the Phase 5 Control surface for LinkedIn, X, Facebook, and Instagram connections, official OAuth start, Facebook / Instagram Page picker, token refresh, Creative C0 uploads, post lifecycle, the scheduled list, publications, metrics, and attributed lead counts. `/social/oauth/callback` completes official OAuth or stores an encrypted Page-pick cookie and never renders tokens. Tokens and media grants are never rendered. Opportunities as a separate queue, Campaigns, Automation, and chart themes are still later. Analytics remains tables only.
+`/intelligence` is the Phase 4 Control surface for drafts, recommendation cards, approvals, unpublished page artifacts, activity, tool-call audit, and the tenant cost ledger. Approved funnel/copy drafts are reviewed on `/funnel`; publication stays a Funnel action. `/social` is the Phase 5 Control surface for LinkedIn, X, Facebook, and Instagram connections, official OAuth start, Facebook / Instagram Page picker, token refresh, Creative C0 uploads, post lifecycle, the scheduled list, publications, metrics, and attributed lead counts. `/social/oauth/callback` completes official OAuth or stores an encrypted Page-pick cookie and never renders tokens. Tokens and media grants are never rendered. `/search` is the Phase 6 Control surface for official Search Console / Bing properties, technical issues, official queries, and the SEO/AEO/GEO backlog. Credentials stay on the server. AI discovery measurement is shown as unsupported until a later compliant method exists. Campaigns, Automation, and chart themes are still later. Analytics remains tables only.
 
 ## Delivery public routes
 

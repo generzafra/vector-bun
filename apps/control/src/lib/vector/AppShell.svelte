@@ -12,6 +12,7 @@
 		{ href: '/leads', label: 'Leads' },
 		{ href: '/email', label: 'Email' },
 		{ href: '/social', label: 'Social' },
+		{ href: '/search', label: 'Search' },
 		{ href: '/intelligence', label: 'Intelligence' },
 		{ href: '/analytics', label: 'Analytics' },
 		{ href: '/launch', label: 'Launch' },

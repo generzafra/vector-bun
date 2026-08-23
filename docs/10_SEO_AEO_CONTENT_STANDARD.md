@@ -2,6 +2,8 @@
 
 Standing cross-cutting content and search-quality rules. Phase 6 slices live in [`docs/plans/06_PHASE_6_SEO_AEO.md`](plans/06_PHASE_6_SEO_AEO.md).
 
+S1 Delivery GEO-readiness (canonicals, published sitemap, AI-crawler robots, factual JSON-LD, production `llms.txt`) and S2 (`packages/search`, `SearchProvider`, Control `/search`, first-ship `seo_*` tables) are in. Answer targets and GEO observation schema are S3–S4. Live generative measurement stays later.
+
 ## SEO
 
 Server-rendered crawlable HTML, correct status codes, path-aware canonical URLs, sitemap of that tenant’s published indexable URLs, robots.txt (including client AI-crawler policy), metadata, factual structured data, internal links, accessibility, mobile performance, image text alternatives. Preview stays `noindex` and must not serve production sitemap, schema, or machine-readable fact files.

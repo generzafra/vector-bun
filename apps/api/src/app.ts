@@ -64,7 +64,15 @@ import {
 	syncSocialMetricsForOperator,
 	transitionSocialPost,
 	uploadCreativeAsset,
-	upsertSocialConnection
+	upsertSocialConnection,
+	connectSearchProperty,
+	createSeoOpportunity,
+	getSearchOverview,
+	markSeoOpportunityPublishReady,
+	runTechnicalSearchAudit,
+	submitSearchSitemap,
+	syncSearchProperty,
+	validateSearchProperty
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
 
@@ -862,6 +870,115 @@ app.post('/v1/creative/assets/:id/approve', async (c) => {
 	actorCan(session, 'social.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await approveCreativeAsset(session, ctx, { id: c.req.param('id') }, requestId);
+	return c.json({ requestId, data });
+});
+
+app.get('/v1/search', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'seo.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getSearchOverview(session, ctx) });
+});
+
+app.get('/v1/search/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'seo.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getSearchOverview(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/search/properties', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await connectSearchProperty(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/properties/:id/validate', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await validateSearchProperty(session, ctx, { id: c.req.param('id') }, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/properties/:id/sync', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await syncSearchProperty(session, ctx, { id: c.req.param('id') }, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/properties/:id/sitemap', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const body = await c.req.json();
+	const data = await submitSearchSitemap(
+		session,
+		ctx,
+		{ ...body, id: c.req.param('id') },
+		requestId
+	);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/audits', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await runTechnicalSearchAudit(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/opportunities', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await createSeoOpportunity(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/opportunities/:id/publish-ready', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await markSeoOpportunityPublishReady(
+		session,
+		ctx,
+		{ id: c.req.param('id') },
+		requestId
+	);
 	return c.json({ requestId, data });
 });
 

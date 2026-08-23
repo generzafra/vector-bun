@@ -76,6 +76,8 @@ SEO, AEO, and GEO operational models. Standing content rules: `docs/10`.
 
 **Must take:** technical SEO baseline plus GEO-readiness surfaces at launch (path-aware canonicals, published-URL sitemap, AI-crawler robots, factual JSON-LD, production `llms.txt` from approved knowledge). Preview stays isolated.
 
+**Status (23 August 2026):** S0–S2 are in. Delivery ships the launch-time baseline. `packages/search` provides one `SearchProvider` family (memory default; official GSC/Bing when `SEARCH_ADAPTER=official`). Control `/search` lists tenant-scoped issues and opportunities behind `seo.read` / `seo.manage`. Live GEO measurement and search → qualified lead remain later.
+
 Search / GEO → qualified-lead reporting (`docs/30`) and live generative-engine measurement are additive when a compliant method and outcome coverage exist. Do not imply deterministic AI rankings. Do not wait for a citation to launch.
 
 ## Phase 7

@@ -635,7 +635,7 @@ The final schema should be normalized around business concepts, not around third
 - geo_engine_observations
 - geo_citations
 
-`seo_queries` are official Search Console / Bing rows when connected. Defer `seo_rank_snapshots` unless an official API provides them. `seo_opportunities.channel` is `seo | aeo | geo`. First-ship GEO tables only; later snapshot/referral/learning tables stay later. Detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
+S2 persists the SEO property, page, query, audit, issue, and opportunity tables. Answer-target and GEO observation tables wait for S3–S4. `seo_queries` are official Search Console / Bing rows when connected. Defer `seo_rank_snapshots` unless an official API provides them. `seo_opportunities.channel` is `seo | aeo | geo`. First-ship GEO tables only; later snapshot/referral/learning tables stay later. Detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
 
 ## 8.9 Analytics and attribution
 
@@ -2701,6 +2701,8 @@ Exit gate:
 - Vector can produce an evidence-based prioritized SEO/AEO/GEO backlog.
 
 Live generative measurement and search → qualified-lead reporting are additive.
+
+**Status (23 August 2026):** S0–S2 are in. Delivery ships the launch-time GEO-readiness baseline. `packages/search` is the only `SearchProvider` family. Control `/search` is the operator surface. Next slice is S3 (answer targets).
 
 ## Phase 7 — CRO experimentation
 

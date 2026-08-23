@@ -389,3 +389,7 @@ No search package code is required to accept this ADR. Vector 24 does not wait f
 ### Reversal path
 
 Supersede this ADR. Leave `docs/10` GEO sections as historical. Keep Phase 6 exit as a search backlog without GEO-readiness surfaces.
+
+### Implementation note (23 August 2026)
+
+S1 Delivery GEO-readiness and S2 `packages/search` (memory default; official GSC/Bing when `SEARCH_ADAPTER=official`), `seo.read` / `seo.manage`, Control `/search`, and first-ship `seo_*` tables are in. S3 (answer targets) is next. The ADR lock is unchanged.

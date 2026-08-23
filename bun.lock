@@ -16,6 +16,7 @@
         "@vector/domain": "workspace:*",
         "@vector/email": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
+        "@vector/search": "workspace:*",
         "@vector/social": "workspace:*",
         "@vector/storage": "workspace:*",
         "@vector/ui": "workspace:*",
@@ -173,6 +174,7 @@
         "@vector/email": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
         "@vector/observability": "workspace:*",
+        "@vector/search": "workspace:*",
         "@vector/social": "workspace:*",
         "@vector/storage": "workspace:*",
         "drizzle-orm": "^0.44.5",
@@ -195,6 +197,14 @@
     },
     "packages/observability": {
       "name": "@vector/observability",
+    },
+    "packages/search": {
+      "name": "@vector/search",
+      "dependencies": {
+        "@vector/config": "workspace:*",
+        "@vector/contracts": "workspace:*",
+        "@vector/observability": "workspace:*",
+      },
     },
     "packages/social": {
       "name": "@vector/social",
@@ -458,6 +468,8 @@
     "@vector/jobs": ["@vector/jobs@workspace:apps/jobs"],
 
     "@vector/observability": ["@vector/observability@workspace:packages/observability"],
+
+    "@vector/search": ["@vector/search@workspace:packages/search"],
 
     "@vector/social": ["@vector/social@workspace:packages/social"],
 

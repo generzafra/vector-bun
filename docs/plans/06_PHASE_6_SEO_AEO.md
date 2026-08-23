@@ -386,7 +386,7 @@ Do not sprinkle GEO into email, social-provider, or auth docs unless an implemen
 | ------ | -------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | **S0** | Audit Delivery/knowledge. Do not rebuild robots/sitemap from zero.                                                         | Done                 |
 | **S1** | JSON-LD, real sitemap, path canonicals, AI-crawler robots, `llms.txt`, preview isolation                                   | Done                 |
-| **S2** | `packages/search`, memory `SearchProvider`, `seo.read`/`seo.manage`, issues/opportunities, official GSC/Bing when approved | Toward exit          |
+| **S2** | `packages/search`, memory `SearchProvider`, `seo.read`/`seo.manage`, issues/opportunities, official GSC/Bing when approved | Done                 |
 | **S3** | Answer targets, entities, source-backed FAQ gaps                                                                           | Toward exit          |
 | **S4** | GEO query sets + observation schema. No live measurement required.                                                         | Toward exit          |
 | **S5** | First compliant measurement adapter (start manual / operator-assisted)                                                     | Optional for exit    |

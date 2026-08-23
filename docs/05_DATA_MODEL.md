@@ -143,7 +143,7 @@ geo_engine_observations
 geo_citations
 ```
 
-`seo_queries` are official Search Console / Bing rows when a property is connected. `seo_opportunities.channel` is `seo | aeo | geo`. Defer `seo_rank_snapshots` unless an official API provides them. GEO measurement cost is integer minor units plus currency. Search-property tokens are encrypted at rest and are never returned to the browser or model. Preview hosts must not persist production GEO observations as indexable public facts. Slice detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
+S2 persists `seo_properties`, `seo_pages`, `seo_keywords`, `seo_queries`, `seo_audits`, `seo_issues`, and `seo_opportunities`. Answer-target, entity, and GEO observation tables wait for S3–S4. `seo_queries` are official Search Console / Bing rows when a property is connected. `seo_opportunities.channel` is `seo | aeo | geo`. Defer `seo_rank_snapshots` unless an official API provides them. Search-property tokens are encrypted at rest and are never returned to the browser or model. A backlog item cannot be `publish_ready` without a knowledge claim or official-query source. Preview hosts must not persist production GEO observations as indexable public facts. Slice detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
 
 ## Launch and readiness
 

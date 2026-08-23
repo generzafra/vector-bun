@@ -159,6 +159,13 @@ export const READINESS_CATALOG: ReadinessCatalogItem[] = [
 		source: 'automatic'
 	},
 	{
+		key: 'search.property',
+		category: 'search',
+		label: 'Official search property',
+		blocking: false,
+		source: 'automatic'
+	},
+	{
 		key: 'analytics.connected',
 		category: 'analytics',
 		label: 'Analytics connected',

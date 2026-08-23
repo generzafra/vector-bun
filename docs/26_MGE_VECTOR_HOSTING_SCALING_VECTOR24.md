@@ -882,7 +882,7 @@ The following must ultimately become automated or near-automated.
 - Generate production `llms.txt` or equivalent from approved knowledge. Preview must not serve it.
 - Generate initial page targets, content opportunities, and source-backed FAQ opportunities.
 - Establish a small commercial GEO query set after launch. Do not wait for generative citation to mark live.
-- Search Console / Bing connect when approved. Missing property does not block Class A/B launch.
+- Search Console / Bing connect when approved, through `SearchProvider` on Control `/search`. `search.property` readiness is automatic and non-blocking. Missing property does not block Class A/B launch.
 
 ## QA
 

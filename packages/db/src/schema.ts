@@ -2014,3 +2014,238 @@ export const socialProviderEvents = pgTable(
 		index('social_provider_events_client_idx').on(t.clientId)
 	]
 );
+
+export const seoEngine = pgEnum('seo_engine', ['google', 'bing']);
+export const seoPropertyStatus = pgEnum('seo_property_status', [
+	'pending',
+	'active',
+	'expired',
+	'revoked'
+]);
+export const seoAuditKind = pgEnum('seo_audit_kind', ['technical']);
+export const seoAuditStatus = pgEnum('seo_audit_status', ['completed', 'failed']);
+export const seoIssueSeverity = pgEnum('seo_issue_severity', ['low', 'medium', 'high']);
+export const seoIssueStatus = pgEnum('seo_issue_status', ['open', 'resolved']);
+export const seoOpportunityChannel = pgEnum('seo_opportunity_channel', ['seo', 'aeo', 'geo']);
+export const seoOpportunityStatus = pgEnum('seo_opportunity_status', [
+	'proposed',
+	'accepted',
+	'rejected',
+	'publish_ready',
+	'done'
+]);
+export const seoEffort = pgEnum('seo_effort', ['low', 'medium', 'high']);
+export const seoEvidenceClass = pgEnum('seo_evidence_class', [
+	'observed',
+	'measured',
+	'provider_reported',
+	'client_verified',
+	'source_verified',
+	'inferred',
+	'estimated',
+	'hypothesis',
+	'unknown'
+]);
+export const seoSourceKind = pgEnum('seo_source_kind', [
+	'knowledge_claim',
+	'official_query',
+	'technical_audit',
+	'page'
+]);
+
+export const seoProperties = pgTable(
+	'seo_properties',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		engine: seoEngine('engine').notNull(),
+		siteUrl: text('site_url').notNull(),
+		status: seoPropertyStatus('status').notNull().default('pending'),
+		encryptedCredential: text('encrypted_credential'),
+		lastValidatedAt: timestamp('last_validated_at', { withTimezone: true }),
+		lastSyncedAt: timestamp('last_synced_at', { withTimezone: true }),
+		lastError: text('last_error'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('seo_properties_client_engine_site_idx').on(t.clientId, t.engine, t.siteUrl),
+		index('seo_properties_client_idx').on(t.clientId)
+	]
+);
+
+export const seoPages = pgTable(
+	'seo_pages',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		propertyId: uuid('property_id').references(() => seoProperties.id),
+		pageId: uuid('page_id').references(() => pages.id),
+		path: text('path').notNull(),
+		url: text('url'),
+		title: text('title'),
+		clicks: integer('clicks').notNull().default(0),
+		impressions: integer('impressions').notNull().default(0),
+		ctrBps: integer('ctr_bps').notNull().default(0),
+		positionMilli: integer('position_milli').notNull().default(0),
+		lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('seo_pages_client_path_idx').on(t.clientId, t.path),
+		index('seo_pages_client_idx').on(t.clientId)
+	]
+);
+
+export const seoKeywords = pgTable(
+	'seo_keywords',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		phrase: text('phrase').notNull(),
+		locale: text('locale').notNull().default('en'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('seo_keywords_client_phrase_locale_idx').on(t.clientId, t.phrase, t.locale),
+		index('seo_keywords_client_idx').on(t.clientId)
+	]
+);
+
+export const seoQueries = pgTable(
+	'seo_queries',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		propertyId: uuid('property_id')
+			.notNull()
+			.references(() => seoProperties.id),
+		keywordId: uuid('keyword_id').references(() => seoKeywords.id),
+		query: text('query').notNull(),
+		pageUrl: text('page_url').notNull().default(''),
+		clicks: integer('clicks').notNull().default(0),
+		impressions: integer('impressions').notNull().default(0),
+		ctrBps: integer('ctr_bps').notNull().default(0),
+		positionMilli: integer('position_milli').notNull().default(0),
+		date: text('date').notNull(),
+		country: text('country').notNull().default(''),
+		device: text('device').notNull().default(''),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('seo_queries_unique_idx').on(
+			t.clientId,
+			t.propertyId,
+			t.query,
+			t.pageUrl,
+			t.date,
+			t.country,
+			t.device
+		),
+		index('seo_queries_client_idx').on(t.clientId)
+	]
+);
+
+export const seoAudits = pgTable(
+	'seo_audits',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		kind: seoAuditKind('kind').notNull().default('technical'),
+		status: seoAuditStatus('status').notNull().default('completed'),
+		summary: text('summary').notNull(),
+		startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+		completedAt: timestamp('completed_at', { withTimezone: true }),
+		createdAt: createdAt()
+	},
+	(t) => [index('seo_audits_client_idx').on(t.clientId)]
+);
+
+export const seoIssues = pgTable(
+	'seo_issues',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		auditId: uuid('audit_id')
+			.notNull()
+			.references(() => seoAudits.id),
+		pageId: uuid('page_id').references(() => pages.id),
+		path: text('path'),
+		code: text('code').notNull(),
+		severity: seoIssueSeverity('severity').notNull(),
+		evidenceClass: seoEvidenceClass('evidence_class').notNull().default('observed'),
+		detail: text('detail').notNull(),
+		status: seoIssueStatus('status').notNull().default('open'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('seo_issues_client_idx').on(t.clientId),
+		index('seo_issues_client_status_idx').on(t.clientId, t.status)
+	]
+);
+
+export const seoOpportunities = pgTable(
+	'seo_opportunities',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		channel: seoOpportunityChannel('channel').notNull(),
+		title: text('title').notNull(),
+		problem: text('problem').notNull(),
+		proposedAction: text('proposed_action').notNull(),
+		evidenceClass: seoEvidenceClass('evidence_class').notNull(),
+		sourceKind: seoSourceKind('source_kind').notNull(),
+		sourceId: text('source_id').notNull(),
+		pageId: uuid('page_id').references(() => pages.id),
+		queryId: uuid('query_id').references(() => seoQueries.id),
+		priority: integer('priority').notNull().default(1),
+		effort: seoEffort('effort').notNull().default('medium'),
+		status: seoOpportunityStatus('status').notNull().default('proposed'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('seo_opportunities_client_idx').on(t.clientId),
+		index('seo_opportunities_client_status_idx').on(t.clientId, t.status),
+		index('seo_opportunities_client_channel_idx').on(t.clientId, t.channel)
+	]
+);

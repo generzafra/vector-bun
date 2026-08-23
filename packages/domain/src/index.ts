@@ -16,3 +16,4 @@ export * from './pages';
 export * from './workflows';
 export * from './creative';
 export * from './social';
+export * from './search';
