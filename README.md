@@ -12,7 +12,7 @@ Start with:
 6. `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` for Control / Vector product identity
 7. `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` for client media, generation, composition, and creative approval
 8. `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` for authenticated client UX, goals, sales outcomes, and revenue intelligence
-9. Phase 0–7 exits are met (Phase 5 via ADR-0010). Phase 8 S0–S2 are in — `docs/plans/08_PHASE_8_AUTONOMY.md` and `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
+9. Phase 0–7 exits are met (Phase 5 via ADR-0010). Phase 8 S0–S4 are in and the Phase 8 exit is met — `docs/plans/08_PHASE_8_AUTONOMY.md` and `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
 10. Execution plans in `docs/plans/`. Cross-cutting tracks: `docs/plans/CROSS_CUTTING_TRACKS.md`. Charters stop at `docs/30`.
 
 The `/docs` files are initial charters. Expand them as implementation decisions become concrete, but preserve their governing principles unless an ADR explicitly supersedes a decision.

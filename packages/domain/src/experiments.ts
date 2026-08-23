@@ -10,6 +10,7 @@ import {
 	parseContract,
 	requireTenantContext,
 	transitionExperimentSchema,
+	type ExperimentDecisionOutcome,
 	type ExperimentPrimaryMetric,
 	type ExperimentStatus,
 	type TenantContext
@@ -515,17 +516,31 @@ export async function assertExperimentDecisionReady(
 	return measured;
 }
 
-export async function decideExperiment(
+export async function findPromoteReadyExperiments(ctx: TenantContext, now = new Date()) {
+	requireTenantContext(ctx);
+	const assembled = await assembledExperiments(ctx, now);
+	return assembled.filter((row) => {
+		if (!row.canDecide || !row.measurement) return false;
+		try {
+			assertCanDecideExperiment(row.status as ExperimentStatus, row.launchedAt);
+			assertExperimentDecisionOutcome('promote_challenger', row.measurement);
+			return true;
+		} catch {
+			return false;
+		}
+	});
+}
+
+async function applyExperimentDecision(
 	actor: Actor,
 	ctx: TenantContext,
-	input: unknown,
+	input: { id: string; outcome: ExperimentDecisionOutcome; notes: string },
 	requestId: string,
-	now = new Date()
+	now: Date,
+	auditAction: string
 ) {
-	requireCapability(actor.permissions, 'experiments.manage');
 	const required = assertActorOwnsContext(actor, ctx);
-	const parsed = parseContract(decideExperimentSchema, input);
-	const experiment = await getExperimentForTenant(required, parsed.id);
+	const experiment = await getExperimentForTenant(required, input.id);
 	if (!experiment) throw new NotFoundError('Experiment not found');
 	assertCanDecideExperiment(experiment.status as ExperimentStatus, experiment.launchedAt);
 	const existing = await listExperimentDecisionsForTenant(required, [experiment.id]);
@@ -551,16 +566,18 @@ export async function decideExperiment(
 		measured.events,
 		now
 	);
-	assertExperimentDecisionOutcome(parsed.outcome, measurement);
+	assertExperimentDecisionOutcome(input.outcome, measurement);
 	const control = variants.find((row) => row.role === 'control');
 	const challenger = variants.find((row) => row.role === 'challenger');
 	if (!control || !challenger) throw new ValidationError('Experiment variants are missing');
 	const brand = await getBrandLabelForTenant(required);
+	const page = await getPageForTenant(required, experiment.pageId);
+	const previousPublishedVersionId = page?.publishedVersionId ?? null;
 
 	let promotedPageVersionId: string | null = null;
-	if (parsed.outcome === 'promote_challenger') {
+	if (input.outcome === 'promote_challenger') {
 		promotedPageVersionId = challenger.pageVersionId;
-	} else if (parsed.outcome === 'keep_control' && experiment.rollbackRule === 'revert_to_control') {
+	} else if (input.outcome === 'keep_control' && experiment.rollbackRule === 'revert_to_control') {
 		promotedPageVersionId = control.pageVersionId;
 	}
 	if (promotedPageVersionId) {
@@ -579,10 +596,10 @@ export async function decideExperiment(
 		experimentId: experiment.id,
 		pageId: experiment.pageId,
 		resultId: storedResult.id,
-		outcome: parsed.outcome,
-		winnerVariantKey: decisionWinnerVariantKey(parsed.outcome),
+		outcome: input.outcome,
+		winnerVariantKey: decisionWinnerVariantKey(input.outcome),
 		promotedPageVersionId,
-		notes: parsed.notes,
+		notes: input.notes,
 		actorId: actor.userId,
 		clientLabel: brand?.displayName || 'unknown',
 		industry: 'unknown',
@@ -608,27 +625,87 @@ export async function decideExperiment(
 		clientId: required.clientId,
 		actorType: 'human',
 		actorId: actor.userId,
-		action: 'experiments.decide',
+		action: auditAction,
 		entityType: 'experiment',
 		entityId: persisted.experiment.id,
 		requestId,
-		reason: parsed.outcome
+		reason: input.outcome
 	});
-	return publicExperiment({
-		experiment: persisted.experiment,
-		hypothesis: hypotheses[0] ?? null,
-		variants: variants.map((row) => ({
-			id: row.id,
-			key: row.key,
-			name: row.name,
-			role: row.role,
-			pageVersionId: row.pageVersionId
-		})),
-		metrics: measured.metrics.map((row) => ({ kind: row.kind, eventName: row.eventName })),
-		measurement,
-		decision: persisted.decision,
-		learning: persisted.learning
-	});
+	return {
+		previousPublishedVersionId,
+		promotedPageVersionId,
+		pageId: experiment.pageId,
+		experiment: publicExperiment({
+			experiment: persisted.experiment,
+			hypothesis: hypotheses[0] ?? null,
+			variants: variants.map((row) => ({
+				id: row.id,
+				key: row.key,
+				name: row.name,
+				role: row.role,
+				pageVersionId: row.pageVersionId
+			})),
+			metrics: measured.metrics.map((row) => ({ kind: row.kind, eventName: row.eventName })),
+			measurement,
+			decision: persisted.decision,
+			learning: persisted.learning
+		})
+	};
+}
+
+export async function decideExperiment(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string,
+	now = new Date()
+) {
+	requireCapability(actor.permissions, 'experiments.manage');
+	const parsed = parseContract(decideExperimentSchema, input);
+	const applied = await applyExperimentDecision(
+		actor,
+		ctx,
+		parsed,
+		requestId,
+		now,
+		'experiments.decide'
+	);
+	return applied.experiment;
+}
+
+export async function promoteExperimentWinnerForAutonomy(
+	actor: Actor,
+	ctx: TenantContext,
+	experimentId: string,
+	requestId: string,
+	now = new Date()
+) {
+	const applied = await applyExperimentDecision(
+		actor,
+		ctx,
+		{
+			id: experimentId,
+			outcome: 'promote_challenger',
+			notes: 'Level 4 conditional promote. Phase 7 policy decided. Confidence did not authorize.'
+		},
+		requestId,
+		now,
+		'ai.auto_execute.promote'
+	);
+	if (!applied.promotedPageVersionId) {
+		throw new ValidationError('Challenger promotion did not change the published pointer');
+	}
+	return {
+		kind: 'experiment.promote_winner' as const,
+		experimentId,
+		pageId: applied.pageId,
+		previousPublishedVersionId: applied.previousPublishedVersionId,
+		promotedPageVersionId: applied.promotedPageVersionId,
+		outcome: 'promote_challenger' as const,
+		sent: false as const,
+		createdDraft: false as const,
+		publishedPointerChanged: true as const
+	};
 }
 
 export async function transitionExperiment(

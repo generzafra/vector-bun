@@ -1,6 +1,6 @@
 # Phase 8 — Progressive Autonomy
 
-**Status:** Implementation specification — S0–S2 in  
+**Status:** Implementation specification — S0–S4 in  
 **Phase:** 8  
 **Prerequisite:** Phase 7 exit met. Risk classes and approval policies already exist from Phase 4. Do not start Level 5 or unconditioned auto-execute.
 
@@ -14,7 +14,7 @@ Selected low-risk workflows and launch steps run without daily human interventio
 action type + risk class + limits + expiry
 → kill switch and autonomy ceiling
 → policy decides auto-execute
-→ trusted software executes (S1: internal weekly report)
+→ trusted software executes (S1: internal weekly report; S3: opted-in unpublished launch steps; S4: Phase 7 policy-ready experiment promote)
 → audit + optional rollback
 ```
 
@@ -67,7 +67,7 @@ No new package. Policy evaluation lives next to the existing AI gate in `package
 
 - S0: `ai_action_policies` (platform catalog, no `client_id`), `ai_kill_switch_events` (tenant-owned)
 - S1: `ai_action_executions` (tenant-owned)
-- S2: `launch_automation_policies` (tenant-owned, bound to `client_launches`). Later: rollback records on existing `ai_*` / workflow runtime — not a second job host
+- S2: `launch_automation_policies` (tenant-owned, bound to `client_launches`). S3: `launch_draft_event_plans` (tenant-owned, draft page versions only). S4: rollback on existing `ai_action_executions` (`rolled_back`) plus Level 4 `experiment.promote_winner` under Phase 7 policy — not a second job host
 
 Capabilities stay `ai.read` and `ai.manage`. Authorize by capability.
 
@@ -88,11 +88,11 @@ This is when Vector 24 becomes operationally plausible: repeated launch steps th
 | **S0** | Action policy catalog, Level 3 evaluate-only gate, privileged client kill-switch events, Control `/autonomy` | In       |
 | **S1** | First trusted auto-execute of one preapproved low-risk class; still paused by kill switch                    | In       |
 | **S2** | Launch automation policy records (generate drafts, wire tracking, queue QA)                                  | In       |
-| **S3** | Auto-execute selected launch steps inside policy; unpublished drafts only                                    | Later    |
-| **S4** | Automatic rollback for selected actions; Level 4 conditional (e.g. experiment promote under Phase 7)         | Later    |
+| **S3** | Auto-execute selected launch steps inside policy; unpublished drafts only                                    | In       |
+| **S4** | Automatic rollback for selected actions; Level 4 conditional (e.g. experiment promote under Phase 7)         | In       |
 | **S5** | Autonomy × data health × goal relevance                                                                      | Additive |
 
-Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute. S1 executes only `internal_weekly_report`. S2 records launch policies and does not execute them.
+Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute. S1 executes only `internal_weekly_report`. S2 records launch policies and does not execute them. S3 executes opted-in `launch.queue_qa` and `launch.wire_tracking` on unpublished drafts only. S4 executes `experiment.promote_winner` only when Phase 7 policy is ready and can roll back `launch.wire_tracking` and that promote.
 
 ---
 
@@ -137,7 +137,34 @@ Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute
 
 ---
 
-## 11. Do not start until
+## 11. S3 rules
+
+- Trusted software auto-executes only `launch.queue_qa` and `launch.wire_tracking`, and only when the tenant policy is enabled. `launch.generate_drafts` stays never auto-execute.
+- Kill switch still wins. Ceiling must be 3. Confidence is ignored and cannot authorize.
+- Unpublished drafts only. Live, launching, and launch-failed statuses are blocked. S3 does not publish, send, enroll, create drafts, or go live.
+- Queue QA writes a pending tenant-scoped `internal_qa` approval with the standard launch checklist. Launch status does not change.
+- Wire tracking attaches the core conversion taxonomy to the latest unpublished draft page version per page in tenant-owned `launch_draft_event_plans`. Published versions are not written.
+- Tenant-owned executions and event plans require `client_id` and explicit `TenantContext`. Default idempotency is `{actionType}:{launchId}`.
+- Blocked attempts are recorded (`status: blocked`) and returned. Generate drafts and other later classes do not succeed.
+- Alpha cannot read, replay, or run Beta launch executions or event plans. Route client id cannot leak the other tenant. Missing TenantContext fails closed. `ai.manage` is required to run.
+- Control `/autonomy` shows Run now on a launch step only when `executableNow`. Do not ship an automation canvas.
+
+---
+
+## 12. S4 rules
+
+- Trusted software auto-executes `experiment.promote_winner` only at Level 4, and only when Phase 7 policy is ready: launched, horizon and sample met, challenger predetermined primary count higher, not already decided. Confidence cannot authorize.
+- Operators with `ai.manage` may raise the ceiling to 4. Level 5 stays closed. Default ceiling remains 2. AI draft runs stay capped at 2.
+- Kill switch still wins for new execute, including promote. Rollback of a succeeded selected action may run while paused so a live pointer or draft plan can be restored.
+- Selected rollback actions are `launch.wire_tracking` and `experiment.promote_winner`. Queue QA, weekly report, publish, send, and generate drafts cannot be rolled back from this path.
+- Rollback restores captured prior state on existing `ai_action_executions` (`status: rolled_back`). It does not invent a second job host. Experiment learning objects stay decided; only the tenant published pointer is restored.
+- Promote updates only that tenant's published pointer to an already published challenger version. It does not create drafts, send, or go live as a launch.
+- Alpha cannot read, run, or roll back Beta executions. Route client id cannot leak the other tenant. Missing TenantContext fails closed. `ai.manage` is required to run or roll back.
+- Control `/autonomy` shows Run now for promote only when `executableNow`, and Rollback only on succeeded selected executions. Do not ship an automation canvas.
+
+---
+
+## 13. Do not start until
 
 Phase 4 approvals and Phase 1 launch states exist. Prefer a completed Phase 7 experiment so promotion rules are real.
 

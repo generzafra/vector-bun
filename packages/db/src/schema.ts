@@ -3046,7 +3046,8 @@ export const aiKillSwitchEvents = pgTable(
 export const aiActionExecutionStatus = pgEnum('ai_action_execution_status', [
 	'succeeded',
 	'blocked',
-	'failed'
+	'failed',
+	'rolled_back'
 ]);
 
 export type InternalWeeklyReportOutput = {
@@ -3065,7 +3066,49 @@ export type InternalWeeklyReportOutput = {
 	published: boolean;
 };
 
-export type AiActionExecutionOutput = InternalWeeklyReportOutput | Record<string, unknown>;
+export type LaunchQueueQaOutput = {
+	kind: 'launch.queue_qa';
+	launchId: string;
+	launchStatus: string;
+	approvalId: string | null;
+	checklist: string[];
+	unpublishedDraftsOnly: true;
+	sent: false;
+	published: false;
+	wentLive: false;
+};
+
+export type LaunchWireTrackingOutput = {
+	kind: 'launch.wire_tracking';
+	launchId: string;
+	launchStatus: string;
+	pageVersionIds: string[];
+	events: string[];
+	priorPlans: Array<{ pageId: string; pageVersionId: string; events: string[] | null }>;
+	unpublishedDraftsOnly: true;
+	sent: false;
+	published: false;
+	wentLive: false;
+};
+
+export type ExperimentPromoteWinnerOutput = {
+	kind: 'experiment.promote_winner';
+	experimentId: string;
+	pageId: string;
+	previousPublishedVersionId: string | null;
+	promotedPageVersionId: string;
+	outcome: 'promote_challenger';
+	sent: false;
+	createdDraft: false;
+	publishedPointerChanged: true;
+};
+
+export type AiActionExecutionOutput =
+	| InternalWeeklyReportOutput
+	| LaunchQueueQaOutput
+	| LaunchWireTrackingOutput
+	| ExperimentPromoteWinnerOutput
+	| Record<string, unknown>;
 
 export const aiActionExecutions = pgTable(
 	'ai_action_executions',
@@ -3087,6 +3130,7 @@ export const aiActionExecutions = pgTable(
 		actorId: text('actor_id'),
 		output: jsonb('output').$type<AiActionExecutionOutput>(),
 		error: text('error'),
+		rolledBackAt: timestamp('rolled_back_at', { withTimezone: true }),
 		createdAt: createdAt()
 	},
 	(t) => [
@@ -3118,5 +3162,36 @@ export const launchAutomationPolicies = pgTable(
 		uniqueIndex('launch_automation_policies_client_action_idx').on(t.clientId, t.actionType),
 		index('launch_automation_policies_client_idx').on(t.clientId),
 		index('launch_automation_policies_launch_idx').on(t.launchId)
+	]
+);
+
+export const launchDraftEventPlans = pgTable(
+	'launch_draft_event_plans',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		launchId: uuid('launch_id')
+			.notNull()
+			.references(() => clientLaunches.id),
+		pageId: uuid('page_id')
+			.notNull()
+			.references(() => pages.id),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		events: jsonb('events').$type<string[]>().notNull(),
+		unpublishedDraftsOnly: boolean('unpublished_drafts_only').notNull().default(true),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('launch_draft_event_plans_client_version_idx').on(t.clientId, t.pageVersionId),
+		index('launch_draft_event_plans_client_idx').on(t.clientId),
+		index('launch_draft_event_plans_launch_idx').on(t.launchId)
 	]
 );

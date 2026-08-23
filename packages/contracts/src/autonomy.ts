@@ -1,4 +1,5 @@
-export const PHASE_8_MAX_AUTONOMY = 3;
+export const PHASE_8_MAX_AUTONOMY = 4;
+export const PHASE_8_LEVEL_3_MAX_AUTONOMY = 3;
 export const PHASE_4_MAX_AUTONOMY = 2;
 
 export const AUTONOMY_ACTION_TYPES = [
@@ -41,7 +42,6 @@ export const NEVER_AUTO_EXECUTE_ACTIONS = [
 	'page.publish',
 	'email.send',
 	'social.publish',
-	'experiment.promote_winner',
 	'launch.generate_drafts'
 ] as const;
 
@@ -69,7 +69,36 @@ export const S2_LAUNCH_AUTO_EXECUTE_CANDIDATES = [
 ] as const;
 export type S2LaunchAutoExecuteCandidate = (typeof S2_LAUNCH_AUTO_EXECUTE_CANDIDATES)[number];
 
+export const S3_LAUNCH_AUTO_EXECUTE_ACTIONS = S2_LAUNCH_AUTO_EXECUTE_CANDIDATES;
+export type S3LaunchAutoExecuteAction = (typeof S3_LAUNCH_AUTO_EXECUTE_ACTIONS)[number];
+
+export const S4_CONDITIONAL_ACTIONS = ['experiment.promote_winner'] as const;
+export type S4ConditionalAction = (typeof S4_CONDITIONAL_ACTIONS)[number];
+
+export const S4_ROLLBACK_ACTIONS = ['launch.wire_tracking', 'experiment.promote_winner'] as const;
+export type S4RollbackAction = (typeof S4_ROLLBACK_ACTIONS)[number];
+
 export const LAUNCH_AUTOMATION_BLOCKED_STATUSES = ['live', 'launching', 'launch_failed'] as const;
+
+export const LAUNCH_QA_CHECKLIST = [
+	'broken_links',
+	'metadata',
+	'alt_text',
+	'schema',
+	'form_submission',
+	'conversion_events',
+	'mobile_layout',
+	'status_codes',
+	'canonical_host',
+	'sitemap',
+	'robots_preview_noindex',
+	'llms_txt_isolation',
+	'analytics_events',
+	'email_readiness',
+	'provider_health',
+	'tenant_isolation'
+] as const;
+export type LaunchQaChecklistItem = (typeof LAUNCH_QA_CHECKLIST)[number];
 
 export type DefaultActionPolicy = {
 	actionType: AutonomyActionType;
@@ -181,16 +210,17 @@ export const DEFAULT_ACTION_POLICIES: DefaultActionPolicy[] = [
 	{
 		actionType: 'experiment.promote_winner',
 		name: 'Promote experiment winner',
-		description: 'Level 4 later. Phase 7 policy still decides. Not auto-execute in S0.',
+		description:
+			'Level 4 conditional. Phase 7 policy still decides. Kill switch wins. Confidence cannot authorize.',
 		riskClass: 'content',
-		defaultAutonomy: 2,
-		maxAutonomy: 2,
-		autoExecuteAllowed: false,
+		defaultAutonomy: 4,
+		maxAutonomy: 4,
+		autoExecuteAllowed: true,
 		forbidden: false,
 		financialLimitMinor: 0,
 		contentLimit: 'approved_copy_only',
 		providerLimit: 'no_external_send',
-		approvalExpirySeconds: null,
+		approvalExpirySeconds: 86_400,
 		rollbackSupported: true
 	},
 	{

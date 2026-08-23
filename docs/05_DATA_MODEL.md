@@ -122,11 +122,12 @@ approval_decisions
 ai_kill_switch_events
 ai_action_executions
 launch_automation_policies
+launch_draft_event_plans
 ```
 
 Prompt and agent versions are immutable. Runs record provider, model, schema name/version, and prompt version. Cost is integer USD micros plus currency. Approvals are required in Phase 4. Approving funnel or copy may attach an unpublished `page_versions` draft on `ai_runs.artifact_page_version_id`; deciding never publishes, sends, or activates a domain. `ai_feedback` records accept/reject. `ai_tool_calls` records proposed tools with `authorized` false in Phase 4; they are not execution. Knowledge used as model input is a tenant snapshot, never another client’s embeddings or claims.
 
-Phase 8 S0 adds platform `ai_action_policies` (no `client_id`): risk class, default/max autonomy, auto-execute flag, financial limit in integer minor units, content/provider limits, approval expiry seconds, and rollback supported. Client kill-switch events require `client_id`. Pause/resume requires a reason. Default `ai_client_settings.autonomy_ceiling` stays 2. Operators may set 0–3, never 4 or 5. S1 records tenant-owned `ai_action_executions` for `internal_weekly_report` only: observed analytics (`is_test` excluded), `sent: false`, `published: false`. S2 records tenant-owned `launch_automation_policies` bound to `client_launches` for generate drafts, wire tracking, and queue QA. `unpublished_drafts_only` is always true. Generate drafts cannot be enabled for auto-execute. S2 does not execute. Kill switch still wins. Slice detail: `docs/plans/08_PHASE_8_AUTONOMY.md`.
+Phase 8 S0 adds platform `ai_action_policies` (no `client_id`): risk class, default/max autonomy, auto-execute flag, financial limit in integer minor units, content/provider limits, approval expiry seconds, and rollback supported. Client kill-switch events require `client_id`. Pause/resume requires a reason. Default `ai_client_settings.autonomy_ceiling` stays 2. Operators may set 0–4, never 5. S1 records tenant-owned `ai_action_executions` for `internal_weekly_report` only: observed analytics (`is_test` excluded), `sent: false`, `published: false`. S2 records tenant-owned `launch_automation_policies` bound to `client_launches` for generate drafts, wire tracking, and queue QA. `unpublished_drafts_only` is always true. Generate drafts cannot be enabled for auto-execute. S3 auto-executes opted-in queue QA and wire tracking: a pending `internal_qa` approval and tenant-owned `launch_draft_event_plans` on unpublished draft page versions. S3 does not publish, send, create drafts, or go live. S4 records `rolled_back` on existing `ai_action_executions` for selected actions and auto-executes `experiment.promote_winner` only when Phase 7 policy is ready. Kill switch still wins. Slice detail: `docs/plans/08_PHASE_8_AUTONOMY.md`.
 
 Phase 6 search (tenant-owned, `client_id` required). First-ship tables:
 
@@ -179,6 +180,7 @@ client_launch_events
 client_launch_blocks
 client_launch_approvals
 launch_automation_policies
+launch_draft_event_plans
 ```
 
 `client_launches` must support:

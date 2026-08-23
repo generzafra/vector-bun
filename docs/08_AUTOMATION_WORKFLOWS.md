@@ -8,7 +8,7 @@ Trigger.dev is the durable job engine.
 
 Trigger, input schema, tenant, idempotency, retry, timeout, concurrency, approval policy, audit event, failure path, escalation.
 
-Phase 8 S0 catalogs per-action policies (`ai_action_policies`) used by the auto-execute gate. Phase 8 S1 auto-executes `internal_weekly_report` only: an internal observed snapshot, not a send, publish, or provider call. Phase 8 S2 records tenant-scoped launch automation policies for generate drafts, wire tracking, and queue QA. Those steps stay unpublished-drafts-only and do not run in S2. Kill switch and existing approval policies remain authoritative.
+Phase 8 S0 catalogs per-action policies (`ai_action_policies`) used by the auto-execute gate. Phase 8 S1 auto-executes `internal_weekly_report` only: an internal observed snapshot, not a send, publish, or provider call. Phase 8 S2 records tenant-scoped launch automation policies for generate drafts, wire tracking, and queue QA. Phase 8 S3 auto-executes opted-in queue QA and wire tracking on unpublished drafts only: a pending internal QA checklist and core conversion events on draft page versions. Generate drafts, publish, send, and go live stay blocked. Phase 8 S4 auto-executes experiment promote when Phase 7 policy is ready and can roll back that promote or wired draft tracking. Kill switch and existing approval policies remain authoritative.
 
 ## Initial workflows
 

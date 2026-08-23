@@ -75,7 +75,8 @@
 			exists. Preview traffic is test traffic and is not a production result. Measurement excludes
 			bots and test traffic. Source imbalance and an unmet horizon or sample block a decision. Early
 			stop is not allowed. Promote the challenger only when the predetermined primary count is
-			higher and policy is ready. One client's learning is not a global visual rule.
+			higher and policy is ready. Level 4 auto-promote lives on <a href="/autonomy">Autonomy</a> and still
+			uses these rules. One client's learning is not a global visual rule.
 		</p>
 	</section>
 

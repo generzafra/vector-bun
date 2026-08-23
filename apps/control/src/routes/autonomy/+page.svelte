@@ -13,7 +13,12 @@
 		if (blockedBy === 'autonomy_ceiling' || blockedBy === 'auto_execute_disabled') {
 			return 'warning' as const;
 		}
-		if (blockedBy === 'tenant_policy_disabled' || blockedBy === 'launch_status') {
+		if (
+			blockedBy === 'tenant_policy_disabled' ||
+			blockedBy === 'launch_status' ||
+			blockedBy === 'experiment_not_ready' ||
+			blockedBy === 'ambiguous_experiment'
+		) {
 			return 'warning' as const;
 		}
 		if (
@@ -30,7 +35,7 @@
 
 	function executionTone(status: string) {
 		if (status === 'succeeded') return 'success' as const;
-		if (status === 'blocked') return 'warning' as const;
+		if (status === 'blocked' || status === 'rolled_back') return 'warning' as const;
 		return 'danger' as const;
 	}
 
@@ -40,9 +45,27 @@
 			kind?: string;
 			periodKey?: string;
 			observed?: { leadCreated?: number };
+			checklist?: string[];
+			pageVersionIds?: string[];
+			events?: string[];
 			sent?: boolean;
 			published?: boolean;
+			wentLive?: boolean;
+			experimentId?: string;
+			publishedPointerChanged?: boolean;
 		};
+		if (row.kind === 'launch.queue_qa') {
+			const checks = row.checklist?.length ?? 0;
+			return `QA queued · ${checks} checks · live ${row.wentLive ? 'yes' : 'no'} · published ${row.published ? 'yes' : 'no'}`;
+		}
+		if (row.kind === 'launch.wire_tracking') {
+			const drafts = row.pageVersionIds?.length ?? 0;
+			const events = row.events?.length ?? 0;
+			return `Tracking wired · ${drafts} drafts · ${events} events · published ${row.published ? 'yes' : 'no'}`;
+		}
+		if (row.kind === 'experiment.promote_winner') {
+			return `Challenger promoted · pointer ${row.publishedPointerChanged ? 'yes' : 'no'} · sent ${row.sent ? 'yes' : 'no'}`;
+		}
 		if (row.kind !== 'internal_weekly_report') return 'Recorded';
 		const leads = row.observed?.leadCreated ?? 0;
 		return `${row.periodKey ?? 'period'} · ${leads} observed leads · sent ${row.sent ? 'yes' : 'no'} · published ${row.published ? 'yes' : 'no'}`;
@@ -57,7 +80,7 @@
 <PageHeader
 	eyebrow="Vector Intelligence"
 	title="Autonomy"
-	description="Low-risk classes can become eligible for Level 3 auto-execute. Policy still decides. Kill switch always wins. Confidence cannot authorize, unpause, or raise a ceiling. S1 can auto-execute an internal weekly report from observed tenant metrics only. S2 records launch automation policies and does not run them."
+	description="Low-risk classes can become eligible for Level 3 auto-execute. Policy still decides. Kill switch always wins. Confidence cannot authorize, unpause, or raise a ceiling. S1 can auto-execute an internal weekly report from observed tenant metrics only. S3 can auto-execute opted-in queue QA and wire tracking on unpublished drafts only. S4 can auto-execute experiment promote when Phase 7 policy is ready, and can roll back selected actions."
 />
 
 {#if form?.error}
@@ -84,8 +107,9 @@
 			(max {overview.phase8MaxAutonomy}; AI drafts stay at {overview.phase4MaxAutonomy}).
 		</p>
 		<p>
-			Succeeded executions: {overview.executedCount}. S1 records an internal weekly report only.
-			Other preapproved classes stay ineligible to run until later slices.
+			Succeeded executions: {overview.executedCount}. S1 records an internal weekly report. S3 can
+			run opted-in unpublished launch steps. S4 can promote a policy-ready challenger and roll back
+			selected actions. Generate drafts, publish, and send stay blocked.
 		</p>
 		{#if canManage}
 			<form method="post" action="?/pause" class="wide">
@@ -112,7 +136,7 @@
 				<label>
 					Autonomy ceiling
 					<select name="autonomyCeiling" required>
-						{#each [0, 1, 2, 3] as level (level)}
+						{#each Array.from({ length: overview.phase8MaxAutonomy + 1 }, (_, index) => index) as level (level)}
 							<option value={level} selected={level === overview.settings.autonomyCeiling}>
 								Level {level}
 							</option>
@@ -130,8 +154,8 @@
 		<h2>Action policies</h2>
 		<p>
 			Level 3 is only for preapproved low-risk classes. Legal, refund, DNS, domain, pricing,
-			destructive data, ads, publish, send, and experiment promote cannot auto-execute. Launch draft
-			generation stays later.
+			destructive data, ads, publish, and send cannot auto-execute. Experiment promote is Level 4
+			conditional and still uses Phase 7 policy. Launch draft generation stays later.
 		</p>
 		{#if overview.actions.length === 0}
 			<EmptyState title="No action policies seeded." />
@@ -194,12 +218,14 @@
 		<h2>Launch automation</h2>
 		<p>
 			These records bind generate drafts, wire tracking, and queue QA to this client's launch.
-			Unpublished drafts only. S2 does not execute. Generate drafts stays human-led. Launch state
-			lives on <a href="/launch">Launch</a>.
+			Unpublished drafts only. S3 can run queue QA and wire tracking when the tenant plan is enabled
+			and the catalog gate allows it. Generate drafts stays human-led. Launch state lives on <a
+				href="/launch">Launch</a
+			>.
 		</p>
 		<p>
-			Launch {overview.launchAutomation.launchStatus ?? 'unknown'}. Ready for later execute is not
-			Run now.
+			Launch {overview.launchAutomation.launchStatus ?? 'unknown'}. Run now still cannot publish,
+			send, or go live.
 		</p>
 		{#if overview.launchAutomation.steps.length === 0}
 			<EmptyState title="No launch automation policies for this client." />
@@ -210,7 +236,7 @@
 						<th>Step</th>
 						<th>Catalog</th>
 						<th>Plan</th>
-						<th>Later execute</th>
+						<th>Execute</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -245,9 +271,20 @@
 							</td>
 							<td>
 								<StatusChip
-									label={step.readyForLaterExecute ? 'ready later' : (step.blockedBy ?? 'blocked')}
-									tone={gateTone(step.readyForLaterExecute, step.blockedBy)}
+									label={step.executableNow
+										? 'executable now'
+										: step.readyForLaterExecute
+											? 'ready later'
+											: (step.blockedBy ?? 'blocked')}
+									tone={gateTone(step.executableNow || step.readyForLaterExecute, step.blockedBy)}
 								/>
+								{#if canManage && step.executableNow}
+									<form method="post" action="?/execute">
+										<input type="hidden" name="_csrf" value={data.csrf} />
+										<input type="hidden" name="actionType" value={step.actionType} />
+										<button type="submit">Run now</button>
+									</form>
+								{/if}
 							</td>
 						</tr>
 					{/each}
@@ -259,8 +296,9 @@
 	<section>
 		<h2>Executions</h2>
 		<p>
-			Trusted software writes a tenant-scoped snapshot. It is not a send queue and not a publish
-			path. Alpha executions never include Beta.
+			Trusted software writes a tenant-scoped snapshot. It is not a send queue. Wire tracking and
+			experiment promote can be rolled back from captured prior state. Alpha executions never
+			include Beta.
 		</p>
 		{#if overview.executions.length === 0}
 			<EmptyState title="No auto-executions for this client." />
@@ -272,6 +310,7 @@
 						<th>Action</th>
 						<th>Status</th>
 						<th>Result</th>
+						<th></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -288,6 +327,15 @@
 								/>
 							</td>
 							<td>{reportLabel(execution.output)}</td>
+							<td>
+								{#if canManage && execution.canRollback}
+									<form method="post" action="?/rollback">
+										<input type="hidden" name="_csrf" value={data.csrf} />
+										<input type="hidden" name="executionId" value={execution.id} />
+										<button type="submit" class="secondary">Rollback</button>
+									</form>
+								{/if}
+							</td>
 						</tr>
 					{/each}
 				</tbody>

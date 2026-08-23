@@ -85,6 +85,25 @@ export async function listPageVersionsForTenant(ctx: TenantContext, pageId: stri
 		.orderBy(desc(pageVersions.version));
 }
 
+export async function listLatestDraftPageVersionsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const rows = await db
+		.select({
+			id: pageVersions.id,
+			pageId: pageVersions.pageId,
+			status: pageVersions.status,
+			version: pageVersions.version
+		})
+		.from(pageVersions)
+		.where(and(eq(pageVersions.clientId, required.clientId), eq(pageVersions.status, 'draft')));
+	const latest = new Map<(typeof rows)[number]['pageId'], (typeof rows)[number]>();
+	for (const row of rows) {
+		const current = latest.get(row.pageId);
+		if (!current || row.version > current.version) latest.set(row.pageId, row);
+	}
+	return [...latest.values()];
+}
+
 export async function getPublishedPageVersionMetaForTenant(ctx: TenantContext, versionId: string) {
 	const required = requireTenantContext(ctx);
 	const rows = await listPublishedPageVersionMetaForTenant(required, [versionId]);
@@ -172,6 +191,24 @@ export async function getPageForTenant(ctx: TenantContext, pageId: string) {
 		.from(pages)
 		.where(and(eq(pages.id, pageId), eq(pages.clientId, required.clientId)))
 		.limit(1);
+	return row ?? null;
+}
+
+export async function updatePagePublishedVersionForTenant(
+	ctx: TenantContext,
+	pageId: string,
+	publishedVersionId: string
+) {
+	const required = requireTenantContext(ctx);
+	const version = await getPublishedPageVersionMetaForTenant(required, publishedVersionId);
+	if (!version || version.pageId !== pageId) {
+		return null;
+	}
+	const [row] = await db
+		.update(pages)
+		.set({ publishedVersionId, updatedAt: new Date() })
+		.where(and(eq(pages.id, pageId), eq(pages.clientId, required.clientId)))
+		.returning();
 	return row ?? null;
 }
 

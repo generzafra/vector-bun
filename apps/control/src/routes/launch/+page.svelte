@@ -57,8 +57,9 @@
 	<section>
 		<h2>Launch automation</h2>
 		<p>
-			Generate drafts, wire tracking, and queue QA are recorded as tenant-scoped policies on
-			<a href="/autonomy">Autonomy</a>. S2 does not auto-run them. Unpublished drafts only.
+			Generate drafts, wire tracking, and queue QA are tenant-scoped policies on
+			<a href="/autonomy">Autonomy</a>. S3 can auto-run opted-in queue QA and wire tracking on
+			unpublished drafts only. Generate drafts stays human-led.
 		</p>
 	</section>
 	<section>

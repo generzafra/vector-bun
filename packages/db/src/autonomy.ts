@@ -8,11 +8,13 @@ import {
 } from '@vector/contracts';
 import { db } from './client';
 import { ensureLaunchRecordsForTenant } from './launch';
+import { getPageVersionForTenant } from './pages';
 import {
 	aiActionExecutions,
 	aiActionPolicies,
 	aiKillSwitchEvents,
 	launchAutomationPolicies,
+	launchDraftEventPlans,
 	type AiActionExecutionOutput
 } from './schema';
 
@@ -169,7 +171,7 @@ export async function insertAiActionExecutionForTenant(
 	ctx: TenantContext,
 	input: {
 		actionType: string;
-		status: 'succeeded' | 'blocked' | 'failed';
+		status: 'succeeded' | 'blocked' | 'failed' | 'rolled_back';
 		autonomyLevel?: number;
 		blockedBy?: string | null;
 		idempotencyKey: string;
@@ -198,6 +200,41 @@ export async function insertAiActionExecutionForTenant(
 		})
 		.returning();
 	return row;
+}
+
+export async function getAiActionExecutionByIdForTenant(ctx: TenantContext, executionId: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(aiActionExecutions)
+		.where(
+			and(
+				eq(aiActionExecutions.clientId, required.clientId),
+				eq(aiActionExecutions.id, executionId)
+			)
+		)
+		.limit(1);
+	return row ?? null;
+}
+
+export async function markAiActionExecutionRolledBackForTenant(
+	ctx: TenantContext,
+	input: { id: string; idempotencyKey: string; rolledBackAt: Date }
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.update(aiActionExecutions)
+		.set({
+			status: 'rolled_back',
+			rolledBackAt: input.rolledBackAt,
+			idempotencyKey: `rolled:${input.idempotencyKey}`,
+			error: null
+		})
+		.where(
+			and(eq(aiActionExecutions.clientId, required.clientId), eq(aiActionExecutions.id, input.id))
+		)
+		.returning();
+	return row ?? null;
 }
 
 export async function listLaunchAutomationPoliciesForTenant(ctx: TenantContext) {
@@ -250,6 +287,88 @@ export async function updateLaunchAutomationPolicyForTenant(
 			and(
 				eq(launchAutomationPolicies.clientId, required.clientId),
 				eq(launchAutomationPolicies.actionType, input.actionType)
+			)
+		)
+		.returning();
+	return row ?? null;
+}
+
+export async function listLaunchDraftEventPlansForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(launchDraftEventPlans)
+		.where(eq(launchDraftEventPlans.clientId, required.clientId))
+		.orderBy(desc(launchDraftEventPlans.createdAt));
+}
+
+export async function upsertLaunchDraftEventPlanForTenant(
+	ctx: TenantContext,
+	input: {
+		launchId: string;
+		pageId: string;
+		pageVersionId: string;
+		events: string[];
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const version = await getPageVersionForTenant(required, input.pageVersionId);
+	if (!version || version.status !== 'draft' || version.pageId !== input.pageId) {
+		return null;
+	}
+	const [existing] = await db
+		.select()
+		.from(launchDraftEventPlans)
+		.where(
+			and(
+				eq(launchDraftEventPlans.clientId, required.clientId),
+				eq(launchDraftEventPlans.pageVersionId, input.pageVersionId)
+			)
+		)
+		.limit(1);
+	if (existing) {
+		const [row] = await db
+			.update(launchDraftEventPlans)
+			.set({
+				events: input.events,
+				unpublishedDraftsOnly: true,
+				updatedAt: new Date()
+			})
+			.where(
+				and(
+					eq(launchDraftEventPlans.id, existing.id),
+					eq(launchDraftEventPlans.clientId, required.clientId)
+				)
+			)
+			.returning();
+		return row ?? existing;
+	}
+	const [row] = await db
+		.insert(launchDraftEventPlans)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			launchId: input.launchId,
+			pageId: input.pageId,
+			pageVersionId: input.pageVersionId,
+			events: input.events,
+			unpublishedDraftsOnly: true
+		})
+		.returning();
+	return row ?? null;
+}
+
+export async function deleteLaunchDraftEventPlanForTenant(
+	ctx: TenantContext,
+	pageVersionId: string
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.delete(launchDraftEventPlans)
+		.where(
+			and(
+				eq(launchDraftEventPlans.clientId, required.clientId),
+				eq(launchDraftEventPlans.pageVersionId, pageVersionId)
 			)
 		)
 		.returning();

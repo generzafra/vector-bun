@@ -4,6 +4,7 @@ import {
 	contextFor,
 	getAutonomyOverview,
 	pauseIntelligence,
+	rollbackAutoExecute,
 	runAutoExecute,
 	setAutonomyCeiling,
 	setLaunchAutomationPolicy
@@ -53,7 +54,7 @@ export const actions = {
 			);
 			return {
 				ok: true,
-				notice: 'Autonomy ceiling updated. Level 4 and 5 stay closed.'
+				notice: 'Autonomy ceiling updated. Level 5 stays closed.'
 			};
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
@@ -74,7 +75,32 @@ export const actions = {
 			if (!result.executed) {
 				return {
 					ok: true,
-					notice: `Blocked by ${result.blockedBy}. Kill switch and policy still win. Nothing was sent or published.`
+					notice: `Blocked by ${result.blockedBy}. Kill switch and policy still win. Nothing was sent, published, or launched live.`
+				};
+			}
+			const actionType = String(form.get('actionType') ?? '');
+			if (actionType === 'launch.queue_qa') {
+				return {
+					ok: true,
+					notice: result.replayed
+						? 'Existing queued launch QA reused. Nothing went live or was published.'
+						: 'Standard launch QA checklist queued. Unpublished drafts only. Nothing went live or was published.'
+				};
+			}
+			if (actionType === 'launch.wire_tracking') {
+				return {
+					ok: true,
+					notice: result.replayed
+						? 'Existing draft tracking plan reused. Nothing was published.'
+						: 'Standard conversion events wired on unpublished drafts. Nothing was published.'
+				};
+			}
+			if (actionType === 'experiment.promote_winner') {
+				return {
+					ok: true,
+					notice: result.replayed
+						? 'Existing experiment promote reused. Phase 7 policy still decided.'
+						: 'Challenger promoted under Phase 7 policy. Only this tenant published pointer changed. Confidence did not authorize.'
 				};
 			}
 			return {
@@ -104,11 +130,33 @@ export const actions = {
 			);
 			return {
 				ok: true,
-				notice: 'Launch automation policy updated. S2 does not execute, publish, or send.'
+				notice: 'Launch automation policy updated. S3 executes only opted-in unpublished steps.'
 			};
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not update the launch automation policy' });
+		}
+	},
+	rollback: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			const result = await rollbackAutoExecute(
+				session,
+				contextFor(session, locals.requestId),
+				{ executionId: String(form.get('executionId') ?? '') },
+				locals.requestId
+			);
+			return {
+				ok: true,
+				notice: result.replayed
+					? 'Existing rollback reused. Kill switch did not need to unpause.'
+					: 'Trusted software restored the captured prior state. Confidence did not authorize.'
+			};
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not roll back the execution' });
 		}
 	}
 };

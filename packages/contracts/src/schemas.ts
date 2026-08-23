@@ -301,7 +301,14 @@ export const setAutonomyCeilingSchema = z
 export const runAutoExecuteSchema = z
 	.object({
 		actionType: z.enum(AUTONOMY_ACTION_TYPES),
-		idempotencyKey: z.string().trim().min(8).max(80).optional()
+		idempotencyKey: z.string().trim().min(8).max(80).optional(),
+		experimentId: z.string().uuid().optional()
+	})
+	.strict();
+
+export const rollbackAutoExecuteSchema = z
+	.object({
+		executionId: z.string().uuid()
 	})
 	.strict();
 

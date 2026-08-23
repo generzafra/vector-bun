@@ -89,9 +89,10 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/intelligence/pause` — set the client AI kill switch; body requires `paused` and `reason` (`ai.manage`, CSRF)
 - `GET /v1/autonomy` — action policies, Level 3 eligibility, execution log, launch automation policies, and kill-switch events for the active tenant (`ai.read`)
 - `GET /v1/autonomy/:clientId` — same overview only when the actor already owns that client
-- `POST /v1/autonomy/ceiling` — set autonomy ceiling 0–3 (`ai.manage`, CSRF). 4 and 5 are rejected
-- `POST /v1/autonomy/execute` — auto-execute a catalog action (`ai.manage`, CSRF). S1 succeeds only for `internal_weekly_report`. Blocked attempts return 200 with `executed: false`. Does not send or publish.
-- `POST /v1/autonomy/launch-policy` — enable or disable a tenant launch automation step (`ai.manage`, CSRF). S2 does not execute. `launch.generate_drafts` cannot be enabled. Unpublished drafts only.
+- `POST /v1/autonomy/ceiling` — set autonomy ceiling 0–4 (`ai.manage`, CSRF). 5 is rejected
+- `POST /v1/autonomy/execute` — auto-execute a catalog action (`ai.manage`, CSRF). S1 succeeds for `internal_weekly_report`. S3 succeeds for opted-in `launch.queue_qa` and `launch.wire_tracking` on unpublished drafts only. S4 succeeds for `experiment.promote_winner` when Phase 7 policy is ready. Blocked attempts return 200 with `executed: false`. Does not send or create drafts. Promote changes only that tenant's published pointer.
+- `POST /v1/autonomy/launch-policy` — enable or disable a tenant launch automation step (`ai.manage`, CSRF). `launch.generate_drafts` cannot be enabled. Unpublished drafts only.
+- `POST /v1/autonomy/rollback` — restore captured prior state for a succeeded selected execution (`ai.manage`, CSRF). S4 rolls back `launch.wire_tracking` and `experiment.promote_winner` only.
 
 `AIProvider` lives in `packages/ai`. Memory is the default. xAI Grok is selected when `XAI_API_KEY` is present. `AI_EXECUTION_PAUSED` wraps the adapter as disabled. Tokens stay in env, not the browser, logs, or prompts.
 

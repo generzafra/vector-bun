@@ -100,7 +100,7 @@ Progressive autonomy, launch automation policies, low-risk auto-execution.
 
 Autonomy is also conditioned on data health and outcome coverage (`docs/30`). Incomplete sales data lowers confidence and cannot unlock high-impact auto-execute.
 
-**Status (23 August 2026):** S0–S2 are in. Action policies, a Level 3 gate, privileged client kill-switch events, trusted auto-execute of `internal_weekly_report`, and tenant-scoped launch automation policy records ship on Control `/autonomy`. The weekly report is observed tenant analytics only (`sent: false`, `published: false`). Launch policies record generate drafts, wire tracking, and queue QA for unpublished drafts only and do not execute. Kill switch still wins. Default ceiling remains 2. Level 4–5 stay closed.
+**Status (23 August 2026):** S0–S4 are in and the Phase 8 exit is met. Action policies, a Level 3 gate, privileged client kill-switch events, trusted auto-execute of `internal_weekly_report`, tenant-scoped launch automation policy records, auto-execute of opted-in unpublished queue QA and wire tracking, Level 4 conditional experiment promote under Phase 7 policy, and trusted rollback of selected actions ship on Control `/autonomy`. The weekly report is observed tenant analytics only (`sent: false`, `published: false`). Launch execute queues an internal QA checklist and attaches core conversion events to draft page versions only. Experiment promote changes only that tenant's published pointer when Phase 7 policy is ready. Generate drafts, send, and generic page publish stay blocked. Kill switch still wins. Default ceiling remains 2. Operators may raise it to 4. Level 5 stays closed.
 
 ## Phase 9
 
