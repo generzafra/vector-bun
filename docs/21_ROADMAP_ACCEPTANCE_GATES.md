@@ -76,7 +76,7 @@ SEO, AEO, and GEO operational models. Standing content rules: `docs/10`.
 
 **Must take:** technical SEO baseline plus GEO-readiness surfaces at launch (path-aware canonicals, published-URL sitemap, AI-crawler robots, factual JSON-LD, production `llms.txt` from approved knowledge). Preview stays isolated.
 
-**Status (23 August 2026):** S0–S6 are in. Delivery ships the launch-time baseline. `packages/search` provides one `SearchProvider` family. Control `/search` lists tenant-scoped issues, opportunities, answer targets, a capped commercial GEO query set, recorded observations, and a client-safe visibility snapshot behind `seo.read` / `seo.manage`. Manual and operator-assisted measurement records through `SearchProvider.measureGenerativeVisibility`. Official generative-engine APIs stay unsupported. Search → qualified lead remains later. Phase 6 may exit after S1–S4 plus Control backlog.
+**Status (23 August 2026):** S0–S7 are in. Delivery ships the launch-time baseline. `packages/search` provides one `SearchProvider` family. Control `/search` lists tenant-scoped issues, opportunities, answer targets, a capped commercial GEO query set, recorded observations, a client-safe visibility snapshot, and search/GEO → lead impact when UTMs are observable. Manual and operator-assisted measurement records through `SearchProvider.measureGenerativeVisibility`. Official generative-engine APIs stay unsupported. Revenue stays unknown until a later revenue row exists. Phase 6 may exit after S1–S4 plus Control backlog.
 
 Search / GEO → qualified-lead reporting (`docs/30`) and live generative-engine measurement are additive when a compliant method and outcome coverage exist. Do not imply deterministic AI rankings. Do not wait for a citation to launch.
 

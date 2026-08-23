@@ -294,6 +294,44 @@
 	</section>
 
 	<section>
+		<h2>Business impact</h2>
+		<p>{overview.geoImpact.headline}</p>
+		<p>
+			<StatusChip label={`visibility ${overview.geoImpact.visibilityLabel}`} tone="muted" />
+			<StatusChip label={`referral ${overview.geoImpact.referralLabel}`} tone="muted" />
+			<StatusChip label={`lead ${overview.geoImpact.leadLabel}`} tone="muted" />
+			<StatusChip label={`outcome ${overview.geoImpact.outcomeLabel}`} tone="muted" />
+			<StatusChip label="revenue unknown" tone="muted" />
+		</p>
+		<p>
+			{overview.geoImpact.leadCount} referred leads · {overview.geoImpact.qualifiedCount} qualified ·
+			{overview.geoImpact.wonCount} won
+		</p>
+		{#if overview.geoImpact.leads.length === 0}
+			<EmptyState title="No observable search or AI-discovery referred leads yet." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Channel</th>
+						<th>Surface</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.geoImpact.leads as row (row.id)}
+						<tr>
+							<td>{row.channel}</td>
+							<td>{row.engine}</td>
+							<td>{row.status}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+	</section>
+
+	<section>
 		<h2>AI discovery report</h2>
 		<p>
 			{overview.geoReport.headline}

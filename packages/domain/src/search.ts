@@ -19,6 +19,7 @@ import {
 	assertSearchClient,
 	getBrandForTenant,
 	getGeoQueryForTenant,
+	getGeoReferralForLeadForTenant,
 	getLatestGeoVisibilitySnapshotForTenant,
 	getSeoIssueForTenant,
 	getSeoOpportunityForTenant,
@@ -27,6 +28,7 @@ import {
 	insertGeoCitationForTenant,
 	insertGeoFactRepresentationForTenant,
 	insertGeoMeasurementRunForTenant,
+	insertGeoReferralEventForTenant,
 	insertGeoObservationForTenant,
 	insertGeoVisibilitySnapshotForTenant,
 	insertSeoAuditForTenant,
@@ -38,6 +40,7 @@ import {
 	listGeoCitationsForTenant,
 	listGeoFactRepresentationsForTenant,
 	listGeoObservationsForTenant,
+	listGeoReferralEventsForTenant,
 	listGeoQueriesForTenant,
 	listGeoQuerySetsForTenant,
 	listOffersForTenant,
@@ -67,6 +70,7 @@ import { logInfo } from '@vector/observability';
 import {
 	buildGeoVisibilitySnapshot,
 	canMarkPublishReady,
+	classifySearchReferral,
 	coverAnswerTarget,
 	decryptSecret,
 	detectTechnicalIssues,
@@ -84,6 +88,8 @@ import {
 	setSearchProvider,
 	generativeMeasurementOverview,
 	geoVisibilityHeadline,
+	parseGeoAttributionContent,
+	searchOutcomeImpact,
 	publicGeoReportFreshness,
 	type PublishedFaq,
 	type SearchProvider
@@ -294,6 +300,77 @@ function publicGeoReport(
 	};
 }
 
+function publicSearchImpact(
+	report: ReturnType<typeof emptyGeoReport>,
+	referrals: {
+		id: string;
+		leadId: string;
+		queryId: string | null;
+		channel: string;
+		engine: string;
+		leadStatus: string;
+		createdAt: Date;
+	}[]
+) {
+	const qualifiedCount = referrals.filter(
+		(row) => row.leadStatus === 'qualified' || row.leadStatus === 'won'
+	).length;
+	const wonCount = referrals.filter((row) => row.leadStatus === 'won').length;
+	const impact = searchOutcomeImpact({
+		visibilityCurrent: report.current,
+		mentionedQueries: report.mentionedQueries,
+		referralCount: referrals.length,
+		leadCount: referrals.length,
+		qualifiedCount,
+		wonCount
+	});
+	return {
+		...impact,
+		referralCount: referrals.length,
+		leadCount: referrals.length,
+		qualifiedCount,
+		wonCount,
+		leads: referrals.map((row) => ({
+			id: row.leadId,
+			status: row.leadStatus,
+			channel: row.channel,
+			engine: row.engine,
+			queryId: row.queryId,
+			createdAt: row.createdAt
+		}))
+	};
+}
+
+export async function recordObservableSearchReferral(
+	ctx: TenantContext,
+	input: {
+		leadId: string;
+		source?: string | null;
+		medium?: string | null;
+		campaign?: string | null;
+		content?: string | null;
+	}
+) {
+	const classified = classifySearchReferral(input);
+	if (!classified) return null;
+	const existing = await getGeoReferralForLeadForTenant(ctx, input.leadId);
+	if (existing) return existing;
+	const queryId = parseGeoAttributionContent(input.content);
+	const query = queryId ? await getGeoQueryForTenant(ctx, queryId) : null;
+	const row = await insertGeoReferralEventForTenant(ctx, {
+		leadId: input.leadId,
+		queryId: query?.id ?? null,
+		channel: classified.channel,
+		engine: classified.engine
+	});
+	logInfo('search.geo.referral.record', {
+		channel: classified.channel,
+		engine: classified.engine,
+		queryBound: Boolean(query)
+	});
+	return row;
+}
+
 async function persistGeoVisibilitySnapshotForSet(
 	required: TenantContext,
 	setId: string,
@@ -387,6 +464,7 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		geoObservations,
 		geoCitations,
 		snapshot,
+		referrals,
 		readiness
 	] = await Promise.all([
 		listSeoPropertiesForTenant(required),
@@ -404,11 +482,15 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		listGeoObservationsForTenant(required),
 		listGeoCitationsForTenant(required),
 		getLatestGeoVisibilitySnapshotForTenant(required),
+		listGeoReferralEventsForTenant(required),
 		searchPropertyReadiness(required)
 	]);
 	const representations = snapshot
 		? await listGeoFactRepresentationsForTenant(required, snapshot.id)
 		: [];
+	const geoReport = snapshot
+		? publicGeoReport(snapshot, representations)
+		: emptyGeoReport(geoQueries.length);
 	const overview = {
 		properties: properties.map(publicProperty),
 		issues,
@@ -474,9 +556,8 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 				(row) => publicGeoObservationFreshness(row.observedAt).stale
 			).length
 		},
-		geoReport: snapshot
-			? publicGeoReport(snapshot, representations)
-			: emptyGeoReport(geoQueries.length),
+		geoReport,
+		geoImpact: publicSearchImpact(geoReport, referrals),
 		generativeMeasurement: generativeMeasurementOverview()
 	};
 	const serialized = JSON.stringify(overview);

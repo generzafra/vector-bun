@@ -40,6 +40,7 @@ import { logError, logInfo } from '@vector/observability';
 import { getAnalyticsProvider } from './analytics';
 import { recordAudit } from './audit';
 import { tryEnrollCapturedLead } from './email';
+import { recordObservableSearchReferral } from './search';
 import type { Actor } from './auth-service';
 
 export function deliveryTenantContext(
@@ -291,6 +292,15 @@ export async function captureLead(
 		created: persisted.created,
 		isTest
 	});
+	if (persisted.created) {
+		await recordObservableSearchReferral(required, {
+			leadId: persisted.lead.id,
+			source: lastNonDirect.source,
+			medium: lastNonDirect.medium,
+			campaign: lastNonDirect.campaign,
+			content: lastNonDirect.content
+		});
+	}
 	const nurture = await tryEnrollCapturedLead(required, persisted.lead.id);
 	for (const event of persisted.events) {
 		if (!persisted.created && event.name === 'lead_created') continue;

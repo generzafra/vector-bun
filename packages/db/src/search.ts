@@ -13,6 +13,7 @@ import {
 	type GeoQuerySourceKind,
 	type GeoRepresentationStatus,
 	type GeoSurface,
+	type SearchReferralChannel,
 	type SchemaEntityKind,
 	type SchemaEntitySourceKind,
 	type SchemaEntityStatus,
@@ -34,7 +35,9 @@ import {
 	geoMeasurementRuns,
 	geoQueries,
 	geoQuerySets,
+	geoReferralEvents,
 	geoVisibilitySnapshots,
+	leads,
 	schemaEntities,
 	seoAudits,
 	seoIssues,
@@ -1075,6 +1078,66 @@ export async function insertGeoFactRepresentationForTenant(
 			status: input.status,
 			evidenceClass: input.evidenceClass ?? 'observed',
 			detail: input.detail ?? null
+		})
+		.returning();
+	return row;
+}
+
+export async function getGeoReferralForLeadForTenant(ctx: TenantContext, leadId: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(geoReferralEvents)
+		.where(
+			and(eq(geoReferralEvents.clientId, required.clientId), eq(geoReferralEvents.leadId, leadId))
+		)
+		.limit(1);
+	return row ?? null;
+}
+
+export async function listGeoReferralEventsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select({
+			id: geoReferralEvents.id,
+			leadId: geoReferralEvents.leadId,
+			queryId: geoReferralEvents.queryId,
+			channel: geoReferralEvents.channel,
+			engine: geoReferralEvents.engine,
+			evidenceClass: geoReferralEvents.evidenceClass,
+			visitProven: geoReferralEvents.visitProven,
+			leadProven: geoReferralEvents.leadProven,
+			createdAt: geoReferralEvents.createdAt,
+			leadStatus: leads.status
+		})
+		.from(geoReferralEvents)
+		.innerJoin(
+			leads,
+			and(eq(leads.id, geoReferralEvents.leadId), eq(leads.clientId, required.clientId))
+		)
+		.where(eq(geoReferralEvents.clientId, required.clientId))
+		.orderBy(desc(geoReferralEvents.createdAt));
+}
+
+export async function insertGeoReferralEventForTenant(
+	ctx: TenantContext,
+	input: {
+		leadId: string;
+		queryId?: string | null;
+		channel: SearchReferralChannel;
+		engine: string;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(geoReferralEvents)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			leadId: input.leadId,
+			queryId: input.queryId ?? null,
+			channel: input.channel,
+			engine: input.engine
 		})
 		.returning();
 	return row;

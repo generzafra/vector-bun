@@ -12,6 +12,7 @@ import {
 	geoMeasurementRuns,
 	geoQueries,
 	geoQuerySets,
+	geoReferralEvents,
 	geoVisibilitySnapshots,
 	deleteClaimForTenant,
 	insertClaimForTenant,
@@ -45,6 +46,7 @@ async function seededClients() {
 }
 
 async function resetGeoRows(clientId: string) {
+	await db.delete(geoReferralEvents).where(eq(geoReferralEvents.clientId, clientId));
 	await db.delete(geoFactRepresentations).where(eq(geoFactRepresentations.clientId, clientId));
 	await db.delete(geoVisibilitySnapshots).where(eq(geoVisibilitySnapshots.clientId, clientId));
 	await db.delete(geoCitations).where(eq(geoCitations.clientId, clientId));

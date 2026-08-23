@@ -2,7 +2,7 @@
 
 Standing cross-cutting content and search-quality rules. Phase 6 slices live in [`docs/plans/06_PHASE_6_SEO_AEO.md`](plans/06_PHASE_6_SEO_AEO.md).
 
-S1 Delivery GEO-readiness, S2 `packages/search` + Control `/search`, S3 answer targets, S4 GEO query sets plus observation schema, S5 first compliant measurement, and S6 snapshots plus client-safe reporting are in. Answer targets map to an existing page when a published FAQ already carries the fact. Vector does not create a page per question. GEO query sets stay small and commercial (`GEO_QUERY_LIMIT`). Recorded observations and snapshots are not a GEO score. One observation is not a visibility pattern. Stale snapshots are not current. Manual and operator-assisted measurement is available. Official generative-engine APIs stay unsupported.
+S1 Delivery GEO-readiness, S2 `packages/search` + Control `/search`, S3 answer targets, S4 GEO query sets plus observation schema, S5 first compliant measurement, S6 snapshots plus client-safe reporting, and S7 search/GEO → lead when attribution is observable are in. Answer targets map to an existing page when a published FAQ already carries the fact. Vector does not create a page per question. GEO query sets stay small and commercial (`GEO_QUERY_LIMIT`). Recorded observations and snapshots are not a GEO score. One observation is not a visibility pattern. A mention is not a visit or a lead. Stale snapshots are not current. Revenue is not assigned from a mention. Manual and operator-assisted measurement is available. Official generative-engine APIs stay unsupported.
 
 ## SEO
 

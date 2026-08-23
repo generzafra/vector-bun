@@ -582,6 +582,12 @@ export type GeoRepresentationStatus = (typeof GEO_REPRESENTATION_STATUSES)[numbe
 export const GEO_REPORT_STATUSES = ['empty', 'insufficient', 'stale', 'recorded'] as const;
 export type GeoReportStatus = (typeof GEO_REPORT_STATUSES)[number];
 
+export const SEARCH_REFERRAL_CHANNELS = ['organic_search', 'generative'] as const;
+export type SearchReferralChannel = (typeof SEARCH_REFERRAL_CHANNELS)[number];
+
+export const SEARCH_OUTCOME_LABELS = ['observed', 'unknown'] as const;
+export type SearchOutcomeLabel = (typeof SEARCH_OUTCOME_LABELS)[number];
+
 export const recordGeoObservationSchema = z
 	.object({
 		queryId: z.string().uuid(),

@@ -2387,6 +2387,10 @@ export const geoRepresentationStatus = pgEnum('geo_representation_status', [
 	'unknown',
 	'missing'
 ]);
+export const searchReferralChannel = pgEnum('search_referral_channel', [
+	'organic_search',
+	'generative'
+]);
 
 export const geoQuerySets = pgTable(
 	'geo_query_sets',
@@ -2595,5 +2599,32 @@ export const geoFactRepresentations = pgTable(
 			t.observationId
 		),
 		index('geo_fact_representations_client_idx').on(t.clientId)
+	]
+);
+
+export const geoReferralEvents = pgTable(
+	'geo_referral_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		leadId: uuid('lead_id')
+			.notNull()
+			.references(() => leads.id),
+		queryId: uuid('query_id').references(() => geoQueries.id),
+		channel: searchReferralChannel('channel').notNull(),
+		engine: text('engine').notNull(),
+		evidenceClass: seoEvidenceClass('evidence_class').notNull().default('observed'),
+		visitProven: boolean('visit_proven').notNull().default(true),
+		leadProven: boolean('lead_proven').notNull().default(true),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('geo_referral_events_client_lead_idx').on(t.clientId, t.leadId),
+		index('geo_referral_events_client_idx').on(t.clientId)
 	]
 );
