@@ -19,13 +19,16 @@ import {
 	assertSearchClient,
 	getBrandForTenant,
 	getGeoQueryForTenant,
+	getLatestGeoVisibilitySnapshotForTenant,
 	getSeoIssueForTenant,
 	getSeoOpportunityForTenant,
 	getSeoPropertyForTenant,
 	getSeoQueryForTenant,
 	insertGeoCitationForTenant,
+	insertGeoFactRepresentationForTenant,
 	insertGeoMeasurementRunForTenant,
 	insertGeoObservationForTenant,
+	insertGeoVisibilitySnapshotForTenant,
 	insertSeoAuditForTenant,
 	insertSeoIssueForTenant,
 	insertSeoOpportunityForTenant,
@@ -33,6 +36,7 @@ import {
 	listClaimsForTenant,
 	listContentBriefsForTenant,
 	listGeoCitationsForTenant,
+	listGeoFactRepresentationsForTenant,
 	listGeoObservationsForTenant,
 	listGeoQueriesForTenant,
 	listGeoQuerySetsForTenant,
@@ -61,6 +65,7 @@ import {
 } from '@vector/db';
 import { logInfo } from '@vector/observability';
 import {
+	buildGeoVisibilitySnapshot,
 	canMarkPublishReady,
 	coverAnswerTarget,
 	decryptSecret,
@@ -78,6 +83,8 @@ import {
 	searchProvider,
 	setSearchProvider,
 	generativeMeasurementOverview,
+	geoVisibilityHeadline,
+	publicGeoReportFreshness,
 	type PublishedFaq,
 	type SearchProvider
 } from '@vector/search';
@@ -182,6 +189,181 @@ export async function searchPropertyReadiness(ctx: TenantContext) {
 	};
 }
 
+function emptyGeoReport(monitoredQueries: number) {
+	const headline = geoVisibilityHeadline({
+		monitoredQueries,
+		mentionedQueries: 0,
+		observationCount: 0,
+		mentionOnlyCount: 0,
+		accurateNoCount: 0,
+		sufficient: false,
+		stale: false
+	});
+	return {
+		status: headline.status,
+		current: headline.current,
+		headline: headline.headline,
+		freshnessLabel: 'no snapshot',
+		freshnessDetail: 'Refresh the visibility snapshot after recorded observations exist.',
+		stale: false,
+		sufficient: false,
+		monitoredQueries,
+		mentionedQueries: 0,
+		observationCount: 0,
+		ownedCitationQueries: 0,
+		earnedCitationQueries: 0,
+		representedQueries: 0,
+		accurateYes: 0,
+		accurateNo: 0,
+		mentionOnly: 0,
+		snapshotId: null as string | null,
+		computedAt: null as Date | null,
+		representations: [] as {
+			id: string;
+			observationId: string;
+			claimId: string | null;
+			status: string;
+			evidenceClass: string;
+			detail: string | null;
+		}[]
+	};
+}
+
+function publicGeoReport(
+	snapshot: {
+		id: string;
+		queryCount: number;
+		observationCount: number;
+		mentionedQueryCount: number;
+		ownedCitationQueryCount: number;
+		earnedCitationQueryCount: number;
+		representedQueryCount: number;
+		accurateYesCount: number;
+		accurateNoCount: number;
+		mentionOnlyCount: number;
+		sufficient: boolean;
+		computedAt: Date;
+	},
+	representations: {
+		id: string;
+		observationId: string;
+		claimId: string | null;
+		status: string;
+		evidenceClass: string;
+		detail: string | null;
+	}[],
+	now = new Date()
+) {
+	const freshness = publicGeoReportFreshness(snapshot.computedAt, now);
+	const headline = geoVisibilityHeadline({
+		monitoredQueries: snapshot.queryCount,
+		mentionedQueries: snapshot.mentionedQueryCount,
+		observationCount: snapshot.observationCount,
+		mentionOnlyCount: snapshot.mentionOnlyCount,
+		accurateNoCount: snapshot.accurateNoCount,
+		sufficient: snapshot.sufficient,
+		stale: freshness.stale
+	});
+	return {
+		status: headline.status,
+		current: headline.current,
+		headline: headline.headline,
+		freshnessLabel: freshness.label,
+		freshnessDetail: freshness.detail,
+		stale: freshness.stale,
+		sufficient: snapshot.sufficient,
+		monitoredQueries: snapshot.queryCount,
+		mentionedQueries: snapshot.mentionedQueryCount,
+		observationCount: snapshot.observationCount,
+		ownedCitationQueries: snapshot.ownedCitationQueryCount,
+		earnedCitationQueries: snapshot.earnedCitationQueryCount,
+		representedQueries: snapshot.representedQueryCount,
+		accurateYes: snapshot.accurateYesCount,
+		accurateNo: snapshot.accurateNoCount,
+		mentionOnly: snapshot.mentionOnlyCount,
+		snapshotId: snapshot.id,
+		computedAt: snapshot.computedAt,
+		representations: representations.map((row) => ({
+			id: row.id,
+			observationId: row.observationId,
+			claimId: row.claimId,
+			status: row.status,
+			evidenceClass: row.evidenceClass,
+			detail: row.detail
+		}))
+	};
+}
+
+async function persistGeoVisibilitySnapshotForSet(
+	required: TenantContext,
+	setId: string,
+	requestId: string,
+	actorId: string
+) {
+	const [queries, observations, claims] = await Promise.all([
+		listGeoQueriesForTenant(required),
+		listGeoObservationsForTenant(required),
+		listClaimsForTenant(required)
+	]);
+	const setQueries = queries.filter((row) => row.setId === setId);
+	const queryIds = new Set(setQueries.map((row) => row.id));
+	const draft = buildGeoVisibilitySnapshot({
+		queries: setQueries,
+		observations: observations.filter((row) => queryIds.has(row.queryId)),
+		claims
+	});
+	const snapshot = await insertGeoVisibilitySnapshotForTenant(required, {
+		setId,
+		windowStart: draft.windowStart,
+		windowEnd: draft.windowEnd,
+		computedAt: draft.windowEnd,
+		queryCount: draft.queryCount,
+		observationCount: draft.observationCount,
+		mentionedQueryCount: draft.mentionedQueryCount,
+		ownedCitationQueryCount: draft.ownedCitationQueryCount,
+		earnedCitationQueryCount: draft.earnedCitationQueryCount,
+		representedQueryCount: draft.representedQueryCount,
+		accurateYesCount: draft.accurateYesCount,
+		accurateNoCount: draft.accurateNoCount,
+		mentionOnlyCount: draft.mentionOnlyCount,
+		sufficient: draft.sufficient,
+		headline: draft.headline
+	});
+	const representations = [];
+	for (const item of draft.representations) {
+		representations.push(
+			await insertGeoFactRepresentationForTenant(required, {
+				snapshotId: snapshot.id,
+				observationId: item.observationId,
+				claimId: item.claimId,
+				status: item.status,
+				evidenceClass: item.evidenceClass,
+				detail: item.detail
+			})
+		);
+	}
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId,
+		action: 'search.geo.snapshot.refresh',
+		entityType: 'geo_visibility_snapshot',
+		entityId: snapshot.id,
+		requestId,
+		reason: `${draft.observationCount} observations in snapshot`
+	});
+	logInfo('search.geo.snapshot.refresh', {
+		observations: draft.observationCount,
+		sufficient: draft.sufficient
+	});
+	return {
+		snapshot,
+		representations,
+		report: publicGeoReport(snapshot, representations)
+	};
+}
+
 export async function getSearchOverview(actor: Actor, ctx: TenantContext, clientId?: string) {
 	requireCapability(actor.permissions, 'seo.read');
 	const required = assertActorOwnsContext(actor, ctx);
@@ -204,6 +386,7 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		geoQueries,
 		geoObservations,
 		geoCitations,
+		snapshot,
 		readiness
 	] = await Promise.all([
 		listSeoPropertiesForTenant(required),
@@ -220,8 +403,12 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		listGeoQueriesForTenant(required),
 		listGeoObservationsForTenant(required),
 		listGeoCitationsForTenant(required),
+		getLatestGeoVisibilitySnapshotForTenant(required),
 		searchPropertyReadiness(required)
 	]);
+	const representations = snapshot
+		? await listGeoFactRepresentationsForTenant(required, snapshot.id)
+		: [];
 	const overview = {
 		properties: properties.map(publicProperty),
 		issues,
@@ -287,6 +474,9 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 				(row) => publicGeoObservationFreshness(row.observedAt).stale
 			).length
 		},
+		geoReport: snapshot
+			? publicGeoReport(snapshot, representations)
+			: emptyGeoReport(geoQueries.length),
 		generativeMeasurement: generativeMeasurementOverview()
 	};
 	const serialized = JSON.stringify(overview);
@@ -807,6 +997,12 @@ export async function recordGeoObservation(
 		mentioned: parsed.mentioned,
 		ownedCitation: parsed.ownedCitation
 	});
+	const snapshot = await persistGeoVisibilitySnapshotForSet(
+		required,
+		query.setId,
+		requestId,
+		actor.userId
+	);
 	return {
 		run,
 		observation: {
@@ -817,8 +1013,25 @@ export async function recordGeoObservation(
 			freshnessDetail: freshness.detail,
 			citations
 		},
-		generativeMeasurement: measured
+		generativeMeasurement: measured,
+		geoReport: snapshot.report
 	};
+}
+
+export async function refreshGeoVisibilitySnapshot(
+	actor: Actor,
+	ctx: TenantContext,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	consumeRateLimit(`search-geo-snapshot:${required.clientId}`, 8, 60_000);
+	const sets = await listGeoQuerySetsForTenant(required);
+	const set = sets.find((row) => row.slug === 'commercial-baseline') ?? sets[0];
+	if (!set) {
+		return { report: emptyGeoReport(0) };
+	}
+	return persistGeoVisibilitySnapshotForSet(required, set.id, requestId, actor.userId);
 }
 
 export async function createSeoOpportunity(

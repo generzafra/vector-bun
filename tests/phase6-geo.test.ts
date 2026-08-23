@@ -14,12 +14,16 @@ import {
 	db,
 	geoCitations,
 	geoEngineObservations,
+	geoFactRepresentations,
 	geoMeasurementRuns,
 	geoQueries,
 	geoQuerySets,
+	geoVisibilitySnapshots,
+	listGeoFactRepresentationsForTenant,
 	listGeoObservationsForTenant,
 	listGeoQueriesForTenant,
-	listGeoQuerySetsForTenant
+	listGeoQuerySetsForTenant,
+	listGeoVisibilitySnapshotsForTenant
 } from '@vector/db';
 import {
 	contextFor,
@@ -53,6 +57,8 @@ async function seededClients() {
 }
 
 async function resetGeoRows(clientId: string) {
+	await db.delete(geoFactRepresentations).where(eq(geoFactRepresentations.clientId, clientId));
+	await db.delete(geoVisibilitySnapshots).where(eq(geoVisibilitySnapshots.clientId, clientId));
 	await db.delete(geoCitations).where(eq(geoCitations.clientId, clientId));
 	await db.delete(geoEngineObservations).where(eq(geoEngineObservations.clientId, clientId));
 	await db.delete(geoMeasurementRuns).where(eq(geoMeasurementRuns.clientId, clientId));
@@ -142,6 +148,12 @@ test('missing TenantContext cannot list GEO rows', () => {
 	expect(listGeoQuerySetsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 	expect(listGeoQueriesForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
 	expect(listGeoObservationsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
+	expect(listGeoVisibilitySnapshotsForTenant(null as never)).rejects.toBeInstanceOf(
+		TenantContextError
+	);
+	expect(listGeoFactRepresentationsForTenant(null as never)).rejects.toBeInstanceOf(
+		TenantContextError
+	);
 });
 
 test('Alpha cannot read Beta GEO query sets or observations', async () => {
@@ -163,6 +175,9 @@ test('Alpha cannot read Beta GEO query sets or observations', async () => {
 	expect(alphaOverview.generativeMeasurement.supported).toBe(false);
 	expect(alphaOverview.generativeMeasurement.manualSupported).toBe(true);
 	expect(alphaOverview.generativeMeasurement.liveSupported).toBe(false);
+	expect(alphaOverview.geoReport.status).toBe('empty');
+	expect(alphaOverview.geoReport.current).toBe(false);
+	expect(alphaOverview.geoReport.snapshotId).toBeNull();
 	await expect(
 		getSearchOverview(alphaActor, contextFor(alphaActor, 'geo-iso-a'), beta.id)
 	).rejects.toBeInstanceOf(TenantContextError);

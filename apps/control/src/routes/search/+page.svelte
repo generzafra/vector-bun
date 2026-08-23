@@ -294,6 +294,56 @@
 	</section>
 
 	<section>
+		<h2>AI discovery report</h2>
+		<p>
+			{overview.geoReport.headline}
+		</p>
+		<p>
+			<StatusChip
+				label={overview.geoReport.freshnessLabel}
+				tone={overview.geoReport.stale
+					? 'warning'
+					: overview.geoReport.current
+						? 'success'
+						: 'muted'}
+			/>
+			{overview.geoReport.freshnessDetail}
+		</p>
+		<p>
+			{overview.geoReport.mentionedQueries} mentioned of {overview.geoReport.monitoredQueries} monitored
+			· {overview.geoReport.observationCount} observations · {overview.geoReport.accurateNo} inaccurate
+		</p>
+		{#if canManage}
+			<form method="post" action="?/geoSnapshot">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<button type="submit">Refresh visibility snapshot</button>
+			</form>
+		{/if}
+		{#if overview.geoReport.representations.length === 0}
+			<EmptyState title="No fact-accuracy rows in the current snapshot." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Status</th>
+						<th>Evidence</th>
+						<th>Note</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.geoReport.representations as row (row.id)}
+						<tr>
+							<td>{row.status}</td>
+							<td>{row.evidenceClass}</td>
+							<td>{row.detail ?? '—'}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+	</section>
+
+	<section>
 		<h2>AI discovery queries</h2>
 		<p>
 			This is a small commercial query set from approved knowledge. Manual and operator-assisted
@@ -401,6 +451,14 @@
 				<label><input type="checkbox" name="ownedCitation" /> Owned citation</label>
 				<label><input type="checkbox" name="earnedCitation" /> Earned citation</label>
 				<label><input type="checkbox" name="represented" /> Fact represented</label>
+				<label>
+					Accurate to approved facts
+					<select name="accurate">
+						<option value="unknown">Unknown</option>
+						<option value="yes">Yes</option>
+						<option value="no">No</option>
+					</select>
+				</label>
 				<label>
 					Owned source URL
 					<input name="ownedUrl" type="url" placeholder="https://www.client.example/" />

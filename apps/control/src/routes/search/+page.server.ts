@@ -9,6 +9,7 @@ import {
 	recordGeoObservation,
 	refreshAnswerReadiness,
 	refreshGeoQuerySet,
+	refreshGeoVisibilitySnapshot,
 	runTechnicalSearchAudit,
 	submitSearchSitemap,
 	syncSearchProperty,
@@ -175,6 +176,21 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not record the GEO observation' });
+		}
+	},
+	geoSnapshot: async ({ locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		try {
+			const result = await refreshGeoVisibilitySnapshot(
+				session,
+				contextFor(session, locals.requestId),
+				locals.requestId
+			);
+			return { ok: true, notice: result.report.headline };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not refresh the visibility snapshot' });
 		}
 	},
 	audit: async ({ locals }) => {

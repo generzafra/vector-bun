@@ -376,7 +376,7 @@ Keep Phase 6 as SEO/AEO only; create `docs/31` for GEO; require live ChatGPT/Per
 
 ### Consequences
 
-Agents treat GEO as in-scope for Phase 6 documentation and S1–S5 implementation. Official generative-engine APIs stay later. Outcome join stays `docs/30` additive.
+Agents treat GEO as in-scope for Phase 6 documentation and S1–S6 implementation. Official generative-engine APIs stay later. Outcome join stays `docs/30` additive.
 
 ### Security impact
 
@@ -392,4 +392,4 @@ Supersede this ADR. Leave `docs/10` GEO sections as historical. Keep Phase 6 exi
 
 ### Implementation note (23 August 2026)
 
-S1–S5 are in: Delivery GEO-readiness, `packages/search`, answer targets, GEO query/observation schema, and first compliant manual / operator-assisted measurement. Official generative-engine APIs remain `unsupported`. The ADR lock is unchanged.
+S1–S6 are in: Delivery GEO-readiness, `packages/search`, answer targets, GEO query/observation schema, first compliant manual / operator-assisted measurement, and visibility snapshots with fact-accuracy reporting. Official generative-engine APIs remain `unsupported`. The ADR lock is unchanged.

@@ -635,7 +635,7 @@ The final schema should be normalized around business concepts, not around third
 - geo_engine_observations
 - geo_citations
 
-S2 persists the SEO property, page, query, audit, issue, and opportunity tables. S3 persists `schema_entities`, `answer_targets`, and `content_briefs`. S4 persists `geo_query_sets`, `geo_queries`, `geo_measurement_runs`, `geo_engine_observations`, and `geo_citations`. S5 records observations through `SearchProvider.measureGenerativeVisibility` (manual / operator-assisted). Official generative-engine APIs stay unsupported. `seo_queries` are official Search Console / Bing rows when connected. Defer `seo_rank_snapshots` unless an official API provides them. `seo_opportunities.channel` is `seo | aeo | geo`. First-ship GEO tables only; later snapshot/referral/learning tables stay later. Detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
+S2 persists the SEO property, page, query, audit, issue, and opportunity tables. S3 persists `schema_entities`, `answer_targets`, and `content_briefs`. S4 persists `geo_query_sets`, `geo_queries`, `geo_measurement_runs`, `geo_engine_observations`, and `geo_citations`. S5 records observations through `SearchProvider.measureGenerativeVisibility` (manual / operator-assisted). Official generative-engine APIs stay unsupported. S6 persists `geo_visibility_snapshots` and `geo_fact_representations`. `seo_queries` are official Search Console / Bing rows when connected. Defer `seo_rank_snapshots` unless an official API provides them. `seo_opportunities.channel` is `seo | aeo | geo`. First-ship GEO tables only; later snapshot/referral/learning tables stay later. Detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
 
 ## 8.9 Analytics and attribution
 
@@ -2702,7 +2702,7 @@ Exit gate:
 
 Live generative measurement and search → qualified-lead reporting are additive.
 
-**Status (23 August 2026):** S0–S5 are in. Delivery ships the launch-time GEO-readiness baseline. `packages/search` is the only `SearchProvider` family. Control `/search` lists official search rows, answer readiness, a small commercial GEO query set, and recorded observations. Manual and operator-assisted measurement records through `SearchProvider`. Official generative-engine APIs stay `unsupported`. Next optional slice is S6.
+**Status (23 August 2026):** S0–S6 are in. Delivery ships the launch-time GEO-readiness baseline. `packages/search` is the only `SearchProvider` family. Control `/search` lists official search rows, answer readiness, a small commercial GEO query set, recorded observations, and a client-safe visibility snapshot. Manual and operator-assisted measurement records through `SearchProvider`. Official generative-engine APIs stay `unsupported`. Search → qualified lead is additive S7.
 
 ## Phase 7 — CRO experimentation
 

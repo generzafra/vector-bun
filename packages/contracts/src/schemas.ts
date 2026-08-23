@@ -571,6 +571,17 @@ export type GeoAccuracy = (typeof GEO_ACCURACY)[number];
 export const GEO_CITATION_KINDS = ['owned', 'earned'] as const;
 export type GeoCitationKind = (typeof GEO_CITATION_KINDS)[number];
 
+export const GEO_REPRESENTATION_STATUSES = [
+	'accurate',
+	'inaccurate',
+	'unknown',
+	'missing'
+] as const;
+export type GeoRepresentationStatus = (typeof GEO_REPRESENTATION_STATUSES)[number];
+
+export const GEO_REPORT_STATUSES = ['empty', 'insufficient', 'stale', 'recorded'] as const;
+export type GeoReportStatus = (typeof GEO_REPORT_STATUSES)[number];
+
 export const recordGeoObservationSchema = z
 	.object({
 		queryId: z.string().uuid(),

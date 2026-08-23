@@ -224,9 +224,9 @@ geo_citations
 
 Prefer `seo_opportunities.channel` over a second `geo_opportunities` backlog. Mentions can be fields on `geo_engine_observations`.
 
-Later, not first ship: `geo_fact_representations`, `geo_visibility_snapshots`, `geo_referral_events`, `geo_competitor_observations`, `geo_source_domains`, `geo_learning_objects`.
+S6 persists `geo_visibility_snapshots` and `geo_fact_representations`. Later: `geo_referral_events`, `geo_competitor_observations`, `geo_source_domains`, `geo_learning_objects`.
 
-Suggested fields are in the edited working notes; implement only what S4–S5 persist. Every row: `client_id` + TenantContext. Money on measurement cost is integer minor units plus currency. Do not store full generated answers unless a structured observation is insufficient; retained answers are untrusted retrieved content.
+Suggested fields are in the edited working notes; implement only what the current slice persists. Every row: `client_id` + TenantContext. Money on measurement cost is integer minor units plus currency. Do not store full generated answers unless a structured observation is insufficient; retained answers are untrusted retrieved content.
 
 ---
 
@@ -390,7 +390,7 @@ Do not sprinkle GEO into email, social-provider, or auth docs unless an implemen
 | **S3** | Answer targets, entities, source-backed FAQ gaps                                                                           | Done                 |
 | **S4** | GEO query sets + observation schema. No live measurement required.                                                         | Done                 |
 | **S5** | First compliant measurement adapter (start manual / operator-assisted)                                                     | Done (optional exit) |
-| **S6** | Snapshots, accuracy, client-safe reporting                                                                                 | After S5             |
+| **S6** | Snapshots, accuracy, client-safe reporting                                                                                 | Done (optional exit) |
 | **S7** | Search/GEO → lead/revenue                                                                                                  | Additive (`docs/30`) |
 | **S8** | Cadence, budgets, portfolio queues                                                                                         | Phase 9 / later      |
 

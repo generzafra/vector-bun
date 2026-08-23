@@ -2381,6 +2381,12 @@ export const geoRunStatus = pgEnum('geo_run_status', ['recorded']);
 export const geoProminence = pgEnum('geo_prominence', ['unknown', 'mentioned', 'cited', 'primary']);
 export const geoAccuracy = pgEnum('geo_accuracy', ['yes', 'no', 'unknown']);
 export const geoCitationKind = pgEnum('geo_citation_kind', ['owned', 'earned']);
+export const geoRepresentationStatus = pgEnum('geo_representation_status', [
+	'accurate',
+	'inaccurate',
+	'unknown',
+	'missing'
+]);
 
 export const geoQuerySets = pgTable(
 	'geo_query_sets',
@@ -2524,4 +2530,70 @@ export const geoCitations = pgTable(
 		createdAt: createdAt()
 	},
 	(t) => [index('geo_citations_client_idx').on(t.clientId)]
+);
+
+export const geoVisibilitySnapshots = pgTable(
+	'geo_visibility_snapshots',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		setId: uuid('set_id')
+			.notNull()
+			.references(() => geoQuerySets.id),
+		windowStart: timestamp('window_start', { withTimezone: true }).notNull(),
+		windowEnd: timestamp('window_end', { withTimezone: true }).notNull(),
+		computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
+		queryCount: integer('query_count').notNull().default(0),
+		observationCount: integer('observation_count').notNull().default(0),
+		mentionedQueryCount: integer('mentioned_query_count').notNull().default(0),
+		ownedCitationQueryCount: integer('owned_citation_query_count').notNull().default(0),
+		earnedCitationQueryCount: integer('earned_citation_query_count').notNull().default(0),
+		representedQueryCount: integer('represented_query_count').notNull().default(0),
+		accurateYesCount: integer('accurate_yes_count').notNull().default(0),
+		accurateNoCount: integer('accurate_no_count').notNull().default(0),
+		mentionOnlyCount: integer('mention_only_count').notNull().default(0),
+		sufficient: boolean('sufficient').notNull().default(false),
+		headline: text('headline').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('geo_visibility_snapshots_client_idx').on(t.clientId),
+		index('geo_visibility_snapshots_client_computed_idx').on(t.clientId, t.computedAt)
+	]
+);
+
+export const geoFactRepresentations = pgTable(
+	'geo_fact_representations',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		snapshotId: uuid('snapshot_id')
+			.notNull()
+			.references(() => geoVisibilitySnapshots.id),
+		observationId: uuid('observation_id')
+			.notNull()
+			.references(() => geoEngineObservations.id),
+		claimId: uuid('claim_id').references(() => claims.id),
+		status: geoRepresentationStatus('status').notNull(),
+		evidenceClass: seoEvidenceClass('evidence_class').notNull().default('observed'),
+		detail: text('detail'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('geo_fact_representations_snapshot_observation_idx').on(
+			t.snapshotId,
+			t.observationId
+		),
+		index('geo_fact_representations_client_idx').on(t.clientId)
+	]
 );

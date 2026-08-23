@@ -11,6 +11,7 @@ import {
 	type GeoProminence,
 	type GeoQueryGroup,
 	type GeoQuerySourceKind,
+	type GeoRepresentationStatus,
 	type GeoSurface,
 	type SchemaEntityKind,
 	type SchemaEntitySourceKind,
@@ -29,9 +30,11 @@ import {
 	contentBriefs,
 	geoCitations,
 	geoEngineObservations,
+	geoFactRepresentations,
 	geoMeasurementRuns,
 	geoQueries,
 	geoQuerySets,
+	geoVisibilitySnapshots,
 	schemaEntities,
 	seoAudits,
 	seoIssues,
@@ -955,6 +958,123 @@ export async function insertGeoCitationForTenant(
 			kind: input.kind,
 			url: input.url ?? null,
 			domain: input.domain ?? null
+		})
+		.returning();
+	return row;
+}
+
+export async function listGeoVisibilitySnapshotsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(geoVisibilitySnapshots)
+		.where(eq(geoVisibilitySnapshots.clientId, required.clientId))
+		.orderBy(desc(geoVisibilitySnapshots.computedAt));
+}
+
+export async function getLatestGeoVisibilitySnapshotForTenant(ctx: TenantContext, setId?: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(geoVisibilitySnapshots)
+		.where(
+			setId
+				? and(
+						eq(geoVisibilitySnapshots.clientId, required.clientId),
+						eq(geoVisibilitySnapshots.setId, setId)
+					)
+				: eq(geoVisibilitySnapshots.clientId, required.clientId)
+		)
+		.orderBy(desc(geoVisibilitySnapshots.computedAt))
+		.limit(1);
+	return row ?? null;
+}
+
+export async function insertGeoVisibilitySnapshotForTenant(
+	ctx: TenantContext,
+	input: {
+		setId: string;
+		windowStart: Date;
+		windowEnd: Date;
+		computedAt?: Date;
+		queryCount: number;
+		observationCount: number;
+		mentionedQueryCount: number;
+		ownedCitationQueryCount: number;
+		earnedCitationQueryCount: number;
+		representedQueryCount: number;
+		accurateYesCount: number;
+		accurateNoCount: number;
+		mentionOnlyCount: number;
+		sufficient: boolean;
+		headline: string;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(geoVisibilitySnapshots)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			setId: input.setId,
+			windowStart: input.windowStart,
+			windowEnd: input.windowEnd,
+			computedAt: input.computedAt ?? input.windowEnd,
+			queryCount: input.queryCount,
+			observationCount: input.observationCount,
+			mentionedQueryCount: input.mentionedQueryCount,
+			ownedCitationQueryCount: input.ownedCitationQueryCount,
+			earnedCitationQueryCount: input.earnedCitationQueryCount,
+			representedQueryCount: input.representedQueryCount,
+			accurateYesCount: input.accurateYesCount,
+			accurateNoCount: input.accurateNoCount,
+			mentionOnlyCount: input.mentionOnlyCount,
+			sufficient: input.sufficient,
+			headline: input.headline
+		})
+		.returning();
+	return row;
+}
+
+export async function listGeoFactRepresentationsForTenant(ctx: TenantContext, snapshotId?: string) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(geoFactRepresentations)
+		.where(
+			snapshotId
+				? and(
+						eq(geoFactRepresentations.clientId, required.clientId),
+						eq(geoFactRepresentations.snapshotId, snapshotId)
+					)
+				: eq(geoFactRepresentations.clientId, required.clientId)
+		)
+		.orderBy(desc(geoFactRepresentations.createdAt));
+}
+
+export async function insertGeoFactRepresentationForTenant(
+	ctx: TenantContext,
+	input: {
+		snapshotId: string;
+		observationId: string;
+		claimId?: string | null;
+		status: GeoRepresentationStatus;
+		evidenceClass?: SeoEvidenceClass;
+		detail?: string | null;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(geoFactRepresentations)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			snapshotId: input.snapshotId,
+			observationId: input.observationId,
+			claimId: input.claimId ?? null,
+			status: input.status,
+			evidenceClass: input.evidenceClass ?? 'observed',
+			detail: input.detail ?? null
 		})
 		.returning();
 	return row;

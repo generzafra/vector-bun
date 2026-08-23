@@ -72,6 +72,7 @@ import {
 	recordGeoObservation,
 	refreshAnswerReadiness,
 	refreshGeoQuerySet,
+	refreshGeoVisibilitySnapshot,
 	runTechnicalSearchAudit,
 	submitSearchSitemap,
 	syncSearchProperty,
@@ -988,6 +989,17 @@ app.post('/v1/search/geo/observations', async (c) => {
 	actorCan(session, 'seo.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await recordGeoObservation(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/geo/snapshot', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await refreshGeoVisibilitySnapshot(session, ctx, requestId);
 	return c.json({ requestId, data });
 });
 
