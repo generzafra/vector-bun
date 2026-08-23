@@ -37,13 +37,18 @@ export type DefaultUsageLimit = {
 	warningPercent: number;
 };
 
+export const S1_ENFORCE_USAGE_FAMILIES = ['api', 'ai', 'email', 'upload', 'analytics'] as const;
+export type S1EnforceUsageFamily = (typeof S1_ENFORCE_USAGE_FAMILIES)[number];
+
+export const DEFAULT_USAGE_LIMIT_MODE: UsageLimitMode = 'enforce';
+
 export const DEFAULT_USAGE_LIMITS: DefaultUsageLimit[] = [
-	{ resourceFamily: 'api', window: 'minute', hardLimit: 120, warningPercent: 80 },
-	{ resourceFamily: 'workflow', window: 'minute', hardLimit: 10, warningPercent: 80 },
-	{ resourceFamily: 'ai', window: 'minute', hardLimit: 20, warningPercent: 80 },
-	{ resourceFamily: 'email', window: 'hour', hardLimit: 100, warningPercent: 80 },
-	{ resourceFamily: 'upload', window: 'hour', hardLimit: 20, warningPercent: 80 },
-	{ resourceFamily: 'analytics', window: 'minute', hardLimit: 300, warningPercent: 80 }
+	{ resourceFamily: 'api', window: 'minute', hardLimit: 600, warningPercent: 80 },
+	{ resourceFamily: 'workflow', window: 'minute', hardLimit: 30, warningPercent: 80 },
+	{ resourceFamily: 'ai', window: 'minute', hardLimit: 120, warningPercent: 80 },
+	{ resourceFamily: 'email', window: 'hour', hardLimit: 200, warningPercent: 80 },
+	{ resourceFamily: 'upload', window: 'hour', hardLimit: 80, warningPercent: 80 },
+	{ resourceFamily: 'analytics', window: 'minute', hardLimit: 2000, warningPercent: 80 }
 ];
 
 export function usageWindowStart(window: UsageWindow, at: Date) {

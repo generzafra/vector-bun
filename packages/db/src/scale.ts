@@ -1,11 +1,13 @@
 import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import {
+	DEFAULT_USAGE_LIMIT_MODE,
 	DEFAULT_USAGE_LIMITS,
 	assertSameClient,
 	requireTenantContext,
 	usageWindowStart,
 	type DefaultUsageLimit,
 	type TenantContext,
+	type UsageLimitMode,
 	type UsageResourceFamily
 } from '@vector/contracts';
 import { db } from './client';
@@ -38,7 +40,7 @@ export async function ensureTenantUsageLimitsForTenant(ctx: TenantContext) {
 				window: limit.window,
 				hardLimit: limit.hardLimit,
 				warningPercent: limit.warningPercent,
-				mode: 'evaluate_only' as const
+				mode: DEFAULT_USAGE_LIMIT_MODE
 			}))
 		);
 	}
@@ -70,6 +72,7 @@ export async function updateTenantUsageLimitForTenant(
 		resourceFamily: UsageResourceFamily;
 		hardLimit: number;
 		warningPercent: number;
+		mode: UsageLimitMode;
 		overrideReason: string;
 	}
 ) {
@@ -80,7 +83,7 @@ export async function updateTenantUsageLimitForTenant(
 		.set({
 			hardLimit: input.hardLimit,
 			warningPercent: input.warningPercent,
-			mode: 'evaluate_only',
+			mode: input.mode,
 			overrideReason: input.overrideReason,
 			updatedAt: new Date()
 		})

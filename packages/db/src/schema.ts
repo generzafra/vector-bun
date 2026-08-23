@@ -3225,7 +3225,7 @@ export const tenantUsageLimits = pgTable(
 		window: usageWindow('window').notNull(),
 		hardLimit: integer('hard_limit').notNull(),
 		warningPercent: integer('warning_percent').notNull().default(80),
-		mode: usageLimitMode('mode').notNull().default('evaluate_only'),
+		mode: usageLimitMode('mode').notNull().default('enforce'),
 		overrideReason: text('override_reason'),
 		createdAt: createdAt(),
 		updatedAt: updatedAt()

@@ -19,6 +19,7 @@ export const actions = {
 					resourceFamily: String(form.get('resourceFamily') ?? ''),
 					hardLimit: Number(form.get('hardLimit') ?? ''),
 					warningPercent: Number(form.get('warningPercent') || 80),
+					mode: String(form.get('mode') || 'enforce'),
 					reason: String(form.get('reason') ?? '')
 				},
 				locals.requestId
@@ -26,7 +27,7 @@ export const actions = {
 			return {
 				ok: true,
 				notice:
-					'Usage limit updated for that client. S0 still evaluates only and does not refuse callers.'
+					'Usage limit updated for that client. Enforce refuses over-limit API, AI, email, upload, and analytics consumes. Evaluate-only still records only.'
 			};
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });

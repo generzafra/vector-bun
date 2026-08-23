@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { AUTONOMY_ACTION_TYPES, LAUNCH_AUTOMATION_ACTIONS, PHASE_8_MAX_AUTONOMY } from './autonomy';
 import { ValidationError } from './errors';
-import { USAGE_RESOURCE_FAMILIES } from './scale';
+import { USAGE_LIMIT_MODES, USAGE_RESOURCE_FAMILIES } from './scale';
 
 export const loginSchema = z
 	.object({
@@ -333,6 +333,7 @@ export const setTenantUsageLimitSchema = z
 		resourceFamily: z.enum(USAGE_RESOURCE_FAMILIES),
 		hardLimit: z.number().int().min(1).max(1_000_000),
 		warningPercent: z.number().int().min(1).max(100).default(80),
+		mode: z.enum(USAGE_LIMIT_MODES).default('enforce'),
 		reason: z.string().trim().min(8).max(400)
 	})
 	.strict();

@@ -142,3 +142,12 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/search/opportunities/:id/publish-ready` — only when the source is an approved claim or official query
 
 `SearchProvider` lives in `packages/search`. Memory is the default. Official Google Search Console and Bing Webmaster adapters run when `SEARCH_ADAPTER=official`. Tokens and API keys are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in Control or API JSON. `measureGenerativeVisibility` records `manual` or `operator_assisted` observations and returns `unsupported` for live / unofficial generative APIs. Memory, Google, and Bing share that helper; official adapters do not call consumer AI URLs. Answer-readiness refresh is tenant-scoped, fails closed without approved knowledge, and does not create pages. Visibility snapshots, fact representations, and search/GEO referral rows are tenant-scoped and are not a GEO score. Cadence, monthly GEO budget, and due-queue rows are tenant-scoped. `search-due-sweep` is tenant-scoped; `search-due-sweep-platform` fans out one job per client. The sweep never records a GEO observation or calls a consumer AI URL. A mention is not a citation, visit, or lead. Revenue is not assigned from a mention. Do not invent a second search adapter family.
+
+## Phase 9 Control API
+
+Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone. Mutating `/v1/*` routes consume the `api` family after session resolution. Auth, webhooks, and public routes are skipped. Over-limit enforce returns `429 RATE_LIMITED`.
+
+- `GET /v1/portfolio` — Vector 24 KPIs and exception rows for clients the actor can access (`scale.read`)
+- `GET /v1/portfolio/:clientId` — one client row only when the actor already owns that client
+- `POST /v1/portfolio/usage` — record a usage event (`scale.read`, CSRF)
+- `POST /v1/portfolio/limits` — override hard limit and mode with a written reason (`scale.manage`, CSRF). Window stays fixed.

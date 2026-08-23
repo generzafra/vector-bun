@@ -40,6 +40,7 @@ import { logError, logInfo } from '@vector/observability';
 import { getAnalyticsProvider } from './analytics';
 import { recordAudit } from './audit';
 import { tryEnrollCapturedLead } from './email';
+import { consumeTenantUsage } from './scale';
 import { recordObservableSearchReferral } from './search';
 import type { Actor } from './auth-service';
 
@@ -101,6 +102,7 @@ export async function recordDeliveryEvent(
 		const existing = await findFormStartedEvent(required, session.id, parsed.pageId);
 		if (existing) return { event: existing, visitor, session, duplicate: true };
 	}
+	await consumeTenantUsage(required, { resourceFamily: 'analytics' });
 	const touch = classifyTouch(parsed);
 	if (parsed.name === 'page_viewed') {
 		await insertTouchpointForTenant(required, {
@@ -168,6 +170,7 @@ export async function captureLead(
 	const email = normalizeEmail(parsed.email);
 	consumeRateLimit(`lead:${required.clientId}:${ip}`, 8, 15 * 60_000);
 	consumeRateLimit(`lead-email:${required.clientId}:${email}`, 5, 60 * 60_000);
+	await consumeTenantUsage(required, { resourceFamily: 'analytics' });
 	const phone = normalizePhone(parsed.phone);
 	const isTest = parsed.domainKind === 'preview';
 	const currentTouch = classifyTouch(parsed);

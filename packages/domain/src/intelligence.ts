@@ -83,6 +83,7 @@ import {
 } from '@vector/funnel-engine';
 import { logError, logInfo } from '@vector/observability';
 import { recordAudit } from './audit';
+import { consumeTenantUsage } from './scale';
 import type { Actor } from './auth-service';
 
 type IntelligenceArtifact = {
@@ -455,6 +456,11 @@ export async function runIntelligence(
 		});
 		throw new ProviderError(`AI execution is paused (${gate.blockedBy})`, 'AI_EXECUTION_PAUSED');
 	}
+
+	await consumeTenantUsage(
+		{ ...required, requestId },
+		{ resourceFamily: 'ai', actorId: actor.userId }
+	);
 
 	const [knowledge, analytics] = await Promise.all([
 		loadKnowledgeFacts(required),

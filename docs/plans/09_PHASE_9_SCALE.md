@@ -1,6 +1,6 @@
 # Phase 9 — Multi-Client Scale
 
-**Status:** Implementation specification — S0 in  
+**Status:** Implementation specification — S0–S1 in  
 **Phase:** 9  
 **Prerequisite:** Phase 8 exit met. Per-client identity, audit, and launch states already exist. Do not start Kubernetes, a database per client, or a 20-client capacity claim.
 
@@ -86,7 +86,7 @@ KPI is `vector_ready_at → live_at` excluding documented client-caused pauses. 
 | Slice  | Work                                                                                          | Gate  |
 | ------ | --------------------------------------------------------------------------------------------- | ----- |
 | **S0** | Usage limit defaults, evaluate-only quota gate, tenant usage events, Control `/portfolio`     | In    |
-| **S1** | Enforce hard deny for exceeded limits on API, AI, email, upload, and analytics write paths    | Later |
+| **S1** | Enforce hard deny for exceeded limits on API, AI, email, upload, and analytics write paths    | In    |
 | **S2** | Infrastructure usage snapshots and scaling alerts (queue delay, origin p95, one-tenant share) | Later |
 | **S3** | Client templates and operational queues on the portfolio surface                              | Later |
 | **S4** | Cost dashboard from existing ledgers; cost per qualified lead only when observed              | Later |
@@ -110,9 +110,12 @@ Phase 9 may exit after **S1** plus the S0 portfolio clocks. S2–S4 and Creative
 
 ## 9. S1 rules
 
-- Trusted software refuses a consume when the tenant row is `enforce` and `wouldDeny` is true. Evaluate-only rows still record and return.
-- Kill switch and consent rules still apply on the underlying action. A quota deny is not a license to skip suppression.
-- Alpha cannot consume against Beta limits. Missing TenantContext fails closed.
+- Trusted software refuses a consume when the tenant row is `enforce` and `wouldDeny` is true. The denied attempt is still recorded. Evaluate-only rows still record and return.
+- New and default limit rows are `enforce`. Operators with `scale.manage` may set `evaluate_only` or `enforce` with a written reason. Window stays fixed.
+- Write paths that consume: authenticated API mutations (`api`), Intelligence runs (`ai`), eligible nurture sends (`email`), brand and creative uploads (`upload`), Delivery events and lead capture (`analytics`). Workflow stays recorded and is not wired in S1.
+- Consent, suppression, and kill switch still run on the underlying action. A quota deny is not a license to skip them. Email consumes only after send eligibility allows.
+- Alpha cannot consume against Beta limits. Route client id cannot leak the other tenant. Missing TenantContext fails closed.
+- Control `/portfolio` can set enforce. It does not claim 20-client capacity.
 
 ---
 

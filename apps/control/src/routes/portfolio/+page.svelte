@@ -35,7 +35,7 @@
 <PageHeader
 	eyebrow="Portfolio operations"
 	title="Portfolio"
-	description="Oversee clients by exception. Usage is evaluate-only in this slice: a would-deny event is recorded and the caller is not refused. Vector 24 clocks are observed ready-to-live time excluding pauses. Class D is unpromised. This is not a commercial 24-hour guarantee and not a 20-client capacity claim."
+	description="Oversee clients by exception. Enforce refuses over-limit API, AI, email, upload, and analytics consumes. Evaluate-only still records a would-deny event without refusing. Vector 24 clocks are observed ready-to-live time excluding pauses. Class D is unpromised. This is not a commercial 24-hour guarantee and not a 20-client capacity claim."
 />
 
 {#if form?.error}
@@ -115,8 +115,8 @@
 	<section>
 		<h2>Override a limit</h2>
 		<p>
-			Window stays fixed per family. Enforce mode cannot be set here. A written reason is required
-			and audited.
+			Window stays fixed per family. Enforce refuses the named write paths. Evaluate-only records
+			only. A written reason is required and audited.
 		</p>
 		<form method="post" action="?/limit" class="wide">
 			<input type="hidden" name="_csrf" value={data.csrf} />
@@ -142,6 +142,13 @@
 			<label>
 				Hard limit
 				<input name="hardLimit" type="number" min="1" max="1000000" required />
+			</label>
+			<label>
+				Mode
+				<select name="mode">
+					<option value="enforce">enforce</option>
+					<option value="evaluate_only">evaluate only</option>
+				</select>
 			</label>
 			<label>
 				Reason

@@ -18,6 +18,7 @@ import {
 import { buildStorageKey, inspectUpload, storageProvider } from '@vector/storage';
 import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
+import { consumeTenantUsage } from './scale';
 
 export async function listBrandAssets(actor: Actor, ctx: TenantContext, clientId?: string) {
 	requireCapability(actor.permissions, 'knowledge.read');
@@ -42,6 +43,10 @@ export async function uploadBrandAsset(
 	});
 	const key = buildStorageKey(required.clientId, 'brand', parsed.purpose, input.filename);
 	const checksum = createHash('sha256').update(input.bytes).digest('hex');
+	await consumeTenantUsage(
+		{ ...required, requestId },
+		{ resourceFamily: 'upload', actorId: actor.userId }
+	);
 	await storageProvider().putObject({
 		clientId: required.clientId,
 		key,

@@ -2,7 +2,9 @@ import { requireCapability } from '@vector/auth';
 import {
 	ForbiddenError,
 	NotFoundError,
+	RateLimitError,
 	assertActorOwnsContext,
+	DEFAULT_USAGE_LIMIT_MODE,
 	DEFAULT_USAGE_LIMITS,
 	evaluateUsageQuota,
 	evaluateVector24Clock,
@@ -15,6 +17,7 @@ import {
 	usageWindowStart,
 	type PortfolioExceptionReason,
 	type TenantContext,
+	type UsageQuotaResult,
 	type UsageResourceFamily
 } from '@vector/contracts';
 import {
@@ -44,6 +47,12 @@ function tenantContextForClient(actor: Actor, clientId: string, requestId: strin
 	};
 }
 
+function refuseIfDenied(evaluation: UsageQuotaResult, resourceFamily: UsageResourceFamily) {
+	if (!evaluation.allowed) {
+		throw new RateLimitError(`Tenant ${resourceFamily} usage limit exceeded`);
+	}
+}
+
 export async function evaluateAndRecordUsage(
 	ctx: TenantContext,
 	input: { resourceFamily: UsageResourceFamily; quantity?: number; actorId?: string | null }
@@ -62,16 +71,18 @@ export async function evaluateAndRecordUsage(
 			resourceFamily: input.resourceFamily,
 			windowStartedAt
 		});
+		const evaluation = evaluateUsageQuota({
+			used: used - existing.quantity,
+			hardLimit: existing.hardLimit,
+			warningPercent: existing.warningPercent,
+			quantity: existing.quantity,
+			mode: existing.mode
+		});
+		refuseIfDenied(evaluation, input.resourceFamily);
 		return {
 			replayed: true,
 			event: existing,
-			evaluation: evaluateUsageQuota({
-				used: used - existing.quantity,
-				hardLimit: existing.hardLimit,
-				warningPercent: existing.warningPercent,
-				quantity: existing.quantity,
-				mode: 'evaluate_only'
-			})
+			evaluation
 		};
 	}
 	const used = await sumTenantUsageForWindow(required, {
@@ -83,7 +94,7 @@ export async function evaluateAndRecordUsage(
 		hardLimit: limit.hardLimit,
 		warningPercent: limit.warningPercent,
 		quantity,
-		mode: 'evaluate_only'
+		mode: limit.mode
 	});
 	const event = await insertTenantUsageEventForTenant(required, {
 		resourceFamily: input.resourceFamily,
@@ -93,12 +104,20 @@ export async function evaluateAndRecordUsage(
 		usedBefore: used,
 		hardLimit: limit.hardLimit,
 		warningPercent: limit.warningPercent,
-		mode: 'evaluate_only',
+		mode: limit.mode,
 		outcome: evaluation.wouldDeny ? 'would_deny' : 'recorded',
 		requestId: required.requestId,
 		actorId: input.actorId ?? null
 	});
+	refuseIfDenied(evaluation, input.resourceFamily);
 	return { replayed: false, event, evaluation };
+}
+
+export async function consumeTenantUsage(
+	ctx: TenantContext,
+	input: { resourceFamily: UsageResourceFamily; quantity?: number; actorId?: string | null }
+) {
+	return evaluateAndRecordUsage(ctx, input);
 }
 
 function assemblePortfolioRow(input: {
@@ -162,7 +181,7 @@ function assemblePortfolioRow(input: {
 			used,
 			hardLimit,
 			warningPercent,
-			mode: limit?.mode ?? 'evaluate_only',
+			mode: limit?.mode ?? DEFAULT_USAGE_LIMIT_MODE,
 			overrideReason: limit?.overrideReason ?? null,
 			warning: evaluation.warning,
 			wouldDeny: used > hardLimit,
@@ -298,7 +317,8 @@ export async function getPortfolioOverview(actor: Actor, requestId: string) {
 	const accessible = await listClientsForActor(actor);
 	const rows = await loadPortfolioRows(actor.organizationId, accessible);
 	return {
-		evaluateOnly: true,
+		evaluateOnly: false,
+		enforceEnabled: true,
 		kpi: summarizeVector24Kpis(
 			rows.map((row) => ({
 				launchClass: row.launch.launchClass,
@@ -358,6 +378,7 @@ export async function setTenantUsageLimit(actor: Actor, input: unknown, requestI
 		resourceFamily: parsed.resourceFamily,
 		hardLimit: parsed.hardLimit,
 		warningPercent: parsed.warningPercent,
+		mode: parsed.mode,
 		overrideReason: parsed.reason
 	});
 	if (!row) throw new NotFoundError('Usage limit not found');

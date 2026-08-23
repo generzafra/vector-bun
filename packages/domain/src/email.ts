@@ -98,6 +98,7 @@ import {
 import { previewOrigin as deliveryOriginForHost } from '@vector/funnel-engine';
 import { logError, logInfo } from '@vector/observability';
 import { recordAudit } from './audit';
+import { consumeTenantUsage } from './scale';
 import { dispatchWorkflow } from './workflows';
 import type { Actor } from './auth-service';
 
@@ -493,6 +494,13 @@ async function sendEnrollmentStep(ctx: TenantContext, enrollmentId: string, step
 
 	const domain = await getReadyEmailDomainForTenant(ctx);
 	if (!domain) throw new ValidationError('Sending domain is not ready');
+	await consumeTenantUsage(
+		{
+			...ctx,
+			requestId: `${ctx.requestId}:email:${enrollment.id}:${stepIndex}`
+		},
+		{ resourceFamily: 'email' }
+	);
 	const production = await getProductionDomainForTenant(ctx);
 	const token = createUnsubscribeToken(env.EMAIL_UNSUBSCRIBE_SECRET, {
 		clientId: ctx.clientId,

@@ -219,7 +219,7 @@ tenant_usage_limits
 tenant_usage_events
 ```
 
-Phase 9 S0 adds tenant-owned `tenant_usage_limits` and `tenant_usage_events` (`client_id` required). Every client gets the same six families: `api`, `workflow`, `ai`, `email`, `upload`, `analytics`. Windows are fixed per family. S0 mode is `evaluate_only`. Unique `(client_id, resource_family)` and `(client_id, request_id, resource_family)`. `infrastructure_usage_snapshots` wait for S2. Slice detail: `docs/plans/09_PHASE_9_SCALE.md`.
+Phase 9 S0–S1 add tenant-owned `tenant_usage_limits` and `tenant_usage_events` (`client_id` required). Every client gets the same six families: `api`, `workflow`, `ai`, `email`, `upload`, `analytics`. Windows are fixed per family. Default mode is `enforce`. Operators may set `evaluate_only`. Unique `(client_id, resource_family)` and `(client_id, request_id, resource_family)`. `infrastructure_usage_snapshots` wait for S2. Slice detail: `docs/plans/09_PHASE_9_SCALE.md`.
 
 ## Migration discipline
 

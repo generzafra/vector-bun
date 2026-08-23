@@ -36,6 +36,7 @@ import {
 	pauseIntelligence,
 	runAutoExecute,
 	rollbackAutoExecute,
+	consumeTenantUsage,
 	recordTenantUsage,
 	setAutonomyCeiling,
 	setLaunchAutomationPolicy,
@@ -119,6 +120,29 @@ async function requireSession(c: Context) {
 	if (!session) throw new UnauthorizedError();
 	return session;
 }
+
+app.use('/v1/*', async (c, next) => {
+	const method = c.req.method;
+	const path = c.req.path;
+	if (
+		method === 'GET' ||
+		method === 'HEAD' ||
+		method === 'OPTIONS' ||
+		path.startsWith('/v1/auth') ||
+		path.startsWith('/v1/webhooks') ||
+		path.startsWith('/v1/public')
+	) {
+		return next();
+	}
+	const session = await resolveSession(getCookie(c, cookieName()));
+	if (session?.clientId) {
+		await consumeTenantUsage(contextFor(session, createRequestId()), {
+			resourceFamily: 'api',
+			actorId: session.userId
+		});
+	}
+	return next();
+});
 
 app.get('/v1/clients', async (c) => {
 	const requestId = createRequestId();

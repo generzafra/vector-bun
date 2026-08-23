@@ -40,7 +40,7 @@ Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. O
 | Analytics / charts              | tables shipped; chart theme still planned                                                                                                 |
 | Automation canvas               | planned (later Phase 8); `/autonomy` policy table, S1 Run now, S2 launch plan, S3 unpublished launch execute, S4 promote/rollback shipped |
 | Intelligence explainability     | `/intelligence` cards, activity, draft artifacts                                                                                          |
-| Portfolio dashboard             | `/portfolio` S0 shipped: exceptions, Vector 24 clocks, evaluate-only usage overrides                                                      |
+| Portfolio dashboard             | `/portfolio` S0–S1 shipped: exceptions, Vector 24 clocks, enforce / evaluate-only usage overrides                                         |
 | Vector marketing hero           | not in this repo                                                                                                                          |
 
 ## Remaining follow-up

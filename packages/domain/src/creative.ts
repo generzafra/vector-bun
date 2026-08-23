@@ -23,6 +23,7 @@ import {
 import { buildStorageKey, inspectCreativeUpload, storageProvider } from '@vector/storage';
 import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
+import { consumeTenantUsage } from './scale';
 
 const PUBLISHABLE_RIGHTS = new Set(['client_owned', 'client_approved']);
 
@@ -78,6 +79,10 @@ export async function uploadCreativeAsset(
 	});
 	const key = buildStorageKey(required.clientId, 'creative', parsed.kind, input.filename);
 	const checksum = createHash('sha256').update(input.bytes).digest('hex');
+	await consumeTenantUsage(
+		{ ...required, requestId },
+		{ resourceFamily: 'upload', actorId: actor.userId }
+	);
 	await storageProvider().putObject({
 		clientId: required.clientId,
 		key,
