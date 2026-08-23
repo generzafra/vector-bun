@@ -1,7 +1,7 @@
 import { ProviderError } from '@vector/contracts';
 import { logError, logInfo } from '@vector/observability';
 import { encodeSitePath, searchFetch, toCtrBps, toPositionMilli } from './http';
-import { unsupportedGenerativeVisibility } from './measurement/geo';
+import { measureGenerativeVisibility as measureGenerativeVisibilityAdapter } from './measurement/geo';
 import type {
 	GenerativeVisibilityResult,
 	MeasureGenerativeVisibilityInput,
@@ -178,8 +178,8 @@ export class GoogleSearchProvider implements SearchProvider {
 	}
 
 	async measureGenerativeVisibility(
-		_input: MeasureGenerativeVisibilityInput
+		input: MeasureGenerativeVisibilityInput
 	): Promise<GenerativeVisibilityResult> {
-		return unsupportedGenerativeVisibility();
+		return measureGenerativeVisibilityAdapter(input);
 	}
 }

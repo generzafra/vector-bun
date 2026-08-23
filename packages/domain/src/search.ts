@@ -61,7 +61,6 @@ import {
 } from '@vector/db';
 import { logInfo } from '@vector/observability';
 import {
-	assertGeoObservationIntegrity,
 	canMarkPublishReady,
 	coverAnswerTarget,
 	decryptSecret,
@@ -78,7 +77,7 @@ import {
 	scoreOpportunity,
 	searchProvider,
 	setSearchProvider,
-	unsupportedGenerativeVisibility,
+	generativeMeasurementOverview,
 	type PublishedFaq,
 	type SearchProvider
 } from '@vector/search';
@@ -288,7 +287,7 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 				(row) => publicGeoObservationFreshness(row.observedAt).stale
 			).length
 		},
-		generativeMeasurement: unsupportedGenerativeVisibility()
+		generativeMeasurement: generativeMeasurementOverview()
 	};
 	const serialized = JSON.stringify(overview);
 	for (const row of properties) {
@@ -736,37 +735,11 @@ export async function recordGeoObservation(
 	const required = assertActorOwnsContext(actor, ctx);
 	consumeRateLimit(`search-geo-observe:${required.clientId}`, 10, 60_000);
 	const parsed = parseContract(recordGeoObservationSchema, input);
-	assertGeoObservationIntegrity({
-		method: parsed.method,
-		mentioned: parsed.mentioned,
-		ownedCitation: parsed.ownedCitation,
-		earnedCitation: parsed.earnedCitation,
-		represented: parsed.represented,
-		detail: parsed.detail,
-		citations: parsed.citations
-	});
 	const query = await getGeoQueryForTenant(required, parsed.queryId);
 	if (!query) throw new NotFoundError('GEO query not found');
-	const live = await getDomainSearchProvider('google').measureGenerativeVisibility({
+	const measured = await getDomainSearchProvider('google').measureGenerativeVisibility({
 		clientId: required.clientId,
 		query: query.query,
-		engine: parsed.engine
-	});
-	if (live.supported) {
-		throw new ValidationError('Live generative measurement is not enabled in this slice');
-	}
-	const startedAt = new Date();
-	const run = await insertGeoMeasurementRunForTenant(required, {
-		setId: query.setId,
-		method: parsed.method,
-		costMinor: parsed.costMinor,
-		currency: parsed.currency,
-		startedAt,
-		completedAt: new Date()
-	});
-	const observation = await insertGeoObservationForTenant(required, {
-		runId: run.id,
-		queryId: query.id,
 		engine: parsed.engine,
 		method: parsed.method,
 		mentioned: parsed.mentioned,
@@ -776,11 +749,38 @@ export async function recordGeoObservation(
 		accurate: parsed.accurate,
 		prominence: parsed.prominence,
 		confidence: parsed.confidence,
-		detail: parsed.detail ?? null,
+		detail: parsed.detail,
+		citations: parsed.citations
+	});
+	if (!measured.supported) {
+		throw new ValidationError(measured.detail);
+	}
+	const startedAt = new Date();
+	const run = await insertGeoMeasurementRunForTenant(required, {
+		setId: query.setId,
+		method: measured.method,
+		costMinor: parsed.costMinor,
+		currency: parsed.currency,
+		startedAt,
+		completedAt: new Date()
+	});
+	const observation = await insertGeoObservationForTenant(required, {
+		runId: run.id,
+		queryId: query.id,
+		engine: parsed.engine,
+		method: measured.method,
+		mentioned: measured.mentioned,
+		ownedCitation: measured.ownedCitation,
+		earnedCitation: measured.earnedCitation,
+		represented: measured.represented,
+		accurate: measured.accurate,
+		prominence: measured.prominence,
+		confidence: measured.confidence,
+		detail: measured.detail,
 		observedAt: startedAt
 	});
 	const citations = [];
-	for (const citation of parsed.citations) {
+	for (const citation of measured.citations) {
 		citations.push(
 			await insertGeoCitationForTenant(required, {
 				observationId: observation.id,
@@ -811,13 +811,13 @@ export async function recordGeoObservation(
 		run,
 		observation: {
 			...observation,
-			mentionOnly: mentionIsNotCitation(parsed),
+			mentionOnly: mentionIsNotCitation(measured),
 			stale: freshness.stale,
 			freshnessLabel: freshness.label,
 			freshnessDetail: freshness.detail,
 			citations
 		},
-		generativeMeasurement: live
+		generativeMeasurement: measured
 	};
 }
 

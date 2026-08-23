@@ -1,5 +1,5 @@
 import { ProviderError, type SearchEngine } from '@vector/contracts';
-import { unsupportedGenerativeVisibility } from './measurement/geo';
+import { measureGenerativeVisibility as measureGenerativeVisibilityAdapter } from './measurement/geo';
 import type {
 	GenerativeVisibilityResult,
 	MeasureGenerativeVisibilityInput,
@@ -62,9 +62,9 @@ export class MemorySearchProvider implements SearchProvider {
 	}
 
 	async measureGenerativeVisibility(
-		_input: MeasureGenerativeVisibilityInput
+		input: MeasureGenerativeVisibilityInput
 	): Promise<GenerativeVisibilityResult> {
-		return unsupportedGenerativeVisibility();
+		return measureGenerativeVisibilityAdapter(input);
 	}
 
 	setPerformance(input: { queries?: SearchQueryRow[]; pages?: SearchPageRow[] }) {

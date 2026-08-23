@@ -33,7 +33,7 @@ Later Creative Engine workflows (`docs/29`) — ingest, generation, derivatives,
 
 Later Outcomes workflows (`docs/30`) — lead-stage alerts, sales-outcome reconciliation, revenue import, attribution reconciliation, goal reviews, data-health checks, client digests, approval reminders — also use `WorkflowRuntime`.
 
-Phase 6 search workflows (same `WorkflowRuntime`): technical SEO audit on publish, search-property sync, AEO opportunity cycle, GEO baseline after public launch, scheduled high-priority GEO measurement through a compliant method only, stale-measurement warning, search/GEO digest. S2 exposes validate, sync, sitemap submit, and technical audit as tenant-scoped Control / API actions. S3 exposes answer-readiness refresh. S4 exposes GEO query-set refresh and manual / operator-assisted observation persist. Durable cadence and live measurement wait until S5/S8. Do not scrape restricted consumer AI interfaces. Do not measure thousands of low-value prompts daily.
+Phase 6 search workflows (same `WorkflowRuntime`): technical SEO audit on publish, search-property sync, AEO opportunity cycle, GEO baseline after public launch, scheduled high-priority GEO measurement through a compliant method only, stale-measurement warning, search/GEO digest. S2 exposes validate, sync, sitemap submit, and technical audit as tenant-scoped Control / API actions. S3 exposes answer-readiness refresh. S4 exposes GEO query-set refresh. S5 persists observations through `SearchProvider.measureGenerativeVisibility` for manual / operator-assisted methods only. Official generative-engine APIs stay unsupported. Durable cadence waits until S8. Do not scrape restricted consumer AI interfaces. Do not measure thousands of low-value prompts daily.
 
 ## Idempotency
 

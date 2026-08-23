@@ -25,7 +25,7 @@
 <PageHeader
 	eyebrow="Discoverability"
 	title="Search"
-	description="Traditional search, answer readiness, and later AI discovery share one tenant backlog. Official Search Console or Bing rows are provider-reported. A mention in an AI answer is not a visit or a lead. Vector does not assign an AI rank or GEO score."
+	description="Traditional search, answer readiness, and AI discovery share one tenant backlog. Official Search Console or Bing rows are provider-reported. Manual measurement is the first compliant method. A mention in an AI answer is not a visit or a lead. Vector does not assign an AI rank or GEO score."
 />
 
 {#if form?.error}
@@ -296,8 +296,9 @@
 	<section>
 		<h2>AI discovery queries</h2>
 		<p>
-			This is a small commercial query set from approved knowledge. A recorded observation is not a
-			ranking, GEO score, visit, or lead. Live measurement stays later.
+			This is a small commercial query set from approved knowledge. Manual and operator-assisted
+			measurement is the first compliant method. A recorded observation is not a ranking, GEO score,
+			visit, or lead. Official generative-engine APIs stay unsupported.
 		</p>
 		<p>
 			{overview.geoReadiness.queries} queries · {overview.geoReadiness.observations} recorded ·

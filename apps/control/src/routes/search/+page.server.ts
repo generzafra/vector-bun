@@ -133,7 +133,7 @@ export const actions = {
 			);
 			return {
 				ok: true,
-				notice: `${result.queries.length} commercial AI-discovery queries. Live measurement stays later.`
+				notice: `${result.queries.length} commercial AI-discovery queries. Official generative APIs stay unsupported.`
 			};
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });

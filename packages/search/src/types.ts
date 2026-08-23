@@ -1,4 +1,10 @@
-import type { SearchEngine } from '@vector/contracts';
+import type {
+	GeoAccuracy,
+	GeoCitationKind,
+	GeoMeasurementMethod,
+	GeoProminence,
+	SearchEngine
+} from '@vector/contracts';
 
 export type SearchAdapterName = 'memory' | 'google' | 'bing';
 
@@ -62,13 +68,43 @@ export type MeasureGenerativeVisibilityInput = {
 	query: string;
 	engine: string;
 	locale?: string;
+	method?: GeoMeasurementMethod;
+	mentioned?: boolean;
+	ownedCitation?: boolean;
+	earnedCitation?: boolean;
+	represented?: boolean;
+	accurate?: GeoAccuracy;
+	prominence?: GeoProminence;
+	confidence?: number;
+	detail?: string | null;
+	retainedAnswer?: string | null;
+	citations?: { kind: GeoCitationKind; url?: string | null; domain?: string | null }[];
 };
 
-export type GenerativeVisibilityResult = {
+export type UnsupportedGenerativeVisibility = {
 	supported: false;
 	status: 'unsupported';
 	detail: string;
 };
+
+export type RecordedGenerativeVisibility = {
+	supported: true;
+	status: 'recorded';
+	method: GeoMeasurementMethod;
+	adapter: 'manual';
+	mentioned: boolean;
+	ownedCitation: boolean;
+	earnedCitation: boolean;
+	represented: boolean;
+	accurate: GeoAccuracy;
+	prominence: GeoProminence;
+	confidence: number;
+	detail: string | null;
+	citations: { kind: GeoCitationKind; url?: string | null; domain?: string | null }[];
+};
+
+export type GenerativeVisibilityResult =
+	UnsupportedGenerativeVisibility | RecordedGenerativeVisibility;
 
 export interface SearchProvider {
 	engine: SearchEngine;

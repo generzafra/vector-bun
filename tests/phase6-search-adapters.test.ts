@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { ProviderError } from '@vector/contracts';
+import { ProviderError, ValidationError } from '@vector/contracts';
 import { BingSearchProvider } from '../packages/search/src/bing';
 import { GoogleSearchProvider } from '../packages/search/src/google';
 import { MemorySearchProvider } from '../packages/search/src/memory';
@@ -13,7 +13,7 @@ function jsonResponse(status: number, body: unknown) {
 	});
 }
 
-test('memory SearchProvider validates, syncs, submits sitemaps, and refuses GEO measurement', async () => {
+test('memory SearchProvider validates, syncs, submits sitemaps, and records manual GEO only', async () => {
 	const provider = new MemorySearchProvider('google');
 	provider.setPerformance({
 		queries: [
@@ -61,9 +61,25 @@ test('memory SearchProvider validates, syncs, submits sitemaps, and refuses GEO 
 	});
 	expect(geo.supported).toBe(false);
 	expect(geo.status).toBe('unsupported');
+	const manual = await provider.measureGenerativeVisibility({
+		clientId: '11111111-1111-4111-8111-111111111111',
+		query: 'best implant consult',
+		engine: 'chatgpt',
+		method: 'manual',
+		mentioned: true,
+		ownedCitation: false,
+		earnedCitation: false,
+		represented: false
+	});
+	expect(manual.supported).toBe(true);
+	if (manual.supported) {
+		expect(manual.adapter).toBe('manual');
+		expect(manual.mentionOnly ?? manual.mentioned).toBe(true);
+		expect(manual.ownedCitation).toBe(false);
+	}
 });
 
-test('official Search Console adapter uses official endpoints and never treats GEO as supported', async () => {
+test('official Search Console adapter uses official endpoints and records manual GEO without HTTP', async () => {
 	const calls: string[] = [];
 	const provider = new GoogleSearchProvider(async (input) => {
 		const url = String(input);
@@ -118,6 +134,20 @@ test('official Search Console adapter uses official endpoints and never treats G
 		engine: 'gemini'
 	});
 	expect(geo.supported).toBe(false);
+	const beforeManual = calls.length;
+	const manual = await provider.measureGenerativeVisibility({
+		clientId: '11111111-1111-4111-8111-111111111111',
+		query: 'who is the best dentist',
+		engine: 'gemini',
+		method: 'operator_assisted',
+		mentioned: true,
+		ownedCitation: true,
+		earnedCitation: false,
+		represented: true,
+		citations: [{ kind: 'owned', url: 'https://gsc.example/' }]
+	});
+	expect(manual.supported).toBe(true);
+	expect(calls.length).toBe(beforeManual);
 });
 
 test('official Bing adapter fails closed without a credential and maps query stats', async () => {
@@ -157,6 +187,38 @@ test('official Bing adapter fails closed without a credential and maps query sta
 			endDate: '2026-08-23'
 		})
 	).rejects.toBeInstanceOf(ProviderError);
+	const beforeManual = calls.length;
+	const live = await provider.measureGenerativeVisibility({
+		clientId: '11111111-1111-4111-8111-111111111111',
+		query: 'warehouse docks',
+		engine: 'perplexity'
+	});
+	expect(live.supported).toBe(false);
+	const manual = await provider.measureGenerativeVisibility({
+		clientId: '11111111-1111-4111-8111-111111111111',
+		query: 'warehouse docks',
+		engine: 'perplexity',
+		method: 'manual',
+		mentioned: true,
+		ownedCitation: false,
+		earnedCitation: false,
+		represented: false
+	});
+	expect(manual.supported).toBe(true);
+	expect(calls.length).toBe(beforeManual);
+	await expect(
+		provider.measureGenerativeVisibility({
+			clientId: '11111111-1111-4111-8111-111111111111',
+			query: 'warehouse docks',
+			engine: 'perplexity',
+			method: 'manual',
+			mentioned: true,
+			ownedCitation: false,
+			earnedCitation: false,
+			represented: false,
+			retainedAnswer: 'A full model answer'
+		})
+	).rejects.toBeInstanceOf(ValidationError);
 });
 
 test('technical issues and publish-ready evidence stay deterministic', () => {

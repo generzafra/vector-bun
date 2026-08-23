@@ -4,6 +4,7 @@ import { env } from '@vector/config';
 import {
 	ForbiddenError,
 	GEO_QUERY_LIMIT,
+	NotFoundError,
 	TenantContextError,
 	ValidationError,
 	requireTenantContext
@@ -26,10 +27,13 @@ import {
 	login,
 	recordGeoObservation,
 	refreshGeoQuerySet,
+	resetDomainSearchProvider,
 	resolveSession,
+	setDomainSearchProvider,
 	switchActiveClient
 } from '@vector/domain';
 import {
+	GoogleSearchProvider,
 	assertGeoObservationIntegrity,
 	geoObservationIsStale,
 	mentionIsNotCitation,
@@ -77,6 +81,7 @@ afterEach(async () => {
 	const { alpha, beta } = await seededClients();
 	await resetGeoRows(alpha.id);
 	await resetGeoRows(beta.id);
+	resetDomainSearchProvider();
 });
 
 test('GEO query sets stay small, commercial, and free of prohibited claims', () => {
@@ -156,9 +161,29 @@ test('Alpha cannot read Beta GEO query sets or observations', async () => {
 	).toBe(false);
 	expect(JSON.stringify(alphaOverview)).not.toMatch(/geoScore|AI rank|ai rank/i);
 	expect(alphaOverview.generativeMeasurement.supported).toBe(false);
+	expect(alphaOverview.generativeMeasurement.manualSupported).toBe(true);
+	expect(alphaOverview.generativeMeasurement.liveSupported).toBe(false);
 	await expect(
 		getSearchOverview(alphaActor, contextFor(alphaActor, 'geo-iso-a'), beta.id)
 	).rejects.toBeInstanceOf(TenantContextError);
+	const betaQuery = betaOverview.geoQueries[0];
+	if (!betaQuery) throw new Error('expected a Beta GEO query');
+	await expect(
+		recordGeoObservation(
+			alphaActor,
+			contextFor(alphaActor, 'geo-iso-a'),
+			{
+				queryId: betaQuery.id,
+				engine: 'other',
+				method: 'manual',
+				mentioned: true,
+				ownedCitation: false,
+				earnedCitation: false,
+				represented: false
+			},
+			'geo-iso-cross'
+		)
+	).rejects.toBeInstanceOf(NotFoundError);
 });
 
 test('manual observations persist mention without treating it as a citation or live measurement', async () => {
@@ -188,8 +213,37 @@ test('manual observations persist mention without treating it as a citation or l
 	expect(recorded.observation.mentioned).toBe(true);
 	expect(recorded.observation.mentionOnly).toBe(true);
 	expect(recorded.observation.ownedCitation).toBe(false);
-	expect(recorded.generativeMeasurement.supported).toBe(false);
+	expect(recorded.generativeMeasurement.supported).toBe(true);
+	if (recorded.generativeMeasurement.supported) {
+		expect(recorded.generativeMeasurement.adapter).toBe('manual');
+		expect(recorded.generativeMeasurement.method).toBe('manual');
+	}
 	expect(recorded.observation.stale).toBe(false);
+	const calls: string[] = [];
+	setDomainSearchProvider(
+		'google',
+		new GoogleSearchProvider(async (input) => {
+			calls.push(String(input));
+			return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+		})
+	);
+	const official = await recordGeoObservation(
+		actor,
+		ctx,
+		{
+			queryId: query.id,
+			engine: 'chatgpt',
+			method: 'operator_assisted',
+			mentioned: true,
+			ownedCitation: false,
+			earnedCitation: false,
+			represented: false,
+			detail: 'Official adapter still records manually'
+		},
+		'geo-obs-official'
+	);
+	expect(official.generativeMeasurement.supported).toBe(true);
+	expect(calls).toEqual([]);
 	await expect(
 		recordGeoObservation(
 			actor,
