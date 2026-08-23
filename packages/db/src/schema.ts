@@ -2356,3 +2356,172 @@ export const contentBriefs = pgTable(
 		index('content_briefs_client_idx').on(t.clientId)
 	]
 );
+
+export const geoQueryGroup = pgEnum('geo_query_group', [
+	'brand',
+	'service',
+	'product',
+	'high_intent',
+	'informational'
+]);
+export const geoQuerySourceKind = pgEnum('geo_query_source_kind', ['brand', 'service', 'offer']);
+export const geoQuerySetStatus = pgEnum('geo_query_set_status', ['active', 'archived']);
+export const geoSurface = pgEnum('geo_surface', [
+	'chatgpt',
+	'google_ai_overview',
+	'gemini',
+	'perplexity',
+	'other'
+]);
+export const geoMeasurementMethod = pgEnum('geo_measurement_method', [
+	'manual',
+	'operator_assisted'
+]);
+export const geoRunStatus = pgEnum('geo_run_status', ['recorded']);
+export const geoProminence = pgEnum('geo_prominence', ['unknown', 'mentioned', 'cited', 'primary']);
+export const geoAccuracy = pgEnum('geo_accuracy', ['yes', 'no', 'unknown']);
+export const geoCitationKind = pgEnum('geo_citation_kind', ['owned', 'earned']);
+
+export const geoQuerySets = pgTable(
+	'geo_query_sets',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		slug: text('slug').notNull(),
+		name: text('name').notNull(),
+		purpose: text('purpose').notNull().default('commercial_baseline'),
+		status: geoQuerySetStatus('status').notNull().default('active'),
+		country: text('country').notNull().default(''),
+		market: text('market').notNull().default(''),
+		language: text('language').notNull().default('en'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('geo_query_sets_client_slug_idx').on(t.clientId, t.slug),
+		index('geo_query_sets_client_idx').on(t.clientId)
+	]
+);
+
+export const geoQueries = pgTable(
+	'geo_queries',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		setId: uuid('set_id')
+			.notNull()
+			.references(() => geoQuerySets.id),
+		query: text('query').notNull(),
+		group: geoQueryGroup('group').notNull(),
+		sourceKind: geoQuerySourceKind('source_kind').notNull(),
+		sourceId: uuid('source_id').notNull(),
+		locale: text('locale').notNull().default('en'),
+		country: text('country').notNull().default(''),
+		language: text('language').notNull().default('en'),
+		priority: integer('priority').notNull().default(50),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('geo_queries_client_set_query_locale_idx').on(
+			t.clientId,
+			t.setId,
+			t.query,
+			t.locale
+		),
+		index('geo_queries_client_idx').on(t.clientId)
+	]
+);
+
+export const geoMeasurementRuns = pgTable(
+	'geo_measurement_runs',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		setId: uuid('set_id')
+			.notNull()
+			.references(() => geoQuerySets.id),
+		method: geoMeasurementMethod('method').notNull(),
+		status: geoRunStatus('status').notNull().default('recorded'),
+		costMinor: integer('cost_minor').notNull().default(0),
+		currency: text('currency').notNull().default('USD'),
+		startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+		completedAt: timestamp('completed_at', { withTimezone: true }),
+		createdAt: createdAt()
+	},
+	(t) => [index('geo_measurement_runs_client_idx').on(t.clientId)]
+);
+
+export const geoEngineObservations = pgTable(
+	'geo_engine_observations',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		runId: uuid('run_id')
+			.notNull()
+			.references(() => geoMeasurementRuns.id),
+		queryId: uuid('query_id')
+			.notNull()
+			.references(() => geoQueries.id),
+		engine: geoSurface('engine').notNull(),
+		method: geoMeasurementMethod('method').notNull(),
+		evidenceClass: seoEvidenceClass('evidence_class').notNull().default('observed'),
+		mentioned: boolean('mentioned').notNull().default(false),
+		ownedCitation: boolean('owned_citation').notNull().default(false),
+		earnedCitation: boolean('earned_citation').notNull().default(false),
+		represented: boolean('represented').notNull().default(false),
+		accurate: geoAccuracy('accurate').notNull().default('unknown'),
+		prominence: geoProminence('prominence').notNull().default('unknown'),
+		referralObserved: boolean('referral_observed').notNull().default(false),
+		outcomeObserved: boolean('outcome_observed').notNull().default(false),
+		confidence: integer('confidence').notNull().default(50),
+		detail: text('detail'),
+		observedAt: timestamp('observed_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('geo_engine_observations_client_idx').on(t.clientId),
+		index('geo_engine_observations_client_observed_idx').on(t.clientId, t.observedAt)
+	]
+);
+
+export const geoCitations = pgTable(
+	'geo_citations',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		observationId: uuid('observation_id')
+			.notNull()
+			.references(() => geoEngineObservations.id),
+		kind: geoCitationKind('kind').notNull(),
+		url: text('url'),
+		domain: text('domain'),
+		createdAt: createdAt()
+	},
+	(t) => [index('geo_citations_client_idx').on(t.clientId)]
+);

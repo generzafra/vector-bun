@@ -536,6 +536,71 @@ export type AnswerTargetStatus = (typeof ANSWER_TARGET_STATUSES)[number];
 export const CONTENT_BRIEF_STATUSES = ['draft'] as const;
 export type ContentBriefStatus = (typeof CONTENT_BRIEF_STATUSES)[number];
 
+export const GEO_QUERY_LIMIT = 20;
+
+export const GEO_QUERY_GROUPS = [
+	'brand',
+	'service',
+	'product',
+	'high_intent',
+	'informational'
+] as const;
+export type GeoQueryGroup = (typeof GEO_QUERY_GROUPS)[number];
+
+export const GEO_QUERY_SOURCE_KINDS = ['brand', 'service', 'offer'] as const;
+export type GeoQuerySourceKind = (typeof GEO_QUERY_SOURCE_KINDS)[number];
+
+export const GEO_SURFACES = [
+	'chatgpt',
+	'google_ai_overview',
+	'gemini',
+	'perplexity',
+	'other'
+] as const;
+export type GeoSurface = (typeof GEO_SURFACES)[number];
+
+export const GEO_MEASUREMENT_METHODS = ['manual', 'operator_assisted'] as const;
+export type GeoMeasurementMethod = (typeof GEO_MEASUREMENT_METHODS)[number];
+
+export const GEO_PROMINENCE = ['unknown', 'mentioned', 'cited', 'primary'] as const;
+export type GeoProminence = (typeof GEO_PROMINENCE)[number];
+
+export const GEO_ACCURACY = ['yes', 'no', 'unknown'] as const;
+export type GeoAccuracy = (typeof GEO_ACCURACY)[number];
+
+export const GEO_CITATION_KINDS = ['owned', 'earned'] as const;
+export type GeoCitationKind = (typeof GEO_CITATION_KINDS)[number];
+
+export const recordGeoObservationSchema = z
+	.object({
+		queryId: z.string().uuid(),
+		engine: z.enum(GEO_SURFACES),
+		method: z.enum(GEO_MEASUREMENT_METHODS),
+		mentioned: z.boolean(),
+		ownedCitation: z.boolean(),
+		earnedCitation: z.boolean(),
+		represented: z.boolean(),
+		accurate: z.enum(GEO_ACCURACY).default('unknown'),
+		prominence: z.enum(GEO_PROMINENCE).default('unknown'),
+		confidence: z.number().int().min(0).max(100).default(50),
+		detail: z.string().trim().max(400).optional().nullable(),
+		costMinor: z.number().int().nonnegative().default(0),
+		currency: z.string().trim().length(3).default('USD'),
+		citations: z
+			.array(
+				z
+					.object({
+						kind: z.enum(GEO_CITATION_KINDS),
+						url: z.string().trim().url().max(400).optional().nullable(),
+						domain: z.string().trim().max(180).optional().nullable()
+					})
+					.strict()
+			)
+			.max(8)
+			.default([])
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

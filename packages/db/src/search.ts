@@ -5,6 +5,13 @@ import {
 	type AnswerTargetIntent,
 	type AnswerTargetSourceKind,
 	type AnswerTargetStatus,
+	type GeoAccuracy,
+	type GeoCitationKind,
+	type GeoMeasurementMethod,
+	type GeoProminence,
+	type GeoQueryGroup,
+	type GeoQuerySourceKind,
+	type GeoSurface,
 	type SchemaEntityKind,
 	type SchemaEntitySourceKind,
 	type SchemaEntityStatus,
@@ -20,6 +27,11 @@ import { db } from './client';
 import {
 	answerTargets,
 	contentBriefs,
+	geoCitations,
+	geoEngineObservations,
+	geoMeasurementRuns,
+	geoQueries,
+	geoQuerySets,
 	schemaEntities,
 	seoAudits,
 	seoIssues,
@@ -700,6 +712,249 @@ export async function upsertContentBriefForTenant(
 			title: input.title,
 			problem: input.problem,
 			proposedAction: input.proposedAction
+		})
+		.returning();
+	return row;
+}
+
+export async function listGeoQuerySetsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(geoQuerySets)
+		.where(eq(geoQuerySets.clientId, required.clientId))
+		.orderBy(desc(geoQuerySets.createdAt));
+}
+
+export async function upsertGeoQuerySetForTenant(
+	ctx: TenantContext,
+	input: { slug: string; name: string; purpose?: string; language?: string }
+) {
+	const required = requireTenantContext(ctx);
+	const [existing] = await db
+		.select()
+		.from(geoQuerySets)
+		.where(and(eq(geoQuerySets.clientId, required.clientId), eq(geoQuerySets.slug, input.slug)))
+		.limit(1);
+	if (existing) {
+		const [row] = await db
+			.update(geoQuerySets)
+			.set({
+				name: input.name,
+				purpose: input.purpose ?? existing.purpose,
+				language: input.language ?? existing.language,
+				status: 'active',
+				updatedAt: new Date()
+			})
+			.where(and(eq(geoQuerySets.id, existing.id), eq(geoQuerySets.clientId, required.clientId)))
+			.returning();
+		return row;
+	}
+	const [row] = await db
+		.insert(geoQuerySets)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			slug: input.slug,
+			name: input.name,
+			purpose: input.purpose ?? 'commercial_baseline',
+			language: input.language ?? 'en'
+		})
+		.returning();
+	return row;
+}
+
+export async function listGeoQueriesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(geoQueries)
+		.where(eq(geoQueries.clientId, required.clientId))
+		.orderBy(geoQueries.priority, geoQueries.query);
+}
+
+export async function getGeoQueryForTenant(ctx: TenantContext, id: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(geoQueries)
+		.where(and(eq(geoQueries.id, id), eq(geoQueries.clientId, required.clientId)))
+		.limit(1);
+	return row ?? null;
+}
+
+export async function upsertGeoQueryForTenant(
+	ctx: TenantContext,
+	input: {
+		setId: string;
+		query: string;
+		group: GeoQueryGroup;
+		sourceKind: GeoQuerySourceKind;
+		sourceId: string;
+		locale?: string;
+		country?: string;
+		language?: string;
+		priority: number;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const locale = input.locale ?? 'en';
+	const [existing] = await db
+		.select()
+		.from(geoQueries)
+		.where(
+			and(
+				eq(geoQueries.clientId, required.clientId),
+				eq(geoQueries.setId, input.setId),
+				eq(geoQueries.query, input.query),
+				eq(geoQueries.locale, locale)
+			)
+		)
+		.limit(1);
+	if (existing) {
+		const [row] = await db
+			.update(geoQueries)
+			.set({
+				group: input.group,
+				sourceKind: input.sourceKind,
+				sourceId: input.sourceId,
+				country: input.country ?? existing.country,
+				language: input.language ?? existing.language,
+				priority: input.priority,
+				updatedAt: new Date()
+			})
+			.where(and(eq(geoQueries.id, existing.id), eq(geoQueries.clientId, required.clientId)))
+			.returning();
+		return row;
+	}
+	const [row] = await db
+		.insert(geoQueries)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			setId: input.setId,
+			query: input.query,
+			group: input.group,
+			sourceKind: input.sourceKind,
+			sourceId: input.sourceId,
+			locale,
+			country: input.country ?? '',
+			language: input.language ?? 'en',
+			priority: input.priority
+		})
+		.returning();
+	return row;
+}
+
+export async function insertGeoMeasurementRunForTenant(
+	ctx: TenantContext,
+	input: {
+		setId: string;
+		method: GeoMeasurementMethod;
+		costMinor: number;
+		currency: string;
+		startedAt: Date;
+		completedAt?: Date | null;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(geoMeasurementRuns)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			setId: input.setId,
+			method: input.method,
+			costMinor: input.costMinor,
+			currency: input.currency,
+			startedAt: input.startedAt,
+			completedAt: input.completedAt ?? null
+		})
+		.returning();
+	return row;
+}
+
+export async function listGeoObservationsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(geoEngineObservations)
+		.where(eq(geoEngineObservations.clientId, required.clientId))
+		.orderBy(desc(geoEngineObservations.observedAt));
+}
+
+export async function insertGeoObservationForTenant(
+	ctx: TenantContext,
+	input: {
+		runId: string;
+		queryId: string;
+		engine: GeoSurface;
+		method: GeoMeasurementMethod;
+		evidenceClass?: SeoEvidenceClass;
+		mentioned: boolean;
+		ownedCitation: boolean;
+		earnedCitation: boolean;
+		represented: boolean;
+		accurate: GeoAccuracy;
+		prominence: GeoProminence;
+		confidence: number;
+		detail?: string | null;
+		observedAt?: Date;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(geoEngineObservations)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			runId: input.runId,
+			queryId: input.queryId,
+			engine: input.engine,
+			method: input.method,
+			evidenceClass: input.evidenceClass ?? 'observed',
+			mentioned: input.mentioned,
+			ownedCitation: input.ownedCitation,
+			earnedCitation: input.earnedCitation,
+			represented: input.represented,
+			accurate: input.accurate,
+			prominence: input.prominence,
+			confidence: input.confidence,
+			detail: input.detail ?? null,
+			observedAt: input.observedAt ?? new Date()
+		})
+		.returning();
+	return row;
+}
+
+export async function listGeoCitationsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(geoCitations)
+		.where(eq(geoCitations.clientId, required.clientId))
+		.orderBy(desc(geoCitations.createdAt));
+}
+
+export async function insertGeoCitationForTenant(
+	ctx: TenantContext,
+	input: {
+		observationId: string;
+		kind: GeoCitationKind;
+		url?: string | null;
+		domain?: string | null;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(geoCitations)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			observationId: input.observationId,
+			kind: input.kind,
+			url: input.url ?? null,
+			domain: input.domain ?? null
 		})
 		.returning();
 	return row;

@@ -6,7 +6,9 @@ import {
 	createSeoOpportunity,
 	getSearchOverview,
 	markSeoOpportunityPublishReady,
+	recordGeoObservation,
 	refreshAnswerReadiness,
+	refreshGeoQuerySet,
 	runTechnicalSearchAudit,
 	submitSearchSitemap,
 	syncSearchProperty,
@@ -118,6 +120,61 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not refresh answer readiness' });
+		}
+	},
+	geoQuerySet: async ({ locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		try {
+			const result = await refreshGeoQuerySet(
+				session,
+				contextFor(session, locals.requestId),
+				locals.requestId
+			);
+			return {
+				ok: true,
+				notice: `${result.queries.length} commercial AI-discovery queries. Live measurement stays later.`
+			};
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not refresh the GEO query set' });
+		}
+	},
+	geoObservation: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		const citations = [];
+		const ownedUrl = String(form.get('ownedUrl') ?? '').trim();
+		const earnedUrl = String(form.get('earnedUrl') ?? '').trim();
+		if (ownedUrl) citations.push({ kind: 'owned' as const, url: ownedUrl });
+		if (earnedUrl) citations.push({ kind: 'earned' as const, url: earnedUrl });
+		try {
+			await recordGeoObservation(
+				session,
+				contextFor(session, locals.requestId),
+				{
+					queryId: String(form.get('queryId') ?? ''),
+					engine: String(form.get('engine') ?? ''),
+					method: String(form.get('method') ?? 'manual'),
+					mentioned: form.get('mentioned') === 'on',
+					ownedCitation: form.get('ownedCitation') === 'on',
+					earnedCitation: form.get('earnedCitation') === 'on',
+					represented: form.get('represented') === 'on',
+					accurate: String(form.get('accurate') ?? 'unknown'),
+					prominence: String(form.get('prominence') ?? 'unknown'),
+					detail: String(form.get('detail') ?? ''),
+					citations
+				},
+				locals.requestId
+			);
+			return {
+				ok: true,
+				notice: 'Recorded observation stored. A mention is not a citation, visit, or lead.'
+			};
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not record the GEO observation' });
 		}
 	},
 	audit: async ({ locals }) => {

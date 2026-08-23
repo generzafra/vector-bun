@@ -69,7 +69,9 @@ import {
 	createSeoOpportunity,
 	getSearchOverview,
 	markSeoOpportunityPublishReady,
+	recordGeoObservation,
 	refreshAnswerReadiness,
+	refreshGeoQuerySet,
 	runTechnicalSearchAudit,
 	submitSearchSitemap,
 	syncSearchProperty,
@@ -964,6 +966,28 @@ app.post('/v1/search/answer-readiness', async (c) => {
 	actorCan(session, 'seo.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await refreshAnswerReadiness(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/geo/query-set', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await refreshGeoQuerySet(session, ctx, requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/geo/observations', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await recordGeoObservation(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data });
 });
 

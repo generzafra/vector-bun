@@ -7,6 +7,7 @@ import {
 	connectSearchPropertySchema,
 	createSeoOpportunitySchema,
 	parseContract,
+	recordGeoObservationSchema,
 	searchClientIdSchema,
 	searchPropertyIdSchema,
 	seoOpportunityIdSchema,
@@ -17,16 +18,24 @@ import {
 import {
 	assertSearchClient,
 	getBrandForTenant,
+	getGeoQueryForTenant,
 	getSeoIssueForTenant,
 	getSeoOpportunityForTenant,
 	getSeoPropertyForTenant,
 	getSeoQueryForTenant,
+	insertGeoCitationForTenant,
+	insertGeoMeasurementRunForTenant,
+	insertGeoObservationForTenant,
 	insertSeoAuditForTenant,
 	insertSeoIssueForTenant,
 	insertSeoOpportunityForTenant,
 	listAnswerTargetsForTenant,
 	listClaimsForTenant,
 	listContentBriefsForTenant,
+	listGeoCitationsForTenant,
+	listGeoObservationsForTenant,
+	listGeoQueriesForTenant,
+	listGeoQuerySetsForTenant,
 	listOffersForTenant,
 	listPublishedPageDocumentsForTenant,
 	listSchemaEntitiesForTenant,
@@ -37,6 +46,8 @@ import {
 	listSeoPropertiesForTenant,
 	listSeoQueriesForTenant,
 	listServicesForTenant,
+	upsertGeoQueryForTenant,
+	upsertGeoQuerySetForTenant,
 	markMissingSchemaEntitiesStaleForTenant,
 	patchSeoPropertyForTenant,
 	updateSeoOpportunityForTenant,
@@ -50,15 +61,19 @@ import {
 } from '@vector/db';
 import { logInfo } from '@vector/observability';
 import {
+	assertGeoObservationIntegrity,
 	canMarkPublishReady,
 	coverAnswerTarget,
 	decryptSecret,
 	detectTechnicalIssues,
 	encryptSecret,
 	isoDate,
+	mentionIsNotCitation,
 	memorySearchProvider,
 	proposeAnswerTargets,
+	proposeGeoQueries,
 	proposeSchemaEntities,
+	publicGeoObservationFreshness,
 	resetSearchProvider,
 	scoreOpportunity,
 	searchProvider,
@@ -186,6 +201,10 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		entities,
 		targets,
 		briefs,
+		geoSets,
+		geoQueries,
+		geoObservations,
+		geoCitations,
 		readiness
 	] = await Promise.all([
 		listSeoPropertiesForTenant(required),
@@ -198,6 +217,10 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		listSchemaEntitiesForTenant(required),
 		listAnswerTargetsForTenant(required),
 		listContentBriefsForTenant(required),
+		listGeoQuerySetsForTenant(required),
+		listGeoQueriesForTenant(required),
+		listGeoObservationsForTenant(required),
+		listGeoCitationsForTenant(required),
 		searchPropertyReadiness(required)
 	]);
 	const overview = {
@@ -225,6 +248,45 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 				env.SEARCH_ADAPTER === 'official'
 					? 'Official Search Console / Bing adapters are selected'
 					: 'Memory search adapter is selected'
+		},
+		geoQuerySets: geoSets,
+		geoQueries,
+		geoObservations: geoObservations.map((row) => {
+			const freshness = publicGeoObservationFreshness(row.observedAt);
+			return {
+				id: row.id,
+				queryId: row.queryId,
+				engine: row.engine,
+				method: row.method,
+				mentioned: row.mentioned,
+				ownedCitation: row.ownedCitation,
+				earnedCitation: row.earnedCitation,
+				represented: row.represented,
+				accurate: row.accurate,
+				prominence: row.prominence,
+				confidence: row.confidence,
+				detail: row.detail,
+				observedAt: row.observedAt,
+				mentionOnly: mentionIsNotCitation(row),
+				stale: freshness.stale,
+				freshnessLabel: freshness.label,
+				freshnessDetail: freshness.detail,
+				citations: geoCitations
+					.filter((citation) => citation.observationId === row.id)
+					.map((citation) => ({
+						id: citation.id,
+						kind: citation.kind,
+						url: citation.url,
+						domain: citation.domain
+					}))
+			};
+		}),
+		geoReadiness: {
+			queries: geoQueries.length,
+			observations: geoObservations.length,
+			staleObservations: geoObservations.filter(
+				(row) => publicGeoObservationFreshness(row.observedAt).stale
+			).length
 		},
 		generativeMeasurement: unsupportedGenerativeVisibility()
 	};
@@ -611,6 +673,151 @@ export async function refreshAnswerReadiness(actor: Actor, ctx: TenantContext, r
 			mapped: targetRows.filter((row) => row.status === 'mapped').length,
 			gaps: targetRows.filter((row) => row.status === 'gap').length
 		}
+	};
+}
+
+export async function refreshGeoQuerySet(actor: Actor, ctx: TenantContext, requestId: string) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	consumeRateLimit(`search-geo:${required.clientId}`, 8, 60_000);
+	const [brand, services, offers, claims] = await Promise.all([
+		getBrandForTenant(required),
+		listServicesForTenant(required),
+		listOffersForTenant(required),
+		listClaimsForTenant(required)
+	]);
+	const set = await upsertGeoQuerySetForTenant(required, {
+		slug: 'commercial-baseline',
+		name: 'Commercial baseline'
+	});
+	const proposed = proposeGeoQueries({
+		brand: brand
+			? {
+					id: brand.id,
+					displayName: brand.displayName,
+					primaryConversion: brand.primaryConversion
+				}
+			: null,
+		services,
+		offers,
+		claims
+	});
+	const queries = [];
+	for (const item of proposed) {
+		queries.push(
+			await upsertGeoQueryForTenant(required, {
+				setId: set.id,
+				...item
+			})
+		);
+	}
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'search.geo.query_set.refresh',
+		entityType: 'geo_query_set',
+		entityId: set.id,
+		requestId,
+		reason: `${queries.length} commercial GEO queries`
+	});
+	logInfo('search.geo.query_set.refresh', { queries: queries.length });
+	return { set, queries };
+}
+
+export async function recordGeoObservation(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	consumeRateLimit(`search-geo-observe:${required.clientId}`, 10, 60_000);
+	const parsed = parseContract(recordGeoObservationSchema, input);
+	assertGeoObservationIntegrity({
+		method: parsed.method,
+		mentioned: parsed.mentioned,
+		ownedCitation: parsed.ownedCitation,
+		earnedCitation: parsed.earnedCitation,
+		represented: parsed.represented,
+		detail: parsed.detail,
+		citations: parsed.citations
+	});
+	const query = await getGeoQueryForTenant(required, parsed.queryId);
+	if (!query) throw new NotFoundError('GEO query not found');
+	const live = await getDomainSearchProvider('google').measureGenerativeVisibility({
+		clientId: required.clientId,
+		query: query.query,
+		engine: parsed.engine
+	});
+	if (live.supported) {
+		throw new ValidationError('Live generative measurement is not enabled in this slice');
+	}
+	const startedAt = new Date();
+	const run = await insertGeoMeasurementRunForTenant(required, {
+		setId: query.setId,
+		method: parsed.method,
+		costMinor: parsed.costMinor,
+		currency: parsed.currency,
+		startedAt,
+		completedAt: new Date()
+	});
+	const observation = await insertGeoObservationForTenant(required, {
+		runId: run.id,
+		queryId: query.id,
+		engine: parsed.engine,
+		method: parsed.method,
+		mentioned: parsed.mentioned,
+		ownedCitation: parsed.ownedCitation,
+		earnedCitation: parsed.earnedCitation,
+		represented: parsed.represented,
+		accurate: parsed.accurate,
+		prominence: parsed.prominence,
+		confidence: parsed.confidence,
+		detail: parsed.detail ?? null,
+		observedAt: startedAt
+	});
+	const citations = [];
+	for (const citation of parsed.citations) {
+		citations.push(
+			await insertGeoCitationForTenant(required, {
+				observationId: observation.id,
+				kind: citation.kind,
+				url: citation.url ?? null,
+				domain: citation.domain ?? null
+			})
+		);
+	}
+	const freshness = publicGeoObservationFreshness(observation.observedAt);
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'search.geo.observation.record',
+		entityType: 'geo_engine_observation',
+		entityId: observation.id,
+		requestId,
+		reason: `${parsed.method} ${parsed.engine} observation`
+	});
+	logInfo('search.geo.observation.record', {
+		engine: parsed.engine,
+		mentioned: parsed.mentioned,
+		ownedCitation: parsed.ownedCitation
+	});
+	return {
+		run,
+		observation: {
+			...observation,
+			mentionOnly: mentionIsNotCitation(parsed),
+			stale: freshness.stale,
+			freshnessLabel: freshness.label,
+			freshnessDetail: freshness.detail,
+			citations
+		},
+		generativeMeasurement: live
 	};
 }
 

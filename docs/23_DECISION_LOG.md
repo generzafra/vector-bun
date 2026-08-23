@@ -392,4 +392,4 @@ Supersede this ADR. Leave `docs/10` GEO sections as historical. Keep Phase 6 exi
 
 ### Implementation note (23 August 2026)
 
-S1 Delivery GEO-readiness, S2 `packages/search`, and S3 answer targets / schema entities / source-backed FAQ gaps are in. S4 (GEO query and observation schema, no live measurement) is next. The ADR lock is unchanged.
+S1–S4 are in: Delivery GEO-readiness, `packages/search`, answer targets, and GEO query/observation schema. Live measurement remains later and `unsupported`. The ADR lock is unchanged.

@@ -118,7 +118,7 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 
 Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
 
-- `GET /v1/search` — properties, issues, official queries, opportunities, entities, answer targets, briefs, readiness (`seo.read`)
+- `GET /v1/search` — properties, issues, official queries, opportunities, entities, answer targets, briefs, GEO query sets, recorded observations, readiness (`seo.read`)
 - `GET /v1/search/:clientId` — same overview only when the actor already owns that client
 - `POST /v1/search/properties` — store an encrypted Search Console or Bing credential (`seo.manage`, CSRF)
 - `POST /v1/search/properties/:id/validate` — property health through `SearchProvider`
@@ -126,7 +126,9 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/search/properties/:id/sitemap` — sitemap submit when the official API exists
 - `POST /v1/search/audits` — technical audit of published pages
 - `POST /v1/search/answer-readiness` — refresh schema entities, answer targets, and source-backed FAQ gaps (`seo.manage`, CSRF)
+- `POST /v1/search/geo/query-set` — refresh the capped commercial GEO query set (`seo.manage`, CSRF)
+- `POST /v1/search/geo/observations` — persist a manual or operator-assisted observation (`seo.manage`, CSRF)
 - `POST /v1/search/opportunities` — create a channelled backlog item with evidence
 - `POST /v1/search/opportunities/:id/publish-ready` — only when the source is an approved claim or official query
 
-`SearchProvider` lives in `packages/search`. Memory is the default. Official Google Search Console and Bing Webmaster adapters run when `SEARCH_ADAPTER=official`. Tokens and API keys are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in Control or API JSON. `measureGenerativeVisibility` returns `unsupported` in this slice. Answer-readiness refresh is tenant-scoped, fails closed without approved knowledge, and does not create pages. Do not invent a second search adapter family.
+`SearchProvider` lives in `packages/search`. Memory is the default. Official Google Search Console and Bing Webmaster adapters run when `SEARCH_ADAPTER=official`. Tokens and API keys are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in Control or API JSON. `measureGenerativeVisibility` returns `unsupported` in this slice. Answer-readiness refresh is tenant-scoped, fails closed without approved knowledge, and does not create pages. GEO observations are operator-recorded only; a mention is not a citation, visit, or lead. Do not invent a second search adapter family.

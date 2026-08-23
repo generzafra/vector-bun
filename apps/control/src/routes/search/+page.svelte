@@ -294,6 +294,133 @@
 	</section>
 
 	<section>
+		<h2>AI discovery queries</h2>
+		<p>
+			This is a small commercial query set from approved knowledge. A recorded observation is not a
+			ranking, GEO score, visit, or lead. Live measurement stays later.
+		</p>
+		<p>
+			{overview.geoReadiness.queries} queries · {overview.geoReadiness.observations} recorded ·
+			{overview.geoReadiness.staleObservations} stale
+		</p>
+		<p>{overview.generativeMeasurement.detail}</p>
+		{#if canManage}
+			<form method="post" action="?/geoQuerySet">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<button type="submit">Refresh commercial query set</button>
+			</form>
+		{/if}
+		{#if overview.geoQueries.length === 0}
+			<EmptyState title="No commercial AI-discovery queries yet." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Query</th>
+						<th>Group</th>
+						<th>Source</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.geoQueries as query (query.id)}
+						<tr>
+							<td>{query.query}</td>
+							<td>{query.group}</td>
+							<td>{query.sourceKind}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+		{#if overview.geoObservations.length === 0}
+			<EmptyState title="No recorded observations yet." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>When</th>
+						<th>Engine</th>
+						<th>Mention</th>
+						<th>Citation</th>
+						<th>Freshness</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.geoObservations as row (row.id)}
+						<tr>
+							<td>{row.observedAt}</td>
+							<td>{row.engine}</td>
+							<td>{row.mentioned ? 'mentioned' : 'not mentioned'}</td>
+							<td>
+								{row.ownedCitation || row.earnedCitation
+									? row.ownedCitation
+										? 'owned'
+										: 'earned'
+									: row.mentionOnly
+										? 'mention only'
+										: 'none'}
+							</td>
+							<td>
+								<StatusChip label={row.freshnessLabel} tone={row.stale ? 'warning' : 'muted'} />
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+		{#if canManage && overview.geoQueries.length > 0}
+			<form method="post" action="?/geoObservation" class="wide">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Query
+					<select name="queryId">
+						{#each overview.geoQueries as query (query.id)}
+							<option value={query.id}>{query.query}</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					Surface
+					<select name="engine">
+						<option value="other">Other / unspecified</option>
+						<option value="chatgpt">ChatGPT</option>
+						<option value="google_ai_overview">Google AI Overview</option>
+						<option value="gemini">Gemini</option>
+						<option value="perplexity">Perplexity</option>
+					</select>
+				</label>
+				<label>
+					Method
+					<select name="method">
+						<option value="manual">Manual</option>
+						<option value="operator_assisted">Operator-assisted</option>
+					</select>
+				</label>
+				<label><input type="checkbox" name="mentioned" /> Mentioned</label>
+				<label><input type="checkbox" name="ownedCitation" /> Owned citation</label>
+				<label><input type="checkbox" name="earnedCitation" /> Earned citation</label>
+				<label><input type="checkbox" name="represented" /> Fact represented</label>
+				<label>
+					Owned source URL
+					<input name="ownedUrl" type="url" placeholder="https://www.client.example/" />
+				</label>
+				<label>
+					Earned source URL
+					<input name="earnedUrl" type="url" placeholder="https://example.org/article" />
+				</label>
+				<label>
+					Note
+					<textarea
+						name="detail"
+						maxlength="400"
+						placeholder="Structured note only. Do not paste a full model answer."></textarea>
+				</label>
+				<button type="submit">Record observation</button>
+			</form>
+		{/if}
+	</section>
+
+	<section>
 		<h2>Backlog</h2>
 		<p>
 			Publish-ready requires an approved knowledge claim or an official query. Hypothesis items stay

@@ -1,5 +1,7 @@
 export * from './aeo/targets';
 export * from './audits/technical';
+export * from './geo/observations';
+export * from './geo/queries';
 export * from './bing';
 export * from './factory';
 export * from './google';

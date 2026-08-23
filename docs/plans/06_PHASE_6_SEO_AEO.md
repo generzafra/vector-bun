@@ -388,7 +388,7 @@ Do not sprinkle GEO into email, social-provider, or auth docs unless an implemen
 | **S1** | JSON-LD, real sitemap, path canonicals, AI-crawler robots, `llms.txt`, preview isolation                                   | Done                 |
 | **S2** | `packages/search`, memory `SearchProvider`, `seo.read`/`seo.manage`, issues/opportunities, official GSC/Bing when approved | Done                 |
 | **S3** | Answer targets, entities, source-backed FAQ gaps                                                                           | Done                 |
-| **S4** | GEO query sets + observation schema. No live measurement required.                                                         | Toward exit          |
+| **S4** | GEO query sets + observation schema. No live measurement required.                                                         | Done                 |
 | **S5** | First compliant measurement adapter (start manual / operator-assisted)                                                     | Optional for exit    |
 | **S6** | Snapshots, accuracy, client-safe reporting                                                                                 | After S5             |
 | **S7** | Search/GEO → lead/revenue                                                                                                  | Additive (`docs/30`) |
