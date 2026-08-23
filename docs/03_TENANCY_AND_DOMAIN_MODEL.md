@@ -25,7 +25,7 @@ Visitor → custom domain → Cloudflare → Delivery Plane
 
 The same process may serve `cebudentalclinic.com` and `abcplumbing.com` while loading completely different tenant configuration.
 
-Shared infrastructure must never imply shared business data. Each client may independently own domain, brand, design tokens, content, offers, funnels, forms, leads, campaigns, analytics, email, social, SEO/AEO, AI policies, experiments, assets, and provider connections.
+Shared infrastructure must never imply shared business data. Each client may independently own domain, brand, design tokens, content, offers, funnels, forms, leads, campaigns, analytics, email, social, SEO/AEO/GEO, AI policies, experiments, assets, and provider connections. GEO query sets, observations, citations, and search-property tokens are tenant-owned. Search and GEO retrieval cannot cross clients. Cross-client aggregated learning, if any, follows permission and de-identification rules — not a Phase 6 default.
 
 Goals, sales outcomes, revenue, data-health records, notification preferences, package entitlements, and client-health snapshots are tenant-owned and require `client_id` (`docs/30`). Cross-tenant aggregation is MGE-internal and capability-gated. Do not expose one client's revenue to another client or to unauthorized operators.
 
@@ -47,7 +47,7 @@ Before production launch, every client receives a private preview, for example:
 preview-{client-slug}.vector.maxglobalexpo.com
 ```
 
-Preview requirements: `noindex`, access control where practical, no production marketing email, no production social publishing, test-mode analytics, test lead routing. Preview must not become indexed public content.
+Preview requirements: `noindex`, access control where practical, no production marketing email, no production social publishing, test-mode analytics, test lead routing. Preview must not become indexed public content. Preview must not serve production sitemap, JSON-LD, or `llms.txt`.
 
 ## Domain activation
 

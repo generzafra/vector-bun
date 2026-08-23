@@ -123,7 +123,7 @@ Primary message:
 
 Supporting message:
 
-> Vector connects your sales funnels, lead capture, email nurturing, social publishing, SEO and AEO, analytics, attribution, and continuous conversion optimization into one operating system.
+> Vector connects your sales funnels, lead capture, email nurturing, social publishing, SEO, AEO, and GEO, analytics, attribution, and continuous conversion optimization into one operating system.
 
 ## 2.4 What Vector must not become
 
@@ -148,6 +148,7 @@ Every client implementation should be capable of delivering the following outcom
 
 - Generate search visibility.
 - Generate answer engine visibility where feasible.
+- Improve generative-engine representation (GEO) without claiming guaranteed citations.
 - Publish social content.
 - Operate paid or organic campaign landing pages.
 - Create shareable campaign assets.
@@ -309,7 +310,7 @@ vector/
 │   ├── analytics/                # Event taxonomy, attribution, PostHog adapters
 │   ├── email/                    # Email provider abstraction
 │   ├── social/                   # Social provider abstraction
-│   ├── search/                   # Search and SEO provider integrations
+│   ├── search/                   # SearchProvider: SEO/AEO/GEO, GSC/Bing, optional GEO measure
 │   ├── storage/                  # R2 and S3 compatible abstraction
 │   ├── funnel-engine/            # Page schema, components, rendering logic
 │   ├── experiments/              # Experiment domain and assignment
@@ -616,19 +617,25 @@ The final schema should be normalized around business concepts, not around third
 - email_suppressions
 - email_inbound_messages
 
-## 8.8 SEO and AEO
+## 8.8 SEO, AEO, and GEO
 
 - seo_properties
 - seo_pages
 - seo_keywords
 - seo_queries
-- seo_rank_snapshots
 - seo_audits
 - seo_issues
 - seo_opportunities
 - schema_entities
 - content_briefs
 - answer_targets
+- geo_query_sets
+- geo_queries
+- geo_measurement_runs
+- geo_engine_observations
+- geo_citations
+
+`seo_queries` are official Search Console / Bing rows when connected. Defer `seo_rank_snapshots` unless an official API provides them. `seo_opportunities.channel` is `seo | aeo | geo`. First-ship GEO tables only; later snapshot/referral/learning tables stay later. Detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
 
 ## 8.9 Analytics and attribution
 
@@ -1157,6 +1164,14 @@ Initial specialized agents:
 - Generate source backed FAQ and explanatory structures.
 - Never claim guaranteed AI citation or ranking.
 
+### Search Agent (SEO / AEO / GEO)
+
+- Technical audit interpretation.
+- Controlled GEO query sets.
+- Interpret approved generative-visibility observations with provenance and confidence.
+- Prioritize a single SEO/AEO/GEO backlog.
+- Must not scrape restricted consumer AI interfaces or treat one response as stable truth.
+
 ### Social Agent
 
 - Calendar creation.
@@ -1563,7 +1578,7 @@ Confidence must never be the only safety control. Category and policy also matte
 
 ---
 
-# 18. SEO and AEO Architecture
+# 18. SEO, AEO, and GEO Architecture
 
 ## 18.1 SEO foundation
 
@@ -1612,7 +1627,15 @@ Practices may include:
 
 Do not promise placement inside AI answers.
 
-## 18.4 Content quality rule
+## 18.4 GEO operating definition
+
+GEO means Generative Engine Optimization. It improves the probability that accurate client information is discovered, selected, cited, mentioned, or incorporated into generative-engine answers.
+
+GEO is probabilistic. Do not implement a universal AI-rank or GEO score. Measurement uses official APIs, approved vendors, or operator-assisted observation only. Launch-time GEO readiness (`llms.txt`, factual JSON-LD, AI-crawler robots, entity consistency) is not the same as post-launch measurement.
+
+Standing rules: `docs/10`. Phase slices: `docs/plans/06_PHASE_6_SEO_AEO.md`.
+
+## 18.5 Content quality rule
 
 AI may scale production, but every published page must provide client specific value.
 
@@ -2121,7 +2144,7 @@ Launch states: `draft`, `onboarding`, `blocked`, `vector_ready`, `generating`, `
 
 Launch classes: A 1–4 hours, B 4–12 hours, C 12–24 hours, D may exceed 24 hours. Do not promise Vector 24 to regulated or complex enterprise clients.
 
-A homepage load is not a successful launch. Domain, HTTPS, approved copy, working lead path, attribution, analytics, SEO, included email and social readiness, provider health, mobile QA, no tenant leakage, and recorded approval are required.
+A homepage load is not a successful launch. Domain, HTTPS, approved copy, working lead path, attribution, analytics, SEO/AEO/GEO readiness, included email and social readiness, provider health, mobile QA, no tenant leakage, and recorded approval are required. Do not wait for generative citation.
 
 The first five clients remain supervised learning cases and are exempt from the final SLA.
 
@@ -2149,6 +2172,7 @@ Email
 Search
   SEO
   AEO
+  GEO
 Analytics
 Experiments
 Vector Intelligence
@@ -2659,7 +2683,7 @@ Exit gate:
 
 `ImageProvider`, generated social families, and funnel hero generation are later Creative slices. They do not replace this exit. Client Today, goals, and Ask Vector are later Outcomes slices.
 
-## Phase 6 — SEO and AEO operations
+## Phase 6 — SEO, AEO, and GEO operations
 
 Deliver:
 
@@ -2669,10 +2693,14 @@ Deliver:
 - Content opportunity model.
 - Schema manager.
 - Answer target workflows.
+- GEO query sets and observation schema.
+- GEO-readiness surfaces at launch (`llms.txt`, factual JSON-LD, AI-crawler robots).
 
 Exit gate:
 
-- Vector can produce an evidence based prioritized search backlog.
+- Vector can produce an evidence-based prioritized SEO/AEO/GEO backlog.
+
+Live generative measurement and search → qualified-lead reporting are additive.
 
 ## Phase 7 — CRO experimentation
 
@@ -3008,7 +3036,7 @@ Cursor should execute in the following sequence.
 20. Implement Research, Copy, and Analytics agents.
 21. Implement approval workflow and activity feed.
 22. Add social provider abstraction and first platform adapter.
-23. Add SEO and AEO operational models.
+23. Add SEO, AEO, and GEO operational models.
 24. Add experiments.
 25. Add progressive autonomy policies.
 26. Harden production operations.

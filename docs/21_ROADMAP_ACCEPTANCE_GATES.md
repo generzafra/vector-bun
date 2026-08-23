@@ -70,11 +70,13 @@ Social → lead may persist on the existing attribution path (`docs/30`). Client
 
 Plan: [plans/06_PHASE_6_SEO_AEO.md](plans/06_PHASE_6_SEO_AEO.md).
 
-SEO and AEO operational models.
+SEO, AEO, and GEO operational models. Standing content rules: `docs/10`.
 
-**Exit:** Vector can produce an evidence-based prioritized search backlog.
+**Exit:** Vector can produce an evidence-based prioritized SEO/AEO/GEO backlog grounded in client knowledge and technical evidence.
 
-Search → qualified-lead reporting (`docs/30`) is additive when coverage exists.
+**Must take:** technical SEO baseline plus GEO-readiness surfaces at launch (path-aware canonicals, published-URL sitemap, AI-crawler robots, factual JSON-LD, production `llms.txt` from approved knowledge). Preview stays isolated.
+
+Search / GEO → qualified-lead reporting (`docs/30`) and live generative-engine measurement are additive when a compliant method and outcome coverage exist. Do not imply deterministic AI rankings. Do not wait for a citation to launch.
 
 ## Phase 7
 

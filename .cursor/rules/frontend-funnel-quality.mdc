@@ -13,6 +13,6 @@ Do not create generic AI-style landing pages: no default purple/blue glow, fake 
 
 Use shared Vector capability tokens and section variants (`hero-split`, `services-editorial`) without making every client look the same. Do not apply `docs/28` Vector identity (black/blue signal-to-growth chrome) to client Delivery pages. Prefer Outcome → Visual → Explanation → Proof → CTA. Client images and generated media follow `docs/29`.
 
-Respect `prefers-reduced-motion`. Keep essential copy in crawlable HTML. Never fake metrics or invent analytics event names.
+Respect `prefers-reduced-motion`. Keep essential copy in crawlable HTML. Machine-readable facts (`llms.txt`, JSON-LD) must match visible copy (`docs/10`). Never fake metrics or invent analytics event names.
 
 Security, privacy, legal, tenant isolation, accessibility, performance, and explicit client requirements override visual experimentation.

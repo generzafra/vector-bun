@@ -8,7 +8,7 @@
 **Status:** Accepted architecture standard (ADR-0008). Implementation follows the C0–C9 track. This does not reopen Phase 1 or Phase 4 exits.  
 **Version:** 1.1  
 **Date:** 22 August 2026  
-**Applies to:** Client onboarding, brand ingestion, funnels, social media, email marketing, campaign generation, SEO/AEO presentation, CRO experiments, Vector 24, asset storage, AI governance, approvals, and client operations  
+**Applies to:** Client onboarding, brand ingestion, funnels, social media, email marketing, campaign generation, SEO/AEO/GEO presentation, CRO experiments, Vector 24, asset storage, AI governance, approvals, and client operations  
 **Does not replace:** `docs/27` public art direction, `docs/28` Control / Vector product identity, or `packages/storage` `StorageProvider`
 
 ---
@@ -264,9 +264,10 @@ Creative assets must support:
 - responsive dimensions;
 - image performance;
 - accurate captions;
-- factual visual claims.
+- factual visual claims;
+- transcripts and media metadata where they help search or generative discovery.
 
-Essential content must not exist only inside images.
+Essential content must not exist only inside images. Phase 6 consumes approved assets. It does not build a second media engine. OG composition remains additive Creative work.
 
 ---
 
@@ -1826,7 +1827,7 @@ Vector drafts:
 
 - audience;
 - funnel;
-- SEO/AEO;
+- SEO/AEO/GEO;
 - email;
 - social;
 - creative direction.

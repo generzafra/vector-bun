@@ -32,7 +32,13 @@
 
 **Preview Hostname** — Private pre-launch URL for a client site. Must be `noindex` and must not publish production email or social.
 
-**Frontend Release Gate** — Production checklist in `docs/27` covering offer clarity, visual quality, conversion, mobile, accessibility, performance, SEO/AEO, analytics, and tenant safety.
+**Frontend Release Gate** — Production checklist in `docs/27` covering offer clarity, visual quality, conversion, mobile, accessibility, performance, SEO/AEO/GEO, analytics, and tenant safety.
+
+**SEO** — Search Engine Optimization: crawl, index, and traditional search visibility.
+
+**AEO** — Answer Engine Optimization: explicit, extractable, source-backed answers for people and answer systems.
+
+**GEO — Generative Engine Optimization** — Improving and measuring the probability that accurate, useful, authoritative information about a client is discovered, selected, cited, mentioned, or incorporated into generative-engine answers. GEO is probabilistic and does not imply a stable universal AI ranking. Standing rules: `docs/10`. Phase slices: `docs/plans/06_PHASE_6_SEO_AEO.md`.
 
 **Section Variant** — Named approved composition of a funnel capability (`hero-split`, `services-editorial`). Shared capability, client-specific art direction.
 

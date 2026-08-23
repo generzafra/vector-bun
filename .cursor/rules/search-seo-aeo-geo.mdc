@@ -1,0 +1,29 @@
+---
+description: Vector SEO, AEO, GEO, search visibility, generative discovery, and search outcome rules
+alwaysApply: false
+---
+When implementing or modifying SEO, AEO, GEO, technical search, structured data, answer targets, search provider connections, generative-engine observations, AI citations, entity visibility, search content, or search reporting, read:
+
+docs/plans/06_PHASE_6_SEO_AEO.md
+docs/10_SEO_AEO_CONTENT_STANDARD.md
+
+Control Search UI uses `docs/28` chrome. Public discoverability follows `docs/27`. Creative consume stays `docs/29`. Outcome language stays `docs/30`.
+
+Rules:
+- SEO = discoverability, indexability, traditional search visibility.
+- AEO = answer clarity and extractability.
+- GEO = probabilistic generative-engine discovery, mention, citation, representation, and source influence.
+- GEO does not replace SEO.
+- One `SearchProvider` family. Do not invent extra search adapter families.
+- Do not create a universal AI-rank or GEO-score field.
+- Store engine, query, locale, time, measurement method, evidence class, and confidence for GEO observations.
+- Do not conclude from one run.
+- Do not scrape restricted consumer AI interfaces or automate consumer chat UIs.
+- Never promise or fabricate citations, reviews, press, experts, or third-party mentions.
+- Keep client facts grounded in approved knowledge. JSON-LD and `llms.txt` fail closed when a fact is missing.
+- Preview stays noindex and must not serve production sitemap, schema, or `llms.txt`.
+- Keep tenant data isolated. Alpha cannot read Beta `seo_*` / `geo_*` or search tokens.
+- Tokens never appear in Control JSON, logs, or prompts.
+- `GEO visibility observed ≠ visit proven ≠ lead proven`.
+- Tie optimization to qualified leads and revenue where evidence permits.
+- Phase 6 exit is an evidence-based backlog plus launch-time technical/GEO-readiness baseline. Live measurement and search → qualified lead are later.

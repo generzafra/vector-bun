@@ -96,7 +96,7 @@ Fast launch is not zero review. Before first production launch: verify facts, cl
 
 ## Successful launch
 
-A homepage load is not a launch. Launch requires production custom domain, HTTPS, approved copy, working lead form and storage, lead notification, attribution, analytics events, SEO metadata, correct sitemap and robots, included email and social programs ready, provider health, audit events, mobile QA, no tenant leakage, and recorded client launch approval.
+A homepage load is not a launch. Launch requires production custom domain, HTTPS, approved copy, working lead form and storage, lead notification, attribution, analytics events, SEO/AEO/GEO metadata, correct sitemap and robots (including AI-crawler policy), factual schema and production `llms.txt` from approved knowledge, included email and social programs ready, provider health, audit events, mobile QA, no tenant leakage, and recorded client launch approval. Capture target markets, languages, priority services, official entity facts, and approved claims during onboarding. Do not make clients invent GEO prompts. Do not wait for generative citation before launch.
 
 ## Launch principle
 

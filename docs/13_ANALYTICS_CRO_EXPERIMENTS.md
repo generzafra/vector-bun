@@ -27,3 +27,5 @@ Phase 2 conversion reporting reads Postgres event counts. PostHog is an optional
 Frontend CRO variants must support assignment, variant identification, exposure tracking, conversion measurement, rollback, and immutable result recording. One client's winning design is evidence, not a global visual rule. Variant quality still follows `docs/27`. Creative variants (`docs/29`) are first-class experiment inputs when that track reaches C8. Learnings stay per tenant and are not auto-promoted into a universal style.
 
 Experiment success should progress from CTA click → qualified-lead rate → revenue per eligible visitor when sample size and data health allow (`docs/30`). Do not use downstream revenue as the primary metric when coverage is weak.
+
+Search/GEO experiments may test answer structure, entity clarity, comparison presentation, evidence presentation, freshness, or internal linking. Do not optimize only for an observed citation if qualified business outcomes deteriorate. A citation observation is not an experiment win by itself.

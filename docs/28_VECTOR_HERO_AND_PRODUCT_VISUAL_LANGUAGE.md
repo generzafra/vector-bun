@@ -2008,6 +2008,7 @@ Use the same brand system but with quieter composition.
 /app/automation
 /app/crm
 /app/intelligence
+/app/search
 /app/integrations
 /app/settings
 ```

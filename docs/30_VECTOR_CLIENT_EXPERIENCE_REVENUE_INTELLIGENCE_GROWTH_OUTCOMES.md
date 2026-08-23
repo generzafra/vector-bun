@@ -278,14 +278,16 @@ This is more useful than funnel conversion alone.
 
 ## 3.10 `10_SEO_AEO_CONTENT_STANDARD.md`
 
-Search activity should eventually be evaluated against:
+Search and generative-discovery activity should eventually be evaluated against:
 
 - qualified leads;
 - revenue;
 - target service demand;
 - business goal contribution.
 
-Do not optimize only for rankings or traffic.
+Do not optimize only for rankings, traffic, or AI citations.
+
+The client dashboard must distinguish observed AI visibility from proven referral from proven business outcome. Do not assign revenue because a generative engine named the brand.
 
 ---
 
@@ -1539,7 +1541,7 @@ multiple funnels
 4 social channels
 20 posts/month
 advanced email
-AEO
+AEO / GEO
 experiments
 creative variants
 ```
@@ -2655,7 +2657,9 @@ Map Outcomes work **forward**. The O1–O20 order in §88 is a cross-cutting tra
 
 ## Phase 6 — additive
 
-- Search → qualified-lead reporting when coverage exists. Do not optimize only for rank or traffic.
+- Search / AEO / GEO visibility → observable visit/referral when available → lead → qualified lead → sale / revenue.
+- Do not optimize only for rank, traffic, or citation.
+- Live generative measurement is additive when a compliant method exists. It is not the Phase 6 exit.
 
 ## Phase 7 — additive
 

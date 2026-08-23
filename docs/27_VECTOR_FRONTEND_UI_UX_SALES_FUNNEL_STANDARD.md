@@ -3377,7 +3377,8 @@ Visual experimentation must preserve:
 - descriptive links;
 - canonical strategy;
 - factual structured data;
-- accessible content equivalents.
+- accessible content equivalents;
+- machine-readable facts that match visible copy (`llms.txt` / JSON-LD).
 
 Essential content must never exist only inside animation, canvas, image, or video.
 
@@ -3483,7 +3484,7 @@ This standard remains active across the whole Vector roadmap.
 | Phase 3      | Email capture UX, consent presentation, nurture entry states                                                       |
 | Phase 4      | AI-generated copy, structured page plans, frontend recommendations, AI design review                               |
 | Phase 5      | Social campaign landing experiences and shareable pages; consume approved Creative assets when present (`docs/29`) |
-| Phase 6      | SEO/AEO semantics and search-friendly content presentation                                                         |
+| Phase 6      | SEO/AEO/GEO semantics, search-friendly presentation, and machine-readable facts                                    |
 | Phase 7      | CRO variants and experimentation UI support; creative variants when C8 exists                                      |
 | Phase 8      | Policy-bounded AI-assisted frontend optimization                                                                   |
 | Phase 9      | Multi-client launch automation and portfolio-wide quality consistency; Creative QuickStart (`docs/29`)             |
@@ -3614,8 +3615,8 @@ How does the experience adapt on narrow screens?
 ### Analytics
 Which existing Vector events must fire?
 
-### SEO/AEO
-Which semantic and crawlability requirements apply?
+### SEO/AEO/GEO
+Which semantic, crawlability, and generative-discoverability requirements apply?
 
 ### Accessibility
 Which interaction and content requirements apply?
@@ -3649,7 +3650,7 @@ Before implementation establish:
 - component variants;
 - selected reference principles;
 - analytics requirements;
-- SEO/AEO requirements;
+- SEO/AEO/GEO requirements;
 - mobile behavior;
 - motion strategy.
 
@@ -3752,13 +3753,14 @@ A public page cannot be considered production-ready until it passes all applicab
 - [ ] Third-party scripts are justified.
 - [ ] No avoidable large frontend dependency was added.
 
-## SEO / AEO
+## SEO / AEO / GEO
 
 - [ ] H1 is correct.
 - [ ] Heading hierarchy is logical.
 - [ ] Important text is crawlable.
 - [ ] Canonical and metadata are correct.
-- [ ] Structured data is factual.
+- [ ] Structured data is factual and matches visible copy.
+- [ ] Machine-readable facts do not contradict the HTML.
 
 ## Analytics
 

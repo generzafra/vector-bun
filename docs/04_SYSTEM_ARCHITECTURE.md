@@ -49,6 +49,8 @@ Cloudflare → Traefik → Docker Compose
 
 External workloads stay external: xAI, Resend, PostHog, R2, social and search APIs.
 
+Search and generative-discovery vendors stay behind `SearchProvider` in `packages/search` (`docs/15`, `docs/plans/06_PHASE_6_SEO_AEO.md`). Do not add a crawl index or a second search database.
+
 Guidance for the first 10–20 ordinary marketing clients: 8–12 vCPU, 16–32 GB RAM, NVMe. Prefer 32 GB when commercially reasonable. This is guidance, not a capacity guarantee. Scale from measured workload, not tenant count.
 
 ## Scaling metrics

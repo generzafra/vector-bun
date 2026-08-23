@@ -18,7 +18,7 @@ Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, and Phase 5 exits are met (Phase 5 
 | [03_PHASE_3_EMAIL_NURTURE.md](03_PHASE_3_EMAIL_NURTURE.md)       | Email and nurture    | Outline |
 | [04_PHASE_4_INTELLIGENCE.md](04_PHASE_4_INTELLIGENCE.md)         | Vector Intelligence  | Outline |
 | [05_PHASE_5_SOCIAL.md](05_PHASE_5_SOCIAL.md)                     | Social               | Outline |
-| [06_PHASE_6_SEO_AEO.md](06_PHASE_6_SEO_AEO.md)                   | SEO and AEO          | Outline |
+| [06_PHASE_6_SEO_AEO.md](06_PHASE_6_SEO_AEO.md)                   | SEO, AEO, and GEO    | Spec    |
 | [07_PHASE_7_CRO.md](07_PHASE_7_CRO.md)                           | CRO experiments      | Outline |
 | [08_PHASE_8_AUTONOMY.md](08_PHASE_8_AUTONOMY.md)                 | Progressive autonomy | Outline |
 | [09_PHASE_9_SCALE.md](09_PHASE_9_SCALE.md)                       | Multi-client scale   | Outline |

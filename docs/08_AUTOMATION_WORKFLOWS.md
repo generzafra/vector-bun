@@ -33,6 +33,8 @@ Later Creative Engine workflows (`docs/29`) — ingest, generation, derivatives,
 
 Later Outcomes workflows (`docs/30`) — lead-stage alerts, sales-outcome reconciliation, revenue import, attribution reconciliation, goal reviews, data-health checks, client digests, approval reminders — also use `WorkflowRuntime`.
 
+Phase 6 search workflows (same `WorkflowRuntime`): technical SEO audit on publish, search-property sync, AEO opportunity cycle, GEO baseline after public launch, scheduled high-priority GEO measurement through a compliant method only, stale-measurement warning, search/GEO digest. Do not scrape restricted consumer AI interfaces. Do not measure thousands of low-value prompts daily.
+
 ## Idempotency
 
 Every externally triggered workflow must tolerate duplicate delivery.

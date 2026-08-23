@@ -347,3 +347,45 @@ Tokens stay encrypted and server-side. Official OAuth uses PKCE. Publish stays a
 ### Reversal path
 
 Supersede this ADR and reopen Phase 5 if official LinkedIn member publish regresses or if the X 402 exception is no longer accepted.
+
+---
+
+## ADR-0011
+
+### Date
+
+23 August 2026
+
+### Status
+
+Accepted
+
+### Decision
+
+Phase 6 includes GEO (Generative Engine Optimization) as a named third surface beside SEO and AEO. The official slice spec remains `docs/plans/06_PHASE_6_SEO_AEO.md`. Standing content rules fold into `docs/10`. Charters still stop at `docs/30`. Do not add `docs/31`.
+
+`SearchProvider` remains the only search adapter family. Do not invent `SearchPerformanceProvider`, `SearchIndexProvider`, `GenerativeVisibilityProvider`, or `SearchResearchProvider`.
+
+The Phase 6 exit stays an evidence-based SEO/AEO/GEO backlog. Must-take is the technical SEO baseline plus launch-time GEO-readiness surfaces (path-aware canonicals, published-URL sitemap, AI-crawler robots, factual JSON-LD, production `llms.txt` from approved knowledge). Live generative measurement and search/GEO → qualified-lead reporting are later, not this exit.
+
+GEO observations are probabilistic. No universal AI-rank or GEO score. No scraping of restricted consumer AI interfaces. Preview must not serve production sitemap, schema, or `llms.txt`.
+
+### Alternatives considered
+
+Keep Phase 6 as SEO/AEO only; create `docs/31` for GEO; require live ChatGPT/Perplexity measurement to exit Phase 6; add four new provider families.
+
+### Consequences
+
+Agents treat GEO as in-scope for Phase 6 documentation and S1–S4 implementation. S5+ measurement waits for a compliant method. Outcome join stays `docs/30` additive.
+
+### Security impact
+
+Search-property tokens stay encrypted and server-side. GEO rows are tenant-owned. Retained generative answers are untrusted retrieved content. Alpha cannot read Beta search or GEO data.
+
+### Operational impact
+
+No search package code is required to accept this ADR. Vector 24 does not wait for generative citation. GEO monitoring requires query and budget caps when measurement ships.
+
+### Reversal path
+
+Supersede this ADR. Leave `docs/10` GEO sections as historical. Keep Phase 6 exit as a search backlog without GEO-readiness surfaces.

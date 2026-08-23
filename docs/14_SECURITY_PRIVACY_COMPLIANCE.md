@@ -12,6 +12,8 @@ Cross tenant access tests are a hard release gate. Unknown hostnames fail closed
 
 No secrets in prompts. Retrieved content is untrusted. Tool permissions exist outside the model. Public frontend generation follows schema and approved variants, not arbitrary HTML or scripts (`docs/07`, `docs/27`).
 
+Search and GEO measurement use official or approved providers only (`docs/15`). Do not scrape restricted consumer AI interfaces. Retained generative answers are external untrusted content and cannot change tool permissions. Search-property tokens are encrypted at rest. GEO observation retention follows the data-class policy; do not keep full generated answers when a structured observation is enough.
+
 Creative assets may contain people, customer photos, logos, copyrighted media, regulated claims, or PII (`docs/29`). Preserve provenance, rights state, access control, and tenant isolation. Do not publish unresolved-rights assets when policy requires confirmation. Generated people are never presented as real employees, customers, or credentials.
 
 Revenue and sales outcomes are commercially sensitive (`docs/30`). Apply role permissions, minimization, audit, tenant isolation, and retention. Do not expose internal client revenue to unauthorized MGE staff or unrelated client users.

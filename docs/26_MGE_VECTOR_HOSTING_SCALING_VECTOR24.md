@@ -94,7 +94,7 @@ Vector owns:
 - Campaigns.
 - Social operations.
 - Email operations.
-- SEO and AEO operations.
+- SEO, AEO, and GEO operations.
 - Analytics.
 - Attribution.
 - Experiments.
@@ -242,6 +242,7 @@ Every client can have independent:
 - Social accounts.
 - SEO rules.
 - AEO configuration.
+- GEO query-set and measurement policy.
 - AI policies.
 - Approval policies.
 - Experiments.
@@ -663,7 +664,7 @@ Funnel architecture
       ↓
 Copy
       ↓
-SEO / AEO
+SEO / AEO / GEO
       ↓
 Lead capture
       ↓
@@ -693,7 +694,7 @@ Example:
         ↓                ↓                ↓
      Research         Funnel          Social
         ↓                ↓                ↓
-    SEO / AEO          Copy           Calendar
+    SEO / AEO / GEO    Copy           Calendar
         │                │                │
         └────────────────┼────────────────┘
                          ↓
@@ -874,15 +875,14 @@ The following must ultimately become automated or near-automated.
 - Queue approval.
 - Schedule approved items.
 
-## SEO and AEO
+## SEO, AEO, and GEO
 
-- Generate technical baseline.
-- Generate sitemap.
-- Generate metadata.
-- Generate structured data.
-- Generate initial page targets.
-- Generate content opportunities.
-- Generate FAQ opportunities.
+- Generate technical baseline (metadata, path-aware canonicals, sitemap of published indexable URLs, robots including AI-crawler policy).
+- Generate factual structured data from approved knowledge.
+- Generate production `llms.txt` or equivalent from approved knowledge. Preview must not serve it.
+- Generate initial page targets, content opportunities, and source-backed FAQ opportunities.
+- Establish a small commercial GEO query set after launch. Do not wait for generative citation to mark live.
+- Search Console / Bing connect when approved. Missing property does not block Class A/B launch.
 
 ## QA
 
@@ -1332,8 +1332,9 @@ Launch requires:
 - Lead notification working.
 - Attribution working.
 - Analytics events working.
-- SEO metadata working.
-- Sitemap and robots behavior correct.
+- SEO/AEO/GEO metadata working.
+- Sitemap, robots (including AI-crawler policy), factual schema, and production `llms.txt` correct.
+- Preview remains noindex and does not serve production GEO files.
 - Email nurture ready when included.
 - Social program ready when included.
 - Provider health verified.

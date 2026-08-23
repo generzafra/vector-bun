@@ -2,7 +2,7 @@
 description: Vector implementation workflow
 alwaysApply: true
 ---
-Read AGENTS.md and P0 docs before coding. Read docs/26 when the work touches onboarding, domains, hosting, delivery, launch, or scaling. Read docs/27 when the work touches public frontend, funnels, landing pages, conversion, motion, or CRO. Read docs/28 when the work touches Control Plane UI or Vector product identity. Read docs/29 when the work touches client media, image or video generation, composition, derivatives, rights, or creative approval. Read docs/30 when the work touches authenticated client UX, goals, sales outcomes, revenue, data health, notifications, or entitlements.
+Read AGENTS.md and P0 docs before coding. Read docs/26 when the work touches onboarding, domains, hosting, delivery, launch, or scaling. Read docs/27 when the work touches public frontend, funnels, landing pages, conversion, motion, or CRO. Read docs/28 when the work touches Control Plane UI or Vector product identity. Read docs/29 when the work touches client media, image or video generation, composition, derivatives, rights, or creative approval. Read docs/30 when the work touches authenticated client UX, goals, sales outcomes, revenue, data health, notifications, or entitlements. Read docs/plans/06_PHASE_6_SEO_AEO.md and docs/10 when the work touches SEO, AEO, GEO, structured data, search providers, answer targets, or generative-visibility measurement.
 Implement one bounded vertical slice at a time. Do not build the whole platform in one change.
 Before changes: state the goal, affected modules, security or tenancy impact, and tests to add.
 If the work is onboarding, domains, analytics, or automation, ask whether it supports repeatable client launch without custom engineering.

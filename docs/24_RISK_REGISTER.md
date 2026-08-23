@@ -9,7 +9,12 @@
 | Uncontrolled AI spend                      | Medium   | Medium     | Cost ledger, quotas, model routing                                       | Engineering       | Open   |
 | Bad analytics causes bad optimization      | High     | Medium     | Event governance and tests                                               | Analytics         | Open   |
 | Agent executes high risk action            | Critical | Medium     | Policy engine and approval gate                                          | Product/Security  | Open   |
-| Search spam risk                           | High     | Medium     | Useful client specific content standard                                  | SEO               | Open   |
+| Search spam risk                           | High     | Medium     | Useful client specific content standard (`docs/10`)                      | SEO               | Open   |
+| GEO measurement volatility                 | Medium   | High       | Repeat observations; store provenance; no single-run conclusions         | SEO               | Open   |
+| GEO provider/API instability               | Medium   | High       | `SearchProvider` abstraction; manual fallback; health monitoring         | Engineering       | Open   |
+| AI visibility overclaim                    | High     | Medium     | Evidence classes; no guaranteed citation or GEO score                    | Product           | Open   |
+| Third-party source manipulation            | High     | Medium     | Prohibit fake press, reviews, directories, and authority                 | Product/Security  | Open   |
+| GEO spend growth                           | Medium   | Medium     | Query limits, cadence caps, client budgets (`docs/20`)                   | Engineering       | Open   |
 | Noisy neighbor exhausts shared host        | High     | Medium     | Per-client quotas, concurrency, AI and email limits                      | Engineering       | Open   |
 | Single-server SPOF or saturation           | High     | Medium     | Design for later split; cache at edge; scale triggers                    | Engineering       | Open   |
 | 24-hour launch promised from signing       | High     | Medium     | Readiness gate; qualified commercial wording; class D exclusions         | Product           | Open   |

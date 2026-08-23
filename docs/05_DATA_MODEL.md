@@ -13,7 +13,7 @@
 
 ## Major domains
 
-Tenancy, identity, brand knowledge, funnel, CRM, campaigns, social, email, SEO/AEO, analytics, attribution, experiments, AI, automation, compliance, audit, launch, usage.
+Tenancy, identity, brand knowledge, funnel, CRM, campaigns, social, email, SEO/AEO/GEO, analytics, attribution, experiments, AI, automation, compliance, audit, launch, usage.
 
 Phase 1 knowledge (tenant-owned, `client_id` required):
 
@@ -122,6 +122,28 @@ approval_decisions
 ```
 
 Prompt and agent versions are immutable. Runs record provider, model, schema name/version, and prompt version. Cost is integer USD micros plus currency. Approvals are required in Phase 4. Approving funnel or copy may attach an unpublished `page_versions` draft on `ai_runs.artifact_page_version_id`; deciding never publishes, sends, or activates a domain. `ai_feedback` records accept/reject. `ai_tool_calls` records proposed tools with `authorized` false in Phase 4; they are not execution. Knowledge used as model input is a tenant snapshot, never another client’s embeddings or claims.
+
+Phase 6 search (tenant-owned, `client_id` required). First-ship tables:
+
+```text
+seo_properties
+seo_pages
+seo_keywords
+seo_queries
+seo_audits
+seo_issues
+seo_opportunities
+schema_entities
+content_briefs
+answer_targets
+geo_query_sets
+geo_queries
+geo_measurement_runs
+geo_engine_observations
+geo_citations
+```
+
+`seo_queries` are official Search Console / Bing rows when a property is connected. `seo_opportunities.channel` is `seo | aeo | geo`. Defer `seo_rank_snapshots` unless an official API provides them. GEO measurement cost is integer minor units plus currency. Search-property tokens are encrypted at rest and are never returned to the browser or model. Preview hosts must not persist production GEO observations as indexable public facts. Slice detail: `docs/plans/06_PHASE_6_SEO_AEO.md`.
 
 ## Launch and readiness
 

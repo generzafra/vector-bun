@@ -13,7 +13,7 @@ Vector is an Autonomous Growth Operating System operated commercially by Maximum
 Maximum Global Exposure and Vector are separate products in one commercial ecosystem.
 
 - **Maximum Global Exposure** (`maxglobalexpo.com`) is the company and customer-acquisition brand. It sells services, explains Vector, generates MGE leads, publishes case studies, and directs clients to the application.
-- **Vector** (`vector.maxglobalexpo.com` initially) is the operating platform. It owns clients, funnels, leads, email, social, SEO/AEO, analytics, experiments, agents, approvals, and automations.
+- **Vector** (`vector.maxglobalexpo.com` initially) is the operating platform. It owns clients, funnels, leads, email, social, SEO/AEO/GEO, analytics, experiments, agents, approvals, and automations.
 - The MGE website is not the Vector application. Do not merge them into one product.
 - Once Vector can operate production clients, MGE itself must become a Vector tenant so MGE is the first dogfood and reference implementation.
 - Clients experience `theircompany.com`, not a Vector subdomain, except for temporary preview URLs. Vector stays invisible as infrastructure unless MGE brands the implementation as "Powered by Vector."

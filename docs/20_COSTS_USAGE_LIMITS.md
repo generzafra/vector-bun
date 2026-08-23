@@ -16,6 +16,8 @@ Monthly allowance, soft warning, hard policy threshold, operator override, per w
 
 A single client must not be able to exhaust shared resources. Enforce per-client API rate limits, workflow concurrency, AI budgets, email quotas, provider rate controls, upload limits, and analytics abuse detection.
 
+GEO monitoring needs explicit caps: query count, measurement frequency, engine/locale limits, and monthly budget. Do not allow uncontrolled recurring generative-engine testing. Attribute GEO provider and analysis cost to the client in integer minor units plus currency.
+
 ## AI model routing
 
 Use lower cost models for classification and extraction; reserve advanced models for high value reasoning.

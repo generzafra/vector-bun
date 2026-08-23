@@ -16,7 +16,7 @@ Before implementation, read:
 8. `docs/14_SECURITY_PRIVACY_COMPLIANCE.md`
 9. `docs/18_QA_TEST_STRATEGY.md`
 10. `docs/21_ROADMAP_ACCEPTANCE_GATES.md`
-11. `docs/plans/README.md` and the plan for the current phase. Phase 0–5 exits are met (Phase 5 via ADR-0010). Next is `docs/plans/06_PHASE_6_SEO_AEO.md`.
+11. `docs/plans/README.md` and the plan for the current phase. Phase 0–5 exits are met (Phase 5 via ADR-0010). Next is `docs/plans/06_PHASE_6_SEO_AEO.md` (SEO, AEO, and GEO). Standing search rules: `docs/10_SEO_AEO_CONTENT_STANDARD.md`.
 12. `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` when the work touches onboarding, domains, hosting, delivery, launch, or scaling. Its decisions are folded into `01`, `03`, `04`, `05`, `16`, `17`, `19`, and `21`; where it is more specific, it governs.
 13. `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` when the work touches public frontend, marketing sites, funnels, landing pages, conversion, motion, or CRO variants. Its quality bar is folded into `01`, `02`, `04`, `07`, `09`, `10`, `13`, `17`, `18`, `21`, `22`, and `26`; where it is more specific on public experience, it governs.
 14. `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` when the work touches Control Plane UI, Vector product chrome, or Vector-native intelligence / opportunity / automation visuals. Living paths live in `docs/frontend/`. This is Control / Vector identity, not client Delivery identity.
@@ -68,7 +68,7 @@ All public frontend work must:
 - define the audience, primary conversion, and page narrative before coding
 - use approved client brand inputs
 - use Vector design tokens and component capabilities, not cloned templates
-- preserve semantic HTML, accessibility, performance, SEO, and analytics
+- preserve semantic HTML, accessibility, performance, SEO/AEO/GEO, and analytics
 - pass the Frontend Release Gate in `docs/27` before publication
 
 Control Plane UI stays authenticated and operational. Do not apply MGE cream/cinema tokens or cinematic marketing art direction to Control. Control identity follows `docs/28`. Delivery client sites keep client brand tokens and `docs/27`; do not paint tenants with Vector Black / Blue.
@@ -91,3 +91,25 @@ Do not ask an image model to create final exact brand typography or logos when V
 For work involving authenticated client UX, dashboards, goals, KPIs, lead stages, sales outcomes, revenue, attribution confidence, data health, offers, client notifications, entitlements, client health, or business reporting, read `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`.
 
 Client-facing interfaces must prioritize business outcomes and decisions. Do not expose technical platform complexity by default. Do not present uncertain attribution or estimates as factual. AI must not invent sales or revenue. Where outcome data exists, optimize beyond lead volume toward qualified leads, sales, and attributable business value. Client and operator stay one Control app.
+
+## SEO, AEO, and GEO Governance
+
+For work involving technical SEO, search visibility, structured data, answer targets, AEO, GEO, generative-engine visibility, AI citations, AI discovery, search content, entity optimization, Search Console, Bing Webmaster, search audits, generative visibility measurement, or search-to-business-outcome reporting, read:
+
+- `docs/plans/06_PHASE_6_SEO_AEO.md`
+- `docs/10_SEO_AEO_CONTENT_STANDARD.md`
+
+Also read as applicable: `docs/07`, `docs/13`, `docs/15`, `docs/18`, `docs/20`, `docs/26`, `docs/27`, `docs/29`, `docs/30`.
+
+Rules:
+
+- SEO is foundational. GEO does not replace it.
+- AEO focuses on answerability and factual clarity.
+- GEO means Generative Engine Optimization. Observations are probabilistic, engine-specific, and time-sensitive.
+- Never promise rankings or AI citations. Never treat a single generative response as stable visibility.
+- Never fabricate authority, reviews, press, experts, or third-party mentions.
+- Keep all client search and GEO data tenant-scoped.
+- Use official or approved providers and measurement methods. Do not scrape restricted consumer AI interfaces.
+- One `SearchProvider` family. Do not invent extra search adapter families.
+- Optimize toward qualified business outcomes where reliable outcome data exists.
+- `GEO visibility observed ≠ visit proven ≠ lead proven`.
