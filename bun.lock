@@ -15,6 +15,7 @@
         "@vector/db": "workspace:*",
         "@vector/domain": "workspace:*",
         "@vector/email": "workspace:*",
+        "@vector/experiments": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
         "@vector/search": "workspace:*",
         "@vector/social": "workspace:*",
@@ -172,6 +173,7 @@
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
         "@vector/email": "workspace:*",
+        "@vector/experiments": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
         "@vector/observability": "workspace:*",
         "@vector/search": "workspace:*",
@@ -186,6 +188,12 @@
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
         "@vector/observability": "workspace:*",
+      },
+    },
+    "packages/experiments": {
+      "name": "@vector/experiments",
+      "dependencies": {
+        "@vector/contracts": "workspace:*",
       },
     },
     "packages/funnel-engine": {
@@ -462,6 +470,8 @@
     "@vector/domain": ["@vector/domain@workspace:packages/domain"],
 
     "@vector/email": ["@vector/email@workspace:packages/email"],
+
+    "@vector/experiments": ["@vector/experiments@workspace:packages/experiments"],
 
     "@vector/funnel-engine": ["@vector/funnel-engine@workspace:packages/funnel-engine"],
 

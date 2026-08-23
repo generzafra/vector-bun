@@ -17,6 +17,7 @@
 		"@vector/email": "workspace:*",
 		"@vector/social": "workspace:*",
 		"@vector/search": "workspace:*",
+		"@vector/experiments": "workspace:*",
 		"@vector/config": "workspace:*",
 		"@vector/contracts": "workspace:*",
 		"@vector/db": "workspace:*",

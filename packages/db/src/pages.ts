@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, max } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, max } from 'drizzle-orm';
 import { assertSameClient, requireTenantContext, type TenantContext } from '@vector/contracts';
 import { normalizeHostname, type PageDocument } from '@vector/funnel-engine';
 import { db } from './client';
@@ -85,6 +85,35 @@ export async function listPageVersionsForTenant(ctx: TenantContext, pageId: stri
 		.orderBy(desc(pageVersions.version));
 }
 
+export async function getPublishedPageVersionMetaForTenant(ctx: TenantContext, versionId: string) {
+	const required = requireTenantContext(ctx);
+	const rows = await listPublishedPageVersionMetaForTenant(required, [versionId]);
+	return rows[0] ?? null;
+}
+
+export async function listPublishedPageVersionMetaForTenant(
+	ctx: TenantContext,
+	versionIds: string[]
+) {
+	const required = requireTenantContext(ctx);
+	if (versionIds.length === 0) return [];
+	return db
+		.select({
+			id: pageVersions.id,
+			pageId: pageVersions.pageId,
+			status: pageVersions.status,
+			version: pageVersions.version
+		})
+		.from(pageVersions)
+		.where(
+			and(
+				eq(pageVersions.clientId, required.clientId),
+				eq(pageVersions.status, 'published'),
+				inArray(pageVersions.id, versionIds)
+			)
+		);
+}
+
 export async function getPageVersionForTenant(ctx: TenantContext, versionId: string) {
 	const required = requireTenantContext(ctx);
 	const [row] = await db
@@ -134,6 +163,39 @@ export async function insertDraftPageVersionForTenant(ctx: TenantContext, docume
 		})
 		.returning();
 	return draft ?? null;
+}
+
+export async function getPageForTenant(ctx: TenantContext, pageId: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(pages)
+		.where(and(eq(pages.id, pageId), eq(pages.clientId, required.clientId)))
+		.limit(1);
+	return row ?? null;
+}
+
+export async function listPublishedPageVersionsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select({
+			id: pageVersions.id,
+			pageId: pageVersions.pageId,
+			version: pageVersions.version,
+			publishedAt: pageVersions.publishedAt,
+			path: pages.path,
+			title: pages.title
+		})
+		.from(pageVersions)
+		.innerJoin(pages, eq(pages.id, pageVersions.pageId))
+		.where(
+			and(
+				eq(pageVersions.clientId, required.clientId),
+				eq(pages.clientId, required.clientId),
+				eq(pageVersions.status, 'published')
+			)
+		)
+		.orderBy(pages.path, desc(pageVersions.version));
 }
 
 export async function listPublishedPagesForTenant(ctx: TenantContext) {

@@ -88,6 +88,8 @@ CRO experiments from hypothesis through recorded learning.
 
 **Exit:** one full experiment completes with a durable learning object. Frontend experiment variants can be created, reviewed, measured, and promoted through the CRO system without lowering the `docs/27` quality bar. Creative variants (`docs/29`) may become experiment inputs when C8 exists; that is additive. Qualified-lead or revenue primary metrics (`docs/30`) are allowed only when sample size and data health support them.
 
+**Status (23 August 2026):** S0–S1 are in. `packages/experiments` validates proposal and transition policy. Control `/experiments` records tenant-scoped proposals and can approve, pause, or resume them. Fields lock after propose. No assignment, exposure, or winner promotion yet.
+
 ## Phase 8
 
 Plan: [plans/08_PHASE_8_AUTONOMY.md](plans/08_PHASE_8_AUTONOMY.md).

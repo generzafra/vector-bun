@@ -15,6 +15,7 @@
 		{ href: '/search', label: 'Search' },
 		{ href: '/intelligence', label: 'Intelligence' },
 		{ href: '/analytics', label: 'Analytics' },
+		{ href: '/experiments', label: 'Experiments' },
 		{ href: '/launch', label: 'Launch' },
 		{ href: '/members', label: 'Members' }
 	] as const;

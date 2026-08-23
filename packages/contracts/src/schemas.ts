@@ -673,6 +673,92 @@ export const recordGeoObservationSchema = z
 	})
 	.strict();
 
+export const EXPERIMENT_STATUSES = [
+	'draft',
+	'proposed',
+	'approved',
+	'running',
+	'paused',
+	'decided',
+	'archived'
+] as const;
+export type ExperimentStatus = (typeof EXPERIMENT_STATUSES)[number];
+
+export const EXPERIMENT_VARIANT_ROLES = ['control', 'challenger'] as const;
+export type ExperimentVariantRole = (typeof EXPERIMENT_VARIANT_ROLES)[number];
+
+export const EXPERIMENT_AUDIENCES = ['all_visitors'] as const;
+export type ExperimentAudience = (typeof EXPERIMENT_AUDIENCES)[number];
+
+export const EXPERIMENT_PRIMARY_METRICS = [
+	'cta_clicked',
+	'form_started',
+	'form_submitted',
+	'lead_created'
+] as const;
+export type ExperimentPrimaryMetric = (typeof EXPERIMENT_PRIMARY_METRICS)[number];
+
+export const EXPERIMENT_GUARDRAIL_METRICS = [
+	'page_viewed',
+	'cta_clicked',
+	'form_started',
+	'form_submitted',
+	'lead_created'
+] as const;
+export type ExperimentGuardrailMetric = (typeof EXPERIMENT_GUARDRAIL_METRICS)[number];
+
+export const DEFERRED_EXPERIMENT_METRICS = ['qualified_lead', 'revenue'] as const;
+export type DeferredExperimentMetric = (typeof DEFERRED_EXPERIMENT_METRICS)[number];
+
+export const EXPERIMENT_DECISION_RULES = ['fixed_horizon', 'manual_review'] as const;
+export type ExperimentDecisionRule = (typeof EXPERIMENT_DECISION_RULES)[number];
+
+export const EXPERIMENT_ROLLBACK_RULES = ['revert_to_control', 'pause_experiment'] as const;
+export type ExperimentRollbackRule = (typeof EXPERIMENT_ROLLBACK_RULES)[number];
+
+export const createExperimentProposalSchema = z
+	.object({
+		name: z.string().trim().min(1).max(160),
+		problem: z.string().trim().min(1).max(800),
+		evidence: z.string().trim().min(1).max(800),
+		hypothesis: z.string().trim().min(1).max(800),
+		audience: z.string().trim().min(1).max(400),
+		audienceKey: z.enum(EXPERIMENT_AUDIENCES).default('all_visitors'),
+		pageId: z.string().uuid(),
+		controlPageVersionId: z.string().uuid(),
+		challengerPageVersionId: z.string().uuid(),
+		challengerName: z.string().trim().min(1).max(120).default('Challenger'),
+		primaryMetric: z.string().trim().min(1).max(40),
+		guardrailMetrics: z.array(z.string().trim().min(1).max(40)).max(6).default([]),
+		minDurationDays: z.number().int().min(7).max(90),
+		minSamplePerVariant: z.number().int().min(100).max(100_000),
+		decisionRule: z.enum(EXPERIMENT_DECISION_RULES).default('fixed_horizon'),
+		rollbackRule: z.enum(EXPERIMENT_ROLLBACK_RULES).default('revert_to_control')
+	})
+	.strict();
+
+export const experimentIdSchema = z
+	.object({
+		id: z.string().uuid()
+	})
+	.strict();
+
+export const EXPERIMENT_TRANSITION_TARGETS = ['approved', 'paused', 'running'] as const;
+export type ExperimentTransitionTarget = (typeof EXPERIMENT_TRANSITION_TARGETS)[number];
+
+export const transitionExperimentSchema = z
+	.object({
+		id: z.string().uuid(),
+		to: z.enum(EXPERIMENT_TRANSITION_TARGETS)
+	})
+	.strict();
+
+export const experimentClientIdSchema = z
+	.object({
+		clientId: z.string().uuid()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

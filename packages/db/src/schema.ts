@@ -2697,3 +2697,116 @@ export const searchWorkItems = pgTable(
 		index('search_work_items_status_idx').on(t.status)
 	]
 );
+
+export const experimentStatus = pgEnum('experiment_status', [
+	'draft',
+	'proposed',
+	'approved',
+	'running',
+	'paused',
+	'decided',
+	'archived'
+]);
+export const experimentVariantRole = pgEnum('experiment_variant_role', ['control', 'challenger']);
+export const experimentAudience = pgEnum('experiment_audience', ['all_visitors']);
+export const experimentPrimaryMetric = pgEnum('experiment_primary_metric', [
+	'cta_clicked',
+	'form_started',
+	'form_submitted',
+	'lead_created'
+]);
+export const experimentDecisionRule = pgEnum('experiment_decision_rule', [
+	'fixed_horizon',
+	'manual_review'
+]);
+export const experimentRollbackRule = pgEnum('experiment_rollback_rule', [
+	'revert_to_control',
+	'pause_experiment'
+]);
+
+export const experiments = pgTable(
+	'experiments',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		pageId: uuid('page_id')
+			.notNull()
+			.references(() => pages.id),
+		name: text('name').notNull(),
+		status: experimentStatus('status').notNull().default('proposed'),
+		audienceKey: experimentAudience('audience_key').notNull().default('all_visitors'),
+		primaryMetric: experimentPrimaryMetric('primary_metric').notNull(),
+		guardrailMetrics: jsonb('guardrail_metrics').$type<string[]>().notNull().default([]),
+		minDurationDays: integer('min_duration_days').notNull(),
+		minSamplePerVariant: integer('min_sample_per_variant').notNull(),
+		decisionRule: experimentDecisionRule('decision_rule').notNull().default('fixed_horizon'),
+		rollbackRule: experimentRollbackRule('rollback_rule').notNull().default('revert_to_control'),
+		launchedAt: timestamp('launched_at', { withTimezone: true }),
+		decidedAt: timestamp('decided_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('experiments_client_idx').on(t.clientId),
+		index('experiments_client_status_idx').on(t.clientId, t.status),
+		index('experiments_client_page_idx').on(t.clientId, t.pageId)
+	]
+);
+
+export const experimentHypotheses = pgTable(
+	'experiment_hypotheses',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		experimentId: uuid('experiment_id')
+			.notNull()
+			.references(() => experiments.id),
+		problem: text('problem').notNull(),
+		evidence: text('evidence').notNull(),
+		hypothesis: text('hypothesis').notNull(),
+		audience: text('audience').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('experiment_hypotheses_experiment_idx').on(t.experimentId),
+		index('experiment_hypotheses_client_idx').on(t.clientId)
+	]
+);
+
+export const experimentVariants = pgTable(
+	'experiment_variants',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		experimentId: uuid('experiment_id')
+			.notNull()
+			.references(() => experiments.id),
+		key: text('key').notNull(),
+		name: text('name').notNull(),
+		role: experimentVariantRole('role').notNull(),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('experiment_variants_experiment_key_idx').on(t.experimentId, t.key),
+		uniqueIndex('experiment_variants_experiment_version_idx').on(t.experimentId, t.pageVersionId),
+		index('experiment_variants_client_idx').on(t.clientId)
+	]
+);

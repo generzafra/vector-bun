@@ -18,6 +18,8 @@ export const CAPABILITIES = [
 	'social.manage',
 	'seo.read',
 	'seo.manage',
+	'experiments.read',
+	'experiments.manage',
 	'ai.read',
 	'ai.manage'
 ] as const;
@@ -55,6 +57,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'social.manage',
 		'seo.read',
 		'seo.manage',
+		'experiments.read',
+		'experiments.manage',
 		'ai.read',
 		'ai.manage'
 	],
@@ -78,6 +82,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'social.manage',
 		'seo.read',
 		'seo.manage',
+		'experiments.read',
+		'experiments.manage',
 		'ai.read',
 		'ai.manage'
 	],
@@ -100,6 +106,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'social.manage',
 		'seo.read',
 		'seo.manage',
+		'experiments.read',
+		'experiments.manage',
 		'ai.read',
 		'ai.manage'
 	],
@@ -121,6 +129,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'social.manage',
 		'seo.read',
 		'seo.manage',
+		'experiments.read',
+		'experiments.manage',
 		'ai.read',
 		'ai.manage'
 	],
@@ -135,6 +145,7 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'email.read',
 		'social.read',
 		'seo.read',
+		'experiments.read',
 		'ai.read'
 	]
 };

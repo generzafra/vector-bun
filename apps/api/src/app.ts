@@ -79,7 +79,10 @@ import {
 	submitSearchSitemap,
 	syncSearchProperty,
 	updateSearchCadence,
-	validateSearchProperty
+	validateSearchProperty,
+	createExperimentProposal,
+	getExperimentOverview,
+	transitionExperiment
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
 
@@ -1062,6 +1065,49 @@ app.post('/v1/search/opportunities/:id/publish-ready', async (c) => {
 		{ id: c.req.param('id') },
 		requestId
 	);
+	return c.json({ requestId, data });
+});
+
+app.get('/v1/experiments', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'experiments.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getExperimentOverview(session, ctx) });
+});
+
+app.get('/v1/experiments/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'experiments.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getExperimentOverview(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/experiments', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'experiments.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await createExperimentProposal(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/experiments/transition', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'experiments.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await transitionExperiment(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data });
 });
 
