@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PHASE_8_MAX_AUTONOMY } from './autonomy';
+import { AUTONOMY_ACTION_TYPES, PHASE_8_MAX_AUTONOMY } from './autonomy';
 import { ValidationError } from './errors';
 
 export const loginSchema = z
@@ -295,6 +295,13 @@ export const pauseIntelligenceSchema = z
 export const setAutonomyCeilingSchema = z
 	.object({
 		autonomyCeiling: z.number().int().min(0).max(PHASE_8_MAX_AUTONOMY)
+	})
+	.strict();
+
+export const runAutoExecuteSchema = z
+	.object({
+		actionType: z.enum(AUTONOMY_ACTION_TYPES),
+		idempotencyKey: z.string().trim().min(8).max(80).optional()
 	})
 	.strict();
 

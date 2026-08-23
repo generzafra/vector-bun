@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test';
+import { cookieName, resetRateLimits } from '@vector/auth';
 import { eq } from 'drizzle-orm';
 import { evaluateAutoExecute, evaluateAiGate } from '@vector/ai';
 import { env } from '@vector/config';
@@ -7,19 +8,36 @@ import {
 	ForbiddenError,
 	LOW_RISK_AUTO_EXECUTE_ACTIONS,
 	PHASE_8_MAX_AUTONOMY,
+	S1_AUTO_EXECUTE_ACTIONS,
 	TenantContextError,
 	ValidationError,
 	requireTenantContext
 } from '@vector/contracts';
-import { clients, db, listAiActionPolicies, listKillSwitchEventsForTenant } from '@vector/db';
+import {
+	clients,
+	countAnalyticsEventsForTenant,
+	countEmailMessagesByStatusForTenant,
+	countPublishedPageVersionsForTenant,
+	countSucceededAiActionExecutionsForTenant,
+	db,
+	getAiActionExecutionByIdempotency,
+	insertAiActionExecutionForTenant,
+	insertAnalyticsEventForTenant,
+	listAiActionExecutionsForTenant,
+	listAiActionPolicies,
+	listKillSwitchEventsForTenant,
+	type InternalWeeklyReportOutput
+} from '@vector/db';
 import {
 	contextFor,
 	getAutonomyOverview,
 	login,
 	pauseIntelligence,
 	resolveSession,
+	runAutoExecute,
 	setAutonomyCeiling,
-	switchActiveClient
+	switchActiveClient,
+	utcIsoWeekKey
 } from '@vector/domain';
 import { app } from '../apps/api/src/app';
 
@@ -32,6 +50,21 @@ async function seededClients() {
 
 function sessionCookie(res: Response) {
 	return res.headers.getSetCookie?.()[0] ?? res.headers.get('set-cookie') ?? '';
+}
+
+function emailMessageTotal(rows: { total: number | bigint }[]) {
+	return rows.reduce((sum, row) => sum + Number(row.total), 0);
+}
+
+function observedLeadCreated(rows: { name: string; isTest: boolean; total: number | bigint }[]) {
+	return rows.reduce((sum, row) => {
+		if (row.isTest || row.name !== 'lead_created') return sum;
+		return sum + Number(row.total);
+	}, 0);
+}
+
+function uniqueRequestId(prefix: string) {
+	return `${prefix}-${crypto.randomUUID()}`;
 }
 
 async function adminOn(clientId: string, ip: string, requestId: string) {
@@ -127,9 +160,24 @@ test('AI draft gate still blocks level 3; auto-execute gate allows only preappro
 	).toEqual({ allowed: false, blockedBy: 'risk_class' });
 });
 
-test('missing TenantContext cannot list kill-switch events', () => {
+test('missing TenantContext cannot list kill-switch events or executions', () => {
 	expect(() => requireTenantContext(null)).toThrow(TenantContextError);
 	expect(listKillSwitchEventsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
+	expect(listAiActionExecutionsForTenant(null as never)).rejects.toBeInstanceOf(TenantContextError);
+	expect(getAiActionExecutionByIdempotency(null as never, 'missing-key-xx')).rejects.toBeInstanceOf(
+		TenantContextError
+	);
+	expect(countSucceededAiActionExecutionsForTenant(null as never)).rejects.toBeInstanceOf(
+		TenantContextError
+	);
+	expect(
+		insertAiActionExecutionForTenant(null as never, {
+			actionType: 'internal_weekly_report',
+			status: 'succeeded',
+			idempotencyKey: 'ctx-missing-key',
+			requestId: 'ctx-missing'
+		})
+	).rejects.toBeInstanceOf(TenantContextError);
 });
 
 test('pause without a reason fails closed', async () => {
@@ -148,11 +196,10 @@ test('client kill switch is privileged, audited, and blocks Level 3 eligibility'
 	try {
 		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 3 }, 'auto-pause-ceiling');
 		const ready = await getAutonomyOverview(actor, ctx);
-		expect(ready.executed).toBe(false);
-		expect(ready.executedCount).toBe(0);
 		expect(ready.phase8MaxAutonomy).toBe(PHASE_8_MAX_AUTONOMY);
 		const weekly = ready.actions.find((row) => row.actionType === 'internal_weekly_report');
 		expect(weekly?.eligibleNow).toBe(true);
+		expect(weekly?.executableNow).toBe(true);
 		await pauseIntelligence(
 			actor,
 			ctx,
@@ -198,7 +245,12 @@ test('forbidden and high-risk classes cannot become eligible even at ceiling 3',
 		expect(
 			overview.actions.find((row) => row.actionType === 'experiment.promote_winner')?.eligibleNow
 		).toBe(false);
-		expect(overview.executed).toBe(false);
+		expect(
+			overview.actions.find((row) => row.actionType === 'internal_weekly_report')?.executableNow
+		).toBe(true);
+		expect(
+			overview.actions.find((row) => row.actionType === 'launch.queue_qa')?.executableNow
+		).toBe(false);
 	} finally {
 		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-forbid-ceiling-reset');
 	}
@@ -237,6 +289,14 @@ test('missing ai.manage cannot pause or raise the ceiling', async () => {
 	await expect(
 		setAutonomyCeiling(actor, ctx, { autonomyCeiling: 3 }, 'auto-cap-ceiling')
 	).rejects.toBeInstanceOf(ForbiddenError);
+	await expect(
+		runAutoExecute(
+			actor,
+			ctx,
+			{ actionType: 'internal_weekly_report', idempotencyKey: 'no-manage-weekly' },
+			'auto-cap-execute'
+		)
+	).rejects.toBeInstanceOf(ForbiddenError);
 });
 
 test('user on client A cannot read client B kill-switch events', async () => {
@@ -260,6 +320,7 @@ test('user on client A cannot read client B kill-switch events', async () => {
 		expect(JSON.stringify(own)).not.toContain(beta.id);
 		expect(JSON.stringify(own)).not.toContain('Beta warehouse pause must stay on Beta');
 		expect(own.killSwitchEvents.every((row) => row.clientId === alpha.id)).toBe(true);
+		expect(own.executions.every((row) => row.clientId === alpha.id)).toBe(true);
 		await expect(getAutonomyOverview(session, ctx, beta.id)).rejects.toBeInstanceOf(
 			TenantContextError
 		);
@@ -303,5 +364,269 @@ test('seeded catalog includes low-risk preapproved classes and forbidden classes
 		const row = policies.find((policy) => policy.actionType === actionType);
 		expect(row?.forbidden).toBe(true);
 		expect(row?.autoExecuteAllowed).toBe(false);
+	}
+	expect(S1_AUTO_EXECUTE_ACTIONS).toEqual(['internal_weekly_report']);
+	expect(utcIsoWeekKey()).toMatch(/^\d{4}-W\d{2}$/);
+});
+
+test('S1 auto-executes an internal weekly report from observed tenant metrics only', async () => {
+	resetRateLimits();
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.8.11', 'auto-s1-run');
+	const ctx = contextFor(actor, 'auto-s1-run');
+	const idempotencyKey = `s1-weekly-${crypto.randomUUID()}`;
+	try {
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 3 }, 'auto-s1-ceiling');
+		const emailsBefore = emailMessageTotal(await countEmailMessagesByStatusForTenant(ctx));
+		const pagesBefore = await countPublishedPageVersionsForTenant(ctx);
+		const leadsBefore = observedLeadCreated(await countAnalyticsEventsForTenant(ctx));
+		await insertAnalyticsEventForTenant(ctx, {
+			eventId: crypto.randomUUID(),
+			name: 'lead_created',
+			taxonomyVersion: 1,
+			isTest: true
+		});
+		await insertAnalyticsEventForTenant(ctx, {
+			eventId: crypto.randomUUID(),
+			name: 'lead_created',
+			taxonomyVersion: 1,
+			isTest: false
+		});
+		const first = await runAutoExecute(
+			actor,
+			ctx,
+			{ actionType: 'internal_weekly_report', idempotencyKey },
+			uniqueRequestId('auto-s1-execute')
+		);
+		expect(first.executed).toBe(true);
+		expect(first.replayed).toBe(false);
+		expect(first.blockedBy).toBeNull();
+		expect(first.execution?.status).toBe('succeeded');
+		expect(first.execution?.clientId).toBe(alpha.id);
+		expect(first.execution?.confidenceIgnored).toBe(true);
+		expect(first.execution?.autonomyLevel).toBe(3);
+		const output = first.execution?.output as InternalWeeklyReportOutput;
+		expect(output.kind).toBe('internal_weekly_report');
+		expect(output.evidenceClass).toBe('observed');
+		expect(output.sent).toBe(false);
+		expect(output.published).toBe(false);
+		expect(output.observed.leadCreated).toBe(leadsBefore + 1);
+		expect(emailMessageTotal(await countEmailMessagesByStatusForTenant(ctx))).toBe(emailsBefore);
+		expect(await countPublishedPageVersionsForTenant(ctx)).toBe(pagesBefore);
+		const replay = await runAutoExecute(
+			actor,
+			ctx,
+			{ actionType: 'internal_weekly_report', idempotencyKey },
+			uniqueRequestId('auto-s1-replay')
+		);
+		expect(replay.replayed).toBe(true);
+		expect(replay.executed).toBe(true);
+		expect(replay.execution?.id).toBe(first.execution?.id);
+		const overview = await getAutonomyOverview(actor, ctx);
+		expect(overview.executed).toBe(true);
+		expect(overview.executedCount).toBeGreaterThanOrEqual(1);
+		expect(overview.executions.some((row) => row.id === first.execution?.id)).toBe(true);
+		expect(overview.executions.every((row) => row.clientId === alpha.id)).toBe(true);
+	} finally {
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-s1-ceiling-reset');
+	}
+});
+
+test('kill switch records a blocked execution and does not succeed', async () => {
+	resetRateLimits();
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.8.12', 'auto-s1-pause');
+	const ctx = contextFor(actor, 'auto-s1-pause');
+	const idempotencyKey = `s1-paused-${crypto.randomUUID()}`;
+	const succeededBefore = await countSucceededAiActionExecutionsForTenant(ctx);
+	try {
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 3 }, 'auto-s1-pause-ceiling');
+		await pauseIntelligence(
+			actor,
+			ctx,
+			{ paused: true, reason: 'Pause S1 weekly report during review' },
+			'auto-s1-pause-on'
+		);
+		const blocked = await runAutoExecute(
+			actor,
+			ctx,
+			{ actionType: 'internal_weekly_report', idempotencyKey },
+			uniqueRequestId('auto-s1-pause-execute')
+		);
+		expect(blocked.executed).toBe(false);
+		expect(blocked.blockedBy).toBe('client_pause');
+		expect(blocked.execution?.status).toBe('blocked');
+		expect(await getAiActionExecutionByIdempotency(ctx, idempotencyKey)).toBeNull();
+		expect(await countSucceededAiActionExecutionsForTenant(ctx)).toBe(succeededBefore);
+	} finally {
+		await pauseIntelligence(
+			actor,
+			ctx,
+			{ paused: false, reason: 'Resume after S1 pause check' },
+			'auto-s1-pause-off'
+		);
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-s1-pause-ceiling-reset');
+	}
+});
+
+test('default ceiling 2 blocks S1 execute', async () => {
+	resetRateLimits();
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.8.13', 'auto-s1-ceil2');
+	const ctx = contextFor(actor, 'auto-s1-ceil2');
+	await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-s1-ceil2-set');
+	const blocked = await runAutoExecute(
+		actor,
+		ctx,
+		{ actionType: 'internal_weekly_report', idempotencyKey: `s1-ceil2-${crypto.randomUUID()}` },
+		uniqueRequestId('auto-s1-ceil2-execute')
+	);
+	expect(blocked.executed).toBe(false);
+	expect(blocked.blockedBy).toBe('autonomy_ceiling');
+	expect(blocked.execution?.status).toBe('blocked');
+});
+
+test('S1 cannot succeed legal, publish, or later launch classes', async () => {
+	resetRateLimits();
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.8.14', 'auto-s1-forbid');
+	const ctx = contextFor(actor, 'auto-s1-forbid');
+	const emailsBefore = emailMessageTotal(await countEmailMessagesByStatusForTenant(ctx));
+	const pagesBefore = await countPublishedPageVersionsForTenant(ctx);
+	try {
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 3 }, 'auto-s1-forbid-ceiling');
+		const legal = await runAutoExecute(
+			actor,
+			ctx,
+			{ actionType: 'legal.reply' },
+			uniqueRequestId('auto-s1-legal')
+		);
+		expect(legal.executed).toBe(false);
+		expect(legal.blockedBy).toBe('forbidden_action');
+		const publish = await runAutoExecute(
+			actor,
+			ctx,
+			{ actionType: 'page.publish' },
+			uniqueRequestId('auto-s1-publish')
+		);
+		expect(publish.executed).toBe(false);
+		expect(publish.blockedBy).toBe('forbidden_action');
+		await expect(
+			runAutoExecute(actor, ctx, { actionType: 'launch.queue_qa' }, 'auto-s1-qa')
+		).rejects.toBeInstanceOf(ValidationError);
+		await expect(
+			runAutoExecute(
+				actor,
+				ctx,
+				{ actionType: 'nurture.enroll_approved_sequence' },
+				'auto-s1-enroll'
+			)
+		).rejects.toBeInstanceOf(ValidationError);
+		const executions = await listAiActionExecutionsForTenant(ctx);
+		expect(
+			executions.some(
+				(row) =>
+					row.status === 'succeeded' &&
+					(row.actionType === 'legal.reply' ||
+						row.actionType === 'page.publish' ||
+						row.actionType === 'launch.queue_qa' ||
+						row.actionType === 'nurture.enroll_approved_sequence')
+			)
+		).toBe(false);
+		expect(emailMessageTotal(await countEmailMessagesByStatusForTenant(ctx))).toBe(emailsBefore);
+		expect(await countPublishedPageVersionsForTenant(ctx)).toBe(pagesBefore);
+	} finally {
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-s1-forbid-ceiling-reset');
+	}
+});
+
+test('user on client A cannot read or run client B executions', async () => {
+	resetRateLimits();
+	const { alpha, beta } = await seededClients();
+	const admin = await adminOn(beta.id, '10.0.8.15', 'auto-s1-beta');
+	const betaCtx = contextFor(admin, 'auto-s1-beta');
+	const idempotencyKey = `s1-beta-${crypto.randomUUID()}`;
+	try {
+		await setAutonomyCeiling(admin, betaCtx, { autonomyCeiling: 3 }, 'auto-s1-beta-ceiling');
+		const betaRun = await runAutoExecute(
+			admin,
+			betaCtx,
+			{ actionType: 'internal_weekly_report', idempotencyKey },
+			uniqueRequestId('auto-s1-beta-execute')
+		);
+		expect(betaRun.executed).toBe(true);
+		expect(betaRun.execution?.clientId).toBe(beta.id);
+		const { session } = await login(
+			{ email: env.SEED_USER_A_EMAIL, password: env.SEED_USER_A_PASSWORD },
+			'10.0.8.16'
+		);
+		const ctx = contextFor(session, 'auto-s1-iso');
+		expect(ctx.clientId).toBe(alpha.id);
+		const own = await getAutonomyOverview(session, ctx);
+		expect(JSON.stringify(own)).not.toContain(beta.id);
+		expect(JSON.stringify(own)).not.toContain(betaRun.execution?.id);
+		expect(JSON.stringify(own)).not.toContain('Beta warehouse');
+		expect(own.executions.every((row) => row.clientId === alpha.id)).toBe(true);
+		expect(await getAiActionExecutionByIdempotency(ctx, idempotencyKey)).toBeNull();
+		await expect(
+			runAutoExecute(
+				session,
+				betaCtx,
+				{ actionType: 'internal_weekly_report', idempotencyKey: `s1-steal-${crypto.randomUUID()}` },
+				uniqueRequestId('auto-s1-steal')
+			)
+		).rejects.toBeInstanceOf(TenantContextError);
+		const leaked = await app.request(`/v1/autonomy/${beta.id}`, {
+			headers: { cookie: `${cookieName()}=${session.token}` }
+		});
+		expect(leaked.status).toBeGreaterThanOrEqual(400);
+		const leakedText = await leaked.text();
+		expect(leakedText.toLowerCase()).not.toContain('warehouse');
+		expect(leakedText).not.toContain(betaRun.execution?.id ?? 'missing-execution');
+	} finally {
+		await setAutonomyCeiling(admin, betaCtx, { autonomyCeiling: 2 }, 'auto-s1-beta-ceiling-reset');
+	}
+});
+
+test('API execute records a weekly report at ceiling 3 and stays CSRF-protected', async () => {
+	resetRateLimits();
+	const { alpha } = await seededClients();
+	const actor = await adminOn(alpha.id, '10.0.8.17', 'auto-s1-api');
+	const ctx = contextFor(actor, 'auto-s1-api');
+	const idempotencyKey = `s1-api-${crypto.randomUUID()}`;
+	try {
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 3 }, 'auto-s1-api-ceiling');
+		const cookie = `${cookieName()}=${actor.token}`;
+		const denied = await app.request('/v1/autonomy/execute', {
+			method: 'POST',
+			headers: {
+				'content-type': 'application/json',
+				cookie
+			},
+			body: JSON.stringify({ actionType: 'internal_weekly_report', idempotencyKey })
+		});
+		expect(denied.status).toBeGreaterThanOrEqual(400);
+		const res = await app.request('/v1/autonomy/execute', {
+			method: 'POST',
+			headers: {
+				'content-type': 'application/json',
+				cookie,
+				'x-csrf-token': actor.csrf
+			},
+			body: JSON.stringify({ actionType: 'internal_weekly_report', idempotencyKey })
+		});
+		expect(res.status).toBe(201);
+		const body = (await res.json()) as {
+			data: {
+				executed: boolean;
+				execution: { clientId: string; output: InternalWeeklyReportOutput };
+			};
+		};
+		expect(body.data.executed).toBe(true);
+		expect(body.data.execution.clientId).toBe(alpha.id);
+		expect(body.data.execution.output.sent).toBe(false);
+		expect(body.data.execution.output.published).toBe(false);
+	} finally {
+		await setAutonomyCeiling(actor, ctx, { autonomyCeiling: 2 }, 'auto-s1-api-ceiling-reset');
 	}
 });

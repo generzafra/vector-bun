@@ -107,7 +107,7 @@ email_inbound_messages
 
 `email_suppressions.scope = global` is platform-owned and has a null `client_id`. Client suppressions never merge across tenants. Sending-domain readiness stores SPF, DKIM, DMARC, and approved From as machine-checked fields. Published welcome sequences are approved versions (`welcome_v1`). Preview/`is_test` messages are not production sends. Engagement counts are derived from tenant-scoped `email_messages` and `email_events`. `email_contacts` sync from leads even when a send is skipped. Inbound replies live on `email_inbound_messages` as drafts; they are not a send queue. Workflow runs are not a second source of truth; Trigger.dev is the optional durable host for the same tenant-scoped handlers.
 
-Phase 4 intelligence: platform catalog has no `client_id` (`ai_agents`, `ai_agent_versions`, `prompt_templates`, `prompt_versions`). Tenant-owned rows require `client_id`:
+Phase 4 intelligence: platform catalog has no `client_id` (`ai_agents`, `ai_agent_versions`, `prompt_templates`, `prompt_versions`, `ai_action_policies`). Tenant-owned rows require `client_id`:
 
 ```text
 ai_client_settings
@@ -120,13 +120,12 @@ ai_cost_events
 approval_requests
 approval_decisions
 ai_kill_switch_events
+ai_action_executions
 ```
 
 Prompt and agent versions are immutable. Runs record provider, model, schema name/version, and prompt version. Cost is integer USD micros plus currency. Approvals are required in Phase 4. Approving funnel or copy may attach an unpublished `page_versions` draft on `ai_runs.artifact_page_version_id`; deciding never publishes, sends, or activates a domain. `ai_feedback` records accept/reject. `ai_tool_calls` records proposed tools with `authorized` false in Phase 4; they are not execution. Knowledge used as model input is a tenant snapshot, never another client’s embeddings or claims.
 
-Phase 8 S0 adds platform `ai_action_policies` (no `client_id`): risk class, default/max autonomy, auto-execute flag, financial limit in integer minor units, content/provider limits, approval expiry seconds, and rollback supported. Client kill-switch events require `client_id`. Pause/resume requires a reason. Default `ai_client_settings.autonomy_ceiling` stays 2. Operators may set 0–3, never 4 or 5. S0 evaluates Level 3 eligibility only and does not execute. Slice detail: `docs/plans/08_PHASE_8_AUTONOMY.md`.
-
-Prompt and agent versions are immutable. Runs record provider, model, schema name/version, and prompt version. Cost is integer USD micros plus currency. Approvals are required in Phase 4. Approving funnel or copy may attach an unpublished `page_versions` draft on `ai_runs.artifact_page_version_id`; deciding never publishes, sends, or activates a domain. `ai_feedback` records accept/reject. `ai_tool_calls` records proposed tools with `authorized` false in Phase 4; they are not execution. Knowledge used as model input is a tenant snapshot, never another client’s embeddings or claims.
+Phase 8 S0 adds platform `ai_action_policies` (no `client_id`): risk class, default/max autonomy, auto-execute flag, financial limit in integer minor units, content/provider limits, approval expiry seconds, and rollback supported. Client kill-switch events require `client_id`. Pause/resume requires a reason. Default `ai_client_settings.autonomy_ceiling` stays 2. Operators may set 0–3, never 4 or 5. S1 records tenant-owned `ai_action_executions` for `internal_weekly_report` only: observed analytics (`is_test` excluded), `sent: false`, `published: false`. Kill switch still wins. Other preapproved classes stay evaluate-only. Slice detail: `docs/plans/08_PHASE_8_AUTONOMY.md`.
 
 Phase 6 search (tenant-owned, `client_id` required). First-ship tables:
 

@@ -39,7 +39,7 @@ Never give production agents unrestricted SQL, shell, file system, arbitrary HTT
 
 Client and platform kill switches must be able to pause AI execution without redeploying. Kill-switch use is privileged and audited. Model confidence alone cannot override a pause or approval policy.
 
-Phase 8 S0: client pause/resume requires `ai.manage` and a written reason, then writes tenant-scoped `ai_kill_switch_events`. Platform pause remains `AI_EXECUTION_PAUSED`. Control `/autonomy` shows the action catalog and whether Level 3 would be eligible now. Eligibility is not execution. AI draft runs stay capped at autonomy 2.
+Phase 8 S0: client pause/resume requires `ai.manage` and a written reason, then writes tenant-scoped `ai_kill_switch_events`. Platform pause remains `AI_EXECUTION_PAUSED`. Control `/autonomy` shows the action catalog and whether Level 3 would be eligible now. AI draft runs stay capped at autonomy 2. Phase 8 S1: trusted software may auto-execute `internal_weekly_report` into tenant-scoped `ai_action_executions` when the gate allows it. Kill switch still wins. Confidence cannot authorize. The report is observed tenant analytics only and does not send or publish.
 
 ## Prompt injection
 

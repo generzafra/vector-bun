@@ -169,6 +169,13 @@
 			"when": 1756070000000,
 			"tag": "0023_phase8_autonomy",
 			"breakpoints": true
+		},
+		{
+			"idx": 24,
+			"version": "7",
+			"when": 1756080000000,
+			"tag": "0024_phase8_executions",
+			"breakpoints": true
 		}
 	]
 }

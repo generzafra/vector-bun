@@ -3042,3 +3042,55 @@ export const aiKillSwitchEvents = pgTable(
 		index('ai_kill_switch_events_scope_idx').on(t.scope)
 	]
 );
+
+export const aiActionExecutionStatus = pgEnum('ai_action_execution_status', [
+	'succeeded',
+	'blocked',
+	'failed'
+]);
+
+export type InternalWeeklyReportOutput = {
+	kind: 'internal_weekly_report';
+	periodKey: string;
+	observed: {
+		pageViewed: number;
+		ctaClicked: number;
+		formStarted: number;
+		formSubmitted: number;
+		leadCreated: number;
+	};
+	publishedPageVersions: number;
+	evidenceClass: 'observed';
+	sent: boolean;
+	published: boolean;
+};
+
+export type AiActionExecutionOutput = InternalWeeklyReportOutput | Record<string, unknown>;
+
+export const aiActionExecutions = pgTable(
+	'ai_action_executions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		actionType: text('action_type').notNull(),
+		status: aiActionExecutionStatus('status').notNull(),
+		autonomyLevel: integer('autonomy_level').notNull().default(3),
+		blockedBy: text('blocked_by'),
+		confidenceIgnored: boolean('confidence_ignored').notNull().default(true),
+		idempotencyKey: text('idempotency_key').notNull(),
+		requestId: text('request_id').notNull(),
+		actorId: text('actor_id'),
+		output: jsonb('output').$type<AiActionExecutionOutput>(),
+		error: text('error'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('ai_action_executions_idempotency_idx').on(t.clientId, t.idempotencyKey),
+		index('ai_action_executions_client_idx').on(t.clientId, t.createdAt)
+	]
+);

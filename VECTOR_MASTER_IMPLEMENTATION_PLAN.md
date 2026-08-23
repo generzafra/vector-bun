@@ -2736,7 +2736,7 @@ Exit gate:
 
 - Low risk workflows and selected launch steps run without daily human intervention and remain auditable.
 
-**Status (23 August 2026):** S0 is in. Platform `ai_action_policies` catalog Level 3 eligibility. Client kill-switch changes require a reason and write tenant-scoped `ai_kill_switch_events`. Default ceiling stays 2. Operators may raise it to 3, never 4 or 5. Confidence cannot authorize. S0 evaluates only and does not execute, publish, or send. Control `/autonomy` shows the catalog and audit. See `docs/plans/08_PHASE_8_AUTONOMY.md`.
+**Status (23 August 2026):** S0–S1 are in. Platform `ai_action_policies` catalog Level 3 eligibility. Client kill-switch changes require a reason and write tenant-scoped `ai_kill_switch_events`. Default ceiling stays 2. Operators may raise it to 3, never 4 or 5. Confidence cannot authorize. S1 auto-executes `internal_weekly_report` into tenant-scoped `ai_action_executions` from observed analytics only. It does not send, publish, enroll, or call an AI provider. Kill switch still wins. Control `/autonomy` can run that class when eligible. See `docs/plans/08_PHASE_8_AUTONOMY.md`.
 
 ## Phase 9 — Multi client operational scale
 

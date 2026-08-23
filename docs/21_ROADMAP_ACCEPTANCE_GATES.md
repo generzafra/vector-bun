@@ -100,7 +100,7 @@ Progressive autonomy, launch automation policies, low-risk auto-execution.
 
 Autonomy is also conditioned on data health and outcome coverage (`docs/30`). Incomplete sales data lowers confidence and cannot unlock high-impact auto-execute.
 
-**Status (23 August 2026):** S0 is in. Action policies, a Level 3 evaluate-only gate, and privileged client kill-switch events ship on Control `/autonomy`. Nothing auto-executes yet. Default ceiling remains 2. Level 4–5 stay closed.
+**Status (23 August 2026):** S0–S1 are in. Action policies, a Level 3 gate, privileged client kill-switch events, and trusted auto-execute of `internal_weekly_report` ship on Control `/autonomy`. The weekly report is observed tenant analytics only (`sent: false`, `published: false`). Kill switch still wins. Other preapproved classes stay evaluate-only. Default ceiling remains 2. Level 4–5 stay closed.
 
 ## Phase 9
 

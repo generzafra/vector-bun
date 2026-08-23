@@ -1,6 +1,6 @@
 # Phase 8 — Progressive Autonomy
 
-**Status:** Implementation specification — S0 in  
+**Status:** Implementation specification — S0–S1 in  
 **Phase:** 8  
 **Prerequisite:** Phase 7 exit met. Risk classes and approval policies already exist from Phase 4. Do not start Level 5 or unconditioned auto-execute.
 
@@ -14,7 +14,7 @@ Selected low-risk workflows and launch steps run without daily human interventio
 action type + risk class + limits + expiry
 → kill switch and autonomy ceiling
 → policy decides auto-execute
-→ trusted software executes (later slices)
+→ trusted software executes (S1: internal weekly report)
 → audit + optional rollback
 ```
 
@@ -66,7 +66,7 @@ Phase exits in [`docs/21`](../21_ROADMAP_ACCEPTANCE_GATES.md) and [CROSS_CUTTING
 No new package. Policy evaluation lives next to the existing AI gate in `packages/ai`. Domain orchestration is `packages/domain`.
 
 - S0: `ai_action_policies` (platform catalog, no `client_id`), `ai_kill_switch_events` (tenant-owned)
-- Later: launch automation policy rows and execution / rollback records on existing `ai_*` / workflow runtime — not a second job host
+- S1: `ai_action_executions` (tenant-owned). Later: launch automation policy rows and rollback records on existing `ai_*` / workflow runtime — not a second job host
 
 Capabilities stay `ai.read` and `ai.manage`. Authorize by capability.
 
@@ -85,13 +85,13 @@ This is when Vector 24 becomes operationally plausible: repeated launch steps th
 | Slice  | Work                                                                                                         | Gate     |
 | ------ | ------------------------------------------------------------------------------------------------------------ | -------- |
 | **S0** | Action policy catalog, Level 3 evaluate-only gate, privileged client kill-switch events, Control `/autonomy` | In       |
-| **S1** | First trusted auto-execute of one preapproved low-risk class; still paused by kill switch                    | Later    |
+| **S1** | First trusted auto-execute of one preapproved low-risk class; still paused by kill switch                    | In       |
 | **S2** | Launch automation policy records (generate drafts, wire tracking, queue QA)                                  | Later    |
 | **S3** | Auto-execute selected launch steps inside policy; unpublished drafts only                                    | Later    |
 | **S4** | Automatic rollback for selected actions; Level 4 conditional (e.g. experiment promote under Phase 7)         | Later    |
 | **S5** | Autonomy × data health × goal relevance                                                                      | Additive |
 
-Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute.
+Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute. S1 executes only `internal_weekly_report`.
 
 ---
 
@@ -110,7 +110,20 @@ Phase 8 may exit after **S4**. S5 does not reopen that exit. S0 does not execute
 
 ---
 
-## 9. Do not start until
+## 9. S1 rules
+
+- Trusted software auto-executes only `internal_weekly_report`. Other preapproved classes stay evaluate-only.
+- Kill switch still wins. Ceiling must be 3. Confidence is ignored and cannot authorize.
+- The snapshot uses observed tenant analytics (`is_test` excluded) and published page-version counts. Evidence class is `observed`. Output is `sent: false` and `published: false`.
+- S1 does not call an AI provider, send email, publish a page, enroll nurture, or change live launch state.
+- Tenant-owned `ai_action_executions` require `client_id` and explicit `TenantContext`. Unique `(client_id, idempotency_key)`. Default idempotency is `internal_weekly_report:<UTC ISO week>`.
+- Blocked attempts are recorded (`status: blocked`) and returned. Non-S1 actions that pass the gate throw a validation error and do not succeed.
+- Alpha cannot read, replay, or run Beta executions. Route client id cannot leak the other tenant. Missing TenantContext fails closed. `ai.manage` is required to run.
+- Control `/autonomy` shows Run now only when `executableNow` (eligible and S1). Do not ship an automation canvas.
+
+---
+
+## 10. Do not start until
 
 Phase 4 approvals and Phase 1 launch states exist. Prefer a completed Phase 7 experiment so promotion rules are real.
 

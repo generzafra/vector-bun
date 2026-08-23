@@ -23,6 +23,26 @@
 		return 'muted' as const;
 	}
 
+	function executionTone(status: string) {
+		if (status === 'succeeded') return 'success' as const;
+		if (status === 'blocked') return 'warning' as const;
+		return 'danger' as const;
+	}
+
+	function reportLabel(output: unknown) {
+		if (!output || typeof output !== 'object') return '—';
+		const row = output as {
+			kind?: string;
+			periodKey?: string;
+			observed?: { leadCreated?: number };
+			sent?: boolean;
+			published?: boolean;
+		};
+		if (row.kind !== 'internal_weekly_report') return 'Recorded';
+		const leads = row.observed?.leadCreated ?? 0;
+		return `${row.periodKey ?? 'period'} · ${leads} observed leads · sent ${row.sent ? 'yes' : 'no'} · published ${row.published ? 'yes' : 'no'}`;
+	}
+
 	function atLabel(value: Date | string) {
 		const iso = value instanceof Date ? value.toISOString() : value;
 		return iso.replace('T', ' ').slice(0, 16);
@@ -32,7 +52,7 @@
 <PageHeader
 	eyebrow="Vector Intelligence"
 	title="Autonomy"
-	description="Low-risk classes can become eligible for Level 3 auto-execute. Policy still decides. Kill switch always wins. Confidence cannot authorize, unpause, or raise a ceiling. This slice evaluates eligibility only — nothing publishes, sends, or executes."
+	description="Low-risk classes can become eligible for Level 3 auto-execute. Policy still decides. Kill switch always wins. Confidence cannot authorize, unpause, or raise a ceiling. S1 can auto-execute an internal weekly report from observed tenant metrics only — it does not send, publish, or go live."
 />
 
 {#if form?.error}
@@ -59,7 +79,8 @@
 			(max {overview.phase8MaxAutonomy}; AI drafts stay at {overview.phase4MaxAutonomy}).
 		</p>
 		<p>
-			Executed this slice: {overview.executedCount}. S0 records eligibility only.
+			Succeeded executions: {overview.executedCount}. S1 records an internal weekly report only.
+			Other preapproved classes stay ineligible to run until later slices.
 		</p>
 		{#if canManage}
 			<form method="post" action="?/pause" class="wide">
@@ -149,7 +170,53 @@
 									label={action.eligibleNow ? 'eligible now' : (action.blockedBy ?? 'blocked')}
 									tone={gateTone(action.eligibleNow, action.blockedBy)}
 								/>
+								{#if canManage && action.executableNow}
+									<form method="post" action="?/execute">
+										<input type="hidden" name="_csrf" value={data.csrf} />
+										<input type="hidden" name="actionType" value={action.actionType} />
+										<button type="submit">Run now</button>
+									</form>
+								{/if}
 							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+	</section>
+
+	<section>
+		<h2>Executions</h2>
+		<p>
+			Trusted software writes a tenant-scoped snapshot. It is not a send queue and not a publish
+			path. Alpha executions never include Beta.
+		</p>
+		{#if overview.executions.length === 0}
+			<EmptyState title="No auto-executions for this client." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>When</th>
+						<th>Action</th>
+						<th>Status</th>
+						<th>Result</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.executions as execution (execution.id)}
+						<tr>
+							<td>{atLabel(execution.createdAt)}</td>
+							<td>{execution.actionType}</td>
+							<td>
+								<StatusChip
+									label={execution.status === 'blocked'
+										? (execution.blockedBy ?? 'blocked')
+										: execution.status}
+									tone={executionTone(execution.status)}
+								/>
+							</td>
+							<td>{reportLabel(execution.output)}</td>
 						</tr>
 					{/each}
 				</tbody>

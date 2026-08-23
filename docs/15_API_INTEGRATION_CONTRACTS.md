@@ -87,9 +87,10 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/intelligence/runs` — start a typed draft (`ai.manage`, CSRF). Body: `agentKey`, optional `brief`, optional `idempotencyKey`
 - `POST /v1/intelligence/approvals/:id/decide` — approve or reject; may write an unpublished page draft for funnel/copy; never publishes, sends, or executes (`ai.manage`, CSRF)
 - `POST /v1/intelligence/pause` — set the client AI kill switch; body requires `paused` and `reason` (`ai.manage`, CSRF)
-- `GET /v1/autonomy` — action policies, Level 3 eligibility for the active tenant, kill-switch events (`ai.read`)
+- `GET /v1/autonomy` — action policies, Level 3 eligibility, execution log, and kill-switch events for the active tenant (`ai.read`)
 - `GET /v1/autonomy/:clientId` — same overview only when the actor already owns that client
-- `POST /v1/autonomy/ceiling` — set autonomy ceiling 0–3 (`ai.manage`, CSRF). 4 and 5 are rejected. Does not execute.
+- `POST /v1/autonomy/ceiling` — set autonomy ceiling 0–3 (`ai.manage`, CSRF). 4 and 5 are rejected
+- `POST /v1/autonomy/execute` — auto-execute a catalog action (`ai.manage`, CSRF). S1 succeeds only for `internal_weekly_report`. Blocked attempts return 200 with `executed: false`. Does not send or publish.
 
 `AIProvider` lives in `packages/ai`. Memory is the default. xAI Grok is selected when `XAI_API_KEY` is present. `AI_EXECUTION_PAUSED` wraps the adapter as disabled. Tokens stay in env, not the browser, logs, or prompts.
 

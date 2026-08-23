@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq } from 'drizzle-orm';
 import {
 	assertSameClient,
 	requireTenantContext,
@@ -6,7 +6,12 @@ import {
 	type TenantContext
 } from '@vector/contracts';
 import { db } from './client';
-import { aiActionPolicies, aiKillSwitchEvents } from './schema';
+import {
+	aiActionExecutions,
+	aiActionPolicies,
+	aiKillSwitchEvents,
+	type AiActionExecutionOutput
+} from './schema';
 
 export function assertAutonomyClient(ctx: TenantContext, clientId: string) {
 	return assertSameClient(ctx, clientId);
@@ -105,4 +110,89 @@ export async function listKillSwitchEventsForTenant(ctx: TenantContext) {
 			)
 		)
 		.orderBy(desc(aiKillSwitchEvents.createdAt));
+}
+
+export async function getAiActionPolicyByType(actionType: string) {
+	const [row] = await db
+		.select()
+		.from(aiActionPolicies)
+		.where(eq(aiActionPolicies.actionType, actionType))
+		.limit(1);
+	return row ?? null;
+}
+
+export async function getAiActionExecutionByIdempotency(
+	ctx: TenantContext,
+	idempotencyKey: string
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(aiActionExecutions)
+		.where(
+			and(
+				eq(aiActionExecutions.clientId, required.clientId),
+				eq(aiActionExecutions.idempotencyKey, idempotencyKey)
+			)
+		)
+		.limit(1);
+	return row ?? null;
+}
+
+export async function listAiActionExecutionsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(aiActionExecutions)
+		.where(eq(aiActionExecutions.clientId, required.clientId))
+		.orderBy(desc(aiActionExecutions.createdAt));
+}
+
+export async function countSucceededAiActionExecutionsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select({ total: count() })
+		.from(aiActionExecutions)
+		.where(
+			and(
+				eq(aiActionExecutions.clientId, required.clientId),
+				eq(aiActionExecutions.status, 'succeeded')
+			)
+		);
+	return Number(row?.total ?? 0);
+}
+
+export async function insertAiActionExecutionForTenant(
+	ctx: TenantContext,
+	input: {
+		actionType: string;
+		status: 'succeeded' | 'blocked' | 'failed';
+		autonomyLevel?: number;
+		blockedBy?: string | null;
+		idempotencyKey: string;
+		requestId: string;
+		actorId?: string | null;
+		output?: AiActionExecutionOutput | null;
+		error?: string | null;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(aiActionExecutions)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			actionType: input.actionType,
+			status: input.status,
+			autonomyLevel: input.autonomyLevel ?? 3,
+			blockedBy: input.blockedBy ?? null,
+			confidenceIgnored: true,
+			idempotencyKey: input.idempotencyKey,
+			requestId: input.requestId,
+			actorId: input.actorId ?? null,
+			output: input.output ?? undefined,
+			error: input.error ?? null
+		})
+		.returning();
+	return row;
 }

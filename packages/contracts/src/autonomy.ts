@@ -53,6 +53,9 @@ export const LOW_RISK_AUTO_EXECUTE_ACTIONS = [
 	'launch.wire_tracking'
 ] as const;
 
+export const S1_AUTO_EXECUTE_ACTIONS = ['internal_weekly_report'] as const;
+export type S1AutoExecuteAction = (typeof S1_AUTO_EXECUTE_ACTIONS)[number];
+
 export type DefaultActionPolicy = {
 	actionType: AutonomyActionType;
 	name: string;

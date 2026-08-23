@@ -4,6 +4,7 @@ import {
 	contextFor,
 	getAutonomyOverview,
 	pauseIntelligence,
+	runAutoExecute,
 	setAutonomyCeiling
 } from '@vector/domain';
 
@@ -51,11 +52,39 @@ export const actions = {
 			);
 			return {
 				ok: true,
-				notice: 'Autonomy ceiling updated. Level 4 and 5 stay closed. Nothing auto-executed.'
+				notice: 'Autonomy ceiling updated. Level 4 and 5 stay closed.'
 			};
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not update the autonomy ceiling' });
+		}
+	},
+	execute: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			const result = await runAutoExecute(
+				session,
+				contextFor(session, locals.requestId),
+				{ actionType: String(form.get('actionType') ?? '') },
+				locals.requestId
+			);
+			if (!result.executed) {
+				return {
+					ok: true,
+					notice: `Blocked by ${result.blockedBy}. Kill switch and policy still win. Nothing was sent or published.`
+				};
+			}
+			return {
+				ok: true,
+				notice: result.replayed
+					? 'Existing internal weekly report reused. Nothing was sent or published.'
+					: 'Internal weekly report recorded from observed tenant metrics. Nothing was sent or published.'
+			};
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not auto-execute' });
 		}
 	}
 };
