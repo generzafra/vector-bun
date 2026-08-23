@@ -14,18 +14,18 @@ Phase exits in `../21_ROADMAP_ACCEPTANCE_GATES.md` still govern what a phase mus
 
 ## Locked phase attachments
 
-| Phase | Exit (unchanged)               | Must take now                                    | Later on this phase’s calendar, not the exit           |
-| ----- | ------------------------------ | ------------------------------------------------ | ------------------------------------------------------ |
-| 0     | Isolation + CI                 | Tenancy, auth, audit                             | —                                                      |
-| 1     | Preview funnel + `docs/27` MVP | `brand_assets`, `offers`, `StorageProvider`      | Creative C0 remainder; campaign-offer versions         |
-| 2     | Source → lead + taxonomy       | `lead_status` including won/lost; attribution v1 | O1–O3 goals / `sales_outcomes`; confidence labels      |
-| 3     | Safe nurture                   | Consent/suppression                              | Email → stage → sale join (O later)                    |
-| 4     | Typed, costed drafts           | Recommendation cards; tools denied               | Ask Vector; data-health gate (O13–O15)                 |
-| 5     | Two-platform publish           | Creative **C0**; optional social → lead          | C1–C6; O4+ client Today                                |
+| Phase | Exit (unchanged)               | Must take now                                    | Later on this phase’s calendar, not the exit                                   |
+| ----- | ------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| 0     | Isolation + CI                 | Tenancy, auth, audit                             | —                                                                              |
+| 1     | Preview funnel + `docs/27` MVP | `brand_assets`, `offers`, `StorageProvider`      | Creative C0 remainder; campaign-offer versions                                 |
+| 2     | Source → lead + taxonomy       | `lead_status` including won/lost; attribution v1 | O1–O3 goals / `sales_outcomes`; confidence labels                              |
+| 3     | Safe nurture                   | Consent/suppression                              | Email → stage → sale join (O later)                                            |
+| 4     | Typed, costed drafts           | Recommendation cards; tools denied               | Ask Vector; data-health gate (O13–O15)                                         |
+| 5     | Two-platform publish           | Creative **C0**; optional social → lead          | C1–C6; O4+ client Today                                                        |
 | 6     | Search backlog                 | Technical SEO + GEO-readiness baseline           | Search → qualified lead; OG from Creative; live GEO measurement when compliant |
-| 7     | One experiment + learning      | `docs/27` variants                               | C8 creative tests; O offer/revenue metrics if coverage |
-| 8     | Low-risk auto-execute          | Existing approval + kill switch                  | Autonomy × data health × goal relevance                |
-| 9     | Portfolio by exception         | Quotas, launch clocks                            | Creative QuickStart; entitlements; client health       |
+| 7     | One experiment + learning      | `docs/27` variants                               | C8 creative tests; O offer/revenue metrics if coverage                         |
+| 8     | Low-risk auto-execute          | Existing approval + kill switch                  | Autonomy × data health × goal relevance                                        |
+| 9     | Portfolio by exception         | Quotas, launch clocks                            | Creative QuickStart; entitlements; client health                               |
 
 ## Creative C0–C9 (do not start C2 before C0)
 

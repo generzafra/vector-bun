@@ -4,6 +4,7 @@ export * from './audit';
 export * from './auth-service';
 export * from './clients';
 export * from './delivery';
+export * from './discoverability';
 export * from './email';
 export * from './intelligence';
 export * from './domains';

@@ -10,6 +10,7 @@ import {
 import {
 	isDomainChallengePath,
 	isHealthPath,
+	isLlmsTxtPath,
 	isRobotsPath,
 	isSitemapPath,
 	isUnsubscribePath,
@@ -24,7 +25,20 @@ export type DeliveryResolution =
 	| { kind: 'unknown_host'; host: string | null }
 	| { kind: 'domain_challenge'; hostname: string; token: string }
 	| { kind: 'robots'; hostname: string; domainKind: DeliveryDomainKind }
-	| { kind: 'sitemap'; hostname: string; domainKind: DeliveryDomainKind }
+	| {
+			kind: 'sitemap';
+			hostname: string;
+			domainKind: DeliveryDomainKind;
+			clientId: string;
+			organizationId: string;
+	  }
+	| {
+			kind: 'llms';
+			hostname: string;
+			domainKind: DeliveryDomainKind;
+			clientId: string;
+			organizationId: string;
+	  }
 	| {
 			kind: 'unsubscribe';
 			hostname: string;
@@ -83,7 +97,23 @@ export async function resolveDeliveryPage(
 	}
 	if (isSitemapPath(pathname)) {
 		if (domain.kind !== 'production') return { kind: 'unknown_host', host: hostHeader };
-		return { kind: 'sitemap', hostname: domain.hostname, domainKind: domain.kind };
+		return {
+			kind: 'sitemap',
+			hostname: domain.hostname,
+			domainKind: domain.kind,
+			clientId: domain.clientId,
+			organizationId: domain.organizationId
+		};
+	}
+	if (isLlmsTxtPath(pathname)) {
+		if (domain.kind !== 'production') return { kind: 'unknown_host', host: hostHeader };
+		return {
+			kind: 'llms',
+			hostname: domain.hostname,
+			domainKind: domain.kind,
+			clientId: domain.clientId,
+			organizationId: domain.organizationId
+		};
 	}
 	if (isUnsubscribePath(pathname)) {
 		return {

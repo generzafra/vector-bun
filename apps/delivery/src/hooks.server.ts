@@ -24,6 +24,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		decision.kind === 'domain_challenge' ||
 		decision.kind === 'robots' ||
 		decision.kind === 'sitemap' ||
+		decision.kind === 'llms' ||
 		decision.kind === 'unsubscribe'
 	) {
 		const response = await resolve(event);

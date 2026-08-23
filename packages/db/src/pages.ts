@@ -1,4 +1,4 @@
-import { and, desc, eq, max } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, max } from 'drizzle-orm';
 import { assertSameClient, requireTenantContext, type TenantContext } from '@vector/contracts';
 import { normalizeHostname, type PageDocument } from '@vector/funnel-engine';
 import { db } from './client';
@@ -134,6 +134,19 @@ export async function insertDraftPageVersionForTenant(ctx: TenantContext, docume
 		})
 		.returning();
 	return draft ?? null;
+}
+
+export async function listPublishedPagesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select({
+			id: pages.id,
+			path: pages.path,
+			title: pages.title,
+			publishedVersionId: pages.publishedVersionId
+		})
+		.from(pages)
+		.where(and(eq(pages.clientId, required.clientId), isNotNull(pages.publishedVersionId)));
 }
 
 export async function getPublishedHomeForTenant(ctx: TenantContext) {

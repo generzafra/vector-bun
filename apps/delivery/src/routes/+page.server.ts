@@ -1,6 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { AppError } from '@vector/contracts';
 import { captureLead, deliveryTenantContext, recordDeliveryEvent } from '@vector/domain';
+import { jsonLdScript, publicJsonLd } from '@vector/funnel-engine';
 import { logError } from '@vector/observability';
 import {
 	ANALYTICS_SESSION_COOKIE,
@@ -63,7 +64,19 @@ export async function load({ locals, cookies, url, request }) {
 	return {
 		document: page.document,
 		domainKind: page.domainKind,
-		hostname: page.hostname
+		hostname: page.hostname,
+		pathname: url.pathname,
+		jsonLdHtml: (() => {
+			const jsonLd = jsonLdScript(
+				publicJsonLd({
+					domainKind: page.domainKind,
+					origin: url.origin,
+					pathname: url.pathname,
+					document: page.document
+				})
+			);
+			return jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : null;
+		})()
 	};
 }
 

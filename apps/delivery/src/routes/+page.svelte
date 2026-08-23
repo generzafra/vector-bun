@@ -12,7 +12,8 @@
 			title: data.document.seo.title,
 			description: data.document.seo.description,
 			origin: page.url.origin,
-			domainKind: data.domainKind
+			domainKind: data.domainKind,
+			pathname: data.pathname
 		})
 	);
 </script>
@@ -27,6 +28,9 @@
 	<meta property="og:title" content={meta.title} />
 	<meta property="og:description" content={meta.description} />
 	<meta name="twitter:card" content="summary" />
+	{#if data.jsonLdHtml}
+		{@html data.jsonLdHtml}
+	{/if}
 </svelte:head>
 
 <div

@@ -64,6 +64,17 @@ test('production metadata is indexable and canonical to the request origin', () 
 	expect(meta.canonical).toBe('https://alpha.example/');
 });
 
+test('production canonical is path-aware', () => {
+	const meta = publicPageMeta({
+		title: alpha.seo.title,
+		description: alpha.seo.description,
+		origin: 'https://alpha.example',
+		domainKind: 'production',
+		pathname: '/about'
+	});
+	expect(meta.canonical).toBe('https://alpha.example/about');
+});
+
 test('Phase 1 funnel has one hero, proof or services, CTA path, and crawlable copy', () => {
 	const types = alpha.sections.map((section) => section.type);
 	expect(types.filter((type) => type === 'hero-split' || type === 'hero-minimal')).toHaveLength(1);

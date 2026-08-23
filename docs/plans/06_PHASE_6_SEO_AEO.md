@@ -232,7 +232,7 @@ Suggested fields are in the edited working notes; implement only what S4–S5 pe
 
 ## 11. Search Agent
 
-May: inspect technical health, page-query relationships, SEO issues, AEO gaps, controlled GEO query sets, interpret approved measurements, citation/source patterns, missing facts, earned-media *recommendations*, page-improvement drafts, prioritized backlog items.
+May: inspect technical health, page-query relationships, SEO issues, AEO gaps, controlled GEO query sets, interpret approved measurements, citation/source patterns, missing facts, earned-media _recommendations_, page-improvement drafts, prioritized backlog items.
 
 Must not: promise rankings or citations, fabricate mentions or expertise, publish unsupported claims, create thin page volumes, use hidden text, scrape restricted AI UIs, treat one response as stable truth.
 
@@ -348,31 +348,31 @@ All Phase 6 entities are tenant-owned. Fail closed without TenantContext. Cross-
 
 ## 18. Document wiring
 
-| Doc | Fold |
-| --- | --- |
-| `docs/03` | GEO queries/observations tenant-scoped; no cross-client retrieval |
-| `docs/05` | SEO + first-ship GEO tables |
-| `docs/06` | `ai_referral` / `generative_search_referral` only when observable |
-| `docs/07` | Search Agent may/must-not; observations are not rankings |
-| `docs/08` | Technical audit, search sync, GEO baseline/scheduled measure |
-| `docs/09` | Essential copy in HTML; improvements create page versions |
-| `docs/10` | Standing SEO/AEO/**GEO** content standard |
-| `docs/13` | Search/GEO experiments must not trade outcomes for a citation |
-| `docs/14` | No restricted-interface scraping; retained answers untrusted; GEO retention |
-| `docs/15` | `SearchProvider` methods; do not hardcode vendors in the domain |
-| `docs/16` | Search/GEO provider health, freshness, cost |
+| Doc       | Fold                                                                                   |
+| --------- | -------------------------------------------------------------------------------------- |
+| `docs/03` | GEO queries/observations tenant-scoped; no cross-client retrieval                      |
+| `docs/05` | SEO + first-ship GEO tables                                                            |
+| `docs/06` | `ai_referral` / `generative_search_referral` only when observable                      |
+| `docs/07` | Search Agent may/must-not; observations are not rankings                               |
+| `docs/08` | Technical audit, search sync, GEO baseline/scheduled measure                           |
+| `docs/09` | Essential copy in HTML; improvements create page versions                              |
+| `docs/10` | Standing SEO/AEO/**GEO** content standard                                              |
+| `docs/13` | Search/GEO experiments must not trade outcomes for a citation                          |
+| `docs/14` | No restricted-interface scraping; retained answers untrusted; GEO retention            |
+| `docs/15` | `SearchProvider` methods; do not hardcode vendors in the domain                        |
+| `docs/16` | Search/GEO provider health, freshness, cost                                            |
 | `docs/17` | Markets, languages, priority services, official entity facts — not manual prompt entry |
-| `docs/18` | SEO/AEO/GEO QA and tenant tests |
-| `docs/20` | GEO monitoring budgets |
-| `docs/21` | Phase 6 title + exit/additive split |
-| `docs/22` | Read this plan + `docs/10` for search/GEO work |
-| `docs/24` | GEO volatility, overclaim, spend, fake-authority risks |
-| `docs/25` | GEO glossary |
-| `docs/26` | Launch readiness; measurement post-launch |
-| `docs/27` | SEO/AEO/GEO discoverability; crawlable essential copy |
-| `docs/28` | Control `/search` chrome only |
-| `docs/29` | Creative consume: OG, alt, captions, transcripts |
-| `docs/30` | Visibility ≠ referral ≠ outcome; search → qualified lead additive |
+| `docs/18` | SEO/AEO/GEO QA and tenant tests                                                        |
+| `docs/20` | GEO monitoring budgets                                                                 |
+| `docs/21` | Phase 6 title + exit/additive split                                                    |
+| `docs/22` | Read this plan + `docs/10` for search/GEO work                                         |
+| `docs/24` | GEO volatility, overclaim, spend, fake-authority risks                                 |
+| `docs/25` | GEO glossary                                                                           |
+| `docs/26` | Launch readiness; measurement post-launch                                              |
+| `docs/27` | SEO/AEO/GEO discoverability; crawlable essential copy                                  |
+| `docs/28` | Control `/search` chrome only                                                          |
+| `docs/29` | Creative consume: OG, alt, captions, transcripts                                       |
+| `docs/30` | Visibility ≠ referral ≠ outcome; search → qualified lead additive                      |
 
 Do **not** create `docs/31`. First-reveal / crawlable launch copy stays in `docs/27` and `docs/26`.
 
@@ -382,17 +382,17 @@ Do not sprinkle GEO into email, social-provider, or auth docs unless an implemen
 
 ## 19. Implementation order
 
-| Slice | Work | Gate |
-| --- | --- | --- |
-| **S0** | Audit Delivery/knowledge. Do not rebuild robots/sitemap from zero. | Required first |
-| **S1** | JSON-LD, real sitemap, path canonicals, AI-crawler robots, `llms.txt`, preview isolation | Must-take |
-| **S2** | `packages/search`, memory `SearchProvider`, `seo.read`/`seo.manage`, issues/opportunities, official GSC/Bing when approved | Toward exit |
-| **S3** | Answer targets, entities, source-backed FAQ gaps | Toward exit |
-| **S4** | GEO query sets + observation schema. No live measurement required. | Toward exit |
-| **S5** | First compliant measurement adapter (start manual / operator-assisted) | Optional for exit |
-| **S6** | Snapshots, accuracy, client-safe reporting | After S5 |
-| **S7** | Search/GEO → lead/revenue | Additive (`docs/30`) |
-| **S8** | Cadence, budgets, portfolio queues | Phase 9 / later |
+| Slice  | Work                                                                                                                       | Gate                 |
+| ------ | -------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| **S0** | Audit Delivery/knowledge. Do not rebuild robots/sitemap from zero.                                                         | Done                 |
+| **S1** | JSON-LD, real sitemap, path canonicals, AI-crawler robots, `llms.txt`, preview isolation                                   | Done                 |
+| **S2** | `packages/search`, memory `SearchProvider`, `seo.read`/`seo.manage`, issues/opportunities, official GSC/Bing when approved | Toward exit          |
+| **S3** | Answer targets, entities, source-backed FAQ gaps                                                                           | Toward exit          |
+| **S4** | GEO query sets + observation schema. No live measurement required.                                                         | Toward exit          |
+| **S5** | First compliant measurement adapter (start manual / operator-assisted)                                                     | Optional for exit    |
+| **S6** | Snapshots, accuracy, client-safe reporting                                                                                 | After S5             |
+| **S7** | Search/GEO → lead/revenue                                                                                                  | Additive (`docs/30`) |
+| **S8** | Cadence, budgets, portfolio queues                                                                                         | Phase 9 / later      |
 
 Phase 6 may exit after **S1–S4** plus Control backlog. S5–S6 when a method is legal. S7–S8 do not reopen this exit.
 

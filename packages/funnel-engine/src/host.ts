@@ -14,6 +14,10 @@ export function isSitemapPath(pathname: string) {
 	return pathname === '/sitemap.xml';
 }
 
+export function isLlmsTxtPath(pathname: string) {
+	return pathname === '/llms.txt';
+}
+
 export function isUnsubscribePath(pathname: string) {
 	return pathname === '/unsubscribe' || pathname === '/unsubscribe/';
 }
