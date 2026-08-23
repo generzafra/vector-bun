@@ -2,6 +2,7 @@ export * from './analytics';
 export * from './assets';
 export * from './audit';
 export * from './auth-service';
+export * from './autonomy';
 export * from './clients';
 export * from './delivery';
 export * from './discoverability';

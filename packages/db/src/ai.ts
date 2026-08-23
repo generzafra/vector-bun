@@ -72,12 +72,19 @@ export async function ensureAiSettingsForTenant(ctx: TenantContext) {
 	return row;
 }
 
-export async function updateAiSettingsForTenant(ctx: TenantContext, input: { paused: boolean }) {
+export async function updateAiSettingsForTenant(
+	ctx: TenantContext,
+	input: { paused?: boolean; autonomyCeiling?: number }
+) {
 	const required = requireTenantContext(ctx);
 	const current = await ensureAiSettingsForTenant(required);
 	const [row] = await db
 		.update(aiClientSettings)
-		.set({ paused: input.paused, updatedAt: new Date() })
+		.set({
+			...(input.paused !== undefined ? { paused: input.paused } : {}),
+			...(input.autonomyCeiling !== undefined ? { autonomyCeiling: input.autonomyCeiling } : {}),
+			updatedAt: new Date()
+		})
 		.where(
 			and(eq(aiClientSettings.id, current.id), eq(aiClientSettings.clientId, required.clientId))
 		)

@@ -1,6 +1,6 @@
 # Vector UI migration status
 
-**Last updated:** 22 August 2026
+**Last updated:** 23 August 2026
 
 Identity migration applies to Control only. Delivery stays on client tokens and `docs/27`.
 
@@ -19,6 +19,7 @@ Identity migration applies to Control only. Delivery stays on client tokens and 
 | Email        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Social       | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + tables    | [x] first pass | [x]                |
 | Intelligence | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + cards     | [x] first pass | [x]                |
+| Autonomy     | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] labels + tables    | [x] first pass | [x]                |
 | Members      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 
 Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. Official mark, wordmark, and favicon pack live under `apps/control/static/brand/vector/`.
@@ -31,15 +32,15 @@ Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. O
 
 ## Future Control modules
 
-| Module                          | Status                                           |
-| ------------------------------- | ------------------------------------------------ |
-| Opportunities / recommendations | `/intelligence` recommendation cards shipped     |
-| Campaigns                       | planned                                          |
-| Analytics / charts              | tables shipped; chart theme still planned        |
-| Automation canvas               | planned (Phase 8)                                |
-| Intelligence explainability     | `/intelligence` cards, activity, draft artifacts |
-| Portfolio dashboard             | planned (Phase 9)                                |
-| Vector marketing hero           | not in this repo                                 |
+| Module                          | Status                                                    |
+| ------------------------------- | --------------------------------------------------------- |
+| Opportunities / recommendations | `/intelligence` recommendation cards shipped              |
+| Campaigns                       | planned                                                   |
+| Analytics / charts              | tables shipped; chart theme still planned                 |
+| Automation canvas               | planned (later Phase 8); `/autonomy` policy table shipped |
+| Intelligence explainability     | `/intelligence` cards, activity, draft artifacts          |
+| Portfolio dashboard             | planned (Phase 9)                                         |
+| Vector marketing hero           | not in this repo                                          |
 
 ## Remaining follow-up
 

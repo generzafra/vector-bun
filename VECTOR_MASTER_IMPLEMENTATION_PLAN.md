@@ -2736,6 +2736,8 @@ Exit gate:
 
 - Low risk workflows and selected launch steps run without daily human intervention and remain auditable.
 
+**Status (23 August 2026):** S0 is in. Platform `ai_action_policies` catalog Level 3 eligibility. Client kill-switch changes require a reason and write tenant-scoped `ai_kill_switch_events`. Default ceiling stays 2. Operators may raise it to 3, never 4 or 5. Confidence cannot authorize. S0 evaluates only and does not execute, publish, or send. Control `/autonomy` shows the catalog and audit. See `docs/plans/08_PHASE_8_AUTONOMY.md`.
+
 ## Phase 9 — Multi client operational scale
 
 Deliver:

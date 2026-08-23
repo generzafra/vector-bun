@@ -292,7 +292,12 @@ test('client kill switch pauses runs even when a memory provider is injected', a
 	const { alpha } = await seededClients();
 	const actor = await adminOn(alpha.id, '10.0.4.9', 'ai-pause');
 	const ctx = contextFor(actor, 'ai-pause');
-	await pauseIntelligence(actor, ctx, { paused: true }, 'ai-pause-on');
+	await pauseIntelligence(
+		actor,
+		ctx,
+		{ paused: true, reason: 'Pause AI while reviewing a draft' },
+		'ai-pause-on'
+	);
 	try {
 		let error: unknown;
 		try {
@@ -307,7 +312,12 @@ test('client kill switch pauses runs even when a memory provider is injected', a
 		).toBe(true);
 		expect(memory.structuredRequests.length).toBe(0);
 	} finally {
-		await pauseIntelligence(actor, ctx, { paused: false }, 'ai-pause-off');
+		await pauseIntelligence(
+			actor,
+			ctx,
+			{ paused: false, reason: 'Resume AI after draft review' },
+			'ai-pause-off'
+		);
 	}
 });
 

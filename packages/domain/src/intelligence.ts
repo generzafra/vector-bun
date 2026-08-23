@@ -57,6 +57,7 @@ import {
 	insertApprovalDecisionForTenant,
 	insertApprovalRequestForTenant,
 	insertDraftPageVersionForTenant,
+	insertKillSwitchEventForTenant,
 	listAiAgents,
 	listAiCostEventsForTenant,
 	listAiDecisionsForTenant,
@@ -721,16 +722,31 @@ export async function pauseIntelligence(
 	requireCapability(actor.permissions, 'ai.manage');
 	const required = assertActorOwnsContext(actor, ctx);
 	const parsed = parseContract(pauseIntelligenceSchema, input);
+	const current = await ensureAiSettingsForTenant(required);
 	const settings = await updateAiSettingsForTenant(required, { paused: parsed.paused });
+	const event = await insertKillSwitchEventForTenant(required, {
+		paused: parsed.paused,
+		previousPaused: current.paused,
+		reason: parsed.reason,
+		actorId: actor.userId,
+		requestId
+	});
+	if (!event) throw new ValidationError('Kill-switch event was not recorded');
 	await recordAudit({
 		organizationId: required.organizationId,
 		clientId: required.clientId,
 		actorType: 'human',
 		actorId: actor.userId,
 		action: parsed.paused ? 'ai.pause' : 'ai.resume',
-		entityType: 'ai_client_settings',
-		entityId: settings?.id,
-		requestId
+		entityType: 'ai_kill_switch_event',
+		entityId: event.id,
+		requestId,
+		reason: parsed.reason
+	});
+	logInfo(parsed.paused ? 'ai.kill_switch.pause' : 'ai.kill_switch.resume', {
+		clientId: required.clientId,
+		privileged: true,
+		reason: parsed.reason
 	});
 	return settings;
 }

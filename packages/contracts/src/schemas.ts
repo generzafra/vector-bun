@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PHASE_8_MAX_AUTONOMY } from './autonomy';
 import { ValidationError } from './errors';
 
 export const loginSchema = z
@@ -286,7 +287,14 @@ export const decideApprovalSchema = z
 
 export const pauseIntelligenceSchema = z
 	.object({
-		paused: z.boolean()
+		paused: z.boolean(),
+		reason: z.string().trim().min(8).max(400)
+	})
+	.strict();
+
+export const setAutonomyCeilingSchema = z
+	.object({
+		autonomyCeiling: z.number().int().min(0).max(PHASE_8_MAX_AUTONOMY)
 	})
 	.strict();
 

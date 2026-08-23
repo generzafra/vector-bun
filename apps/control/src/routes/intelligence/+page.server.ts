@@ -75,7 +75,10 @@ export const actions = {
 			await pauseIntelligence(
 				session,
 				contextFor(session, locals.requestId),
-				{ paused: form.get('paused') === 'true' },
+				{
+					paused: form.get('paused') === 'true',
+					reason: String(form.get('reason') ?? '')
+				},
 				locals.requestId
 			);
 			return { ok: true, notice: 'Client AI pause updated. Confidence cannot override a pause.' };

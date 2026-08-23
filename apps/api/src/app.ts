@@ -30,7 +30,9 @@ import {
 	enrollEligibleLeadsForOperator,
 	getEmailOverview,
 	getIntelligenceOverview,
+	getAutonomyOverview,
 	pauseIntelligence,
+	setAutonomyCeiling,
 	processDueNurtureForOperator,
 	processEmailWebhook,
 	reviewInboundMessage,
@@ -588,6 +590,38 @@ app.post('/v1/intelligence/pause', async (c) => {
 	actorCan(session, 'ai.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await pauseIntelligence(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.get('/v1/autonomy', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'ai.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getAutonomyOverview(session, ctx) });
+});
+
+app.get('/v1/autonomy/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'ai.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getAutonomyOverview(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/autonomy/ceiling', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'ai.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await setAutonomyCeiling(session, ctx, await c.req.json(), requestId);
 	return c.json({ requestId, data });
 });
 

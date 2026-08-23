@@ -1,6 +1,11 @@
 import { and, eq } from 'drizzle-orm';
+import {
+	CAPABILITIES,
+	DEFAULT_ACTION_POLICIES,
+	ROLE_CAPABILITIES,
+	ROLE_KEYS
+} from '@vector/contracts';
 import { env } from '@vector/config';
-import { CAPABILITIES, ROLE_CAPABILITIES, ROLE_KEYS } from '@vector/contracts';
 import { composeLeadPage, previewHostname } from '@vector/funnel-engine';
 import { db } from './client';
 import { listClaimsForTenant, listOffersForTenant, listServicesForTenant } from './knowledge';
@@ -17,6 +22,7 @@ import {
 	upsertPromptTemplate,
 	upsertPromptVersion
 } from './ai';
+import { upsertAiActionPolicy } from './autonomy';
 import {
 	brands,
 	claims,
@@ -521,6 +527,10 @@ Default autonomy is observe, draft, or recommend (0-2). Do not recommend auto-ex
 		schemaVersion: 'v1',
 		taskClass: 'strategic_reasoning'
 	});
+
+	for (const policy of DEFAULT_ACTION_POLICIES) {
+		await upsertAiActionPolicy(policy);
+	}
 
 	const seedCtxA = {
 		organizationId: org.id,

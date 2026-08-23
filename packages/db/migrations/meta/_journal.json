@@ -162,6 +162,13 @@
 			"when": 1756060000000,
 			"tag": "0022_phase7_decisions",
 			"breakpoints": true
+		},
+		{
+			"idx": 23,
+			"version": "7",
+			"when": 1756070000000,
+			"tag": "0023_phase8_autonomy",
+			"breakpoints": true
 		}
 	]
 }

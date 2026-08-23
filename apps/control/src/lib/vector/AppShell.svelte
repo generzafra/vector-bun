@@ -14,6 +14,7 @@
 		{ href: '/social', label: 'Social' },
 		{ href: '/search', label: 'Search' },
 		{ href: '/intelligence', label: 'Intelligence' },
+		{ href: '/autonomy', label: 'Autonomy' },
 		{ href: '/analytics', label: 'Analytics' },
 		{ href: '/experiments', label: 'Experiments' },
 		{ href: '/launch', label: 'Launch' },

@@ -2995,3 +2995,50 @@ export const experimentLearningObjects = pgTable(
 		index('experiment_learning_objects_client_idx').on(t.clientId)
 	]
 );
+
+export const aiKillSwitchScope = pgEnum('ai_kill_switch_scope', ['client', 'platform']);
+
+export const aiActionPolicies = pgTable(
+	'ai_action_policies',
+	{
+		id: id(),
+		actionType: text('action_type').notNull(),
+		name: text('name').notNull(),
+		description: text('description').notNull(),
+		riskClass: aiRiskClass('risk_class').notNull(),
+		defaultAutonomy: integer('default_autonomy').notNull(),
+		maxAutonomy: integer('max_autonomy').notNull(),
+		autoExecuteAllowed: boolean('auto_execute_allowed').notNull().default(false),
+		forbidden: boolean('forbidden').notNull().default(false),
+		financialLimitMinor: integer('financial_limit_minor').notNull().default(0),
+		financialCurrency: text('financial_currency').notNull().default('USD'),
+		contentLimit: text('content_limit').notNull().default('none'),
+		providerLimit: text('provider_limit').notNull().default('none'),
+		approvalExpirySeconds: integer('approval_expiry_seconds'),
+		rollbackSupported: boolean('rollback_supported').notNull().default(false),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [uniqueIndex('ai_action_policies_type_idx').on(t.actionType)]
+);
+
+export const aiKillSwitchEvents = pgTable(
+	'ai_kill_switch_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id').references(() => organizations.id),
+		clientId: uuid('client_id').references(() => clients.id),
+		scope: aiKillSwitchScope('scope').notNull(),
+		paused: boolean('paused').notNull(),
+		previousPaused: boolean('previous_paused').notNull(),
+		reason: text('reason').notNull(),
+		actorId: text('actor_id'),
+		privileged: boolean('privileged').notNull().default(true),
+		requestId: text('request_id').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('ai_kill_switch_events_client_idx').on(t.clientId),
+		index('ai_kill_switch_events_scope_idx').on(t.scope)
+	]
+);

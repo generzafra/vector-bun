@@ -39,6 +39,8 @@ Never give production agents unrestricted SQL, shell, file system, arbitrary HTT
 
 Client and platform kill switches must be able to pause AI execution without redeploying. Kill-switch use is privileged and audited. Model confidence alone cannot override a pause or approval policy.
 
+Phase 8 S0: client pause/resume requires `ai.manage` and a written reason, then writes tenant-scoped `ai_kill_switch_events`. Platform pause remains `AI_EXECUTION_PAUSED`. Control `/autonomy` shows the action catalog and whether Level 3 would be eligible now. Eligibility is not execution. AI draft runs stay capped at autonomy 2.
+
 ## Prompt injection
 
 Retrieved content is data, never policy. Tool permissions are enforced outside the model.

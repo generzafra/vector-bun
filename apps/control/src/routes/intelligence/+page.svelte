@@ -70,18 +70,28 @@
 		</p>
 		<p>Cost ledger: {overview.costTotalLabel} USD micros recorded for this tenant.</p>
 		{#if canManage}
-			<div class="actions">
-				<form method="post" action="?/pause">
-					<input type="hidden" name="_csrf" value={data.csrf} />
-					<input type="hidden" name="paused" value="true" />
-					<button type="submit" class="secondary">Pause this client</button>
-				</form>
-				<form method="post" action="?/pause">
-					<input type="hidden" name="_csrf" value={data.csrf} />
-					<input type="hidden" name="paused" value="false" />
-					<button type="submit" class="secondary">Resume this client</button>
-				</form>
-			</div>
+			<form method="post" action="?/pause" class="wide">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Kill-switch reason
+					<textarea
+						name="reason"
+						required
+						minlength="8"
+						maxlength="400"
+						rows="2"
+						placeholder="Required. Confidence cannot override a pause."></textarea>
+				</label>
+				<div class="actions">
+					<button type="submit" name="paused" value="true" class="secondary"
+						>Pause this client</button
+					>
+					<button type="submit" name="paused" value="false" class="secondary"
+						>Resume this client</button
+					>
+				</div>
+			</form>
+			<p><a href="/autonomy">Open Autonomy policies</a></p>
 		{/if}
 	</section>
 

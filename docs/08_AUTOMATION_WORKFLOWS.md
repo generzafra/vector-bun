@@ -8,6 +8,8 @@ Trigger.dev is the durable job engine.
 
 Trigger, input schema, tenant, idempotency, retry, timeout, concurrency, approval policy, audit event, failure path, escalation.
 
+Phase 8 S0 catalogs per-action policies (`ai_action_policies`) used by the auto-execute gate. Workflows still do not auto-execute in S0. Kill switch and existing approval policies remain authoritative.
+
 ## Initial workflows
 
 - New client onboarding
