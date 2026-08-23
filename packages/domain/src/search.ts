@@ -1,3 +1,5 @@
+import { and, eq, isNull } from 'drizzle-orm';
+import { searchDueSweepInputSchema } from '@vector/automation';
 import { consumeRateLimit, requireCapability } from '@vector/auth';
 import { env } from '@vector/config';
 import {
@@ -8,19 +10,24 @@ import {
 	createSeoOpportunitySchema,
 	parseContract,
 	recordGeoObservationSchema,
+	requireTenantContext,
 	searchClientIdSchema,
 	searchPropertyIdSchema,
 	seoOpportunityIdSchema,
 	submitSearchSitemapSchema,
+	updateSearchCadenceSchema,
 	type SearchEngine,
 	type TenantContext
 } from '@vector/contracts';
 import {
 	assertSearchClient,
+	clients,
+	db,
 	getBrandForTenant,
 	getGeoQueryForTenant,
 	getGeoReferralForLeadForTenant,
 	getLatestGeoVisibilitySnapshotForTenant,
+	getSearchCadenceSettingsForTenant,
 	getSeoIssueForTenant,
 	getSeoOpportunityForTenant,
 	getSeoPropertyForTenant,
@@ -31,6 +38,7 @@ import {
 	insertGeoReferralEventForTenant,
 	insertGeoObservationForTenant,
 	insertGeoVisibilitySnapshotForTenant,
+	insertSearchCadenceSettingsForTenant,
 	insertSeoAuditForTenant,
 	insertSeoIssueForTenant,
 	insertSeoOpportunityForTenant,
@@ -46,6 +54,8 @@ import {
 	listOffersForTenant,
 	listPublishedPageDocumentsForTenant,
 	listSchemaEntitiesForTenant,
+	listSearchCadenceClientIdsForOrganization,
+	listSeoAuditsForTenant,
 	listSeoIssuesForTenant,
 	listSeoKeywordsForTenant,
 	listSeoOpportunitiesForTenant,
@@ -53,10 +63,15 @@ import {
 	listSeoPropertiesForTenant,
 	listSeoQueriesForTenant,
 	listServicesForTenant,
+	memberships,
 	upsertGeoQueryForTenant,
 	upsertGeoQuerySetForTenant,
 	markMissingSchemaEntitiesStaleForTenant,
+	patchSearchCadenceLastRunForTenant,
 	patchSeoPropertyForTenant,
+	replaceSearchWorkItemsForTenant,
+	sumGeoMeasurementCostForTenant,
+	updateSearchCadenceSettingsForTenant,
 	updateSeoOpportunityForTenant,
 	upsertAnswerTargetForTenant,
 	upsertContentBriefForTenant,
@@ -68,13 +83,19 @@ import {
 } from '@vector/db';
 import { logInfo } from '@vector/observability';
 import {
+	DEFAULT_SEARCH_CADENCE,
+	GEO_OBSERVATION_STALE_MS,
 	buildGeoVisibilitySnapshot,
+	buildSearchDueItems,
 	canMarkPublishReady,
+	canRecordGeoCost,
+	canUseGeoEngine,
 	classifySearchReferral,
 	coverAnswerTarget,
 	decryptSecret,
 	detectTechnicalIssues,
 	encryptSecret,
+	geoQueryLimitForSettings,
 	isoDate,
 	mentionIsNotCitation,
 	memorySearchProvider,
@@ -82,6 +103,7 @@ import {
 	proposeGeoQueries,
 	proposeSchemaEntities,
 	publicGeoObservationFreshness,
+	remainingBudgetMinor,
 	resetSearchProvider,
 	scoreOpportunity,
 	searchProvider,
@@ -91,6 +113,7 @@ import {
 	parseGeoAttributionContent,
 	searchOutcomeImpact,
 	publicGeoReportFreshness,
+	utcMonthStart,
 	type PublishedFaq,
 	type SearchProvider
 } from '@vector/search';
@@ -371,11 +394,153 @@ export async function recordObservableSearchReferral(
 	return row;
 }
 
+type SearchJobActor = { actorType: 'human' | 'system'; actorId: string };
+
+async function ensureSearchCadenceSettings(ctx: TenantContext) {
+	const existing = await getSearchCadenceSettingsForTenant(ctx);
+	if (existing) return existing;
+	return insertSearchCadenceSettingsForTenant(ctx, { ...DEFAULT_SEARCH_CADENCE });
+}
+
+function latestDate(values: Array<Date | null | undefined>) {
+	return values.reduce<Date | null>((latest, value) => {
+		if (!value) return latest;
+		if (!latest || value.getTime() > latest.getTime()) return value;
+		return latest;
+	}, null);
+}
+
+async function loadSearchCadenceState(ctx: TenantContext, now = new Date()) {
+	const required = requireTenantContext(ctx);
+	const settings = await ensureSearchCadenceSettings(required);
+	const [properties, audits, targets, queries, observations, snapshot, spentMinor] =
+		await Promise.all([
+			listSeoPropertiesForTenant(required),
+			listSeoAuditsForTenant(required),
+			listAnswerTargetsForTenant(required),
+			listGeoQueriesForTenant(required),
+			listGeoObservationsForTenant(required),
+			getLatestGeoVisibilitySnapshotForTenant(required),
+			sumGeoMeasurementCostForTenant(required, utcMonthStart(now), settings.currency)
+		]);
+	const items = buildSearchDueItems({
+		now,
+		settings: {
+			technicalAuditIntervalDays: settings.technicalAuditIntervalDays,
+			propertySyncIntervalDays: settings.propertySyncIntervalDays,
+			aeoRefreshIntervalDays: settings.aeoRefreshIntervalDays,
+			geoSnapshotIntervalDays: settings.geoSnapshotIntervalDays,
+			geoMeasureIntervalDays: settings.geoMeasureIntervalDays,
+			geoQueryLimit: settings.geoQueryLimit,
+			geoEngineLimit: settings.geoEngineLimit,
+			geoLocaleLimit: settings.geoLocaleLimit,
+			monthlyBudgetMinor: settings.monthlyBudgetMinor,
+			currency: settings.currency,
+			paused: settings.paused
+		},
+		lastTechnicalAuditAt:
+			settings.lastTechnicalAuditAt ?? latestDate(audits.map((row) => row.completedAt)),
+		lastPropertySyncAt:
+			settings.lastPropertySyncAt ?? latestDate(properties.map((row) => row.lastSyncedAt)),
+		hasProperty: properties.length > 0,
+		lastAeoRefreshAt: settings.lastAeoRefreshAt ?? latestDate(targets.map((row) => row.updatedAt)),
+		lastGeoSnapshotAt: settings.lastGeoSnapshotAt ?? snapshot?.computedAt ?? null,
+		geoQueryCount: queries.length,
+		lastGeoObservationAt: observations[0]?.observedAt ?? null,
+		spentMinor
+	});
+	await replaceSearchWorkItemsForTenant(
+		required,
+		items.map((item) => ({
+			kind: item.kind,
+			status: item.status,
+			detail: item.detail,
+			dueAt: item.dueAt
+		}))
+	);
+	return {
+		settings,
+		items,
+		spentMinor,
+		remainingMinor: remainingBudgetMinor(settings.monthlyBudgetMinor, spentMinor)
+	};
+}
+
+function publicCadence(
+	state: Awaited<ReturnType<typeof loadSearchCadenceState>>,
+	queue = state.items
+) {
+	return {
+		settings: {
+			technicalAuditIntervalDays: state.settings.technicalAuditIntervalDays,
+			propertySyncIntervalDays: state.settings.propertySyncIntervalDays,
+			aeoRefreshIntervalDays: state.settings.aeoRefreshIntervalDays,
+			geoSnapshotIntervalDays: state.settings.geoSnapshotIntervalDays,
+			geoMeasureIntervalDays: state.settings.geoMeasureIntervalDays,
+			geoQueryLimit: state.settings.geoQueryLimit,
+			geoEngineLimit: state.settings.geoEngineLimit,
+			geoLocaleLimit: state.settings.geoLocaleLimit,
+			monthlyBudgetMinor: state.settings.monthlyBudgetMinor,
+			currency: state.settings.currency,
+			paused: state.settings.paused,
+			lastTechnicalAuditAt: state.settings.lastTechnicalAuditAt,
+			lastPropertySyncAt: state.settings.lastPropertySyncAt,
+			lastAeoRefreshAt: state.settings.lastAeoRefreshAt,
+			lastGeoSnapshotAt: state.settings.lastGeoSnapshotAt
+		},
+		spentMinor: state.spentMinor,
+		remainingMinor: state.remainingMinor,
+		queue,
+		dueCount: queue.filter((item) => item.status === 'due' || item.status === 'blocked').length
+	};
+}
+
+async function assertGeoMeasurementAllowed(
+	ctx: TenantContext,
+	input: { engine: string; costMinor: number; currency: string }
+) {
+	const required = requireTenantContext(ctx);
+	const settings = await ensureSearchCadenceSettings(required);
+	const now = new Date();
+	const spentMinor = await sumGeoMeasurementCostForTenant(
+		required,
+		utcMonthStart(now),
+		settings.currency
+	);
+	const cost = canRecordGeoCost({
+		paused: settings.paused,
+		monthlyBudgetMinor: settings.monthlyBudgetMinor,
+		spentMinor,
+		costMinor: input.costMinor
+	});
+	if (!cost.allowed) throw new ValidationError(cost.reason);
+	if (input.costMinor > 0 && input.currency !== settings.currency) {
+		throw new ValidationError('GEO measurement currency must match the tenant budget currency');
+	}
+	const observations = await listGeoObservationsForTenant(required);
+	const windowStart = now.getTime() - GEO_OBSERVATION_STALE_MS;
+	const usedEngines = [
+		...new Set(
+			observations.filter((row) => row.observedAt.getTime() >= windowStart).map((row) => row.engine)
+		)
+	];
+	if (
+		!canUseGeoEngine({
+			engine: input.engine,
+			usedEngines,
+			engineLimit: settings.geoEngineLimit
+		})
+	) {
+		throw new ValidationError('GEO engine limit for this client would be exceeded');
+	}
+}
+
 async function persistGeoVisibilitySnapshotForSet(
 	required: TenantContext,
 	setId: string,
 	requestId: string,
-	actorId: string
+	actorId: string,
+	actorType: 'human' | 'system' = 'human'
 ) {
 	const [queries, observations, claims] = await Promise.all([
 		listGeoQueriesForTenant(required),
@@ -419,10 +584,12 @@ async function persistGeoVisibilitySnapshotForSet(
 			})
 		);
 	}
+	await ensureSearchCadenceSettings(required);
+	await patchSearchCadenceLastRunForTenant(required, { lastGeoSnapshotAt: new Date() });
 	await recordAudit({
 		organizationId: required.organizationId,
 		clientId: required.clientId,
-		actorType: 'human',
+		actorType,
 		actorId,
 		action: 'search.geo.snapshot.refresh',
 		entityType: 'geo_visibility_snapshot',
@@ -558,7 +725,8 @@ export async function getSearchOverview(actor: Actor, ctx: TenantContext, client
 		},
 		geoReport,
 		geoImpact: publicSearchImpact(geoReport, referrals),
-		generativeMeasurement: generativeMeasurementOverview()
+		generativeMeasurement: generativeMeasurementOverview(),
+		cadence: publicCadence(await loadSearchCadenceState(required))
 	};
 	const serialized = JSON.stringify(overview);
 	for (const row of properties) {
@@ -646,17 +814,13 @@ export async function validateSearchProperty(
 	return { property: publicProperty(updated ?? property), health };
 }
 
-export async function syncSearchProperty(
-	actor: Actor,
-	ctx: TenantContext,
-	input: unknown,
-	requestId: string
+async function executePropertySync(
+	required: TenantContext,
+	propertyId: string,
+	requestId: string,
+	actor: SearchJobActor
 ) {
-	requireCapability(actor.permissions, 'seo.manage');
-	const required = assertActorOwnsContext(actor, ctx);
-	consumeRateLimit(`search-sync:${required.clientId}`, 8, 60_000);
-	const parsed = parseContract(searchPropertyIdSchema, input);
-	const property = await getSeoPropertyForTenant(required, parsed.id);
+	const property = await getSeoPropertyForTenant(required, propertyId);
 	if (!property) throw new NotFoundError('Search property not found');
 	const credential = await decryptPropertyCredential(property.encryptedCredential);
 	const end = new Date();
@@ -703,11 +867,13 @@ export async function syncSearchProperty(
 		lastSyncedAt: new Date(),
 		lastError: null
 	});
+	await ensureSearchCadenceSettings(required);
+	await patchSearchCadenceLastRunForTenant(required, { lastPropertySyncAt: new Date() });
 	await recordAudit({
 		organizationId: required.organizationId,
 		clientId: required.clientId,
-		actorType: 'human',
-		actorId: actor.userId,
+		actorType: actor.actorType,
+		actorId: actor.actorId,
 		action: 'search.property.sync',
 		entityType: 'seo_property',
 		entityId: property.id,
@@ -715,6 +881,22 @@ export async function syncSearchProperty(
 		reason: `Synced ${result.queries.length} official queries`
 	});
 	return { queries: result.queries.length, pages: result.pages.length };
+}
+
+export async function syncSearchProperty(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	consumeRateLimit(`search-sync:${required.clientId}`, 8, 60_000);
+	const parsed = parseContract(searchPropertyIdSchema, input);
+	return executePropertySync(required, parsed.id, requestId, {
+		actorType: 'human',
+		actorId: actor.userId
+	});
 }
 
 export async function submitSearchSitemap(
@@ -750,9 +932,11 @@ export async function submitSearchSitemap(
 	return result;
 }
 
-export async function runTechnicalSearchAudit(actor: Actor, ctx: TenantContext, requestId: string) {
-	requireCapability(actor.permissions, 'seo.manage');
-	const required = assertActorOwnsContext(actor, ctx);
+async function executeTechnicalSearchAudit(
+	required: TenantContext,
+	requestId: string,
+	actor: SearchJobActor
+) {
 	const startedAt = new Date();
 	const published = await listPublishedPageDocumentsForTenant(required);
 	const detected = detectTechnicalIssues(
@@ -792,11 +976,13 @@ export async function runTechnicalSearchAudit(actor: Actor, ctx: TenantContext, 
 			lastSeenAt: new Date()
 		});
 	}
+	await ensureSearchCadenceSettings(required);
+	await patchSearchCadenceLastRunForTenant(required, { lastTechnicalAuditAt: new Date() });
 	await recordAudit({
 		organizationId: required.organizationId,
 		clientId: required.clientId,
-		actorType: 'human',
-		actorId: actor.userId,
+		actorType: actor.actorType,
+		actorId: actor.actorId,
 		action: 'search.audit.technical',
 		entityType: 'seo_audit',
 		entityId: audit.id,
@@ -804,6 +990,15 @@ export async function runTechnicalSearchAudit(actor: Actor, ctx: TenantContext, 
 		reason: audit.summary
 	});
 	return { audit, issues };
+}
+
+export async function runTechnicalSearchAudit(actor: Actor, ctx: TenantContext, requestId: string) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	return executeTechnicalSearchAudit(required, requestId, {
+		actorType: 'human',
+		actorId: actor.userId
+	});
 }
 
 function publishedFaqsFromPages(
@@ -825,10 +1020,11 @@ function publishedFaqsFromPages(
 	return faqs;
 }
 
-export async function refreshAnswerReadiness(actor: Actor, ctx: TenantContext, requestId: string) {
-	requireCapability(actor.permissions, 'seo.manage');
-	const required = assertActorOwnsContext(actor, ctx);
-	consumeRateLimit(`search-aeo:${required.clientId}`, 8, 60_000);
+async function executeAnswerReadinessRefresh(
+	required: TenantContext,
+	requestId: string,
+	actor: SearchJobActor
+) {
 	const [brand, services, offers, claims, published, existingOpportunities] = await Promise.all([
 		getBrandForTenant(required),
 		listServicesForTenant(required),
@@ -917,11 +1113,13 @@ export async function refreshAnswerReadiness(actor: Actor, ctx: TenantContext, r
 		existingOpportunities.push(created);
 	}
 
+	await ensureSearchCadenceSettings(required);
+	await patchSearchCadenceLastRunForTenant(required, { lastAeoRefreshAt: new Date() });
 	await recordAudit({
 		organizationId: required.organizationId,
 		clientId: required.clientId,
-		actorType: 'human',
-		actorId: actor.userId,
+		actorType: actor.actorType,
+		actorId: actor.actorId,
 		action: 'search.answer_readiness.refresh',
 		entityType: 'answer_target',
 		entityId: required.clientId,
@@ -946,6 +1144,16 @@ export async function refreshAnswerReadiness(actor: Actor, ctx: TenantContext, r
 	};
 }
 
+export async function refreshAnswerReadiness(actor: Actor, ctx: TenantContext, requestId: string) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	consumeRateLimit(`search-aeo:${required.clientId}`, 8, 60_000);
+	return executeAnswerReadinessRefresh(required, requestId, {
+		actorType: 'human',
+		actorId: actor.userId
+	});
+}
+
 export async function refreshGeoQuerySet(actor: Actor, ctx: TenantContext, requestId: string) {
 	requireCapability(actor.permissions, 'seo.manage');
 	const required = assertActorOwnsContext(actor, ctx);
@@ -960,20 +1168,27 @@ export async function refreshGeoQuerySet(actor: Actor, ctx: TenantContext, reque
 		slug: 'commercial-baseline',
 		name: 'Commercial baseline'
 	});
-	const proposed = proposeGeoQueries({
-		brand: brand
-			? {
-					id: brand.id,
-					displayName: brand.displayName,
-					primaryConversion: brand.primaryConversion
-				}
-			: null,
-		services,
-		offers,
-		claims
-	});
+	const settings = await ensureSearchCadenceSettings(required);
+	const proposed = proposeGeoQueries(
+		{
+			brand: brand
+				? {
+						id: brand.id,
+						displayName: brand.displayName,
+						primaryConversion: brand.primaryConversion
+					}
+				: null,
+			services,
+			offers,
+			claims
+		},
+		geoQueryLimitForSettings(settings.geoQueryLimit)
+	);
+	const locales = new Set<string>();
 	const queries = [];
 	for (const item of proposed) {
+		if (!locales.has(item.locale) && locales.size >= settings.geoLocaleLimit) continue;
+		locales.add(item.locale);
 		queries.push(
 			await upsertGeoQueryForTenant(required, {
 				setId: set.id,
@@ -1006,6 +1221,11 @@ export async function recordGeoObservation(
 	const required = assertActorOwnsContext(actor, ctx);
 	consumeRateLimit(`search-geo-observe:${required.clientId}`, 10, 60_000);
 	const parsed = parseContract(recordGeoObservationSchema, input);
+	await assertGeoMeasurementAllowed(required, {
+		engine: parsed.engine,
+		costMinor: parsed.costMinor,
+		currency: parsed.currency
+	});
 	const query = await getGeoQueryForTenant(required, parsed.queryId);
 	if (!query) throw new NotFoundError('GEO query not found');
 	const measured = await getDomainSearchProvider('google').measureGenerativeVisibility({
@@ -1099,6 +1319,25 @@ export async function recordGeoObservation(
 	};
 }
 
+async function executeGeoSnapshotRefresh(
+	required: TenantContext,
+	requestId: string,
+	actor: SearchJobActor
+) {
+	const sets = await listGeoQuerySetsForTenant(required);
+	const set = sets.find((row) => row.slug === 'commercial-baseline') ?? sets[0];
+	if (!set) {
+		return { report: emptyGeoReport(0) };
+	}
+	return persistGeoVisibilitySnapshotForSet(
+		required,
+		set.id,
+		requestId,
+		actor.actorId,
+		actor.actorType
+	);
+}
+
 export async function refreshGeoVisibilitySnapshot(
 	actor: Actor,
 	ctx: TenantContext,
@@ -1107,12 +1346,10 @@ export async function refreshGeoVisibilitySnapshot(
 	requireCapability(actor.permissions, 'seo.manage');
 	const required = assertActorOwnsContext(actor, ctx);
 	consumeRateLimit(`search-geo-snapshot:${required.clientId}`, 8, 60_000);
-	const sets = await listGeoQuerySetsForTenant(required);
-	const set = sets.find((row) => row.slug === 'commercial-baseline') ?? sets[0];
-	if (!set) {
-		return { report: emptyGeoReport(0) };
-	}
-	return persistGeoVisibilitySnapshotForSet(required, set.id, requestId, actor.userId);
+	return executeGeoSnapshotRefresh(required, requestId, {
+		actorType: 'human',
+		actorId: actor.userId
+	});
 }
 
 export async function createSeoOpportunity(
@@ -1230,4 +1467,167 @@ function pathFromUrl(url: string, siteUrl: string) {
 		}
 		return '/';
 	}
+}
+
+async function listAccessibleSearchClients(actor: Actor) {
+	const orgWide = await db
+		.select({ id: memberships.id })
+		.from(memberships)
+		.where(
+			and(
+				eq(memberships.userId, actor.userId),
+				eq(memberships.organizationId, actor.organizationId),
+				isNull(memberships.clientId)
+			)
+		)
+		.limit(1);
+	if (orgWide.length > 0) {
+		return db
+			.select({ id: clients.id, name: clients.name })
+			.from(clients)
+			.where(eq(clients.organizationId, actor.organizationId));
+	}
+	if (actor.clientId) {
+		return db
+			.select({ id: clients.id, name: clients.name })
+			.from(clients)
+			.where(and(eq(clients.organizationId, actor.organizationId), eq(clients.id, actor.clientId)));
+	}
+	return [];
+}
+
+export async function updateSearchCadence(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(updateSearchCadenceSchema, input);
+	await ensureSearchCadenceSettings(required);
+	const settings = await updateSearchCadenceSettingsForTenant(required, parsed);
+	if (!settings) throw new NotFoundError('Search cadence settings not found');
+	const cadence = publicCadence(await loadSearchCadenceState(required));
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'search.cadence.update',
+		entityType: 'search_cadence_settings',
+		entityId: settings.id,
+		requestId,
+		reason: parsed.paused ? 'paused' : 'cadence updated'
+	});
+	return cadence;
+}
+
+export async function listSearchPortfolioQueue(actor: Actor, requestId: string) {
+	requireCapability(actor.permissions, 'seo.read');
+	const accessible = await listAccessibleSearchClients(actor);
+	const configured = new Set(
+		(await listSearchCadenceClientIdsForOrganization(actor.organizationId)).map(
+			(row) => row.clientId
+		)
+	);
+	const rows = [];
+	for (const client of accessible) {
+		if (!configured.has(client.id) && client.id !== actor.clientId) continue;
+		const ctx = {
+			organizationId: actor.organizationId,
+			clientId: client.id,
+			roleIds: [],
+			requestId
+		};
+		const state = publicCadence(await loadSearchCadenceState(ctx));
+		const exceptions = state.queue.filter(
+			(item) => item.status === 'due' || item.status === 'blocked'
+		);
+		if (exceptions.length === 0 && !state.settings.paused) continue;
+		rows.push({
+			clientId: client.id,
+			clientName: client.name,
+			paused: state.settings.paused,
+			remainingMinor: state.remainingMinor,
+			currency: state.settings.currency,
+			dueCount: exceptions.length,
+			items: exceptions.map((item) => ({
+				kind: item.kind,
+				status: item.status,
+				title: item.title,
+				detail: item.detail
+			}))
+		});
+	}
+	return rows;
+}
+
+export async function processSearchDueSweep(ctx: TenantContext, now = new Date()) {
+	const required = requireTenantContext(ctx);
+	const state = await loadSearchCadenceState(required, now);
+	if (state.settings.paused) {
+		return { skipped: true, reason: 'paused', ran: [] as string[], queue: state.items };
+	}
+	const actor: SearchJobActor = { actorType: 'system', actorId: 'search-due-sweep' };
+	const ran: string[] = [];
+	for (const item of state.items) {
+		if (item.status !== 'due') continue;
+		if (item.kind === 'technical_audit') {
+			await executeTechnicalSearchAudit(required, required.requestId, actor);
+			ran.push(item.kind);
+			continue;
+		}
+		if (item.kind === 'property_sync') {
+			const properties = await listSeoPropertiesForTenant(required);
+			for (const property of properties) {
+				await executePropertySync(required, property.id, required.requestId, actor);
+			}
+			ran.push(item.kind);
+			continue;
+		}
+		if (item.kind === 'aeo_refresh') {
+			await executeAnswerReadinessRefresh(required, required.requestId, actor);
+			ran.push(item.kind);
+			continue;
+		}
+		if (item.kind === 'geo_snapshot') {
+			await executeGeoSnapshotRefresh(required, required.requestId, actor);
+			ran.push(item.kind);
+		}
+	}
+	const refreshed = await loadSearchCadenceState(required, now);
+	return { skipped: false, ran, queue: refreshed.items };
+}
+
+export async function processSearchDueSweepForOperator(
+	actor: Actor,
+	ctx: TenantContext,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'seo.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const result = await processSearchDueSweep({ ...required, requestId });
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'search.cadence.sweep',
+		entityType: 'search_cadence_settings',
+		entityId: required.clientId,
+		requestId,
+		reason: result.skipped ? 'paused' : result.ran.join(',') || 'none'
+	});
+	return result;
+}
+
+export async function processSearchDueSweepWorkflow(input: unknown) {
+	const parsed = parseContract(searchDueSweepInputSchema, input);
+	return processSearchDueSweep({
+		organizationId: parsed.organizationId,
+		clientId: parsed.clientId,
+		roleIds: [],
+		requestId: parsed.requestId
+	});
 }

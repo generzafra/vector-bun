@@ -1,6 +1,7 @@
 export * from './attribution';
 export * from './aeo/targets';
 export * from './audits/technical';
+export * from './cadence';
 export * from './geo/observations';
 export * from './geo/queries';
 export * from './geo/impact';

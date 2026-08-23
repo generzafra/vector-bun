@@ -20,12 +20,18 @@
 		if (severity === 'medium') return 'warning' as const;
 		return 'muted' as const;
 	}
+
+	function queueTone(status: string) {
+		if (status === 'blocked') return 'danger' as const;
+		if (status === 'due') return 'warning' as const;
+		return 'muted' as const;
+	}
 </script>
 
 <PageHeader
 	eyebrow="Discoverability"
 	title="Search"
-	description="Traditional search, answer readiness, and AI discovery share one tenant backlog. Official Search Console or Bing rows are provider-reported. Manual measurement is the first compliant method. A mention in an AI answer is not a visit or a lead. Vector does not assign an AI rank or GEO score."
+	description="Traditional search, answer readiness, and AI discovery share one tenant backlog. Official Search Console or Bing rows are provider-reported. Manual measurement is the first compliant method. Cadence and monthly GEO budgets cap recurring work. A mention in an AI answer is not a visit or a lead. Vector does not assign an AI rank or GEO score."
 />
 
 {#if form?.error}
@@ -33,6 +39,40 @@
 {/if}
 {#if form?.notice}
 	<Alert tone="info">{form.notice}</Alert>
+{/if}
+
+{#if data.portfolio.length > 0}
+	<section>
+		<h2>Portfolio exceptions</h2>
+		<p>
+			Clients you can access that have due or blocked search work. This is not an AI rank or GEO
+			score. Alpha work never includes another client's queries or tokens.
+		</p>
+		<table>
+			<thead>
+				<tr>
+					<th>Client</th>
+					<th>Due</th>
+					<th>Budget left</th>
+					<th>Items</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each data.portfolio as row (row.clientId)}
+					<tr>
+						<td>{row.clientName}{row.paused ? ' · paused' : ''}</td>
+						<td>{row.dueCount}</td>
+						<td>{row.remainingMinor} {row.currency}</td>
+						<td>
+							{#each row.items as item (item.kind)}
+								<StatusChip label={item.title} tone={queueTone(item.status)} />
+							{/each}
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</section>
 {/if}
 
 {#if data.needsClient || !overview}
@@ -51,6 +91,154 @@
 		</p>
 		<p>Adapter: {overview.provider.adapter} — {overview.provider.detail}</p>
 		<p>{overview.generativeMeasurement.detail}</p>
+	</section>
+
+	<section>
+		<h2>Cadence and budget</h2>
+		<p>
+			Weekly technical audit, official sync, answer refresh, and snapshot by default. High-priority
+			AI-discovery queries stay manual. Monthly GEO cost is integer minor units. Live generative
+			APIs stay unsupported.
+		</p>
+		<p>
+			<StatusChip
+				label={overview.cadence.settings.paused ? 'paused' : 'active'}
+				tone={overview.cadence.settings.paused ? 'danger' : 'success'}
+			/>
+			{overview.cadence.spentMinor} spent / {overview.cadence.settings.monthlyBudgetMinor}
+			{overview.cadence.settings.currency} this month · {overview.cadence.remainingMinor} remaining
+		</p>
+		{#if overview.cadence.queue.length === 0}
+			<EmptyState title="No cadence queue yet." />
+		{:else}
+			<table>
+				<thead>
+					<tr>
+						<th>Work</th>
+						<th>Status</th>
+						<th>Detail</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overview.cadence.queue as item (item.kind)}
+						<tr>
+							<td>{item.title}</td>
+							<td>
+								<StatusChip label={item.status} tone={queueTone(item.status)} />
+							</td>
+							<td>{item.detail}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
+		{#if canManage}
+			<form method="post" action="?/cadence" class="wide">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Technical audit days
+					<input
+						name="technicalAuditIntervalDays"
+						type="number"
+						min="1"
+						max="90"
+						value={overview.cadence.settings.technicalAuditIntervalDays}
+					/>
+				</label>
+				<label>
+					Official sync days
+					<input
+						name="propertySyncIntervalDays"
+						type="number"
+						min="1"
+						max="90"
+						value={overview.cadence.settings.propertySyncIntervalDays}
+					/>
+				</label>
+				<label>
+					Answer-readiness days
+					<input
+						name="aeoRefreshIntervalDays"
+						type="number"
+						min="1"
+						max="90"
+						value={overview.cadence.settings.aeoRefreshIntervalDays}
+					/>
+				</label>
+				<label>
+					Snapshot days
+					<input
+						name="geoSnapshotIntervalDays"
+						type="number"
+						min="1"
+						max="90"
+						value={overview.cadence.settings.geoSnapshotIntervalDays}
+					/>
+				</label>
+				<label>
+					Manual measurement days
+					<input
+						name="geoMeasureIntervalDays"
+						type="number"
+						min="1"
+						max="90"
+						value={overview.cadence.settings.geoMeasureIntervalDays}
+					/>
+				</label>
+				<label>
+					GEO query cap
+					<input
+						name="geoQueryLimit"
+						type="number"
+						min="1"
+						max="20"
+						value={overview.cadence.settings.geoQueryLimit}
+					/>
+				</label>
+				<label>
+					Engine cap
+					<input
+						name="geoEngineLimit"
+						type="number"
+						min="1"
+						max="5"
+						value={overview.cadence.settings.geoEngineLimit}
+					/>
+				</label>
+				<label>
+					Locale cap
+					<input
+						name="geoLocaleLimit"
+						type="number"
+						min="1"
+						max="8"
+						value={overview.cadence.settings.geoLocaleLimit}
+					/>
+				</label>
+				<label>
+					Monthly GEO budget (minor units)
+					<input
+						name="monthlyBudgetMinor"
+						type="number"
+						min="0"
+						value={overview.cadence.settings.monthlyBudgetMinor}
+					/>
+				</label>
+				<label>
+					Currency
+					<input name="currency" maxlength="3" value={overview.cadence.settings.currency} />
+				</label>
+				<label>
+					<input type="checkbox" name="paused" checked={overview.cadence.settings.paused} />
+					Pause scheduled search work and GEO recording
+				</label>
+				<button type="submit">Save cadence</button>
+			</form>
+			<form method="post" action="?/dueSweep">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<button type="submit">Run due automated work</button>
+			</form>
+		{/if}
 	</section>
 
 	<section>

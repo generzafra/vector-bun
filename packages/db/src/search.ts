@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import {
 	assertSameClient,
 	requireTenantContext,
@@ -14,6 +14,8 @@ import {
 	type GeoRepresentationStatus,
 	type GeoSurface,
 	type SearchReferralChannel,
+	type SearchWorkKind,
+	type SearchWorkStatus,
 	type SchemaEntityKind,
 	type SchemaEntitySourceKind,
 	type SchemaEntityStatus,
@@ -28,6 +30,7 @@ import {
 import { db } from './client';
 import {
 	answerTargets,
+	clients,
 	contentBriefs,
 	geoCitations,
 	geoEngineObservations,
@@ -39,6 +42,8 @@ import {
 	geoVisibilitySnapshots,
 	leads,
 	schemaEntities,
+	searchCadenceSettings,
+	searchWorkItems,
 	seoAudits,
 	seoIssues,
 	seoKeywords,
@@ -1141,4 +1146,184 @@ export async function insertGeoReferralEventForTenant(
 		})
 		.returning();
 	return row;
+}
+
+export async function getSearchCadenceSettingsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(searchCadenceSettings)
+		.where(eq(searchCadenceSettings.clientId, required.clientId))
+		.limit(1);
+	return row ?? null;
+}
+
+export async function insertSearchCadenceSettingsForTenant(
+	ctx: TenantContext,
+	input: {
+		technicalAuditIntervalDays: number;
+		propertySyncIntervalDays: number;
+		aeoRefreshIntervalDays: number;
+		geoSnapshotIntervalDays: number;
+		geoMeasureIntervalDays: number;
+		geoQueryLimit: number;
+		geoEngineLimit: number;
+		geoLocaleLimit: number;
+		monthlyBudgetMinor: number;
+		currency: string;
+		paused: boolean;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const existing = await getSearchCadenceSettingsForTenant(required);
+	if (existing) return existing;
+	const [row] = await db
+		.insert(searchCadenceSettings)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			...input
+		})
+		.returning();
+	return row;
+}
+
+export async function updateSearchCadenceSettingsForTenant(
+	ctx: TenantContext,
+	input: {
+		technicalAuditIntervalDays: number;
+		propertySyncIntervalDays: number;
+		aeoRefreshIntervalDays: number;
+		geoSnapshotIntervalDays: number;
+		geoMeasureIntervalDays: number;
+		geoQueryLimit: number;
+		geoEngineLimit: number;
+		geoLocaleLimit: number;
+		monthlyBudgetMinor: number;
+		currency: string;
+		paused: boolean;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.update(searchCadenceSettings)
+		.set({
+			...input,
+			updatedAt: new Date()
+		})
+		.where(eq(searchCadenceSettings.clientId, required.clientId))
+		.returning();
+	return row ?? null;
+}
+
+export async function patchSearchCadenceLastRunForTenant(
+	ctx: TenantContext,
+	patch: {
+		lastTechnicalAuditAt?: Date;
+		lastPropertySyncAt?: Date;
+		lastAeoRefreshAt?: Date;
+		lastGeoSnapshotAt?: Date;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.update(searchCadenceSettings)
+		.set({ ...patch, updatedAt: new Date() })
+		.where(eq(searchCadenceSettings.clientId, required.clientId))
+		.returning();
+	return row ?? null;
+}
+
+export async function replaceSearchWorkItemsForTenant(
+	ctx: TenantContext,
+	items: {
+		kind: SearchWorkKind;
+		status: SearchWorkStatus;
+		detail: string;
+		dueAt: Date;
+	}[]
+) {
+	const required = requireTenantContext(ctx);
+	await db.delete(searchWorkItems).where(eq(searchWorkItems.clientId, required.clientId));
+	if (items.length === 0) return [];
+	return db
+		.insert(searchWorkItems)
+		.values(
+			items.map((item) => ({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				kind: item.kind,
+				status: item.status,
+				detail: item.detail,
+				dueAt: item.dueAt
+			}))
+		)
+		.returning();
+}
+
+export async function listSearchWorkItemsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(searchWorkItems)
+		.where(eq(searchWorkItems.clientId, required.clientId))
+		.orderBy(searchWorkItems.kind);
+}
+
+export async function listTenantsWithDueSearchWork() {
+	return db
+		.selectDistinct({
+			organizationId: searchWorkItems.organizationId,
+			clientId: searchWorkItems.clientId
+		})
+		.from(searchWorkItems)
+		.where(eq(searchWorkItems.status, 'due'));
+}
+
+export async function listSearchCadenceClientIdsForOrganization(organizationId: string) {
+	if (!organizationId) {
+		requireTenantContext({
+			organizationId: '',
+			clientId: '',
+			roleIds: [],
+			requestId: 'search-cadence-org'
+		});
+	}
+	return db
+		.select({
+			clientId: searchCadenceSettings.clientId
+		})
+		.from(searchCadenceSettings)
+		.where(eq(searchCadenceSettings.organizationId, organizationId));
+}
+
+export async function listClientTenantIds() {
+	return db
+		.select({
+			organizationId: clients.organizationId,
+			clientId: clients.id,
+			name: clients.name
+		})
+		.from(clients);
+}
+
+export async function sumGeoMeasurementCostForTenant(
+	ctx: TenantContext,
+	since: Date,
+	currency: string
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select({
+			total: sql<number>`coalesce(sum(${geoMeasurementRuns.costMinor}), 0)`
+		})
+		.from(geoMeasurementRuns)
+		.where(
+			and(
+				eq(geoMeasurementRuns.clientId, required.clientId),
+				eq(geoMeasurementRuns.currency, currency),
+				gte(geoMeasurementRuns.startedAt, since)
+			)
+		);
+	return Number(row?.total ?? 0);
 }

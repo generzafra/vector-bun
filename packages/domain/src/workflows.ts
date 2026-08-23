@@ -4,6 +4,7 @@ import {
 	LEAD_CAPTURED_WORKFLOW,
 	NURTURE_DUE_SWEEP_WORKFLOW,
 	NURTURE_STEP_WORKFLOW,
+	SEARCH_DUE_SWEEP_WORKFLOW,
 	SOCIAL_DUE_SWEEP_WORKFLOW,
 	SOCIAL_PUBLISH_WORKFLOW,
 	enrollEligibleInputSchema,
@@ -11,6 +12,7 @@ import {
 	leadCapturedInputSchema,
 	nurtureDueSweepInputSchema,
 	nurtureStepInputSchema,
+	searchDueSweepInputSchema,
 	socialDueSweepInputSchema,
 	socialPublishInputSchema,
 	platformDueSweepInputSchema,
@@ -20,7 +22,11 @@ import {
 	type WorkflowDispatchResult
 } from '@vector/automation';
 import { parseContract, requireTenantContext, type TenantContext } from '@vector/contracts';
-import { listTenantsWithDueNurtureSteps, listTenantsWithDueSocialPosts } from '@vector/db';
+import {
+	listClientTenantIds,
+	listTenantsWithDueNurtureSteps,
+	listTenantsWithDueSocialPosts
+} from '@vector/db';
 import {
 	enrollEligibleLeads,
 	processDueNurtureSteps,
@@ -28,6 +34,7 @@ import {
 	processLeadCapturedWorkflow,
 	processNurtureStepWorkflow
 } from './email';
+import { processSearchDueSweepWorkflow } from './search';
 import { processSocialDueSweepWorkflow, processSocialPublishWorkflow } from './social';
 
 let handlersRegistered = false;
@@ -65,7 +72,8 @@ export function ensureWorkflowHandlers() {
 		},
 		[INBOUND_EMAIL_WORKFLOW.name]: (payload) => processInboundEmailWorkflow(payload),
 		[SOCIAL_PUBLISH_WORKFLOW.name]: (payload) => processSocialPublishWorkflow(payload),
-		[SOCIAL_DUE_SWEEP_WORKFLOW.name]: (payload) => processSocialDueSweepWorkflow(payload)
+		[SOCIAL_DUE_SWEEP_WORKFLOW.name]: (payload) => processSocialDueSweepWorkflow(payload),
+		[SEARCH_DUE_SWEEP_WORKFLOW.name]: (payload) => processSearchDueSweepWorkflow(payload)
 	});
 }
 
@@ -154,6 +162,19 @@ function prepareTenantWorkflow(name: TenantWorkflowName, input: unknown) {
 				})
 			};
 		}
+		case SEARCH_DUE_SWEEP_WORKFLOW.name: {
+			const payload = parseContract(searchDueSweepInputSchema, input);
+			return {
+				payload,
+				organizationId: payload.organizationId,
+				clientId: payload.clientId,
+				requestId: payload.requestId,
+				idempotencyKey: SEARCH_DUE_SWEEP_WORKFLOW.idempotencyKey({
+					clientId: payload.clientId,
+					windowStart: hourWindow()
+				})
+			};
+		}
 		default: {
 			const exhausted: never = name;
 			throw new Error(`Unsupported tenant workflow: ${exhausted}`);
@@ -209,6 +230,25 @@ export async function processPlatformDueSocialSweep(input: unknown, now = new Da
 			organizationId: tenant.organizationId,
 			clientId: tenant.clientId,
 			...(await dispatchWorkflow(SOCIAL_DUE_SWEEP_WORKFLOW.name, {
+				organizationId: tenant.organizationId,
+				clientId: tenant.clientId,
+				requestId: parsed.requestId
+			}))
+		});
+	}
+	return { tenants: tenants.length, results };
+}
+
+export async function processPlatformDueSearchSweep(input: unknown) {
+	ensureWorkflowHandlers();
+	const parsed = parseContract(platformDueSweepInputSchema, input);
+	const tenants = await listClientTenantIds();
+	const results = [];
+	for (const tenant of tenants) {
+		results.push({
+			organizationId: tenant.organizationId,
+			clientId: tenant.clientId,
+			...(await dispatchWorkflow(SEARCH_DUE_SWEEP_WORKFLOW.name, {
 				organizationId: tenant.organizationId,
 				clientId: tenant.clientId,
 				requestId: parsed.requestId

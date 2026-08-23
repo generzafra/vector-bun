@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test';
+import { resetRateLimits } from '@vector/auth';
 import { eq } from 'drizzle-orm';
 import { env } from '@vector/config';
 import {
@@ -84,6 +85,7 @@ function sessionCookie(res: Response) {
 }
 
 beforeEach(async () => {
+	resetRateLimits();
 	useMemorySearch();
 	const { alpha, beta } = await seededClients();
 	await resetSearchRows(alpha.id);

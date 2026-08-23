@@ -118,7 +118,8 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 
 Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
 
-- `GET /v1/search` — properties, issues, official queries, opportunities, entities, answer targets, briefs, GEO query sets, recorded observations, readiness (`seo.read`)
+- `GET /v1/search` — properties, issues, official queries, opportunities, entities, answer targets, briefs, GEO query sets, recorded observations, readiness, cadence (`seo.read`)
+- `GET /v1/search/portfolio` — due/blocked search exceptions for clients the actor can access (`seo.read`)
 - `GET /v1/search/:clientId` — same overview only when the actor already owns that client
 - `POST /v1/search/properties` — store an encrypted Search Console or Bing credential (`seo.manage`, CSRF)
 - `POST /v1/search/properties/:id/validate` — property health through `SearchProvider`
@@ -128,7 +129,10 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `POST /v1/search/answer-readiness` — refresh schema entities, answer targets, and source-backed FAQ gaps (`seo.manage`, CSRF)
 - `POST /v1/search/geo/query-set` — refresh the capped commercial GEO query set (`seo.manage`, CSRF)
 - `POST /v1/search/geo/observations` — persist a manual or operator-assisted observation (`seo.manage`, CSRF)
+- `POST /v1/search/geo/snapshot` — refresh the tenant visibility snapshot (`seo.manage`, CSRF)
+- `POST /v1/search/cadence` — update tenant cadence, GEO caps, and monthly budget (`seo.manage`, CSRF)
+- `POST /v1/search/due-sweep` — run due automated search work for the active client (`seo.manage`, CSRF)
 - `POST /v1/search/opportunities` — create a channelled backlog item with evidence
 - `POST /v1/search/opportunities/:id/publish-ready` — only when the source is an approved claim or official query
 
-`SearchProvider` lives in `packages/search`. Memory is the default. Official Google Search Console and Bing Webmaster adapters run when `SEARCH_ADAPTER=official`. Tokens and API keys are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in Control or API JSON. `measureGenerativeVisibility` records `manual` or `operator_assisted` observations and returns `unsupported` for live / unofficial generative APIs. Memory, Google, and Bing share that helper; official adapters do not call consumer AI URLs. Answer-readiness refresh is tenant-scoped, fails closed without approved knowledge, and does not create pages. Visibility snapshots, fact representations, and search/GEO referral rows are tenant-scoped and are not a GEO score. A mention is not a citation, visit, or lead. Revenue is not assigned from a mention. Do not invent a second search adapter family.
+`SearchProvider` lives in `packages/search`. Memory is the default. Official Google Search Console and Bing Webmaster adapters run when `SEARCH_ADAPTER=official`. Tokens and API keys are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in Control or API JSON. `measureGenerativeVisibility` records `manual` or `operator_assisted` observations and returns `unsupported` for live / unofficial generative APIs. Memory, Google, and Bing share that helper; official adapters do not call consumer AI URLs. Answer-readiness refresh is tenant-scoped, fails closed without approved knowledge, and does not create pages. Visibility snapshots, fact representations, and search/GEO referral rows are tenant-scoped and are not a GEO score. Cadence, monthly GEO budget, and due-queue rows are tenant-scoped. `search-due-sweep` is tenant-scoped; `search-due-sweep-platform` fans out one job per client. The sweep never records a GEO observation or calls a consumer AI URL. A mention is not a citation, visit, or lead. Revenue is not assigned from a mention. Do not invent a second search adapter family.

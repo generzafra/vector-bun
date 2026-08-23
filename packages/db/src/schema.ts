@@ -2628,3 +2628,72 @@ export const geoReferralEvents = pgTable(
 		index('geo_referral_events_client_idx').on(t.clientId)
 	]
 );
+
+export const searchWorkKind = pgEnum('search_work_kind', [
+	'technical_audit',
+	'property_sync',
+	'aeo_refresh',
+	'geo_snapshot',
+	'geo_measure',
+	'stale_measurement',
+	'budget'
+]);
+export const searchWorkStatus = pgEnum('search_work_status', ['due', 'blocked', 'clear']);
+
+export const searchCadenceSettings = pgTable(
+	'search_cadence_settings',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		technicalAuditIntervalDays: integer('technical_audit_interval_days').notNull().default(7),
+		propertySyncIntervalDays: integer('property_sync_interval_days').notNull().default(7),
+		aeoRefreshIntervalDays: integer('aeo_refresh_interval_days').notNull().default(7),
+		geoSnapshotIntervalDays: integer('geo_snapshot_interval_days').notNull().default(7),
+		geoMeasureIntervalDays: integer('geo_measure_interval_days').notNull().default(7),
+		geoQueryLimit: integer('geo_query_limit').notNull().default(20),
+		geoEngineLimit: integer('geo_engine_limit').notNull().default(5),
+		geoLocaleLimit: integer('geo_locale_limit').notNull().default(2),
+		monthlyBudgetMinor: integer('monthly_budget_minor').notNull().default(0),
+		currency: text('currency').notNull().default('USD'),
+		paused: boolean('paused').notNull().default(false),
+		lastTechnicalAuditAt: timestamp('last_technical_audit_at', { withTimezone: true }),
+		lastPropertySyncAt: timestamp('last_property_sync_at', { withTimezone: true }),
+		lastAeoRefreshAt: timestamp('last_aeo_refresh_at', { withTimezone: true }),
+		lastGeoSnapshotAt: timestamp('last_geo_snapshot_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('search_cadence_settings_client_idx').on(t.clientId),
+		index('search_cadence_settings_org_idx').on(t.organizationId)
+	]
+);
+
+export const searchWorkItems = pgTable(
+	'search_work_items',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		kind: searchWorkKind('kind').notNull(),
+		status: searchWorkStatus('status').notNull(),
+		detail: text('detail').notNull(),
+		dueAt: timestamp('due_at', { withTimezone: true }).notNull(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('search_work_items_client_kind_idx').on(t.clientId, t.kind),
+		index('search_work_items_client_idx').on(t.clientId),
+		index('search_work_items_status_idx').on(t.status)
+	]
+);

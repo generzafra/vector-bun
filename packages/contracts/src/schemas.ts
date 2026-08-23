@@ -537,6 +537,61 @@ export const CONTENT_BRIEF_STATUSES = ['draft'] as const;
 export type ContentBriefStatus = (typeof CONTENT_BRIEF_STATUSES)[number];
 
 export const GEO_QUERY_LIMIT = 20;
+export const SEARCH_CADENCE_INTERVAL_MIN_DAYS = 1;
+export const SEARCH_CADENCE_INTERVAL_MAX_DAYS = 90;
+export const SEARCH_GEO_ENGINE_LIMIT_MAX = 5;
+export const SEARCH_GEO_LOCALE_LIMIT_MAX = 8;
+export const SEARCH_MONTHLY_BUDGET_MINOR_MAX = 10_000_000;
+
+export const SEARCH_WORK_KINDS = [
+	'technical_audit',
+	'property_sync',
+	'aeo_refresh',
+	'geo_snapshot',
+	'geo_measure',
+	'stale_measurement',
+	'budget'
+] as const;
+export type SearchWorkKind = (typeof SEARCH_WORK_KINDS)[number];
+
+export const SEARCH_WORK_STATUSES = ['due', 'blocked', 'clear'] as const;
+export type SearchWorkStatus = (typeof SEARCH_WORK_STATUSES)[number];
+
+export const updateSearchCadenceSchema = z
+	.object({
+		technicalAuditIntervalDays: z.coerce
+			.number()
+			.int()
+			.min(SEARCH_CADENCE_INTERVAL_MIN_DAYS)
+			.max(SEARCH_CADENCE_INTERVAL_MAX_DAYS),
+		propertySyncIntervalDays: z.coerce
+			.number()
+			.int()
+			.min(SEARCH_CADENCE_INTERVAL_MIN_DAYS)
+			.max(SEARCH_CADENCE_INTERVAL_MAX_DAYS),
+		aeoRefreshIntervalDays: z.coerce
+			.number()
+			.int()
+			.min(SEARCH_CADENCE_INTERVAL_MIN_DAYS)
+			.max(SEARCH_CADENCE_INTERVAL_MAX_DAYS),
+		geoSnapshotIntervalDays: z.coerce
+			.number()
+			.int()
+			.min(SEARCH_CADENCE_INTERVAL_MIN_DAYS)
+			.max(SEARCH_CADENCE_INTERVAL_MAX_DAYS),
+		geoMeasureIntervalDays: z.coerce
+			.number()
+			.int()
+			.min(SEARCH_CADENCE_INTERVAL_MIN_DAYS)
+			.max(SEARCH_CADENCE_INTERVAL_MAX_DAYS),
+		geoQueryLimit: z.coerce.number().int().min(1).max(GEO_QUERY_LIMIT),
+		geoEngineLimit: z.coerce.number().int().min(1).max(SEARCH_GEO_ENGINE_LIMIT_MAX),
+		geoLocaleLimit: z.coerce.number().int().min(1).max(SEARCH_GEO_LOCALE_LIMIT_MAX),
+		monthlyBudgetMinor: z.coerce.number().int().min(0).max(SEARCH_MONTHLY_BUDGET_MINOR_MAX),
+		currency: z.string().trim().length(3).toUpperCase().default('USD'),
+		paused: z.boolean()
+	})
+	.strict();
 
 export const GEO_QUERY_GROUPS = [
 	'brand',

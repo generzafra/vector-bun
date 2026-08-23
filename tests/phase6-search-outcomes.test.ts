@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test';
+import { resetRateLimits } from '@vector/auth';
 import { eq } from 'drizzle-orm';
 import { env } from '@vector/config';
 import { TenantContextError } from '@vector/contracts';
@@ -80,6 +81,7 @@ async function pageIds(ctx: ReturnType<typeof contextFor>) {
 }
 
 beforeEach(async () => {
+	resetRateLimits();
 	const { alpha, beta } = await seededClients();
 	await resetOutcomeRows(alpha.id);
 	await resetOutcomeRows(beta.id);

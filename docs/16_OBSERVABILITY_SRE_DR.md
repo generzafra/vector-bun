@@ -14,7 +14,7 @@ Vector 24 product metrics: median time to Vector Ready, median ready-to-live, pe
 
 Business data health is observable beside technical health (`docs/30`): lead ingestion, CRM sync delay, stale revenue import, expired social/search connections, incomplete attribution. Stale outcome data must degrade recommendation confidence.
 
-Phase 6 adds search/GEO signals: Search Console sync health, Bing sync health, SEO crawl health, schema validation health, GEO measurement health, GEO measurement age, GEO query coverage, and GEO cost. A stale GEO snapshot must not be displayed as current.
+Phase 6 adds search/GEO signals: Search Console sync health, Bing sync health, SEO crawl health, schema validation health, GEO measurement health, GEO measurement age, GEO query coverage, and GEO cost. S8 adds cadence due-state, pause, monthly budget remaining, and portfolio exception counts. A stale GEO snapshot must not be displayed as current. Paid GEO measurement fails closed when the monthly budget would be exceeded.
 
 ## Initial SLOs
 

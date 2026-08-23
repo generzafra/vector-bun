@@ -175,6 +175,33 @@ export const SOCIAL_DUE_SWEEP_PLATFORM_WORKFLOW = {
 	concurrency: { key: 'platform', limit: 1 }
 } as const;
 
+export const searchDueSweepInputSchema = z
+	.object({
+		organizationId: z.string().uuid(),
+		clientId: z.string().uuid(),
+		requestId: z.string().min(1)
+	})
+	.strict();
+
+export type SearchDueSweepInput = z.infer<typeof searchDueSweepInputSchema>;
+
+export const SEARCH_DUE_SWEEP_WORKFLOW = {
+	name: 'search-due-sweep',
+	trigger: 'operator or scheduled search cadence sweep',
+	idempotencyKey: (input: Pick<SearchDueSweepInput, 'clientId'> & { windowStart: string }) =>
+		`search-due:${input.clientId}:${input.windowStart}`,
+	retry: { maxAttempts: 8, timeoutMs: 60_000 },
+	concurrency: { key: 'clientId', limit: 1 }
+} as const;
+
+export const SEARCH_DUE_SWEEP_PLATFORM_WORKFLOW = {
+	name: 'search-due-sweep-platform',
+	trigger: 'scheduled search cadence fan-out',
+	idempotencyKey: (input: { windowStart: string }) => `search-due-platform:${input.windowStart}`,
+	retry: { maxAttempts: 5, timeoutMs: 60_000 },
+	concurrency: { key: 'platform', limit: 1 }
+} as const;
+
 export const TENANT_WORKFLOW_NAMES = [
 	LEAD_CAPTURED_WORKFLOW.name,
 	NURTURE_STEP_WORKFLOW.name,
@@ -182,11 +209,13 @@ export const TENANT_WORKFLOW_NAMES = [
 	NURTURE_DUE_SWEEP_WORKFLOW.name,
 	INBOUND_EMAIL_WORKFLOW.name,
 	SOCIAL_PUBLISH_WORKFLOW.name,
-	SOCIAL_DUE_SWEEP_WORKFLOW.name
+	SOCIAL_DUE_SWEEP_WORKFLOW.name,
+	SEARCH_DUE_SWEEP_WORKFLOW.name
 ] as const;
 
 export type TenantWorkflowName = (typeof TENANT_WORKFLOW_NAMES)[number];
 export type WorkflowName =
 	| TenantWorkflowName
 	| typeof NURTURE_DUE_SWEEP_PLATFORM_WORKFLOW.name
-	| typeof SOCIAL_DUE_SWEEP_PLATFORM_WORKFLOW.name;
+	| typeof SOCIAL_DUE_SWEEP_PLATFORM_WORKFLOW.name
+	| typeof SEARCH_DUE_SWEEP_PLATFORM_WORKFLOW.name;

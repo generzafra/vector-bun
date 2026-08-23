@@ -5,7 +5,9 @@ import {
 	contextFor,
 	createSeoOpportunity,
 	getSearchOverview,
+	listSearchPortfolioQueue,
 	markSeoOpportunityPublishReady,
+	processSearchDueSweepForOperator,
 	recordGeoObservation,
 	refreshAnswerReadiness,
 	refreshGeoQuerySet,
@@ -13,14 +15,16 @@ import {
 	runTechnicalSearchAudit,
 	submitSearchSitemap,
 	syncSearchProperty,
+	updateSearchCadence,
 	validateSearchProperty
 } from '@vector/domain';
 
 export async function load({ locals }) {
 	const session = locals.session!;
-	if (!session.clientId) return { overview: null, needsClient: true };
+	const portfolio = await listSearchPortfolioQueue(session, locals.requestId);
+	if (!session.clientId) return { overview: null, needsClient: true, portfolio };
 	const ctx = contextFor(session, locals.requestId);
-	return { overview: await getSearchOverview(session, ctx), needsClient: false };
+	return { overview: await getSearchOverview(session, ctx), needsClient: false, portfolio };
 }
 
 export const actions = {
@@ -234,6 +238,57 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not create the opportunity' });
+		}
+	},
+	cadence: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			await updateSearchCadence(
+				session,
+				contextFor(session, locals.requestId),
+				{
+					technicalAuditIntervalDays: String(form.get('technicalAuditIntervalDays') ?? '7'),
+					propertySyncIntervalDays: String(form.get('propertySyncIntervalDays') ?? '7'),
+					aeoRefreshIntervalDays: String(form.get('aeoRefreshIntervalDays') ?? '7'),
+					geoSnapshotIntervalDays: String(form.get('geoSnapshotIntervalDays') ?? '7'),
+					geoMeasureIntervalDays: String(form.get('geoMeasureIntervalDays') ?? '7'),
+					geoQueryLimit: String(form.get('geoQueryLimit') ?? '20'),
+					geoEngineLimit: String(form.get('geoEngineLimit') ?? '5'),
+					geoLocaleLimit: String(form.get('geoLocaleLimit') ?? '2'),
+					monthlyBudgetMinor: String(form.get('monthlyBudgetMinor') ?? '0'),
+					currency: String(form.get('currency') ?? 'USD'),
+					paused: form.get('paused') === 'on'
+				},
+				locals.requestId
+			);
+			return { ok: true, notice: 'Cadence and budget saved for this client.' };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not update search cadence' });
+		}
+	},
+	dueSweep: async ({ locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		try {
+			const result = await processSearchDueSweepForOperator(
+				session,
+				contextFor(session, locals.requestId),
+				locals.requestId
+			);
+			return {
+				ok: true,
+				notice: result.skipped
+					? 'Scheduled search work is paused for this client.'
+					: result.ran.length
+						? `Ran ${result.ran.join(', ')}. Manual AI-discovery measurement was not recorded.`
+						: 'No due automated search work.'
+			};
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not run the search cadence sweep' });
 		}
 	},
 	publishReady: async ({ request, locals }) => {

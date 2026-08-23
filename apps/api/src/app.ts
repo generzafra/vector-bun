@@ -68,7 +68,9 @@ import {
 	connectSearchProperty,
 	createSeoOpportunity,
 	getSearchOverview,
+	listSearchPortfolioQueue,
 	markSeoOpportunityPublishReady,
+	processSearchDueSweepForOperator,
 	recordGeoObservation,
 	refreshAnswerReadiness,
 	refreshGeoQuerySet,
@@ -76,6 +78,7 @@ import {
 	runTechnicalSearchAudit,
 	submitSearchSitemap,
 	syncSearchProperty,
+	updateSearchCadence,
 	validateSearchProperty
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
@@ -886,6 +889,16 @@ app.get('/v1/search', async (c) => {
 	return c.json({ requestId, data: await getSearchOverview(session, ctx) });
 });
 
+app.get('/v1/search/portfolio', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	actorCan(session, 'seo.read');
+	return c.json({
+		requestId,
+		data: await listSearchPortfolioQueue(session, requestId)
+	});
+});
+
 app.get('/v1/search/:clientId', async (c) => {
 	const requestId = createRequestId();
 	const session = await requireSession(c);
@@ -1011,6 +1024,28 @@ app.post('/v1/search/opportunities', async (c) => {
 	actorCan(session, 'seo.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await createSeoOpportunity(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/cadence', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await updateSearchCadence(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/search/due-sweep', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'seo.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await processSearchDueSweepForOperator(session, ctx, requestId);
 	return c.json({ requestId, data });
 });
 

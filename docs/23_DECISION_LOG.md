@@ -392,4 +392,4 @@ Supersede this ADR. Leave `docs/10` GEO sections as historical. Keep Phase 6 exi
 
 ### Implementation note (23 August 2026)
 
-S1–S7 are in: Delivery GEO-readiness, `packages/search`, answer targets, GEO query/observation schema, first compliant measurement, visibility snapshots, and search/GEO → lead when UTMs are observable. Official generative-engine APIs remain `unsupported`. Revenue is not assigned from a mention. The ADR lock is unchanged.
+S1–S8 are in: Delivery GEO-readiness, `packages/search`, answer targets, GEO query/observation schema, first compliant measurement, visibility snapshots, search/GEO → lead when UTMs are observable, and cadence/budget/portfolio queues. Official generative-engine APIs remain `unsupported`. Revenue is not assigned from a mention. Scheduled search jobs never scrape consumer AI interfaces. The ADR lock is unchanged.

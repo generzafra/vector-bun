@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test';
+import { resetRateLimits } from '@vector/auth';
 import { eq } from 'drizzle-orm';
 import { env } from '@vector/config';
 import {
@@ -80,6 +81,7 @@ async function adminOn(clientId: string, ip: string, requestId: string) {
 }
 
 beforeEach(async () => {
+	resetRateLimits();
 	const { alpha, beta } = await seededClients();
 	await resetGeoRows(alpha.id);
 	await resetGeoRows(beta.id);

@@ -2702,7 +2702,7 @@ Exit gate:
 
 Live generative measurement and search → qualified-lead reporting are additive.
 
-**Status (23 August 2026):** S0–S7 are in. Delivery ships the launch-time GEO-readiness baseline. `packages/search` is the only `SearchProvider` family. Control `/search` lists official search rows, answer readiness, a small commercial GEO query set, recorded observations, a client-safe visibility snapshot, and search/GEO → lead impact when attribution is observable. Manual and operator-assisted measurement records through `SearchProvider`. Official generative-engine APIs stay `unsupported`. Revenue is not assigned from a mention. Cadence and budgets are later S8.
+**Status (23 August 2026):** S0–S8 are in. Delivery ships the launch-time GEO-readiness baseline. `packages/search` is the only `SearchProvider` family. Control `/search` lists official search rows, answer readiness, a small commercial GEO query set, recorded observations, a client-safe visibility snapshot, search/GEO → lead impact when attribution is observable, and cadence/budget/due queues. Manual and operator-assisted measurement records through `SearchProvider`. Official generative-engine APIs stay `unsupported`. Revenue is not assigned from a mention. Scheduled search jobs never scrape consumer AI interfaces. Phase 6 may exit after S1–S4 plus Control backlog.
 
 ## Phase 7 — CRO experimentation
 
