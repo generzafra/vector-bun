@@ -51,6 +51,13 @@ test('nav authorizes by capability, not role-string equality', () => {
 
 	const reviewerLike = ['ai.read'] as const;
 	expect(labelsFor(reviewerLike)).toEqual(['Overview', 'Approvals']);
+	expect(controlNavFor(reviewerLike).find((link) => link.label === 'Approvals')?.href).toBe(
+		'/approvals'
+	);
+	expect(
+		controlNavFor(ROLE_CAPABILITIES.mge_operator).find((link) => link.label === 'Intelligence')
+			?.href
+	).toBe('/intelligence');
 
 	const expandedClient = [...ROLE_CAPABILITIES.client_owner, 'control.operator'];
 	const expanded = labelsFor(expandedClient);
@@ -82,6 +89,10 @@ test('client Overview, Leads, Goals, and Approvals copy stays business language'
 	const leads = readFileSync(join(root, 'apps/control/src/routes/leads/+page.svelte'), 'utf8');
 	const goals = readFileSync(join(root, 'apps/control/src/routes/goals/+page.svelte'), 'utf8');
 	const approvals = readFileSync(
+		join(root, 'apps/control/src/routes/approvals/+page.svelte'),
+		'utf8'
+	);
+	const intelligence = readFileSync(
 		join(root, 'apps/control/src/routes/intelligence/+page.svelte'),
 		'utf8'
 	);
@@ -94,7 +105,7 @@ test('client Overview, Leads, Goals, and Approvals copy stays business language'
 	expect(goals).toContain('The main target Vector is working toward');
 	expect(approvals).toContain('Items that need your decision');
 	expect(approvals).toContain('Nothing needs you right now');
-	expect(approvals).toContain('hasOperatorControlNav');
+	expect(intelligence).toContain('hasOperatorControlNav');
 });
 
 test('seeded client_admin does not receive operator nav; seeded admin does', async () => {

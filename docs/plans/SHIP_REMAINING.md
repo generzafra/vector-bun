@@ -47,6 +47,7 @@ Client UX is **not** a surface leftover. Default nav, Today, Approvals, and Quic
 | Control `docs/28` tokens on existing operator routes                                               | Operator cockpit, not client-simple nav                                                            |
 | **CU0** capability-filtered Control nav                                                            | Default client shell is Overview / Leads / Approvals / Goals. `control.operator` keeps the cockpit |
 | **CU1** Outcomes QuickStart                                                                        | Control `/quickstart` maps seven answers into goals, high-intent prefs, and a recorded approver    |
+| **O8** Approval Center                                                                             | Control `/approvals` groups existing `approval_requests`; decide does not publish or send          |
 
 Not in code: `ImageProvider`, `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `sales_outcomes`, `revenue_events`, visual-direction manifests, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements.
 
@@ -62,7 +63,7 @@ Law: `docs/30` §2, §5–7, §65, §81–85. One Control app; **nav differs by 
 | ------- | --------------------------------------------------------------------------- | ------------ | ------------------------ |
 | **CU0** | Capability-filtered default nav + `docs/30` §85 copy checklist              | Outcomes     | **In**                   |
 | **CU1** | Outcomes QuickStart (seven plain questions, not the 16-step Knowledge dump) | Outcomes     | **In**                   |
-| **O8**  | Approval Center grouping in business language                               | Outcomes     | Next                     |
+| **O8**  | Approval Center grouping in business language                               | Outcomes     | **In**                   |
 | **O4**  | Client Overview outcome hierarchy                                           | Outcomes     | After O3                 |
 | **O5**  | Today view (under one minute)                                               | Outcomes     | After O4                 |
 | **C1**  | Brand visual profile + confirm/edit (Creative QuickStart confirm)           | Creative     | Unlocks FR3              |
@@ -90,8 +91,8 @@ The 16-step catalog in `docs/17` is the **readiness inventory**. It is not the c
 | Slice             | Work                                           | Gate                               |
 | ----------------- | ---------------------------------------------- | ---------------------------------- |
 | O1 / O2 / O6 / O7 | Goals, lead_status, data health, notifications | **In** (thin)                      |
-| **O3**            | `sales_outcomes` (optional `amount_minor`)     | Before V1 and O11                  |
-| **O8**            | Approval Center                                | Next                               |
+| **O3**            | `sales_outcomes` (optional `amount_minor`)     | Next                               |
+| **O8**            | Approval Center                                | **In**                             |
 | **O4 / O5**       | Overview / Today                               | After O3                           |
 | **O9**            | Offer versions (extend `offers`)               | —                                  |
 | **O10**           | `CRMProvider` (memory first)                   | After O3                           |
@@ -158,7 +159,7 @@ Goal: a non-technical owner is not dropped into the operator cockpit, and §78 l
 
 1. **CU0** capability-filtered nav — **In**
 2. **CU1** Outcomes QuickStart — **In**
-3. **O8** Approval Center
+3. **O8** Approval Center — **In**
 4. **O3** `sales_outcomes`
 5. **V0** activity proof when fee/package is known (no ROI)
 

@@ -29,6 +29,7 @@ import {
 	decideIntelligenceApproval,
 	enrollEligibleLeadsForOperator,
 	getEmailOverview,
+	getApprovalCenter,
 	getIntelligenceOverview,
 	getAutonomyOverview,
 	getPortfolioClient,
@@ -654,6 +655,27 @@ app.post('/v1/email/inbound/:id/review', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const data = await reviewInboundMessage(session, ctx, { id: c.req.param('id') }, requestId);
 	return c.json({ requestId, data });
+});
+
+app.get('/v1/approvals', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'ai.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getApprovalCenter(session, ctx) });
+});
+
+app.get('/v1/approvals/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'ai.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getApprovalCenter(session, ctx, c.req.param('clientId'))
+	});
 });
 
 app.get('/v1/intelligence', async (c) => {

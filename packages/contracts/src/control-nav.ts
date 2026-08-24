@@ -31,7 +31,7 @@ export const CONTROL_NAV_ITEMS: readonly ControlNavItem[] = [
 	{ href: '/email', label: 'Email', capability: 'email.read', shell: 'operator' },
 	{ href: '/social', label: 'Social', capability: 'social.read', shell: 'operator' },
 	{ href: '/search', label: 'Search', capability: 'seo.read', shell: 'operator' },
-	{ href: '/intelligence', label: 'Approvals', capability: 'ai.read', shell: 'client' },
+	{ href: '/approvals', label: 'Approvals', capability: 'ai.read', shell: 'client' },
 	{ href: '/intelligence', label: 'Intelligence', capability: 'ai.read', shell: 'operator' },
 	{ href: '/autonomy', label: 'Autonomy', capability: 'ai.read', shell: 'operator' },
 	{ href: '/analytics', label: 'Analytics', capability: 'analytics.read', shell: 'operator' },
@@ -41,7 +41,7 @@ export const CONTROL_NAV_ITEMS: readonly ControlNavItem[] = [
 	{ href: '/members', label: 'Members', capability: 'users.manage', shell: 'operator' }
 ];
 
-export const CLIENT_DEFAULT_NAV_HREFS = ['/', '/leads', '/intelligence', '/goals'] as const;
+export const CLIENT_DEFAULT_NAV_HREFS = ['/', '/leads', '/approvals', '/goals'] as const;
 
 export const CLIENT_DEFAULT_NAV_LABELS = ['Overview', 'Leads', 'Approvals', 'Goals'] as const;
 

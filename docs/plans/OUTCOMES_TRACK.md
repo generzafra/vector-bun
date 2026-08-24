@@ -1,6 +1,6 @@
 # Outcomes track — client UX + O3–O20
 
-**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; **CU1 in**; remainder open  
+**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; **CU1 in**; **O8 in**; remainder open  
 **Track:** Outcomes (not a Vector phase)  
 **Standing law:** [`docs/30`](../30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md) §2, §5–7, §65, §81–88  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave A then C then E  
@@ -60,7 +60,7 @@ Rules:
 - Chrome stays `docs/28`. Do not paint Delivery. Do not invent `apps/client`.
 - Tests: a client-capability actor does not see Autonomy / Portfolio / Knowledge in the default shell; an operator-capability actor does.
 
-**In:** Control `AppShell` filters by `controlNavFor`. Default client links are Overview, Leads, Approvals (`/intelligence` stand-in), Goals. Operator modules stay off the default client set. Client-facing copy on those four screens follows §85. Today / Campaigns / Insights / Approval Center grouping are later.
+**In:** Control `AppShell` filters by `controlNavFor`. Default client links are Overview, Leads, Approvals (`/approvals`), Goals. Operator modules stay off the default client set. Client-facing copy on those four screens follows §85. Today / Campaigns / Insights wait for those routes.
 
 ### CU1 — Outcomes QuickStart
 
@@ -100,6 +100,8 @@ Rules:
 - Client Reviewer sees assigned items only.
 - Empty state tells them what to do (`docs/30` §66).
 - Alpha cannot list Beta approvals. Route client id cannot leak the other tenant.
+
+**In:** Control `/approvals` groups existing `approval_requests` into campaigns, content, site direction, and connections. Decide reuses Phase 4 `decideIntelligenceApproval` (no second queue, no publish/send). A reviewer without `ai.manage` only sees items when QuickStart has not assigned someone else. Default client nav Approvals points here; operators keep `/intelligence`. Clients hitting `/intelligence` redirect here.
 
 ---
 
@@ -183,7 +185,7 @@ Launch with a primary goal, conversion definition, minimal pipeline (already tru
 | **O7**  | Notification preferences                                  | **In** (thin)           |
 | **CU0** | Capability-filtered default nav + §85 copy                | **In**                  |
 | **CU1** | Outcomes QuickStart                                       | **In**                  |
-| **O8**  | Approval Center grouping                                  | Wave A                  |
+| **O8**  | Approval Center grouping                                  | **In**                  |
 | **O3**  | `sales_outcomes`                                          | Wave A; before V1 / O11 |
 | **O4**  | Overview outcome hierarchy                                | Wave C                  |
 | **O5**  | Today                                                     | Wave C                  |

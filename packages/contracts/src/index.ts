@@ -1,3 +1,4 @@
+export * from './approval-center';
 export * from './autonomy';
 export * from './capabilities';
 export * from './control-nav';

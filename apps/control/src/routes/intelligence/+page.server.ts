@@ -1,5 +1,5 @@
-import { fail } from '@sveltejs/kit';
-import { AppError } from '@vector/contracts';
+import { fail, redirect } from '@sveltejs/kit';
+import { AppError, hasOperatorControlNav } from '@vector/contracts';
 import {
 	contextFor,
 	decideIntelligenceApproval,
@@ -10,6 +10,9 @@ import {
 
 export async function load({ locals }) {
 	const session = locals.session!;
+	if (!hasOperatorControlNav(session.permissions)) {
+		throw redirect(303, '/approvals');
+	}
 	if (!session.clientId) return { overview: null, needsClient: true };
 	const ctx = contextFor(session, locals.requestId);
 	return { overview: await getIntelligenceOverview(session, ctx), needsClient: false };

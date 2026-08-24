@@ -6,7 +6,7 @@ Modular monolith with clear internal package boundaries and a separate Control P
 
 ## Control Plane
 
-Authenticated management of clients, brand data, funnels, campaigns, agents, approvals, analytics, policies, and integrations. Client and operator share this plane. Navigation differs by capability (`docs/30`). Default client nav is Overview / Leads / Approvals / Goals on current routes (CU0 in). Outcomes QuickStart is at `/quickstart` (CU1 in). Today, Campaigns, and Insights wait for those routes. Do not fork `apps/client`.
+Authenticated management of clients, brand data, funnels, campaigns, agents, approvals, analytics, policies, and integrations. Client and operator share this plane. Navigation differs by capability (`docs/30`). Default client nav is Overview / Leads / Approvals / Goals on current routes (CU0 in). Approvals is `/approvals` (O8 in). Outcomes QuickStart is at `/quickstart` (CU1 in). Today, Campaigns, and Insights wait for those routes. Do not fork `apps/client`.
 
 ## Delivery Plane
 

@@ -84,6 +84,8 @@ Delivery `GET/POST /unsubscribe` on a known hostname. Token `clientId` must matc
 Authenticated session cookie plus CSRF on mutations. Tenant context is the active client, never a route id alone.
 
 - `GET /v1/funnel` — existing pages overview; includes `intelligenceDraft` when the current latest draft was created by an approved Intelligence run (`pages.read`)
+- `GET /v1/approvals` — pending `approval_requests` grouped for the client Approval Center (`ai.read`)
+- `GET /v1/approvals/:clientId` — same overview only when the actor already owns that client
 - `GET /v1/intelligence` — agents, runs, decisions, approvals, feedback, tool-call audit, unpublished artifacts, activity, cost ledger, provider and pause status (`ai.read`)
 - `GET /v1/intelligence/:clientId` — same overview only when the actor already owns that client
 - `POST /v1/intelligence/runs` — start a typed draft (`ai.manage`, CSRF). Body: `agentKey`, optional `brief`, optional `idempotencyKey`
