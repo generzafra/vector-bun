@@ -13,6 +13,7 @@ import {
 	assertAssetClient,
 	deleteBrandAssetForTenant,
 	getBrandAssetForTenant,
+	getBrandVisualProfileForTenant,
 	getLatestLogoAssetForTenant,
 	insertBrandAssetForTenant,
 	listBrandAssetsForTenant
@@ -83,15 +84,27 @@ export async function uploadBrandAsset(
 	}
 }
 
+const IDENTITY_PURPOSES = new Set(['logo', 'mark']);
+
+export async function resolveBrandLogoForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const profile = await getBrandVisualProfileForTenant(required);
+	if (profile?.status === 'confirmed' && profile.primaryLogoAssetId) {
+		const asset = await getBrandAssetForTenant(required, profile.primaryLogoAssetId);
+		if (asset && IDENTITY_PURPOSES.has(asset.purpose)) return asset;
+	}
+	return getLatestLogoAssetForTenant(required);
+}
+
 export async function hasBrandLogoForTenant(ctx: TenantContext) {
 	const required = requireTenantContext(ctx);
-	const row = await getLatestLogoAssetForTenant(required);
+	const row = await resolveBrandLogoForTenant(required);
 	return Boolean(row);
 }
 
 export async function getDeliveryBrandLogoBytes(ctx: TenantContext) {
 	const required = requireTenantContext(ctx);
-	const row = await getLatestLogoAssetForTenant(required);
+	const row = await resolveBrandLogoForTenant(required);
 	if (!row) throw new NotFoundError('Asset not found');
 	const object = await storageProvider().getObject(required.clientId, row.storageKey);
 	return {

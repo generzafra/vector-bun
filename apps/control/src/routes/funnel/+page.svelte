@@ -16,6 +16,18 @@
 	const gateLabel = $derived(
 		!gate ? 'not run' : gate.passed ? 'passed' : gate.overrideReason ? 'overridden' : 'failed'
 	);
+	const sufficiency = $derived(data.funnel?.assetSufficiency ?? null);
+	const sufficiencyTone = $derived(
+		!sufficiency
+			? 'muted'
+			: !sufficiency.profileConfirmed
+				? 'warning'
+				: sufficiency.mediaStrategy === 'authentic'
+					? 'success'
+					: sufficiency.mediaStrategy === 'hybrid'
+						? 'info'
+						: 'muted'
+	);
 </script>
 
 <PageHeader
@@ -78,8 +90,27 @@
 			{#if gate?.overrideReason}
 				<p>Override reason: {gate.overrideReason}</p>
 			{/if}
+			{#if sufficiency}
+				<p>
+					Media readiness:
+					<StatusChip label={sufficiency.label} tone={sufficiencyTone} />
+				</p>
+			{/if}
 		</div>
 	</section>
+
+	{#if sufficiency}
+		<section>
+			<h2>Media readiness</h2>
+			<p>{sufficiency.summary}</p>
+			{#if !sufficiency.profileConfirmed}
+				<p>
+					<a href="/brand">Confirm brand look</a> before a client reveal. An unconfirmed look is not a
+					public reveal.
+				</p>
+			{/if}
+		</section>
+	{/if}
 
 	{#if gate}
 		<section>

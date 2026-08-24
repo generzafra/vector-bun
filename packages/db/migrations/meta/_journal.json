@@ -246,6 +246,13 @@
 			"when": 1756180000000,
 			"tag": "0034_c1_brand_visual",
 			"breakpoints": true
+		},
+		{
+			"idx": 35,
+			"version": "7",
+			"when": 1756190000000,
+			"tag": "0035_fr3_asset_sufficiency",
+			"breakpoints": true
 		}
 	]
 }

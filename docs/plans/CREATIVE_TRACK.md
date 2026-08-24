@@ -1,6 +1,6 @@
 # Creative track — C1–C9
 
-**Status:** Implementation specification — C0–C1 in; C2–C9 open  
+**Status:** Implementation specification — C0–C1 in; thin FR3 consumes C1; C2–C9 open  
 **Track:** Creative (not a Vector phase)  
 **Standing law:** [`docs/29`](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md) §63  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B then D  
@@ -164,7 +164,7 @@ Cross-tenant isolation on every new table. Rights fail closed. Storage keys tena
 
 ## 14. Do not start until
 
-C0 exists (true). FR3 waits for C1 + C5. FR6 waits for C2–C5. FR8 waits for C7.
+C0 exists (true). Thin FR3 is in after C1. C5 funnel manifests remain before approved-derivative placement. FR6 waits for C2–C5. FR8 waits for C7.
 
 ## Locked attachments
 

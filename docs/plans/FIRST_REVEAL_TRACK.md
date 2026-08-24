@@ -12,13 +12,13 @@
 
 **Not `docs/31`.** Numbered charters stop at `docs/30`. This file is the slice spec. It does not reopen Phase 1. Publication still uses the `docs/27` Frontend Release Gate. The First Reveal Gate is an additional pre-client gate. `docs/28` is Control identity, not the Creative Engine. `docs/29` owns ingest, generation, composition, rights, and approval.
 
-**Remaining execution (24 August 2026):** FR0–FR2 and thin FR7 are in. FR3–FR9 are open. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B. Creative dependencies: [CREATIVE_TRACK.md](CREATIVE_TRACK.md). Client reveal (FR8) uses `docs/30` business language; do not overwhelm with schema names, model names, or CSS tokens. Do not generate three full sites.
+**Remaining execution (24 August 2026):** FR0–FR2, thin FR3, and thin FR7 are in. FR4–FR9 are open. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B. Creative dependencies: [CREATIVE_TRACK.md](CREATIVE_TRACK.md). Client reveal (FR8) uses `docs/30` business language; do not overwhelm with schema names, model names, or CSS tokens. Do not generate three full sites.
 
 | Slice         | Status                                                                     | Depends on                         |
 | ------------- | -------------------------------------------------------------------------- | ---------------------------------- |
 | FR0–FR2       | In                                                                         | —                                  |
 | Thin FR7      | In (deterministic checks + operator override; preview publish not blocked) | —                                  |
-| FR3           | Open                                                                       | C1 + C5                            |
+| FR3           | Thin in (C1 consume, sufficiency, typography-led fallback; C5 later)       | C1 in; C5 later                    |
 | FR4–FR5       | Open                                                                       | Structured AI; cheap candidates    |
 | FR6           | Open                                                                       | C2–C5 winner-only media            |
 | FR7 remainder | Open                                                                       | visual / a11y / perf / screenshots |
@@ -3024,8 +3024,10 @@ In, additive on the Phase 1 engine: `hero-editorial`, `services-editorial`, `pro
 
 ## FR3 — Brand and Asset Wiring
 
+Thin slice in: compose consumes a confirmed C1 profile, persists tenant-scoped `asset_sufficiency_snapshots`, picks authentic / hybrid / typography-led, merges confirmed color and font into page tokens, prefers the confirmed logo for Delivery `/brand-logo`, and forces a typography-led hero when media is thin. Industry visual dependency defaults to medium; do not invent HIGH from a trade name. Operators see strategy + summary on Control `/funnel`, not a numeric score. C5 funnel manifests and approved-derivative slot placement remain later.
+
 - brand visual profile consumption;
-- approved asset placement;
+- approved asset placement (C5 remainder);
 - asset sufficiency;
 - media strategy;
 - low-asset fallback system.

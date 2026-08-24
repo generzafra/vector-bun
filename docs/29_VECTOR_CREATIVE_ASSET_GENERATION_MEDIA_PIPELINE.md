@@ -2149,7 +2149,7 @@ Build in this order.
 
 ## Phase C1 — Brand Visual Profile
 
-In. Tenant-owned `brand_visual_profiles` plus immutable confirm versions. Control `/brand` drafts from uploaded logo and existing `brands` / `brand_assets`, then Confirm / Edit in business language. Prohibited styles are stored. Unconfirmed is not a First Reveal license. Full public-URL extraction remains later.
+In. Tenant-owned `brand_visual_profiles` plus immutable confirm versions. Control `/brand` drafts from uploaded logo and existing `brands` / `brand_assets`, then Confirm / Edit in business language. Prohibited styles are stored. Unconfirmed is not a First Reveal license. Thin FR3 consumes a confirmed profile on compose (colors, font, preferred logo) and falls back to a typography-led hero when media is thin. Full public-URL extraction remains later.
 
 - logos;
 - colors;

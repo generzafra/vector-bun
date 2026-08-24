@@ -3418,6 +3418,49 @@ export const firstRevealGateResults = pgTable(
 	]
 );
 
+export type AssetSufficiencyDimensionScores = {
+	brandIdentity: number;
+	heroMedia: number;
+	serviceMedia: number;
+	proofMedia: number;
+	teamOrLocationMedia: number;
+	productMedia: number;
+	caseStudyMedia: number;
+	rightsConfidence: number;
+};
+
+export const assetSufficiencySnapshots = pgTable(
+	'asset_sufficiency_snapshots',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		dimensions: jsonb('dimensions').$type<AssetSufficiencyDimensionScores>().notNull(),
+		overallScore: integer('overall_score').notNull(),
+		mediaStrategy: text('media_strategy').notNull(),
+		industryVisualDependency: text('industry_visual_dependency').notNull().default('medium'),
+		profileConfirmed: boolean('profile_confirmed').notNull().default(false),
+		logoAssetId: uuid('logo_asset_id').references(() => brandAssets.id, {
+			onDelete: 'set null'
+		}),
+		summaryClient: text('summary_client').notNull(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('asset_sufficiency_snapshots_client_version_idx').on(t.clientId, t.pageVersionId),
+		index('asset_sufficiency_snapshots_client_idx').on(t.clientId),
+		index('asset_sufficiency_snapshots_org_idx').on(t.organizationId)
+	]
+);
+
 export const dataHealthChecks = pgTable(
 	'data_health_checks',
 	{

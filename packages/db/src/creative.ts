@@ -1,7 +1,9 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq, inArray } from 'drizzle-orm';
 import { assertSameClient, requireTenantContext, type TenantContext } from '@vector/contracts';
 import { db } from './client';
 import { creativeAssetRights, creativeAssetVersions, creativeAssets } from './schema';
+
+const PUBLISHABLE_CREATIVE_RIGHTS = ['client_owned', 'client_approved'] as const;
 
 export function assertCreativeClient(ctx: TenantContext, clientId: string) {
 	return assertSameClient(ctx, clientId);
@@ -56,6 +58,41 @@ export async function getCreativeAssetVersionForTenant(
 		)
 		.limit(1);
 	return row ?? null;
+}
+
+export async function countPublishableCreativeImagesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select({ value: count() })
+		.from(creativeAssets)
+		.innerJoin(creativeAssetRights, eq(creativeAssetRights.assetId, creativeAssets.id))
+		.where(
+			and(
+				eq(creativeAssets.clientId, required.clientId),
+				eq(creativeAssetRights.clientId, required.clientId),
+				eq(creativeAssets.kind, 'image'),
+				eq(creativeAssets.status, 'approved'),
+				inArray(creativeAssetRights.rightsStatus, [...PUBLISHABLE_CREATIVE_RIGHTS])
+			)
+		);
+	return Number(row?.value ?? 0);
+}
+
+export async function countUnknownRightsCreativeImagesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select({ value: count() })
+		.from(creativeAssets)
+		.innerJoin(creativeAssetRights, eq(creativeAssetRights.assetId, creativeAssets.id))
+		.where(
+			and(
+				eq(creativeAssets.clientId, required.clientId),
+				eq(creativeAssetRights.clientId, required.clientId),
+				eq(creativeAssets.kind, 'image'),
+				eq(creativeAssetRights.rightsStatus, 'unknown')
+			)
+		);
+	return Number(row?.value ?? 0);
 }
 
 export async function getCreativeAssetRightsForTenant(ctx: TenantContext, assetId: string) {

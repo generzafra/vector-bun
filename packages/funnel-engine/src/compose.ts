@@ -1,4 +1,4 @@
-import { ValidationError, type BrandTokens } from '@vector/contracts';
+import { ValidationError, type AssetMediaStrategy, type BrandTokens } from '@vector/contracts';
 import { formatMoneyLabel } from './money';
 import { parsePageDocument, type PageDocument, type PageSection } from './schema';
 
@@ -26,7 +26,14 @@ function personalityOf(value: string | null): (typeof personalities)[number] | u
 	return personalities.find((item) => item === value);
 }
 
-function layoutKind(personality: string | undefined): LayoutKind {
+function layoutKind(
+	personality: string | undefined,
+	mediaStrategy?: AssetMediaStrategy
+): LayoutKind {
+	if (mediaStrategy === 'typography_led') {
+		if (personality === 'premium' || personality === 'creative') return 'editorial';
+		return 'minimal';
+	}
 	if (personality === 'technology' || personality === 'growth') return 'minimal';
 	if (personality === 'premium' || personality === 'creative') return 'editorial';
 	return 'split';
@@ -34,7 +41,7 @@ function layoutKind(personality: string | undefined): LayoutKind {
 
 export function composeLeadPage(
 	input: KnowledgeSnapshot,
-	options: { preview: boolean }
+	options: { preview: boolean; mediaStrategy?: AssetMediaStrategy }
 ): PageDocument {
 	const { brand, services, offers, claims } = input;
 	if (!brand.audience || !brand.offer || !brand.primaryConversion) {
@@ -45,7 +52,7 @@ export function composeLeadPage(
 	}
 
 	const personality = personalityOf(brand.brandPersonality);
-	const layout = layoutKind(personality);
+	const layout = layoutKind(personality, options.mediaStrategy);
 	const approved = claims.filter((claim) => claim.kind === 'approved');
 	const offer = offers[0];
 	const primary = { label: brand.primaryConversion, href: '#lead' };

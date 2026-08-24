@@ -3,7 +3,12 @@ import { env } from '@vector/config';
 import {
 	NotFoundError,
 	ValidationError,
+	applyConfirmedBrandVisualToTokens,
 	assertActorOwnsContext,
+	assetMediaStrategyLabel,
+	brandVisualProfileConfirmed,
+	evaluateAssetSufficiency,
+	parseAssetMediaStrategy,
 	overrideFirstRevealGateSchema,
 	parseContract,
 	type TenantContext
@@ -11,11 +16,15 @@ import {
 import {
 	assertPageClient,
 	composeLeadFunnelForTenant,
+	countPublishableCreativeImagesForTenant,
+	countUnknownRightsCreativeImagesForTenant,
+	getAssetSufficiencyForVersionForTenant,
+	getBrandForTenant,
+	getBrandVisualProfileForTenant,
 	getClientForTenant,
 	getFirstRevealGateForVersionForTenant,
 	getHomePageForTenant,
 	getLatestDraftForTenant,
-	getLatestLogoAssetForTenant,
 	getLeadFunnelForTenant,
 	getPreviewDomainForTenant,
 	getProductionDomainForTenant,
@@ -27,9 +36,9 @@ import {
 	overrideFirstRevealGateForTenant,
 	publishLatestDraftForTenant,
 	updatePageVersionDocumentForTenant,
+	upsertAssetSufficiencySnapshotForTenant,
 	upsertFirstRevealGateForTenant,
-	getAiRunForPageVersionForTenant,
-	getBrandForTenant
+	getAiRunForPageVersionForTenant
 } from '@vector/db';
 import {
 	composeLeadPage,
@@ -39,6 +48,7 @@ import {
 	previewOrigin
 } from '@vector/funnel-engine';
 import { recordAudit } from './audit';
+import { resolveBrandLogoForTenant } from './assets';
 import type { Actor } from './auth-service';
 
 export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: string) {
@@ -57,6 +67,9 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 	const hostname = domain?.hostname ?? null;
 	const intelligenceRun = draft ? await getAiRunForPageVersionForTenant(required, draft.id) : null;
 	const gate = draft ? await getFirstRevealGateForVersionForTenant(required, draft.id) : null;
+	const sufficiency = draft
+		? await getAssetSufficiencyForVersionForTenant(required, draft.id)
+		: null;
 	return {
 		site,
 		funnel,
@@ -77,6 +90,15 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 					overrideReason: gate.overrideReason,
 					overriddenBy: gate.overriddenBy,
 					effectivePass: gate.passed || Boolean(gate.overrideReason)
+				}
+			: null,
+		assetSufficiency: sufficiency
+			? {
+					mediaStrategy: sufficiency.mediaStrategy,
+					label: assetMediaStrategyLabel(parseAssetMediaStrategy(sufficiency.mediaStrategy)),
+					summary: sufficiency.summaryClient,
+					profileConfirmed: sufficiency.profileConfirmed,
+					industryVisualDependency: sufficiency.industryVisualDependency
 				}
 			: null,
 		intelligenceDraft:
@@ -104,15 +126,32 @@ export async function composeFunnel(actor: Actor, ctx: TenantContext, requestId:
 		listClaimsForTenant(required)
 	]);
 	if (!brand) throw new ValidationError('Brand profile is required');
+	const [profile, logo, publishableCreativeImages, unknownRightsCreative] = await Promise.all([
+		getBrandVisualProfileForTenant(required),
+		resolveBrandLogoForTenant(required),
+		countPublishableCreativeImagesForTenant(required),
+		countUnknownRightsCreativeImagesForTenant(required)
+	]);
+	const sufficiency = evaluateAssetSufficiency({
+		profileConfirmed: brandVisualProfileConfirmed(profile),
+		hasLogo: Boolean(logo),
+		hasPrimaryColor: Boolean(profile?.primaryColor),
+		hasVisualPersonality: Boolean(profile?.visualPersonality?.trim()),
+		publishableCreativeImages,
+		unknownRightsCreative
+	});
 	const document = composeLeadPage(
 		{
 			clientSlug: client.slug,
-			brand,
+			brand: {
+				...brand,
+				tokens: applyConfirmedBrandVisualToTokens(brand.tokens, profile)
+			},
 			services,
 			offers,
 			claims
 		},
-		{ preview: true }
+		{ preview: true, mediaStrategy: sufficiency.mediaStrategy }
 	);
 	const composed = await composeLeadFunnelForTenant(required, {
 		siteName: brand.displayName,
@@ -120,7 +159,7 @@ export async function composeFunnel(actor: Actor, ctx: TenantContext, requestId:
 		hostname: previewHostname(client.slug, env.DELIVERY_PREVIEW_PARENT_HOST),
 		document
 	});
-	const hasLogo = Boolean(await getLatestLogoAssetForTenant(required));
+	const hasLogo = Boolean(logo);
 	const evaluation = evaluateFirstRevealGate({
 		document,
 		preview: true,
@@ -131,6 +170,16 @@ export async function composeFunnel(actor: Actor, ctx: TenantContext, requestId:
 		gateVersion: evaluation.version,
 		passed: evaluation.passed,
 		checks: evaluation.checks
+	});
+	await upsertAssetSufficiencySnapshotForTenant(required, {
+		pageVersionId: composed.draft.id,
+		dimensions: sufficiency.dimensions,
+		overallScore: sufficiency.overallScore,
+		mediaStrategy: sufficiency.mediaStrategy,
+		industryVisualDependency: sufficiency.industryVisualDependency,
+		profileConfirmed: sufficiency.profileConfirmed,
+		logoAssetId: logo?.id ?? null,
+		summaryClient: sufficiency.summary
 	});
 	await recordAudit({
 		organizationId: required.organizationId,
@@ -177,7 +226,7 @@ export async function overrideFirstRevealGate(
 	if (!draft) throw new NotFoundError('Draft funnel not found');
 	let gate = await getFirstRevealGateForVersionForTenant(required, draft.id);
 	if (!gate) {
-		const hasLogo = Boolean(await getLatestLogoAssetForTenant(required));
+		const hasLogo = Boolean(await resolveBrandLogoForTenant(required));
 		const evaluation = evaluateFirstRevealGate({
 			document: parsePageDocument(draft.document),
 			preview: true,
