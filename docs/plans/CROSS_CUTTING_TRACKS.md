@@ -118,9 +118,9 @@ From `docs/30` §78, after supervised launch tooling exists:
 - First Reveal Gate pass **or** documented operator override (logo or typography-led fallback; approved media in slots; client does not automatically see the raw first compose)
 - V0 activity proof when package/fee is known. No replacement-cost or ROI claim required
 
-**In (this bar):** FR0–FR2 Delivery quality on the existing engine, hostname-scoped `/brand-logo`, a deterministic First Reveal Gate with operator override (thin FR7), Control `/goals` for a primary goal (O1), data-health flags (O6), notification defaults (O7), and capability-filtered Control nav (CU0). Preview publish is not blocked by a failed gate.
+**In (this bar):** FR0–FR2 Delivery quality on the existing engine, hostname-scoped `/brand-logo`, a deterministic First Reveal Gate with operator override (thin FR7), Control `/goals` for a primary goal (O1), data-health flags (O6), notification defaults (O7), capability-filtered Control nav (CU0), and Outcomes QuickStart (CU1). Preview publish is not blocked by a failed gate.
 
-**Not in:** V0, FR3–FR6/FR8–FR9, ImageProvider, Ask Vector, CRM sync, ads, billing, entitlements, three design directions, Outcomes QuickStart (CU1), Approval Center grouping (O8).
+**Not in:** V0, FR3–FR6/FR8–FR9, ImageProvider, Ask Vector, CRM sync, ads, billing, entitlements, three design directions, Approval Center grouping (O8).
 
 Not required: Ask Vector, CRM sync, ads, billing, entitlements, full Today polish, three design directions, winner image generation, mature ROI, DIY/agency calculator.
 

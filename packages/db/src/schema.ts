@@ -3394,3 +3394,42 @@ export const clientNotificationPreferences = pgTable(
 		index('client_notification_preferences_client_idx').on(t.clientId)
 	]
 );
+
+export const clientOutcomeQuickstarts = pgTable(
+	'client_outcome_quickstarts',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		goalChoice: text('goal_choice').notNull(),
+		goalOther: text('goal_other'),
+		hasTarget: boolean('has_target').notNull(),
+		targetValue: integer('target_value'),
+		period: text('period'),
+		currency: text('currency'),
+		goodLead: text('good_lead').notNull(),
+		goodLeadOther: text('good_lead_other'),
+		afterContact: text('after_contact').notNull(),
+		afterContactOther: text('after_contact_other'),
+		sale: text('sale').notNull(),
+		saleOther: text('sale_other'),
+		crm: text('crm').notNull(),
+		crmNote: text('crm_note'),
+		notifyHighIntent: boolean('notify_high_intent').notNull(),
+		approver: text('approver').notNull(),
+		approverNote: text('approver_note'),
+		approverUserId: text('approver_user_id'),
+		createdBy: text('created_by'),
+		completedAt: timestamp('completed_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('client_outcome_quickstarts_client_idx').on(t.clientId),
+		index('client_outcome_quickstarts_org_idx').on(t.organizationId)
+	]
+);

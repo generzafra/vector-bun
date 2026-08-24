@@ -53,3 +53,18 @@
 		<p>Open Leads, Approvals, or Goals from the menu.</p>
 	{/if}
 </section>
+
+{#if data.activeClientId}
+	<section>
+		{#if data.quickstart}
+			<p>QuickStart answers are saved for this business.</p>
+			<p><a href="/quickstart">Review or update answers</a></p>
+		{:else}
+			<EmptyState
+				title="Tell Vector what success looks like."
+				detail="Seven short questions. You do not need to fill Knowledge."
+			/>
+			<p><a href="/quickstart">Start QuickStart</a></p>
+		{/if}
+	</section>
+{/if}

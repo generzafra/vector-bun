@@ -1,6 +1,6 @@
 # Outcomes track — client UX + O3–O20
 
-**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; remainder open  
+**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; **CU1 in**; remainder open  
 **Track:** Outcomes (not a Vector phase)  
 **Standing law:** [`docs/30`](../30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md) §2, §5–7, §65, §81–88  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave A then C then E  
@@ -86,9 +86,11 @@ Rules:
 - Knowledge remains the operator encyclopedia. CU1 must not require the client to complete every Knowledge field.
 - Tenant-scoped. Alpha cannot read Beta QuickStart answers.
 
+**In:** Control `/quickstart` records the seven answers on `client_outcome_quickstarts`. Optional numeric target writes `client_goals`. High-intent maps to O7 `high_intent_lead`. Self-approver stores the actor. CRM “later” does not call a CRM adapter. Knowledge is not required. Overview and Goals link here; the route is not in the default client nav.
+
 ### O8 — Approval Center
 
-**§78 leftover. Wave A with CU0.**
+**§78 leftover. Wave A after CU1.**
 
 `approval_requests` / `approval_decisions` already exist. Group them for the client: campaigns, content, site direction (FR8 later), connections. Business labels. Bundle actions so the client is not hopping Intelligence / Funnel / Social / Launch.
 
@@ -180,7 +182,7 @@ Launch with a primary goal, conversion definition, minimal pipeline (already tru
 | **O6**  | Data health flags                                         | **In** (thin)           |
 | **O7**  | Notification preferences                                  | **In** (thin)           |
 | **CU0** | Capability-filtered default nav + §85 copy                | **In**                  |
-| **CU1** | Outcomes QuickStart                                       | Wave A                  |
+| **CU1** | Outcomes QuickStart                                       | **In**                  |
 | **O8**  | Approval Center grouping                                  | Wave A                  |
 | **O3**  | `sales_outcomes`                                          | Wave A; before V1 / O11 |
 | **O4**  | Overview outcome hierarchy                                | Wave C                  |

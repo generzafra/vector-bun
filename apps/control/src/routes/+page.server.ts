@@ -1,12 +1,21 @@
 import { fail } from '@sveltejs/kit';
 import { switchClientSchema } from '@vector/contracts';
 import { cookieName } from '@vector/auth';
-import { listClientsForActor, switchActiveClient } from '@vector/domain';
+import {
+	contextFor,
+	getOutcomesQuickStart,
+	listClientsForActor,
+	switchActiveClient
+} from '@vector/domain';
 
 export async function load({ locals }) {
 	const session = locals.session!;
 	const clients = await listClientsForActor(session);
-	return { clients, activeClientId: session.clientId };
+	let quickstart = null;
+	if (session.clientId && session.permissions.includes('goals.read')) {
+		quickstart = await getOutcomesQuickStart(session, contextFor(session, locals.requestId));
+	}
+	return { clients, activeClientId: session.clientId, quickstart };
 }
 
 export const actions = {

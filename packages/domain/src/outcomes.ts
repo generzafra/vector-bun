@@ -4,7 +4,9 @@ import {
 	ValidationError,
 	assertActorOwnsContext,
 	goalsClientIdSchema,
+	mapQuickStartGoal,
 	parseContract,
+	saveOutcomesQuickStartSchema,
 	updateNotificationPreferenceSchema,
 	upsertClientGoalSchema,
 	type DataHealthStatus,
@@ -19,6 +21,8 @@ import {
 	insertClientGoalForTenant,
 	listClientGoalsForTenant,
 	listDataHealthChecksForTenant,
+	getOutcomesQuickStartForTenant,
+	saveOutcomesQuickStartForTenant,
 	updateNotificationPreferenceForTenant,
 	upsertDataHealthCheckForTenant
 } from '@vector/db';
@@ -49,16 +53,18 @@ export async function getClientOutcomes(actor: Actor, ctx: TenantContext, client
 		parseContract(goalsClientIdSchema, { clientId });
 		assertGoalClient(required, clientId);
 	}
-	const [goals, notifications, health] = await Promise.all([
+	const [goals, notifications, health, quickstart] = await Promise.all([
 		listClientGoalsForTenant(required),
 		ensureNotificationPreferencesForTenant(required),
-		evaluateDataHealthForTenant(required)
+		evaluateDataHealthForTenant(required),
+		getOutcomesQuickStartForTenant(required)
 	]);
 	return {
 		goals,
 		primary: goals.find((row) => row.isPrimary) ?? null,
 		notifications,
-		health
+		health,
+		quickstart
 	};
 }
 
@@ -186,4 +192,55 @@ async function evaluateDataHealthForTenant(ctx: TenantContext) {
 		detail: leadDetail
 	});
 	return listDataHealthChecksForTenant(ctx);
+}
+
+export async function getOutcomesQuickStart(actor: Actor, ctx: TenantContext, clientId?: string) {
+	requireCapability(actor.permissions, 'goals.read');
+	const required = assertActorOwnsContext(actor, ctx);
+	if (clientId) {
+		parseContract(goalsClientIdSchema, { clientId });
+		assertGoalClient(required, clientId);
+	}
+	return getOutcomesQuickStartForTenant(required);
+}
+
+export async function saveOutcomesQuickStart(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'goals.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(saveOutcomesQuickStartSchema, input);
+	const mapped = mapQuickStartGoal(parsed);
+	const goal =
+		parsed.hasTarget && parsed.targetValue && parsed.period
+			? {
+					name: mapped.name,
+					goalType: mapped.goalType,
+					targetValue: parsed.targetValue,
+					unit: mapped.unit,
+					currency: parsed.goalChoice === 'revenue' ? (parsed.currency ?? null) : null,
+					period: parsed.period,
+					isPrimary: true as const
+				}
+			: null;
+	const row = await saveOutcomesQuickStartForTenant(required, {
+		answers: parsed,
+		goal,
+		createdBy: actor.userId,
+		approverUserId: parsed.approver === 'self' ? actor.userId : null
+	});
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'outcomes.quickstart.save',
+		entityType: 'client_outcome_quickstart',
+		entityId: row.id,
+		requestId
+	});
+	return row;
 }

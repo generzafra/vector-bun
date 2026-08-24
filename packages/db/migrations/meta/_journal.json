@@ -218,6 +218,13 @@
 			"when": 1756140000000,
 			"tag": "0030_first_client_bar",
 			"breakpoints": true
+		},
+		{
+			"idx": 31,
+			"version": "7",
+			"when": 1756150000000,
+			"tag": "0031_cu1_quickstart",
+			"breakpoints": true
 		}
 	]
 }

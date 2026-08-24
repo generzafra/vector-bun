@@ -5,6 +5,7 @@ import {
 	type ClientGoalPeriod,
 	type ClientGoalType,
 	type DataHealthStatus,
+	type SaveOutcomesQuickStartInput,
 	type TenantContext
 } from '@vector/contracts';
 import type { FirstRevealCheck } from '@vector/funnel-engine';
@@ -12,6 +13,7 @@ import { db } from './client';
 import {
 	clientGoals,
 	clientNotificationPreferences,
+	clientOutcomeQuickstarts,
 	dataHealthChecks,
 	firstRevealGateResults
 } from './schema';
@@ -247,4 +249,142 @@ export async function updateNotificationPreferenceForTenant(
 		)
 		.returning();
 	return row ?? null;
+}
+
+export async function getOutcomesQuickStartForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(clientOutcomeQuickstarts)
+		.where(eq(clientOutcomeQuickstarts.clientId, required.clientId))
+		.limit(1);
+	return row ?? null;
+}
+
+export async function saveOutcomesQuickStartForTenant(
+	ctx: TenantContext,
+	input: {
+		answers: SaveOutcomesQuickStartInput;
+		goal: {
+			name: string;
+			goalType: ClientGoalType;
+			targetValue: number;
+			unit: string;
+			currency: string | null;
+			period: ClientGoalPeriod;
+			isPrimary: true;
+		} | null;
+		createdBy: string;
+		approverUserId: string | null;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const answers = input.answers;
+	const now = new Date();
+	return db.transaction(async (tx) => {
+		const [quickstart] = await tx
+			.insert(clientOutcomeQuickstarts)
+			.values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				goalChoice: answers.goalChoice,
+				goalOther: answers.goalOther,
+				hasTarget: answers.hasTarget,
+				targetValue: answers.hasTarget ? (answers.targetValue ?? null) : null,
+				period: answers.hasTarget ? (answers.period ?? null) : null,
+				currency:
+					answers.hasTarget && answers.goalChoice === 'revenue' ? (answers.currency ?? null) : null,
+				goodLead: answers.goodLead,
+				goodLeadOther: answers.goodLeadOther,
+				afterContact: answers.afterContact,
+				afterContactOther: answers.afterContactOther,
+				sale: answers.sale,
+				saleOther: answers.saleOther,
+				crm: answers.crm,
+				crmNote: answers.crmNote,
+				notifyHighIntent: answers.notifyHighIntent,
+				approver: answers.approver,
+				approverNote: answers.approverNote,
+				approverUserId: input.approverUserId,
+				createdBy: input.createdBy,
+				completedAt: now
+			})
+			.onConflictDoUpdate({
+				target: [clientOutcomeQuickstarts.clientId],
+				set: {
+					goalChoice: answers.goalChoice,
+					goalOther: answers.goalOther,
+					hasTarget: answers.hasTarget,
+					targetValue: answers.hasTarget ? (answers.targetValue ?? null) : null,
+					period: answers.hasTarget ? (answers.period ?? null) : null,
+					currency:
+						answers.hasTarget && answers.goalChoice === 'revenue'
+							? (answers.currency ?? null)
+							: null,
+					goodLead: answers.goodLead,
+					goodLeadOther: answers.goodLeadOther,
+					afterContact: answers.afterContact,
+					afterContactOther: answers.afterContactOther,
+					sale: answers.sale,
+					saleOther: answers.saleOther,
+					crm: answers.crm,
+					crmNote: answers.crmNote,
+					notifyHighIntent: answers.notifyHighIntent,
+					approver: answers.approver,
+					approverNote: answers.approverNote,
+					approverUserId: input.approverUserId,
+					completedAt: now,
+					updatedAt: now
+				}
+			})
+			.returning();
+
+		if (input.goal) {
+			await tx
+				.update(clientGoals)
+				.set({ isPrimary: false, updatedAt: now })
+				.where(and(eq(clientGoals.clientId, required.clientId), eq(clientGoals.isPrimary, true)));
+			await tx.insert(clientGoals).values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				name: input.goal.name,
+				goalType: input.goal.goalType,
+				targetValue: input.goal.targetValue,
+				unit: input.goal.unit,
+				currency: input.goal.currency,
+				period: input.goal.period,
+				isPrimary: true,
+				createdBy: input.createdBy
+			});
+		}
+
+		const existingPrefs = await tx
+			.select()
+			.from(clientNotificationPreferences)
+			.where(eq(clientNotificationPreferences.clientId, required.clientId));
+		const have = new Set(existingPrefs.map((row) => row.topic));
+		const missing = DEFAULT_NOTIFICATION_PREFERENCES.filter((item) => !have.has(item.topic));
+		if (missing.length > 0) {
+			await tx.insert(clientNotificationPreferences).values(
+				missing.map((item) => ({
+					organizationId: required.organizationId,
+					clientId: required.clientId,
+					topic: item.topic,
+					channel: 'email',
+					enabled: item.topic === 'high_intent_lead' ? answers.notifyHighIntent : item.enabled
+				}))
+			);
+		}
+		await tx
+			.update(clientNotificationPreferences)
+			.set({ enabled: answers.notifyHighIntent, updatedAt: now })
+			.where(
+				and(
+					eq(clientNotificationPreferences.clientId, required.clientId),
+					eq(clientNotificationPreferences.topic, 'high_intent_lead')
+				)
+			);
+
+		return quickstart;
+	});
 }

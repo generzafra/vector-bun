@@ -46,8 +46,9 @@ Client UX is **not** a surface leftover. Default nav, Today, Approvals, and Quic
 | Social LinkedIn / X / Facebook / Instagram                                                         | Official adapters. Company Page, TikTok, YouTube not started                                       |
 | Control `docs/28` tokens on existing operator routes                                               | Operator cockpit, not client-simple nav                                                            |
 | **CU0** capability-filtered Control nav                                                            | Default client shell is Overview / Leads / Approvals / Goals. `control.operator` keeps the cockpit |
+| **CU1** Outcomes QuickStart                                                                        | Control `/quickstart` maps seven answers into goals, high-intent prefs, and a recorded approver    |
 
-Not in code: `ImageProvider`, `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `sales_outcomes`, `revenue_events`, visual-direction manifests, value snapshots, Ask Vector, Today, Campaigns, Insights, Outcomes QuickStart, Creative QuickStart extraction, entitlements.
+Not in code: `ImageProvider`, `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `sales_outcomes`, `revenue_events`, visual-direction manifests, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements.
 
 ---
 
@@ -60,8 +61,8 @@ Law: `docs/30` §2, §5–7, §65, §81–85. One Control app; **nav differs by 
 | Slice   | Work                                                                        | Plan         | Gate                     |
 | ------- | --------------------------------------------------------------------------- | ------------ | ------------------------ |
 | **CU0** | Capability-filtered default nav + `docs/30` §85 copy checklist              | Outcomes     | **In**                   |
-| **CU1** | Outcomes QuickStart (seven plain questions, not the 16-step Knowledge dump) | Outcomes     | Next                     |
-| **O8**  | Approval Center grouping in business language                               | Outcomes     | After CU0; §78 leftover  |
+| **CU1** | Outcomes QuickStart (seven plain questions, not the 16-step Knowledge dump) | Outcomes     | **In**                   |
+| **O8**  | Approval Center grouping in business language                               | Outcomes     | Next                     |
 | **O4**  | Client Overview outcome hierarchy                                           | Outcomes     | After O3                 |
 | **O5**  | Today view (under one minute)                                               | Outcomes     | After O4                 |
 | **C1**  | Brand visual profile + confirm/edit (Creative QuickStart confirm)           | Creative     | Unlocks FR3              |
@@ -90,7 +91,7 @@ The 16-step catalog in `docs/17` is the **readiness inventory**. It is not the c
 | ----------------- | ---------------------------------------------- | ---------------------------------- |
 | O1 / O2 / O6 / O7 | Goals, lead_status, data health, notifications | **In** (thin)                      |
 | **O3**            | `sales_outcomes` (optional `amount_minor`)     | Before V1 and O11                  |
-| **O8**            | Approval Center                                | With CU0                           |
+| **O8**            | Approval Center                                | Next                               |
 | **O4 / O5**       | Overview / Today                               | After O3                           |
 | **O9**            | Offer versions (extend `offers`)               | —                                  |
 | **O10**           | `CRMProvider` (memory first)                   | After O3                           |
@@ -156,7 +157,7 @@ Do not finish Wave E before a supervised first client. First clients stay human-
 Goal: a non-technical owner is not dropped into the operator cockpit, and §78 leftovers close.
 
 1. **CU0** capability-filtered nav — **In**
-2. **CU1** Outcomes QuickStart (plain questions)
+2. **CU1** Outcomes QuickStart — **In**
 3. **O8** Approval Center
 4. **O3** `sales_outcomes`
 5. **V0** activity proof when fee/package is known (no ROI)

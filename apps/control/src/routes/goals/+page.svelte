@@ -65,6 +65,11 @@
 					: 'Tell Vector what success looks like — for example, qualified leads this month.'}
 			/>
 		{/if}
+		<p>
+			<a href="/quickstart"
+				>{outcomes.quickstart ? 'Review QuickStart answers' : 'Answer QuickStart questions'}</a
+			>
+		</p>
 		{#if outcomes.goals.length > 0}
 			<table>
 				<thead>
