@@ -27,6 +27,7 @@ import {
 	getBrandForTenant,
 	getBrandVisualProfileForTenant,
 	getClientForTenant,
+	listLatestCreativeCompositionsForTenant,
 	getFirstRevealGateForVersionForTenant,
 	getHomePageForTenant,
 	getLatestDraftForTenant,
@@ -57,6 +58,7 @@ import {
 	scoreVisualDirection
 } from '@vector/funnel-engine';
 import { recordAudit } from './audit';
+import { publicComposition } from './compositions';
 import { resolveBrandLogoForTenant } from './assets';
 import type { Actor } from './auth-service';
 
@@ -83,6 +85,7 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 		? await listVisualDirectionsForVersionForTenant(required, draft.id)
 		: [];
 	const selectedDirection = directionRows.find((row) => row.direction.status === 'selected');
+	const shareRows = await listLatestCreativeCompositionsForTenant(required);
 	return {
 		site,
 		funnel,
@@ -127,6 +130,7 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 						}))
 					}
 				: null,
+		shareCards: shareRows.map(publicComposition),
 		intelligenceDraft:
 			intelligenceRun && draft
 				? {

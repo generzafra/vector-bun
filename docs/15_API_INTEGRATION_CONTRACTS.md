@@ -130,6 +130,14 @@ Creative C2 (authenticated session cookie plus CSRF on mutations; active client 
 
 `ImageProvider` lives in `packages/images`. Memory is the default. xAI Grok Imagine is selected when `XAI_API_KEY` is present. `AI_EXECUTION_PAUSED` and `IMAGE_GENERATION_PAUSED` wrap the adapter as disabled. Client Intelligence pause also denies jobs. Per-client `IMAGE_COST_CEILING_MICROS` fails closed. Tokens stay in env, not the browser, logs, or prompts.
 
+Creative C3 (authenticated session cookie plus CSRF on mutations; active client only):
+
+- `GET /v1/compositions` — latest OG / social / email shells (`pages.read`). Storage keys omitted
+- `GET /v1/compositions/:clientId` — same list only when the actor already owns that client
+- `POST /v1/compositions/compose` — compose draft shells from the C1 profile and approved copy (`pages.manage`, CSRF). Does not publish and does not place assets on Delivery
+
+Trusted software in `packages/compose` writes SVG. Control `/funnel` previews bytes through an authenticated `/funnel/composition/:id` route. Raw object-store keys are not authorization. Delivery does not serve unpublished C3 drafts.
+
 `SocialProvider` lives in `packages/social`. Memory is the default. Official LinkedIn, X, and Meta (Facebook / Instagram) adapters run when `SOCIAL_ADAPTER=official`. Official OAuth start/complete uses `createAuthorizationUrl` and `exchangeAuthorizationCode`. Tokens are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in JSON. Refresh uses official OAuth token endpoints when client or app credentials are configured. Official adapters upload approved C0 images. `GET /v1/public/social-media` serves a short-lived HMAC grant so Instagram can fetch tenant-scoped bytes; forged, expired, or cross-tenant grants fail closed. Official Instagram Graph publish is media-required. `social-due-sweep` is tenant-scoped; `social-due-sweep-platform` fans out one job per client with due posts.
 
 ## Phase 6 Control API

@@ -56,6 +56,14 @@ image_generation_jobs
 
 Jobs record prompt/schema versions, adapter, model, integer `cost_micros` + currency, and deny reasons (`budget`, `paused`, `policy`). Succeeded jobs store bytes through existing `StorageProvider` under `clients/{client_id}/generated/...` and insert a C0 `creative_assets` draft with `source_type=generated` and `rights_status=unknown`. Models do not publish, overwrite logos, or invent proof. `ImageProvider` lives in `packages/images`. Do not add `generateImage` to `AIProvider`. Do not invent a second object store.
 
+Creative C3 (tenant-owned, `client_id` required):
+
+```text
+creative_compositions
+```
+
+Versioned OG / social / email shells. Trusted software in `packages/compose` places the existing logo bytes and approved Knowledge copy onto editorial/minimal SVG templates using C1 tokens when confirmed. Rows stay `draft`. Bytes go through existing `StorageProvider` under `clients/{client_id}/creative/...`. Logo FK is `ON DELETE set null`. Do not auto-approve. Do not insert C0 `creative_assets` from this slice. Do not serve unpublished shells on Delivery. C4 derivatives and C5 funnel manifests remain later.
+
 Phase 5 social (tenant-owned, `client_id` required):
 
 ```text
@@ -103,7 +111,7 @@ attribution_results
 
 Email identity is unique per tenant. The same email on two clients is two contacts. Preview submits set `is_test`. Consent is a purpose ledger at form submit (`lead_follow_up` required, `marketing` granted or denied). Analytics sessions are not auth `sessions`. Postgres is the source of truth for leads and outcomes. Attribution v1 stores first touch and last non-direct; it is not presented as multi-touch truth.
 
-`leads.status` is `new | working | qualified | won | lost | spam`. Do not replace that enum. First-client-bar tables (`client_goals`, `data_health_checks`, `client_notification_preferences`, `client_outcome_quickstarts`, `sales_outcomes`, `client_value_profiles`, `value_activity_records`) and First Reveal `first_reveal_gate_results` / `asset_sufficiency_snapshots` are tenant-owned. `sales_outcomes` holds optional integer `amount_minor` + currency. Status `won` / `lost` on `leads` is not this row. A won lead may exist without a sales outcome. `client_value_profiles` holds one known package fee per client (integer `fee_minor` + currency). `value_activity_records` is an optional work ledger. V0 monthly counts are derived from existing tenant tables plus that ledger. Do not invent ROI. Later `value_snapshots`, `revenue_events`, entitlements, and client-health snapshots remain later Outcomes / Client Value work (`docs/30`, execution: `docs/plans/OUTCOMES_TRACK.md` and `docs/plans/CLIENT_VALUE_TRACK.md`). Revenue amounts stay optional. `brand_visual_profiles` / versions are Creative C1 (`docs/29`, execution: `docs/plans/CREATIVE_TRACK.md`). Generation jobs remain later Creative-track work. Sequence for remaining tables: `docs/plans/SHIP_REMAINING.md`.
+`leads.status` is `new | working | qualified | won | lost | spam`. Do not replace that enum. First-client-bar tables (`client_goals`, `data_health_checks`, `client_notification_preferences`, `client_outcome_quickstarts`, `sales_outcomes`, `client_value_profiles`, `value_activity_records`) and First Reveal `first_reveal_gate_results` / `asset_sufficiency_snapshots` are tenant-owned. `sales_outcomes` holds optional integer `amount_minor` + currency. Status `won` / `lost` on `leads` is not this row. A won lead may exist without a sales outcome. `client_value_profiles` holds one known package fee per client (integer `fee_minor` + currency). `value_activity_records` is an optional work ledger. V0 monthly counts are derived from existing tenant tables plus that ledger. Do not invent ROI. Later `value_snapshots`, `revenue_events`, entitlements, and client-health snapshots remain later Outcomes / Client Value work (`docs/30`, execution: `docs/plans/OUTCOMES_TRACK.md` and `docs/plans/CLIENT_VALUE_TRACK.md`). Revenue amounts stay optional. `brand_visual_profiles` / versions are Creative C1 (`docs/29`, execution: `docs/plans/CREATIVE_TRACK.md`). `image_generation_jobs` are C2. `creative_compositions` are C3. C4 derivatives and C5 funnel manifests remain later Creative-track work. Sequence for remaining tables: `docs/plans/SHIP_REMAINING.md`.
 
 First Reveal later tenant-owned tables (`docs/plans/FIRST_REVEAL_TRACK.md`): client visual preferences. `first_reveal_gate_results`, `asset_sufficiency_snapshots`, `visual_directions`, and `page_candidate_scores` are in. They require `client_id`. Do not fork `page_versions`. Thin FR4–FR5 persist cheap manifests and scores; only the winner becomes the draft. Do not generate three sites.
 

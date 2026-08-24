@@ -2159,7 +2159,7 @@ In. Tenant-owned `brand_visual_profiles` plus immutable confirm versions. Contro
 
 ## Phase C2 — Image Provider
 
-In. `ImageProvider` in `packages/images` (memory default; Grok Imagine when `XAI_API_KEY` is present). Tenant-owned `image_generation_jobs` with prompt/schema versions and integer `cost_micros`. Draft bytes go through existing `StorageProvider` under `clients/{client_id}/generated/...` as unpublished C0 rows. Kill switch, per-client budget, logo overwrite, invented proof, and prohibited styles fail closed. Do not add `generateImage` to `AIProvider`. Edit/variants stay on the adapter; C2 domain drafts supporting photos only. C3 composition and FR6 winner media remain later.
+In. `ImageProvider` in `packages/images` (memory default; Grok Imagine when `XAI_API_KEY` is present). Tenant-owned `image_generation_jobs` with prompt/schema versions and integer `cost_micros`. Draft bytes go through existing `StorageProvider` under `clients/{client_id}/generated/...` as unpublished C0 rows. Kill switch, per-client budget, logo overwrite, invented proof, and prohibited styles fail closed. Do not add `generateImage` to `AIProvider`. Edit/variants stay on the adapter; C2 domain drafts supporting photos only. C4 derivatives and FR6 winner media remain later.
 
 - `ImageProvider`;
 - Grok image provider;
@@ -2169,13 +2169,7 @@ In. `ImageProvider` in `packages/images` (memory default; Grok Imagine when `XAI
 
 ## Phase C3 — Composition
 
-- SVG/Sharp composition;
-- text overlays;
-- logos;
-- brand tokens;
-- social templates;
-- email banners;
-- OG images.
+In. Trusted software in `packages/compose` writes editorial/minimal SVG shells (OG 1200×630, social 1080×1080, email 600×200) from confirmed C1 tokens when present, otherwise brand tokens, plus approved Knowledge copy and existing logo bytes. Tenant-owned `creative_compositions` are versioned drafts. Bytes go through existing `StorageProvider` under `clients/{client_id}/creative/...`. Control `/funnel` previews through an authenticated route; Delivery does not serve unpublished shells. Models do not compose logos or marketing text. Sharp and C4 crop/compression wait. C5 funnel manifests still later.
 
 ## Phase C4 — Derivatives
 

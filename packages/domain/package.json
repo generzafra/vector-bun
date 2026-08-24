@@ -13,6 +13,7 @@
 		"@vector/analytics": "workspace:*",
 		"@vector/auth": "workspace:*",
 		"@vector/automation": "workspace:*",
+		"@vector/compose": "workspace:*",
 		"@vector/compliance": "workspace:*",
 		"@vector/email": "workspace:*",
 		"@vector/social": "workspace:*",

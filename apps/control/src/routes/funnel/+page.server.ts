@@ -5,7 +5,8 @@ import {
 	contextFor,
 	getFunnel,
 	overrideFirstRevealGate,
-	publishFunnel
+	publishFunnel,
+	composeCreativeShells
 } from '@vector/domain';
 
 export async function load({ locals }) {
@@ -53,6 +54,17 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not record override' });
+		}
+	},
+	composeCards: async ({ locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		try {
+			await composeCreativeShells(session, contextFor(session, locals.requestId), locals.requestId);
+			return { ok: true };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not compose share cards' });
 		}
 	}
 };

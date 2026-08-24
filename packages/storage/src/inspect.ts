@@ -75,6 +75,26 @@ export function inspectCreativeUpload(input: {
 	return { mime, sizeBytes: input.bytes.byteLength };
 }
 
+export const MAX_COMPOSITION_BYTES = 512 * 1024;
+
+export function inspectComposedSvg(bytes: Uint8Array) {
+	if (bytes.byteLength === 0) throw new ValidationError('Composition is empty');
+	if (bytes.byteLength > MAX_COMPOSITION_BYTES) {
+		throw new ValidationError('Composition exceeds the 512KB SVG limit');
+	}
+	const text = new TextDecoder().decode(bytes);
+	const trimmed = text.trim();
+	if (!trimmed.startsWith('<svg') && !trimmed.startsWith('<?xml')) {
+		throw new ValidationError('Composed file must be SVG');
+	}
+	if (!trimmed.includes('<svg')) throw new ValidationError('Composed file must be SVG');
+	const lower = trimmed.toLowerCase();
+	if (lower.includes('<script') || lower.includes('javascript:') || /\son\w+=/.test(lower)) {
+		throw new ValidationError('Composed SVG contains disallowed script');
+	}
+	return { mime: 'image/svg+xml' as const, sizeBytes: bytes.byteLength };
+}
+
 function normalizeMime(value: string): AllowedAssetMime {
 	const raw = value.toLowerCase().split(';')[0]?.trim() ?? '';
 	if (raw === 'image/jpg') return 'image/jpeg';

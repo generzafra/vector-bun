@@ -267,6 +267,13 @@
 			"when": 1756210000000,
 			"tag": "0037_c2_image_generation",
 			"breakpoints": true
+		},
+		{
+			"idx": 38,
+			"version": "7",
+			"when": 1756220000000,
+			"tag": "0038_c3_compositions",
+			"breakpoints": true
 		}
 	]
 }

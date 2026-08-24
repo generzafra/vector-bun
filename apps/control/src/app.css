@@ -237,6 +237,32 @@ tr:hover td {
 	margin: 0;
 }
 
+.share-cards {
+	display: grid;
+	gap: var(--vector-space-4);
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	margin: 0 0 var(--vector-space-4);
+}
+
+.share-cards figure {
+	margin: 0;
+}
+
+.share-cards img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border: 1px solid var(--vector-border);
+	border-radius: var(--vector-radius-sm);
+	background: var(--bg-2);
+}
+
+.share-cards figcaption {
+	margin-top: var(--vector-space-2);
+	color: var(--text-secondary);
+	font-size: 0.92rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	button {
 		transition: none;

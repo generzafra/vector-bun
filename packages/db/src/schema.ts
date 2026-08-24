@@ -1883,6 +1883,56 @@ export const imageGenerationJobs = pgTable(
 	]
 );
 
+export type CompositionCopySnapshot = {
+	headline: string;
+	lede: string;
+	cta: string;
+};
+
+export type CompositionTokenSnapshot = {
+	background: string;
+	text: string;
+	accent: string;
+	fontFamily: string;
+};
+
+export const creativeCompositions = pgTable(
+	'creative_compositions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		kind: text('kind').notNull(),
+		templateKey: text('template_key').notNull(),
+		schemaVersion: text('schema_version').notNull(),
+		status: text('status').notNull().default('draft'),
+		version: integer('version').notNull(),
+		width: integer('width').notNull(),
+		height: integer('height').notNull(),
+		headline: text('headline').notNull(),
+		copySnapshot: jsonb('copy_snapshot').$type<CompositionCopySnapshot>().notNull(),
+		tokenSnapshot: jsonb('token_snapshot').$type<CompositionTokenSnapshot>().notNull(),
+		hasLogo: boolean('has_logo').notNull().default(false),
+		sourceLogoAssetId: uuid('source_logo_asset_id').references(() => brandAssets.id, {
+			onDelete: 'set null'
+		}),
+		storageKey: text('storage_key').notNull(),
+		mimeType: text('mime_type').notNull().default('image/svg+xml'),
+		createdBy: text('created_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('creative_compositions_client_kind_version_idx').on(t.clientId, t.kind, t.version),
+		index('creative_compositions_client_idx').on(t.clientId),
+		index('creative_compositions_org_idx').on(t.organizationId)
+	]
+);
+
 export type BrandVisualSnapshot = {
 	primaryLogoAssetId: string | null;
 	primaryColor: string | null;

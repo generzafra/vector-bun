@@ -33,27 +33,28 @@ Client UX is **not** a surface leftover. Default nav, Today, Approvals, and Quic
 
 ## 2. Already in — do not rebuild
 
-| Item                                                                                               | Status                                                                                                 |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Phase 0–5 exits                                                                                    | Met (Phase 5 via ADR-0010)                                                                             |
-| Phase 6 S0–S8                                                                                      | In. May exit after S1–S4 + Control backlog                                                             |
-| Phase 7 S0–S4                                                                                      | In. Exit met                                                                                           |
-| Phase 8 S0–S4                                                                                      | In. Exit met                                                                                           |
-| Phase 9 S0–S1                                                                                      | In. S2–S4 later                                                                                        |
-| Creative **C0**                                                                                    | `creative_assets` / versions / rights on existing `StorageProvider`                                    |
-| Outcomes **O1** goals, **O2** Phase 2 `lead_status`, **O6** data health, **O7** notification prefs | Thin first-client bar                                                                                  |
-| First Reveal **FR0–FR2**, **thin FR7**                                                             | Additive Delivery quality + deterministic gate with operator override                                  |
-| Social LinkedIn / X / Facebook / Instagram                                                         | Official adapters. Company Page, TikTok, YouTube not started                                           |
-| Control `docs/28` tokens on existing operator routes                                               | Operator cockpit, not client-simple nav                                                                |
-| **CU0** capability-filtered Control nav                                                            | Default client shell is Overview / Leads / Approvals / Goals. `control.operator` keeps the cockpit     |
-| **CU1** Outcomes QuickStart                                                                        | Control `/quickstart` maps seven answers into goals, high-intent prefs, and a recorded approver        |
-| **O8** Approval Center                                                                             | Control `/approvals` groups existing `approval_requests`; decide does not publish or send              |
-| **O3** `sales_outcomes`                                                                            | Optional integer `amount_minor` + currency on Control `/leads`; does not replace `lead_status`         |
-| **V0** activity proof                                                                              | Control `/value`: known fee/package + observed monthly work. **No ROI**                                |
-| Creative **C1**                                                                                    | Tenant-owned `brand_visual_profiles` + versions; Control `/brand` confirm/edit. Unconfirmed is not FR8 |
-| Creative **C2**                                                                                    | `ImageProvider` in `packages/images`; tenant-owned `image_generation_jobs`; draft-only C0 rows         |
-| First Reveal **thin FR3**                                                                          | Consume confirmed C1 on compose; `asset_sufficiency_snapshots`; typography-led fallback. C5 later      |
-| First Reveal **thin FR4–FR5**                                                                      | Cheap direction manifests, diversity, deterministic scoring, one winner draft. Not three sites         |
+| Item                                                                                               | Status                                                                                                         |
+| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Phase 0–5 exits                                                                                    | Met (Phase 5 via ADR-0010)                                                                                     |
+| Phase 6 S0–S8                                                                                      | In. May exit after S1–S4 + Control backlog                                                                     |
+| Phase 7 S0–S4                                                                                      | In. Exit met                                                                                                   |
+| Phase 8 S0–S4                                                                                      | In. Exit met                                                                                                   |
+| Phase 9 S0–S1                                                                                      | In. S2–S4 later                                                                                                |
+| Creative **C0**                                                                                    | `creative_assets` / versions / rights on existing `StorageProvider`                                            |
+| Outcomes **O1** goals, **O2** Phase 2 `lead_status`, **O6** data health, **O7** notification prefs | Thin first-client bar                                                                                          |
+| First Reveal **FR0–FR2**, **thin FR7**                                                             | Additive Delivery quality + deterministic gate with operator override                                          |
+| Social LinkedIn / X / Facebook / Instagram                                                         | Official adapters. Company Page, TikTok, YouTube not started                                                   |
+| Control `docs/28` tokens on existing operator routes                                               | Operator cockpit, not client-simple nav                                                                        |
+| **CU0** capability-filtered Control nav                                                            | Default client shell is Overview / Leads / Approvals / Goals. `control.operator` keeps the cockpit             |
+| **CU1** Outcomes QuickStart                                                                        | Control `/quickstart` maps seven answers into goals, high-intent prefs, and a recorded approver                |
+| **O8** Approval Center                                                                             | Control `/approvals` groups existing `approval_requests`; decide does not publish or send                      |
+| **O3** `sales_outcomes`                                                                            | Optional integer `amount_minor` + currency on Control `/leads`; does not replace `lead_status`                 |
+| **V0** activity proof                                                                              | Control `/value`: known fee/package + observed monthly work. **No ROI**                                        |
+| Creative **C1**                                                                                    | Tenant-owned `brand_visual_profiles` + versions; Control `/brand` confirm/edit. Unconfirmed is not FR8         |
+| Creative **C2**                                                                                    | `ImageProvider` in `packages/images`; tenant-owned `image_generation_jobs`; draft-only C0 rows                 |
+| Creative **C3**                                                                                    | Deterministic SVG shells in `packages/compose`; tenant-owned `creative_compositions`; Control `/funnel` drafts |
+| First Reveal **thin FR3**                                                                          | Consume confirmed C1 on compose; `asset_sufficiency_snapshots`; typography-led fallback. C5 later              |
+| First Reveal **thin FR4–FR5**                                                                      | Cheap direction manifests, diversity, deterministic scoring, one winner draft. Not three sites                 |
 
 Not in code: `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `revenue_events`, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements.
 
@@ -85,7 +86,7 @@ The 16-step catalog in `docs/17` is the **readiness inventory**. It is not the c
 | C0     | Asset schema, versions, rights            | **In**                  |
 | **C1** | Brand visual profile + onboarding confirm | **In**                  |
 | **C2** | `ImageProvider` (not `AIProvider`)        | **In**                  |
-| **C3** | Deterministic composition                 | After C1                |
+| **C3** | Deterministic composition                 | **In**                  |
 | **C4** | Derivatives                               | After C3                |
 | **C5** | Funnel asset manifests                    | After C3                |
 | **C6** | Social families                           | After C4–C5             |
@@ -122,7 +123,7 @@ Spec remains [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md). Do not generate thr
 | **FR3**           | **Thin in**                                | C1 consumed; C5 funnel manifests still later                |
 | **FR4**           | **Thin in**                                | Schema, diversity, deterministic grammar enumerator         |
 | **FR5**           | **Thin in**                                | In-memory render + deterministic score; winner is the draft |
-| **FR6**           | Open                                       | C3–C5 winner-only media (C2 in)                             |
+| **FR6**           | Open                                       | C3–C5 winner-only media (C2 and C3 in)                      |
 | **FR7 remainder** | Open                                       | visual / a11y / perf / screenshots                          |
 | **FR8**           | Open                                       | C7 + remaining FR7; Control `docs/28` + `docs/30` language  |
 | **FR9**           | Open                                       | Phase 9 later                                               |
@@ -170,7 +171,7 @@ Goal: a non-technical owner is not dropped into the operator cockpit, and §78 l
 4. **O3** `sales_outcomes` — **In**
 5. **V0** activity proof when fee/package is known (no ROI) — **In**
 
-Wave A is complete. Wave B **C1**, **thin FR3**, **thin FR4–FR5**, and **C2** are in. Next: Wave B **C3–C5**.
+Wave A is complete. Wave B **C1**, **thin FR3**, **thin FR4–FR5**, **C2**, and **C3** are in. Next: Wave B **thin C5**.
 
 ### Wave B — first-site quality (still one engine)
 
@@ -178,10 +179,11 @@ Wave A is complete. Wave B **C1**, **thin FR3**, **thin FR4–FR5**, and **C2** 
 2. **FR3** asset wiring / sufficiency / typography-led fallback — **Thin in** (C5 later)
 3. **FR4–FR5** cheap direction manifests + scoring (not three sites) — **Thin in** (screenshots / AI visual review later)
 4. **C2** `ImageProvider` — **In**
-5. **C3–C5** compose + funnel manifests
-6. **FR6** winner-only expensive media
-7. **C7** QA + client creative approval
-8. **FR7 remainder** then **FR8** client reveal
+5. **C3** deterministic composition — **In**
+6. **C5** funnel manifests (Delivery uses approved derivatives only)
+7. **FR6** winner-only expensive media
+8. **C7** QA + client creative approval
+9. **FR7 remainder** then **FR8** client reveal
 
 ### Wave C — client operating system
 

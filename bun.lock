@@ -10,6 +10,7 @@
         "@vector/auth": "workspace:*",
         "@vector/automation": "workspace:*",
         "@vector/compliance": "workspace:*",
+        "@vector/compose": "workspace:*",
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
@@ -136,6 +137,12 @@
         "@vector/contracts": "workspace:*",
       },
     },
+    "packages/compose": {
+      "name": "@vector/compose",
+      "dependencies": {
+        "@vector/contracts": "workspace:*",
+      },
+    },
     "packages/config": {
       "name": "@vector/config",
       "dependencies": {
@@ -170,6 +177,7 @@
         "@vector/auth": "workspace:*",
         "@vector/automation": "workspace:*",
         "@vector/compliance": "workspace:*",
+        "@vector/compose": "workspace:*",
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
         "@vector/db": "workspace:*",
@@ -466,6 +474,8 @@
     "@vector/automation": ["@vector/automation@workspace:packages/automation"],
 
     "@vector/compliance": ["@vector/compliance@workspace:packages/compliance"],
+
+    "@vector/compose": ["@vector/compose@workspace:packages/compose"],
 
     "@vector/config": ["@vector/config@workspace:packages/config"],
 

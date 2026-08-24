@@ -25,3 +25,4 @@ export * from './scale';
 export * from './outcomes';
 export * from './value';
 export * from './images';
+export * from './compositions';

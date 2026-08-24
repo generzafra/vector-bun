@@ -12,18 +12,18 @@
 
 **Not `docs/31`.** Numbered charters stop at `docs/30`. This file is the slice spec. It does not reopen Phase 1. Publication still uses the `docs/27` Frontend Release Gate. The First Reveal Gate is an additional pre-client gate. `docs/28` is Control identity, not the Creative Engine. `docs/29` owns ingest, generation, composition, rights, and approval.
 
-**Remaining execution (24 August 2026):** FR0–FR2, thin FR3, thin FR4–FR5, and thin FR7 are in. FR6 and FR8–FR9 are open; FR7 remainder (screenshots / visual review) stays later. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B. Creative dependencies: [CREATIVE_TRACK.md](CREATIVE_TRACK.md). Client reveal (FR8) uses `docs/30` business language; do not overwhelm with schema names, model names, or CSS tokens. Do not generate three full sites.
+**Remaining execution (24 August 2026):** FR0–FR2, thin FR3, thin FR4–FR5, and thin FR7 are in. FR6 and FR8–FR9 are open; FR7 remainder (screenshots / visual review) stays later. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B. Creative dependencies: [CREATIVE_TRACK.md](CREATIVE_TRACK.md). C3 composition is in; thin C5 funnel manifests remain before FR6. Client reveal (FR8) uses `docs/30` business language; do not overwhelm with schema names, model names, or CSS tokens. Do not generate three full sites.
 
-| Slice         | Status                                                                      | Depends on                         |
-| ------------- | --------------------------------------------------------------------------- | ---------------------------------- |
-| FR0–FR2       | In                                                                          | —                                  |
-| Thin FR7      | In (deterministic checks + operator override; preview publish not blocked)  | —                                  |
-| FR3           | Thin in (C1 consume, sufficiency, typography-led fallback; C5 later)        | C1 in; C5 later                    |
-| FR4–FR5       | Thin in (cheap manifests, diversity, deterministic score, one winner draft) | Existing compose engine            |
-| FR6           | Open                                                                        | C3–C5 winner-only media (C2 in)    |
-| FR7 remainder | Open                                                                        | visual / a11y / perf / screenshots |
-| FR8           | Open                                                                        | C7 + remaining FR7                 |
-| FR9           | Open                                                                        | Phase 9 later                      |
+| Slice         | Status                                                                      | Depends on                             |
+| ------------- | --------------------------------------------------------------------------- | -------------------------------------- |
+| FR0–FR2       | In                                                                          | —                                      |
+| Thin FR7      | In (deterministic checks + operator override; preview publish not blocked)  | —                                      |
+| FR3           | Thin in (C1 consume, sufficiency, typography-led fallback; C5 later)        | C1 in; C5 later                        |
+| FR4–FR5       | Thin in (cheap manifests, diversity, deterministic score, one winner draft) | Existing compose engine                |
+| FR6           | Open                                                                        | C3–C5 winner-only media (C2 and C3 in) |
+| FR7 remainder | Open                                                                        | visual / a11y / perf / screenshots     |
+| FR8           | Open                                                                        | C7 + remaining FR7                     |
+| FR9           | Open                                                                        | Phase 9 later                          |
 
 ---
 

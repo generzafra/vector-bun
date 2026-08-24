@@ -29,6 +29,7 @@
 						: 'muted'
 	);
 	const directions = $derived(data.funnel?.visualDirections ?? null);
+	const shareCards = $derived(data.funnel?.shareCards ?? []);
 </script>
 
 <PageHeader
@@ -138,6 +139,37 @@
 			{/each}
 		</section>
 	{/if}
+
+	<section>
+		<h2>Share and email cards</h2>
+		<p>
+			Vector places your logo and approved copy on Open Graph, social, and email cards. These cards
+			are drafts and will not go live until they are approved.
+		</p>
+		{#if shareCards.length === 0}
+			<EmptyState title="No share cards yet." detail="Compose cards after Knowledge is saved." />
+		{:else}
+			<div class="share-cards">
+				{#each shareCards as card (card.id)}
+					<figure>
+						<img
+							src={`/funnel/composition/${card.id}`}
+							alt={`${card.label} draft`}
+							width={card.width}
+							height={card.height}
+						/>
+						<figcaption>{card.label} · draft{card.hasLogo ? ' · logo included' : ''}</figcaption>
+					</figure>
+				{/each}
+			</div>
+		{/if}
+		{#if canManage}
+			<form method="post" action="?/composeCards">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<button type="submit">Compose share and email cards</button>
+			</form>
+		{/if}
+	</section>
 
 	{#if gate}
 		<section>
