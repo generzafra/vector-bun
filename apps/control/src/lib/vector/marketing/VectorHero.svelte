@@ -3,22 +3,23 @@
 </script>
 
 <section class="vector-hero" aria-labelledby="hero-heading">
+	<div class="ambient-glow hero-glow"></div>
 	<div class="vector-container">
 		<div class="hero-split">
 			<div class="hero-copy">
 				<p class="eyebrow">Autonomous growth infrastructure</p>
 				<h1 id="hero-heading">
-					One system.<br />
-					From signal<br />
-					<span class="highlight">to growth.</span>
+					Turn every<br />
+					signal into<br />
+					<span class="highlight">growth.</span>
 				</h1>
 				<p class="supporting-copy">
-					Stop managing the marketing machinery. Manage your business. Vector builds and operates
-					the digital customer-acquisition engine behind your company.
+					Stop managing fragmented agencies. Manage your business. Vector builds and operates the
+					digital customer-acquisition engine behind your business.
 				</p>
 				<div class="cta-group">
-					<a class="vector-btn vector-btn-primary" href="/login">Sign in to Control</a>
-					<a class="vector-btn vector-btn-secondary" href="#how-it-works">See how it works</a>
+					<a class="vector-btn vector-btn-primary" href="#get-started">Request Growth Audit</a>
+					<a class="vector-btn vector-btn-secondary" href="/login">Explore Vector</a>
 				</div>
 			</div>
 			<div class="hero-visual" aria-hidden="true">
@@ -31,10 +32,7 @@
 <style>
 	.vector-hero {
 		position: relative;
-		min-height: min(860px, calc(100svh - 72px));
-		display: flex;
-		align-items: center;
-		padding-top: var(--space-64);
+		padding-top: var(--space-48);
 		padding-bottom: var(--space-64);
 		overflow: hidden;
 	}
@@ -87,6 +85,15 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+	}
+
+	.hero-glow {
+		width: 600px;
+		height: 600px;
+		background: radial-gradient(circle at 50% 50%, rgba(22, 119, 255, 0.08) 0%, transparent 60%);
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
 	}
 
 	@media (max-width: 1023px) {

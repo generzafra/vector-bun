@@ -7,11 +7,11 @@
 	let mounted = $state(false);
 	let innerWidth = $state(1024);
 
-	// Mobile detection for simplified view
+	// Mobile detection for timing / density
 	let isMobile = $derived(innerWidth < 768);
 
 	// Phase timing
-	let baseTiming = $derived(isMobile ? 0.75 : 1.0); // 25% faster on mobile
+	let baseTiming = $derived(isMobile ? 0.75 : 1.0);
 	let tSignals = $derived(100 * baseTiming);
 	let tConnections = $derived(tSignals + 400 * baseTiming);
 	let tIntelligence = $derived(tConnections + 600 * baseTiming);
@@ -33,8 +33,6 @@
 		if (prefersReducedMotion) {
 			phase1 = phase2 = phase3 = phase4 = phase5 = true;
 		} else {
-			// We need to use reactive statements to trigger these if baseTiming changes,
-			// but for simplicity, we'll just use the initial value on mount.
 			const initialBase = window.innerWidth < 768 ? 0.75 : 1.0;
 			setTimeout(() => (phase1 = true), 100 * initialBase);
 			setTimeout(() => (phase2 = true), (100 + 400) * initialBase);
@@ -44,42 +42,50 @@
 		}
 	});
 
-	// Layout constants
-	const width = 600;
+	// Layout constants for vertical orientation
+	const width = 540;
 	const height = 500;
 
-	const sources = [
-		{ id: 'traffic', label: 'TRAFFIC', y: 80 },
-		{ id: 'seo', label: 'SEO', y: 140 },
-		{ id: 'ads', label: 'ADS', y: 200 },
-		{ id: 'content', label: 'CONTENT', y: 260 },
-		{ id: 'crm', label: 'CRM', y: 320 },
-		{ id: 'analytics', label: 'ANALYTICS', y: 380 }
+	// Center & top nodes in vertical layout
+	const centerNode = { x: 270, y: 250 };
+	const outcomeNode = { x: 270, y: 115 };
+
+	// Source nodes along the bottom
+	const desktopSources = [
+		{ id: 'traffic', label: 'TRAFFIC', x: 45, y: 420 },
+		{ id: 'seo', label: 'SEO', x: 135, y: 420 },
+		{ id: 'ads', label: 'ADS', x: 225, y: 420 },
+		{ id: 'content', label: 'CONTENT', x: 315, y: 420 },
+		{ id: 'crm', label: 'CRM', x: 405, y: 420 },
+		{ id: 'analytics', label: 'ANALYTICS', x: 495, y: 420 }
 	];
 
-	const sourceX = 120;
-	const centerNode = { x: 340, y: 230 };
-	const outcomeNode = { x: 500, y: 230 };
+	const mobileSources = [
+		{ id: 'traffic', label: 'TRAFFIC', x: 75, y: 420 },
+		{ id: 'seo', label: 'SEO', x: 205, y: 420 },
+		{ id: 'content', label: 'CONTENT', x: 335, y: 420 },
+		{ id: 'ads', label: 'ADS', x: 465, y: 420 }
+	];
 
-	// Generate bezier paths from sources to center
-	function getPath(sx: number, sy: number, ex: number, ey: number) {
-		const cx1 = sx + (ex - sx) * 0.5;
-		const cy1 = sy;
-		const cx2 = sx + (ex - sx) * 0.5;
-		const cy2 = ey;
-		return `M ${sx} ${sy} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${ex} ${ey}`;
+	let activeSources = $derived(isMobile ? mobileSources : desktopSources);
+
+	// Generate vertical bezier path from bottom source up to center node
+	function getUpwardPath(sx: number, sy: number, ex: number, ey: number) {
+		const cy1 = sy - (sy - ey) * 0.55;
+		const cx2 = ex + (sx - ex) * 0.15;
+		const cy2 = ey + (sy - ey) * 0.3;
+		return `M ${sx} ${sy} C ${sx} ${cy1}, ${cx2} ${cy2}, ${ex} ${ey}`;
 	}
-
-	let activeSources = $derived(
-		isMobile
-			? sources.filter((s) => ['traffic', 'content', 'crm', 'ads'].includes(s.id.toLowerCase()))
-			: sources
-	);
 </script>
 
 <svelte:window bind:innerWidth />
 
 <div class="graph-container">
+	<!-- Outcome Metric Card at top center -->
+	<div class="outcome-container">
+		<HeroOutcomeMetric visible={phase5} delay={0} duration={700 * baseTiming} />
+	</div>
+
 	<svg viewBox="0 0 {width} {height}" class="signal-graph" preserveAspectRatio="xMidYMid meet">
 		<defs>
 			<linearGradient id="vector-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -93,10 +99,10 @@
 			</filter>
 		</defs>
 
-		<!-- Connections (Phase 2) -->
+		<!-- Upward Connections from Bottom Sources to Vector Mark (Phase 2) -->
 		{#each activeSources as source, i (source.id)}
 			<VectorPath
-				d={getPath(sourceX, source.y, centerNode.x - 15, centerNode.y)}
+				d={getUpwardPath(source.x, source.y - 8, centerNode.x, centerNode.y + 32)}
 				drawn={phase2}
 				state={phase3 ? 'active' : 'idle'}
 				delay={i * 50 * baseTiming}
@@ -105,9 +111,9 @@
 			/>
 		{/each}
 
-		<!-- Direction Path (Phase 4) -->
+		<!-- Upward Direction Path from Vector Mark to Outcome Growth Card (Phase 4) -->
 		<VectorPath
-			d={`M ${centerNode.x + 15} ${centerNode.y} L ${outcomeNode.x - 20} ${outcomeNode.y}`}
+			d={`M ${centerNode.x} ${centerNode.y - 32} L ${outcomeNode.x} ${outcomeNode.y}`}
 			drawn={phase4}
 			state={phase5 ? 'success' : phase4 ? 'active' : 'idle'}
 			delay={0}
@@ -115,36 +121,34 @@
 			showPulse={phase5}
 		/>
 
-		<!-- Source Nodes (Phase 1) -->
+		<!-- Source Nodes along bottom (Phase 1) -->
 		{#each activeSources as source, i (source.id)}
 			<SignalNode
-				cx={sourceX}
+				cx={source.x}
 				cy={source.y}
 				label={source.label}
-				align="left"
+				align="center"
 				visible={phase1}
 				state={phase2 ? 'active' : 'detected'}
 				delay={i * 50 * baseTiming}
 			/>
 		{/each}
 
-		<!-- Intelligence Node (Phase 3) -->
+		<!-- Intelligence Node with Vector Mark PNG Logo (Phase 3) -->
 		<g class="intelligence-node" class:visible={phase3}>
-			<!-- Vector Mark simplified -->
-			<path
-				d="M {centerNode.x - 12} {centerNode.y - 15} L {centerNode.x} {centerNode.y +
-					10} L {centerNode.x + 12} {centerNode.y - 15}"
-				fill="none"
-				stroke="url(#vector-grad)"
-				stroke-width="3"
-				stroke-linejoin="round"
-				stroke-linecap="round"
+			<!-- Official Vector Mark PNG -->
+			<image
+				href="/brand/vector/logo/vector-mark.png"
+				x={centerNode.x - 24}
+				y={centerNode.y - 24}
+				width="48"
+				height="48"
 				filter="url(#glow-cyan)"
 			/>
 			<circle
 				cx={centerNode.x}
 				cy={centerNode.y}
-				r="25"
+				r="32"
 				fill="none"
 				stroke="var(--vector-cyan)"
 				stroke-width="1"
@@ -154,7 +158,7 @@
 			<circle
 				cx={centerNode.x}
 				cy={centerNode.y}
-				r="35"
+				r="44"
 				fill="none"
 				stroke="var(--vector-cyan)"
 				stroke-width="1"
@@ -163,11 +167,6 @@
 			/>
 		</g>
 	</svg>
-
-	<!-- Outcome Metric (Phase 5) -->
-	<div class="outcome-container" style="left: {outcomeNode.x}px; top: {outcomeNode.y - 50}px;">
-		<HeroOutcomeMetric visible={phase5} delay={0} duration={700 * baseTiming} />
-	</div>
 </div>
 
 <style>
@@ -175,23 +174,32 @@
 		position: relative;
 		width: 100%;
 		height: 100%;
-		min-height: 400px;
+		min-height: 480px;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+	}
+
+	.outcome-container {
+		position: absolute;
+		top: 12px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 10;
 	}
 
 	.signal-graph {
 		width: 100%;
 		height: 100%;
-		max-width: 600px;
+		max-width: 540px;
 		overflow: visible;
 	}
 
 	.intelligence-node {
 		opacity: 0;
 		transform: scale(0.8);
-		transform-origin: 340px 230px;
+		transform-origin: 270px 250px;
 		transition: all 400ms var(--ease-enter);
 	}
 
@@ -202,19 +210,14 @@
 
 	.orbit {
 		animation: spin 10s linear infinite;
-		transform-origin: 340px 230px;
+		transform-origin: 270px 250px;
 		stroke-dasharray: 4 4;
 	}
 
 	.orbit-reverse {
 		animation: spin-reverse 15s linear infinite;
-		transform-origin: 340px 230px;
+		transform-origin: 270px 250px;
 		stroke-dasharray: 2 6;
-	}
-
-	.outcome-container {
-		position: absolute;
-		transform: translateY(-50%);
 	}
 
 	@keyframes spin {
@@ -245,12 +248,7 @@
 
 	@media (max-width: 767px) {
 		.graph-container {
-			min-height: 300px;
-		}
-		.outcome-container {
-			/* Adjust position for mobile scaling */
-			left: auto !important;
-			right: 5%;
+			min-height: 420px;
 		}
 	}
 </style>

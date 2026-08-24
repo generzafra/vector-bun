@@ -19,7 +19,10 @@
 		</a>
 		<nav aria-label="Marketing">
 			<a href="#how-it-works">How it works</a>
+			<a href="#outcomes">Outcomes</a>
+			<a href="#faq">FAQ</a>
 			<a class="signin" href="/login">Sign in</a>
+			<a class="vector-btn vector-btn-primary nav-cta" href="#get-started">Get Started</a>
 		</nav>
 	</header>
 	<MarketingHomepage />

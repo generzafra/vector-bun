@@ -1,4 +1,6 @@
 .marketing-page {
+	--container-padding-x: clamp(20px, 5vw, 64px);
+	--section-padding-y: clamp(64px, 8vw, 120px);
 	--space-4: var(--vector-space-1);
 	--space-8: var(--vector-space-2);
 	--space-12: var(--vector-space-3);
@@ -28,7 +30,7 @@
 	-webkit-font-smoothing: antialiased;
 }
 
-.marketing-page :global(section) {
+.marketing-page section {
 	margin: 0;
 	padding: 0;
 	border: none;
@@ -37,47 +39,47 @@
 	box-shadow: none;
 }
 
-.marketing-page :global(h1),
-.marketing-page :global(h2),
-.marketing-page :global(h3) {
+.marketing-page h1,
+.marketing-page h2,
+.marketing-page h3 {
 	font-family: var(--font-display);
 	margin: 0;
 	color: var(--vector-white);
 }
 
-.marketing-page :global(h1) {
+.marketing-page h1 {
 	font-size: clamp(42px, 5vw, 76px);
 	line-height: 1;
 	font-weight: 700;
 	letter-spacing: -0.02em;
 }
 
-.marketing-page :global(h2) {
+.marketing-page h2 {
 	font-size: clamp(30px, 4vw, 44px);
 	line-height: 1.1;
 	font-weight: 600;
 	letter-spacing: -0.01em;
 }
 
-.marketing-page :global(p) {
+.marketing-page p {
 	font-size: clamp(15px, 2vw, 17px);
 	line-height: 1.55;
 	color: var(--text-secondary);
 	margin: 0;
 }
 
-.marketing-page :global(.vector-container) {
-	max-width: 1440px;
-	padding-inline: clamp(24px, 4vw, 72px);
+.marketing-page .vector-container {
+	max-width: 1280px;
+	padding-inline: var(--container-padding-x);
 	margin-inline: auto;
 }
 
-.marketing-page :global(.vector-btn) {
+.marketing-page .vector-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	height: 44px;
-	padding: 0 24px;
+	height: 48px;
+	padding: 0 28px;
 	border-radius: var(--radius-btn);
 	font-family: var(--font-primary);
 	font-size: 15px;
@@ -92,38 +94,73 @@
 	box-sizing: border-box;
 }
 
-.marketing-page :global(.vector-btn-primary) {
+.marketing-page .vector-btn-primary {
 	background-color: var(--vector-blue);
-	color: var(--vector-white);
+	color: var(--vector-white) !important;
+	box-shadow: 0 0 20px rgba(22, 119, 255, 0.2);
 }
 
-.marketing-page :global(.vector-btn-primary:hover) {
+.marketing-page .vector-btn-primary:hover {
 	background-color: var(--blue-400);
-	transform: translateY(-1px);
-	box-shadow: 0 4px 12px var(--blue-glow);
+	transform: translateY(-2px);
+	box-shadow: 0 8px 24px rgba(22, 119, 255, 0.4);
 }
 
-.marketing-page :global(.vector-btn-secondary) {
+.marketing-page .vector-btn-primary:active {
+	transform: translateY(0);
+	transition-duration: 80ms;
+	box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
+}
+
+.marketing-page .vector-btn-secondary {
 	background-color: transparent;
-	color: var(--vector-white);
+	color: var(--vector-white) !important;
 	border: 1px solid var(--border-strong);
 }
 
-.marketing-page :global(.vector-btn-secondary:hover) {
+.marketing-page .vector-btn-secondary:hover {
 	background-color: rgba(255, 255, 255, 0.05);
-	transform: translateY(-1px);
+	transform: translateY(-2px);
 }
 
-.marketing-page :global(.vector-card) {
+.marketing-page .vector-btn-secondary:active {
+	transform: translateY(0);
+	transition-duration: 80ms;
+}
+
+.marketing-page .vector-card {
 	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0.012) 100%),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%),
 		var(--vector-graphite);
 	border: 1px solid var(--vector-border);
 	box-shadow:
-		0 10px 30px rgba(0, 0, 0, 0.2),
-		inset 0 1px 0 rgba(255, 255, 255, 0.025);
+		0 24px 48px rgba(0, 0, 0, 0.4),
+		inset 0 1px 0 rgba(255, 255, 255, 0.05);
 	border-radius: var(--radius-card);
 	padding: var(--space-24);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+}
+
+.marketing-page .ambient-glow {
+	position: absolute;
+	border-radius: 50%;
+	filter: blur(80px);
+	pointer-events: none;
+	z-index: 0;
+}
+
+.marketing-page .reveal-up {
+	opacity: 0;
+	transform: translateY(30px);
+	transition:
+		opacity 800ms var(--ease-enter),
+		transform 800ms var(--ease-enter);
+}
+
+.marketing-page .reveal-up.is-visible {
+	opacity: 1;
+	transform: translateY(0);
 }
 
 .marketing-page .skip {
@@ -141,14 +178,18 @@
 }
 
 .marketing-bar {
-	position: relative;
-	z-index: 20;
+	position: sticky;
+	top: 0;
+	z-index: 50;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-24);
-	padding: var(--space-20) clamp(24px, 4vw, 72px);
+	padding: var(--space-16) var(--container-padding-x);
 	border-bottom: 1px solid var(--border-subtle);
+	background: rgba(10, 10, 12, 0.85);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
 }
 
 .marketing-bar .brand {
@@ -172,6 +213,8 @@
 	color: var(--text-secondary);
 	text-decoration: none;
 	font-size: 0.95rem;
+	font-weight: 500;
+	transition: color 150ms var(--ease-standard);
 }
 
 .marketing-bar nav a:hover,
@@ -179,9 +222,15 @@
 	color: var(--vector-white);
 }
 
+.marketing-bar .nav-cta {
+	height: 38px;
+	padding: 0 18px;
+	font-size: 14px;
+}
+
 .marketing-foot {
 	margin-top: auto;
-	padding: var(--space-32) clamp(24px, 4vw, 72px);
+	padding: var(--space-32) var(--container-padding-x);
 	border-top: 1px solid var(--border-subtle);
 }
 

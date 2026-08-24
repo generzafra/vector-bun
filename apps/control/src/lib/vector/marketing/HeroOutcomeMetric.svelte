@@ -1,6 +1,6 @@
 <script lang="ts">
 	let {
-		label = 'OUTCOME',
+		label = 'EXPONENTIAL',
 		value = 'GROWTH',
 		visible = false,
 		delay = 0,

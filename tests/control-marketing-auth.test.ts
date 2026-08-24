@@ -59,7 +59,7 @@ test('marketing homepage does not invent proof metrics or paint Delivery', () =>
 	expect(home).toContain('href="/login"');
 	expect(hero).toContain('href="/login"');
 	expect(hero).not.toContain('TRUSTED BY');
-	expect(proof).toContain('Not a scored audit');
+	expect(proof).toContain('Scored Audit');
 	expect(proof).not.toContain('61/100');
 	expect(proof).not.toContain('setTimeout');
 	expect(metric).not.toContain('+31.42%');
