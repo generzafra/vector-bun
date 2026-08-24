@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import LegalLinks from '$lib/vector/LegalLinks.svelte';
 
 	let { userId, children }: { userId: string | null; children: import('svelte').Snippet } =
 		$props();
@@ -24,6 +25,7 @@
 
 	let navOpen = $state(false);
 	const current = $derived(page.url.pathname);
+	const signedOutDocument = $derived(!userId && (current === '/privacy' || current === '/terms'));
 
 	function isActive(href: string) {
 		return href === '/' ? current === '/' : current === href || current.startsWith(`${href}/`);
@@ -52,6 +54,9 @@
 					</a>
 				{/each}
 			</nav>
+			<div class="sidebar-legal">
+				<LegalLinks {current} />
+			</div>
 		</aside>
 		<div class="frame">
 			<header class="topbar">
@@ -74,13 +79,14 @@
 		{/if}
 	</div>
 {:else}
-	<div class="auth">
+	<div class={['auth', signedOutDocument && 'document']}>
 		<a class="brand" href="/login">
 			<img src="/brand/vector/logo/vector-wordmark.png" alt="Vector" />
 		</a>
 		<main id="main" class="auth-main">
 			{@render children()}
 		</main>
+		<LegalLinks {current} />
 	</div>
 {/if}
 
@@ -117,6 +123,11 @@
 		padding: var(--vector-space-5);
 		border-right: 1px solid var(--vector-border);
 		background: var(--bg-1);
+	}
+
+	.sidebar-legal {
+		margin-top: auto;
+		padding-top: var(--vector-space-4);
 	}
 
 	.brand {
@@ -197,6 +208,14 @@
 
 	.auth-main {
 		width: min(100%, 28rem);
+	}
+
+	.auth.document {
+		align-content: start;
+	}
+
+	.auth.document .auth-main {
+		width: min(100%, 52rem);
 	}
 
 	@media (max-width: 860px) {

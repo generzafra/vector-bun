@@ -6,7 +6,7 @@
 **Prerequisite:** Phase 5 exit is already met (ADR-0010). Phase 1 page versions, Phase 4 knowledge authority, analytics, and AI governance exist. Do not skip tenant isolation or approval foundations.
 
 Standing content standard after this fold: [`docs/10_SEO_AEO_CONTENT_STANDARD.md`](../10_SEO_AEO_CONTENT_STANDARD.md).  
-This file is the Phase 6 slice spec. Charters stop at `docs/30`. Do not add `docs/31`.
+This file is the Phase 6 slice spec. Charters stop at `docs/30`. Do not add `docs/31`. First Reveal is [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md), not a numbered charter.
 
 ---
 
@@ -374,7 +374,7 @@ All Phase 6 entities are tenant-owned. Fail closed without TenantContext. Cross-
 | `docs/29` | Creative consume: OG, alt, captions, transcripts                                       |
 | `docs/30` | Visibility ≠ referral ≠ outcome; search → qualified lead additive                      |
 
-Do **not** create `docs/31`. First-reveal / crawlable launch copy stays in `docs/27` and `docs/26`.
+Do **not** create `docs/31`. Crawlable launch copy stays in `docs/27` and `docs/26`. Pre-client First Reveal composition is [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md) (ADR-0012), not this phase.
 
 Do not sprinkle GEO into email, social-provider, or auth docs unless an implementation dependency appears.
 
@@ -420,7 +420,7 @@ Not done because a sitemap exists, FAQs were generated, a brand appeared once in
 
 Do not optimize only for rank. Do not optimize only for citation. Optimize for **accurate, useful, attributable business discovery**.
 
-Authoritative in their domains: `docs/10` (content/search quality), `docs/27` (public UX), `docs/28` (Control chrome), `docs/29` (creative), `docs/30` (outcomes), this plan (Phase 6 slices), `CROSS_CUTTING_TRACKS.md` (exit vs later).
+Authoritative in their domains: `docs/10` (content/search quality), `docs/27` (public UX), `docs/28` (Control chrome), `docs/29` (creative), `docs/30` (outcomes), this plan (Phase 6 slices), `CROSS_CUTTING_TRACKS.md` (exit vs later), `FIRST_REVEAL_TRACK.md` (pre-client site quality), `CLIENT_VALUE_TRACK.md` (no citation-to-revenue).
 
 ---
 

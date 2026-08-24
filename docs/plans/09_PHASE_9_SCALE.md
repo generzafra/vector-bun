@@ -36,6 +36,8 @@ Phase exits in [`docs/21`](../21_ROADMAP_ACCEPTANCE_GATES.md) and [CROSS_CUTTING
 
 - Creative QuickStart and automated asset gap analysis (`docs/29`);
 - Outcomes entitlements and client-success health (`docs/30`);
+- FR9 portfolio similarity guard (`docs/plans/FIRST_REVEAL_TRACK.md`);
+- V5 portfolio / renewal value (`docs/plans/CLIENT_VALUE_TRACK.md`);
 - Cost per qualified lead dashboards;
 - Dedicated delivery / DB as premium;
 - Load tests before claiming 20 ordinary clients.
@@ -139,4 +141,4 @@ Multiple clients can launch without a code fork, and Phase 1 readiness / launch 
 
 ## Locked attachments
 
-Portfolio-by-exception is the exit. Additive: Creative QuickStart, Outcomes entitlements, client-success health, operator exception queues (`docs/29`, `docs/30`). No `docs/31`. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+Portfolio-by-exception is the exit. Additive: Creative QuickStart, Outcomes entitlements, client-success health, operator exception queues (`docs/29`, `docs/30`), FR9 similarity guard, V5 portfolio/renewal value. No numbered `docs/31`. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

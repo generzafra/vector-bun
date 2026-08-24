@@ -22,6 +22,8 @@ Before implementation, read:
 14. `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` when the work touches Control Plane UI, Vector product chrome, or Vector-native intelligence / opportunity / automation visuals. Living paths live in `docs/frontend/`. This is Control / Vector identity, not client Delivery identity.
 15. `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` when the work touches client images, social or email graphics, funnel or campaign media, Open Graph images, generated imagery, video, resizing, or creative approval. Public art direction stays in `docs/27`. Control identity stays in `docs/28`.
 16. `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` when the work touches authenticated client UX, goals, lead stages, sales outcomes, revenue, attribution confidence, data health, offers as commercial propositions, notifications, entitlements, or client-success health. Client dashboards use `docs/28` chrome. Delivery visitor UX stays `docs/27`.
+17. `docs/plans/FIRST_REVEAL_TRACK.md` when the work touches a newly onboarded client's first website preview, visual-direction candidates, first-impression QA, or client reveal UX. Standing law is folded into `docs/09`, `docs/17`, `docs/26`, `docs/27`, and `docs/29`. Control reveal chrome is `docs/28`. Numbered charters stop at `docs/30` (ADR-0012).
+18. `docs/plans/CLIENT_VALUE_TRACK.md` when the work touches client ROI, replacement-cost comparison, time savings, value statements, or renewal economics. Standing law is folded into `docs/30` and `docs/20`. Do not invent a second outcomes ledger.
 
 ## Non negotiable architecture
 
@@ -79,6 +81,7 @@ Security, privacy, legal, tenant isolation, accessibility, and performance overr
 
 A feature is done only when applicable tests pass, authorization and tenant scoping are present, errors are handled, observability is included, and relevant docs are updated.
 Public marketing pages are also done only when the Frontend Release Gate in `docs/27` is met.
+A client's first visible website is also done only when the First Reveal Gate in `docs/plans/FIRST_REVEAL_TRACK.md` is met or a documented operator override exists.
 
 ## Creative Asset Governance
 
@@ -91,6 +94,18 @@ Do not ask an image model to create final exact brand typography or logos when V
 For work involving authenticated client UX, dashboards, goals, KPIs, lead stages, sales outcomes, revenue, attribution confidence, data health, offers, client notifications, entitlements, client health, or business reporting, read `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`.
 
 Client-facing interfaces must prioritize business outcomes and decisions. Do not expose technical platform complexity by default. Do not present uncertain attribution or estimates as factual. AI must not invent sales or revenue. Where outcome data exists, optimize beyond lead volume toward qualified leads, sales, and attributable business value. Client and operator stay one Control app.
+
+## First Reveal and Premium Site Composition
+
+For work involving a newly onboarded client's first website preview, visual direction generation, candidate composition, first-impression quality, page candidate scoring, or client website reveal UX, read `docs/plans/FIRST_REVEAL_TRACK.md` plus `docs/27`, `docs/09`, and `docs/29`. Authenticated reveal chrome uses `docs/28`.
+
+Do not show the first successfully rendered draft to a client automatically. Do not generate three complete expensive websites by default. Generate lightweight structured visual-direction candidates first; spend expensive media on the winner. AI selects validated components through schemas. The First Reveal Gate is a pre-client gate; publication still requires the Frontend Release Gate in `docs/27`. Do not reopen the Phase 1 exit. Do not paint tenant Delivery sites with Vector identity.
+
+## Client Value, ROI, and Economic Justification
+
+For work involving client ROI, replacement-cost comparison, time savings, monthly value statements, or renewal economics, read `docs/plans/CLIENT_VALUE_TRACK.md` plus `docs/30`, `docs/20`, and `docs/06`.
+
+`docs/30` remains the source of truth for goals, sales, revenue, and attribution. Never invent revenue, previous spend, salary, agency cost, or hours saved. Keep measured outcomes separate from estimates and benchmarks. Do not call replacement-cost coverage "ROI". Trusted software calculates; AI may explain. All client value data is tenant-scoped and auditable.
 
 ## SEO, AEO, and GEO Governance
 

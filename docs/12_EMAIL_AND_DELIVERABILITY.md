@@ -22,7 +22,7 @@ Inbound `email.received` events resolve the tenant from a unique sending domain 
 
 Email may later use lightweight Creative Engine banners (`docs/29`). Headlines, body, CTA, pricing, legal, and unsubscribe stay HTML text. Do not render an entire marketing email as an image.
 
-Email reporting should later support delivered → clicked → lead progression → appointment → sale where attribution exists (`docs/30`). That join does not reopen the Phase 3 exit.
+Email reporting should later support delivered → clicked → lead progression → appointment → sale where attribution exists (`docs/30`). That join does not reopen the Phase 3 exit. Client Value may count eligible sends as work delivered; it must not equate send volume with value (`docs/plans/CLIENT_VALUE_TRACK.md`).
 
 ## Auto replies
 

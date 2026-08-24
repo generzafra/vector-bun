@@ -38,4 +38,4 @@ Every page must have a human or policy-approved factual basis in the client know
 
 Visual and motion experimentation from `docs/27` must preserve heading hierarchy, crawlable important copy, descriptive links, canonical strategy, factual structured data, and accessible equivalents. Essential content must never exist only inside animation, canvas, image, or video. Open Graph images, alt text, and captions come from the Creative Engine (`docs/29`) when that track ships.
 
-Search and generative-discovery work should eventually be judged against qualified leads, revenue, and goal contribution (`docs/30`), not rank, traffic, or citations alone.
+Search and generative-discovery work should eventually be judged against qualified leads, revenue, and goal contribution (`docs/30`), not rank, traffic, or citations alone. Client Value (`docs/plans/CLIENT_VALUE_TRACK.md`) must not assign monetary value to rank or citation alone.

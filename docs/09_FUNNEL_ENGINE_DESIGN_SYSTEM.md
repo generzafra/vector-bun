@@ -45,3 +45,5 @@ Capability tokens (spacing, radius, motion, section variants) are the shared eng
 The funnel engine consumes approved Creative Engine asset references (`docs/29`). It does not permanently own client media bytes or invent a second image generator. When image fields are added, they reference an approved tenant-scoped asset id, not a raw URL. Typography-led sections remain a valid fallback.
 
 Funnel reporting should eventually show qualified leads, won deals, and optional revenue (`docs/30`), not conversion rate alone. That join is Outcomes-track work, not a Phase 1 schema change.
+
+First Reveal (`docs/plans/FIRST_REVEAL_TRACK.md`) attaches direction metadata, candidate status, first-reveal status, asset-manifest version, composition version, and design confidence to page versions or composition records. Do not fork the renderer. Do not generate three full websites by default. AI selects approved variants through schemas. The First Reveal Gate is a pre-client gate; production publication still requires the Frontend Release Gate in `docs/27`. Control reveal UI uses `docs/28`. Do not reopen the Phase 1 exit for premium craft; FR0–FR2 are additive on this engine.

@@ -5,7 +5,7 @@
 **Project:** Vector — Autonomous Growth OS  
 **Document type:** Cross-cutting implementation architecture and operating standard  
 **Recommended repository location:** `/docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`  
-**Status:** Accepted architecture standard (ADR-0008). Implementation follows the C0–C9 track. This does not reopen Phase 1 or Phase 4 exits.  
+**Status:** Accepted architecture standard (ADR-0008). Implementation follows the C0–C9 track. First Reveal consumes C1, C3, C5, and C7 (`docs/plans/FIRST_REVEAL_TRACK.md`, ADR-0012). This does not reopen Phase 1 or Phase 4 exits.  
 **Version:** 1.1  
 **Date:** 22 August 2026  
 **Applies to:** Client onboarding, brand ingestion, funnels, social media, email marketing, campaign generation, SEO/AEO/GEO presentation, CRO experiments, Vector 24, asset storage, AI governance, approvals, and client operations  
@@ -674,6 +674,8 @@ Is this correct?
 ```
 
 This is preferable to requiring the client to manually enter every field.
+
+Confirmed brand direction feeds First Reveal (`docs/plans/FIRST_REVEAL_TRACK.md`). QuickStart is C1-adjacent. It is not a license to show the client the raw first compose.
 
 ---
 
@@ -2221,12 +2223,12 @@ Phase 1 already exited with `brand_assets` and `StorageProvider`. That is a thin
 
 Phase 4 already exited with typed, versioned, auditable, tenant-scoped, cost-attributed text drafts. `AIProvider` is text, structured output, and tools only. Do not change the Phase 4 exit to require generated visuals.
 
-Map Creative Engine work **forward**. The C0–C9 order in §63 is a cross-cutting track. It is not a new numbered Vector phase and must not replace the Phase 5 social-publish exit.
+Map Creative Engine work **forward**. The C0–C9 order in §63 is a cross-cutting track. It is not a new numbered Vector phase and must not replace the Phase 5 social-publish exit. First Reveal (`docs/plans/FIRST_REVEAL_TRACK.md`) consumes C1 (profile), C3 (composition), C5 (funnel manifests), and C7 (QA/approval). It does not start C2 before C0. C7 attaches to Phase 5’s later calendar and to first-paying-client readiness; it is not the Phase 5 social exit.
 
 ## Phase 5 — additive
 
 - C0 general asset library so Social does not invent a second media store. Slice 1 implements `creative_assets` / versions / rights on the existing `StorageProvider` (`clients/{client_id}/creative/...`). Slice 3 adds Facebook and Instagram `SocialProvider` adapters on the same C0 store. Slice 4 publishes approved C0 images through official upload APIs and a short-lived signed fetch grant for Instagram. That does not start C2–C4. Slice 2–4 do not add Creative C1–C9.
-- Later Phase 5 slices may add C1 brand visual profile, C2 `ImageProvider`, C3 composition, C4 derivatives, and C6 social families.
+- Later Phase 5 slices may add C1 brand visual profile, C2 `ImageProvider`, C3 composition, C4 derivatives, C6 social families, and C7 QA/approval.
 - Phase 5 exit remains: approved content publishes to at least two priority platforms, and required social connections are readiness-gated.
 - Social-ready generated families are a later Creative slice, not the Phase 5 exit.
 

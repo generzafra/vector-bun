@@ -66,7 +66,7 @@ Qualified business outcomes attributable to Vector assisted growth activity.
 
 ## Differentiation
 
-Vector is not marketed as "we use AI." It is marketed as a dedicated autonomous growth engine with measurement and continuous improvement.
+Vector is not marketed as "we use AI." It is marketed as a dedicated autonomous growth engine with measurement and continuous improvement. Position around integrated growth capability, measurable business outcomes, and reduced operating burden. Prove value continuously (`docs/30`, `docs/plans/CLIENT_VALUE_TRACK.md`); do not ask the client to remember why they bought.
 
 ## Brand hierarchy
 

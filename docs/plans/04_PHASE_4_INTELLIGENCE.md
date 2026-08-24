@@ -87,4 +87,4 @@ Trigger.dev AI jobs and pgvector remain later. Do not start Phase 5 until this e
 
 `ImageProvider` and generated visuals are `docs/29`, not this phase. `AIProvider` stays text, structured output, and tools. This exit does not require AI-generated images.
 
-Ask Vector, data-health gates, and goal-linked provenance are Outcomes O13–O15 (`docs/30`), not this exit. Recommendation cards already carry finding, evidence, impact, risk, and confidence. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+Ask Vector, data-health gates, and goal-linked provenance are Outcomes O13–O15 (`docs/30`), not this exit. Recommendation cards already carry finding, evidence, impact, risk, and confidence. First Reveal FR4–FR5 (structured direction manifests) may attach later on this calendar; they are not this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

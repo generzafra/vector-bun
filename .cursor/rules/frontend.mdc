@@ -16,3 +16,4 @@ Validate new `.svelte` with Svelte MCP `svelte-autofixer`.
 Every list needs skeleton, empty, and error states. Honor `prefers-reduced-motion`. Never fake metrics.
 Public marketing, funnel, and conversion UI must also follow `docs/27` and `.cursor/rules/frontend-funnel-quality.mdc`.
 Control product UI must also follow `docs/28` and `.cursor/rules/vector-visual-language.mdc`.
+First client website reveal UI is Control (`docs/28`) wrapping a Delivery preview (`docs/27`, `docs/plans/FIRST_REVEAL_TRACK.md`).

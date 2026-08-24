@@ -7,7 +7,7 @@ When implementing or modifying SEO, AEO, GEO, technical search, structured data,
 docs/plans/06_PHASE_6_SEO_AEO.md
 docs/10_SEO_AEO_CONTENT_STANDARD.md
 
-Control Search UI uses `docs/28` chrome. Public discoverability follows `docs/27`. Creative consume stays `docs/29`. Outcome language stays `docs/30`.
+Control Search UI uses `docs/28` chrome. Public discoverability follows `docs/27`. Creative consume stays `docs/29`. Outcome language stays `docs/30`. Do not assign client-facing monetary value to rank or citation (`docs/plans/CLIENT_VALUE_TRACK.md`).
 
 Rules:
 - SEO = discoverability, indexability, traditional search visibility.

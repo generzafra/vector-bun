@@ -393,3 +393,48 @@ Supersede this ADR. Leave `docs/10` GEO sections as historical. Keep Phase 6 exi
 ### Implementation note (23 August 2026)
 
 S1–S8 are in: Delivery GEO-readiness, `packages/search`, answer targets, GEO query/observation schema, first compliant measurement, visibility snapshots, search/GEO → lead when UTMs are observable, and cadence/budget/portfolio queues. Official generative-engine APIs remain `unsupported`. Revenue is not assigned from a mention. Scheduled search jobs never scrape consumer AI interfaces. The ADR lock is unchanged.
+
+---
+
+## ADR-0012
+
+### Date
+
+24 August 2026
+
+### Status
+
+Accepted
+
+### Decision
+
+Numbered charters in `/docs` still stop at `docs/30` (ADR-0009, ADR-0011). Do not add `docs/31` or `docs/32`.
+
+Two product needs land as **cross-cutting tracks**, the same shape as Creative C0–C9 and Outcomes O1–O20:
+
+1. **First Reveal (FR0–FR9).** Slice spec: `docs/plans/FIRST_REVEAL_TRACK.md`. Standing law folds into `docs/09` (renderer and direction metadata), `docs/17` (onboarding → reveal), `docs/26` (Vector 24 ready-to-first-reveal metrics), `docs/27` (public quality bar; Frontend Release Gate still governs publication), and `docs/29` (media: C1, C3, C5, C7). Authenticated reveal chrome uses `docs/28`. Delivery visitor UX stays `docs/27`.
+2. **Client Value (V0–V5).** Slice spec: `docs/plans/CLIENT_VALUE_TRACK.md`. Standing law folds into `docs/30` (outcomes remain the source of truth) and `docs/20` (MGE operating cost ≠ client-facing value). This extends Outcomes as O21–O22 / V0–V5. It does not sit above `docs/30` as a second sales or revenue ledger.
+
+Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. Tracks never reopen an exited phase. Phase 1 remains the `docs/27` MVP Frontend Release Gate. First Reveal Gate is a **pre-client** gate on the first paying-client bar, not a Phase 1 exit rewrite. Client Value V0 (activity proof without an ROI claim) may appear on that same bar. Replacement-cost, time-savings, and revenue-linked ROI wait for Outcomes coverage.
+
+`docs/28` remains Control / Vector identity. `docs/29` remains the Creative Engine. First Reveal must not treat 28 as Creative.
+
+### Alternatives considered
+
+Number `docs/31` and `docs/32` as new charters and wire them into every file; add Phase 10 / Phase 11; reopen Phase 1 so a Framer-class first site is the funnel exit; fold the long specs only into `docs/27` and `docs/30` with no track table.
+
+### Consequences
+
+Agents read the track specs when implementing first-preview composition or client ROI. GEO still must not become `docs/31`. Creative C7 (QA and client approval) attaches to Phase 5’s later calendar and to first-paying-client readiness. C9 video stays unattached.
+
+### Security impact
+
+Direction candidates, scores, gate results, value snapshots, baselines, and benchmarks are tenant-owned. Replacement-cost and salary/time baselines are commercially sensitive. AI may explain value; trusted software calculates it. AI must not invent revenue, hours saved, or agency cost. Preview hosts stay `noindex`. Control reveal UI must not leak Vector identity onto tenant Delivery pages.
+
+### Operational impact
+
+No First Reveal or Value Engine code is required to accept this ADR. Do not generate three full websites by default. Do not delay a launch for mature ROI.
+
+### Reversal path
+
+Supersede this ADR. Leave the track specs as historical. Keep `docs/27` publication gate, `docs/29` Creative track, and `docs/30` Outcomes track.

@@ -26,6 +26,10 @@ Phase 6 search/GEO tests also cover: factual JSON-LD fail-closed when knowledge 
 
 The Design Review Checklist and Frontend Release Gate in `docs/27` are part of frontend QA. Release review of a public page must include mobile, tablet, desktop, keyboard navigation, reduced motion, form states, loading/error/success, accessibility, performance, conversion path, metadata, and analytics instrumentation. A page that merely renders is not production-ready.
 
+First Reveal QA (`docs/plans/FIRST_REVEAL_TRACK.md`) also covers the pre-client gate: candidate schema and diversity, component compatibility, logo presence, placeholder absence, asset fallback, low-asset and high visual-dependency clients, mobile first screen, cost ceilings, preview noindex, generated-media provenance, and client-reveal permissions. Alpha cannot see Beta candidates, scores, or gate results.
+
+Client Value QA (`docs/plans/CLIENT_VALUE_TRACK.md`) covers evidence class and confidence on every displayed component, overlap suppression, no invented revenue or hours, currency as integer minor units, historical snapshot immutability, tenant isolation of baselines and benchmarks, and hidden MGE margin.
+
 Control visual QA uses the `docs/28` checklists and `docs/frontend/VECTOR_UI_MIGRATION_STATUS.md`. Do not treat a Control restyle as a Delivery identity change.
 
 Creative QA (`docs/29`) combines deterministic checks (dimensions, format, size, logo, required text, contrast, rights, tenant) with optional AI visual review. AI review does not replace deterministic validation. Failed generation must fall back; public pages must never render a broken image. Cross-tenant asset, generation, and rights tests are required for every new tenant-owned creative resource.

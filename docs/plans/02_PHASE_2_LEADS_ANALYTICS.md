@@ -68,4 +68,4 @@ Control `/analytics` shows recorded launch transition counts plus contract→rea
 
 ## Locked attachments
 
-`lead_status` is `new | working | qualified | won | lost | spam`. Attribution is first touch / last non-direct. That is Outcomes O2 seed, not `sales_outcomes` or a goal dashboard. Do not reopen this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+`lead_status` is `new | working | qualified | won | lost | spam`. Attribution is first touch / last non-direct. That is Outcomes O2 seed, not `sales_outcomes` or a goal dashboard. Client Value V1 waits for O1–O3. Do not reopen this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

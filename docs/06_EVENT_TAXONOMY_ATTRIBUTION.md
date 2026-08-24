@@ -24,6 +24,8 @@ Phase 2 emits `page_viewed`, `cta_clicked`, `form_started`, `form_submitted`, an
 
 Later outcome events (`docs/30`) — `lead_qualified`, `deal_won`, `deal_lost`, `purchase_completed`, `revenue_recorded`, `refund_recorded` — need a dictionary owner before emit. Do not treat them as equally authoritative with form submits. Revenue and sales events record their source of truth. Attribution confidence labels (`directly attributed` / `estimated` / `unattributed`) are Outcomes-track work; v1 must not present uncertain association as fact.
 
+Client Value (`docs/plans/CLIENT_VALUE_TRACK.md`) may add work-unit and snapshot events. It must not invent new causal relationships or reimplement attribution.
+
 Phase 6 S7 records `ai_referral` / `generative_search_referral` only when a lead arrives with observable UTMs (`utm_medium=generative` or `utm_medium=organic` with google/bing, plus the Vector campaign when used). Those become `geo_referral_events`. Do not manufacture attribution from a GEO mention or citation observation. `GEO visibility observed ≠ visit proven ≠ lead proven`. Revenue stays unknown until a later revenue row exists.
 
 ## Governance

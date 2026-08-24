@@ -1,0 +1,23 @@
+---
+description: Vector client value, ROI, economic justification, replacement-cost, and time-savings rules
+alwaysApply: false
+---
+When implementing client ROI, value reporting, replacement cost, time savings, value statements, renewal reports, or commercial value comparisons, read:
+
+- docs/plans/CLIENT_VALUE_TRACK.md
+- docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md
+- docs/20_COSTS_USAGE_LIMITS.md
+- docs/06_EVENT_TAXONOMY_ATTRIBUTION.md
+
+`docs/30` remains the source of truth for goals, sales, revenue, attribution, and data health. Do not invent a second outcomes ledger. `docs/20` is MGE operating cost, not client-facing value.
+
+Never:
+- invent financial outcomes, previous spend, salary, agency cost, or hours saved
+- convert estimates into verified facts
+- double count overlapping value components
+- call replacement-cost coverage "ROI"
+- call attributed revenue profit or sole causation
+- expose MGE internal margin
+- reopen an exited phase so a value slice becomes that phase's exit
+
+Trusted software calculates. AI may explain. All calculations must be deterministic, versioned, tenant-scoped, auditable, and labeled by evidence class.

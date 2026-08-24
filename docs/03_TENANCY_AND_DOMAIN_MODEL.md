@@ -8,7 +8,7 @@ An organization may be Maximum Global Exposure or a future agency partner. A cli
 
 ## Rule
 
-Every client owned record requires `client_id`.
+Every client owned record requires `client_id`. First Reveal candidates, scores, and gate results are tenant-owned. Client value snapshots, baselines, and benchmarks are tenant-owned. Alpha cannot read Beta reveal or value rows.
 
 ## TenantContext
 

@@ -87,4 +87,4 @@ Phase 3 contracts dispatch through a Vector-owned `WorkflowRuntime`. Local and `
 
 ## Locked attachments
 
-Consent and suppression stay fail-closed. Email → lead-stage → sale joins are later Outcomes work (`docs/30`). Creative email banners are later Creative work (`docs/29`). Do not reopen this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+Consent and suppression stay fail-closed. Email → lead-stage → sale joins are later Outcomes work (`docs/30`). Creative email banners are later Creative work (`docs/29`). Nurture work units for Client Value V0 are later. Do not reopen this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

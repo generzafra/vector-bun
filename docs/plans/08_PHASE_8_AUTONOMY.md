@@ -170,4 +170,4 @@ Phase 4 approvals and Phase 1 launch states exist. Prefer a completed Phase 7 ex
 
 ## Locked attachments
 
-Low-risk auto-execute is the exit. Condition later autonomy on data health and outcome coverage (`docs/30`). Confidence still cannot authorize. No unrestricted ad spend. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+Low-risk auto-execute is the exit. Condition later autonomy on data health and outcome coverage (`docs/30`). Value-informed priority is additive (`docs/plans/CLIENT_VALUE_TRACK.md`). Confidence still cannot authorize. No unrestricted ad spend. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

@@ -77,3 +77,19 @@
 **Ask Vector** — Tenant-scoped conversational interface to verified growth facts. Not a generic chatbot.
 
 **Package entitlement** — Purchased capability limit enforced by software, not staff memory.
+
+**First Reveal** — Pre-client website quality state. A page is not shown to the client merely because it rendered. Track: `docs/plans/FIRST_REVEAL_TRACK.md`.
+
+**First Reveal Gate** — Additional pre-client checklist. Distinct from the publication Frontend Release Gate in `docs/27`.
+
+**Visual direction** — Structured composition config (hero/services/proof/CTA variants, density, media strategy). Not a generated website.
+
+**Asset Sufficiency Score** — Readiness of authentic media that selects authentic-first, AI-assisted, or typography-led strategy (`docs/29`).
+
+**Replacement cost** — Versioned benchmark of external cost to reproduce a comparable set of delivered services. Not ROI and not revenue.
+
+**Time savings** — Estimated effort avoided, from an approved benchmark or client baseline, labeled estimated.
+
+**Value maturity** — Evidence available for a client's value reporting, from activity-only to revenue-linked and incremental.
+
+**Revenue-to-fee ratio** — Attributed revenue divided by Vector fee for the same period. Not profit ROI.

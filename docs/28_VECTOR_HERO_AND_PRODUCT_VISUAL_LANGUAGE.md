@@ -13,6 +13,7 @@
 **Companion quality standard:** `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`  
 **Companion creative production standard:** `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` — client campaign media, not Control identity. Do not paint tenant domains with Vector Black / Blue.  
 **Companion client outcomes standard:** `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` — authenticated client IA and copy. Those screens use this document’s tokens.  
+**Companion First Reveal track:** `docs/plans/FIRST_REVEAL_TRACK.md` — Control reveal / approve / revise chrome uses this document. Delivery pages stay client brand + `docs/27`.  
 **Living implementation artifacts:** `docs/frontend/VECTOR_FRONTEND_MAP.md`, `VECTOR_COMPONENT_INVENTORY.md`, `VECTOR_UI_MIGRATION_STATUS.md`  
 **Primary design reference:** Approved VECTOR brand identity mockup with dark interface, electric blue vector geometry, signal-to-growth visualization, and premium enterprise AI aesthetic.
 

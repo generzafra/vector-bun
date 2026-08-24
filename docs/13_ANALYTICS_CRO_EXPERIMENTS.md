@@ -28,4 +28,6 @@ Frontend CRO variants must support assignment, variant identification, exposure 
 
 Experiment success should progress from CTA click → qualified-lead rate → revenue per eligible visitor when sample size and data health allow (`docs/30`). Do not use downstream revenue as the primary metric when coverage is weak.
 
+Incrementality for client-value reporting (`docs/plans/CLIENT_VALUE_TRACK.md` V4) consumes validated experiment outcomes only. A lift estimate is not verified revenue.
+
 Search/GEO experiments may test answer structure, entity clarity, comparison presentation, evidence presentation, freshness, or internal linking. Do not optimize only for an observed citation if qualified business outcomes deteriorate. A citation observation is not an experiment win by itself.

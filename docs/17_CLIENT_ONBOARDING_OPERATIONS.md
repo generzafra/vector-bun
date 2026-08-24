@@ -61,6 +61,20 @@ The target onboarding philosophy is Creative QuickStart (`docs/29`): Vector gath
 
 Outcomes QuickStart (`docs/30`) asks in plain language: primary goal, what counts as a good lead, what happens after contact, what counts as a sale, whether a CRM or booking tool exists, high-intent notification preference, and who approves campaigns. Vector 24 should launch with goal, conversion definition, a minimal pipeline (already `new` → `won`/`lost`), an outcome method, and notification defaults. Revenue value may stay optional.
 
+Onboarding does not end at data collection. After Vector Ready:
+
+```text
+Creative QuickStart / asset sufficiency
+        ↓
+First Reveal generation (`docs/plans/FIRST_REVEAL_TRACK.md`)
+        ↓
+Direction approval (Control, `docs/28` chrome, business language)
+        ↓
+Launch preparation
+```
+
+Do not require the client to pick component families. Do not auto-show the raw first compose. Optional Value Baseline (`docs/plans/CLIENT_VALUE_TRACK.md`) may collect current tools, spend, and owner time; it is skippable and not a Vector Ready blocker.
+
 ## Required client decisions
 
 Goals, conversion definitions, approval contacts, approved claims, prohibited claims, markets, communication policy, email consent policy, social channels, reporting cadence.

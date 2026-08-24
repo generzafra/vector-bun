@@ -88,6 +88,10 @@ Email identity is unique per tenant. The same email on two clients is two contac
 
 `leads.status` is `new | working | qualified | won | lost | spam`. Do not replace that enum. Later `sales_outcomes`, `client_goals`, `revenue_events`, `data_health_checks`, notification preferences, entitlements, and client-health snapshots are tenant-owned (`docs/30`). Status `won` / `lost` is not a revenue row. Revenue amounts are optional.
 
+First Reveal later tenant-owned tables (`docs/plans/FIRST_REVEAL_TRACK.md`): visual directions, page candidate scores, first-reveal gate results, and client visual preferences. They require `client_id`. Do not fork `page_versions`.
+
+Client Value later tenant-owned tables (`docs/plans/CLIENT_VALUE_TRACK.md`): value profiles, baselines, versioned benchmarks, activity/work-unit records, value snapshots and components, tool-cost baselines, and client confirmations. They require `client_id`. Do not duplicate `revenue_events`, goals, or the `docs/20` cost ledger. Historical snapshots are immutable.
+
 Phase 3 email (tenant-owned, `client_id` required except global suppressions):
 
 ```text

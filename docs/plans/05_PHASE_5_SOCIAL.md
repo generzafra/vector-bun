@@ -61,7 +61,7 @@ Phase 4 approval queue and content versioning exist.
 
 Charters: `docs/11`, `docs/28`, `docs/29`, `docs/30`. Track lock: [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
 
-Must take: Creative C0. May take: social → lead on existing attribution. Must not take as this exit: C2–C9, O1–O20 (Today, goals, Ask Vector, entitlements), autonomous replies, a second object store.
+Must take: Creative C0. May take: social → lead on existing attribution. Must not take as this exit: C2–C9, O1–O20 (Today, goals, Ask Vector, entitlements), FR3–FR7, V0–V5, autonomous replies, a second object store.
 
 ## Slice 1 — Creative C0 and two-platform publish (done)
 

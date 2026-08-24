@@ -1,6 +1,6 @@
 # Roadmap and Acceptance Gates
 
-Detailed execution plans: [plans/README.md](plans/README.md). Cross-cutting Creative and Outcomes mapping: [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md). Implement one phase at a time. Cursor Grok Bot is the development agent. Production Grok API starts in Phase 4. Numbered charters stop at `docs/30`.
+Detailed execution plans: [plans/README.md](plans/README.md). Cross-cutting Creative, Outcomes, First Reveal, and Client Value mapping: [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md). Implement one phase at a time. Cursor Grok Bot is the development agent. Production Grok API starts in Phase 4. Numbered charters stop at `docs/30`. First Reveal and Client Value are tracks (ADR-0012), not `docs/31` / `docs/32`.
 
 ## Phase 0
 
@@ -117,3 +117,9 @@ Multi-client operational scale: usage quotas, noisy-neighbor controls, scaling a
 Vector 24 is a mature-state operational target after the first supervised clients, not a Phase 0–2 promise. Do not claim 24-hour launch until readiness, launch states, preview, QA, and domain activation are productized.
 
 When a repeated manual launch step is discovered: record it, classify it as client-specific or universal, automate it if safe, add a test, add it to the launch checklist, and update Vector 24 metrics.
+
+## First Reveal and Client Value (tracks, not phases)
+
+First Reveal FR0–FR9 and Client Value V0–V5 attach **inside or after** phases. They never reopen an exit. See [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md) and ADR-0012.
+
+**First paying client (launch readiness, not a Phase 0/1 reopen):** `docs/30` §78 plus First Reveal Gate pass or documented operator override, and V0 activity proof when fee/package is known. Not required: three design directions, winner image generation, Ask Vector, CRM, ads, billing, entitlements, or ROI claims.

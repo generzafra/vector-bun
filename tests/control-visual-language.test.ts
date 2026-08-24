@@ -25,9 +25,15 @@ test('token CSS exposes semantic Control variables', () => {
 test('Control consumes shared tokens instead of hard-coded brand hex', () => {
 	const appCss = readFileSync(join(root, 'apps/control/src/app.css'), 'utf8');
 	const html = readFileSync(join(root, 'apps/control/src/app.html'), 'utf8');
+	const legal = readFileSync(
+		join(root, 'apps/control/src/lib/vector/LegalDocument.svelte'),
+		'utf8'
+	);
 	expect(appCss).toContain("@import '@vector/ui/tokens.css'");
 	expect(appCss).not.toContain('#1677FF');
 	expect(appCss).not.toContain('#3b6fd9');
+	expect(legal).toContain('--vector-');
+	expect(legal).not.toContain('#1677FF');
 	expect(html).toContain('data-brand="vector"');
 	expect(html).toContain('data-theme="vector-dark"');
 	expect(html).toContain('/brand/vector/favicons/favicon-32x32.png');

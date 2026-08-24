@@ -2,12 +2,17 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { assertCsrf, cookieName } from '@vector/auth';
 import { resolveSession } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
+import { isControlPublicPath } from '$lib/public-paths';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.requestId = createRequestId();
-	const token = event.cookies.get(cookieName());
-	event.locals.session = await resolveSession(token);
-	const publicPath = event.url.pathname === '/login';
+	const publicPath = isControlPublicPath(event.url.pathname);
+	try {
+		event.locals.session = await resolveSession(event.cookies.get(cookieName()));
+	} catch (error) {
+		if (!publicPath) throw error;
+		event.locals.session = null;
+	}
 	if (!event.locals.session && !publicPath) {
 		throw redirect(303, '/login');
 	}

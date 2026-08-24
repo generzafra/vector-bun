@@ -2,9 +2,10 @@
 description: Vector client UX, revenue intelligence, goals, and outcome rules
 alwaysApply: false
 ---
-When implementing authenticated client UI, lead outcome tracking, goals, revenue attribution, client dashboards, recommendations, client health, notifications, offers, package entitlements, or client reporting, read:
+When implementing authenticated client UI, lead outcome tracking, goals, revenue attribution, client dashboards, recommendations, client health, notifications, offers, package entitlements, client reporting, ROI, replacement cost, or value statements, read:
 
 docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md
+docs/plans/CLIENT_VALUE_TRACK.md
 
 Authenticated screens use `docs/28` Control tokens. Public visitor UX stays `docs/27`. Creative production stays `docs/29`. Do not invent a third visual language.
 
@@ -21,3 +22,4 @@ Rules:
 - Keep Phase 2 `lead_status` (`new | working | qualified | won | lost | spam`). Do not rewrite applied migrations.
 - Extend Phase 1 `offers`; do not create a colliding second offers table.
 - Money is integer minor units plus currency. Revenue amounts are optional.
+- Client value snapshots, baselines, and benchmarks are tenant-owned. Do not invent revenue, hours saved, or agency cost. Replacement cost is not ROI.

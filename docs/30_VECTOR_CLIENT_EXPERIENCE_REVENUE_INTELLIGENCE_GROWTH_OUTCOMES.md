@@ -6,11 +6,11 @@
 **Document number:** 30  
 **Document type:** Cross-cutting product, UX, analytics, revenue intelligence, and client operations standard  
 **Recommended repository location:** `/docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`  
-**Status:** Accepted architecture standard (ADR-0009). Implementation follows the O1–O20 track. This does not reopen Phase 2, Phase 3, or Phase 4 exits.  
+**Status:** Accepted architecture standard (ADR-0009). Implementation follows the O1–O20 track. Client Value V0–V5 / O21–O22 extends this charter (`docs/plans/CLIENT_VALUE_TRACK.md`, ADR-0012) and is not a second source of truth. This does not reopen Phase 2, Phase 3, or Phase 4 exits.  
 **Version:** 1.1  
 **Date:** 22 August 2026  
 **Applies to:** Client onboarding, client dashboard, CRM linkage, lead lifecycle, sales outcomes, revenue attribution, analytics confidence, goals/KPIs, offers, approvals, notifications, package entitlements, client success health, Vector Insights, CRO, paid acquisition readiness, billing readiness, and long-term autonomous optimization  
-**Does not replace:** `docs/27` public visitor UX, `docs/28` Control / Vector product identity, or `docs/29` Creative Engine. Authenticated client screens use `docs/28` chrome and this document’s information architecture and copy.
+**Does not replace:** `docs/27` public visitor UX, `docs/28` Control / Vector product identity, or `docs/29` Creative Engine. Authenticated client screens use `docs/28` chrome and this document’s information architecture and copy. Client Value (`docs/plans/CLIENT_VALUE_TRACK.md`) extends this charter; it is not a second sales or revenue ledger.
 
 ---
 
@@ -2648,7 +2648,7 @@ Phase 3 already exited with consent-safe nurture. Email → lead-stage → sale 
 
 Phase 4 already exited with typed recommendation cards (`finding`, evidence, `expectedImpact`, `riskClass`, `confidence`) on operator `/intelligence`. Ask Vector, data-health gates, and goal-linked provenance are later. Do not change the Phase 4 exit.
 
-Map Outcomes work **forward**. The O1–O20 order in §88 is a cross-cutting track. It is not a new numbered Vector phase and must not replace the Phase 5 social-publish exit. Client and operator stay one Control app; navigation differs by capability.
+Map Outcomes work **forward**. The O1–O20 order in §88 is a cross-cutting track. It is not a new numbered Vector phase and must not replace the Phase 5 social-publish exit. Client and operator stay one Control app; navigation differs by capability. Client Value V0–V5 (`docs/plans/CLIENT_VALUE_TRACK.md`) extends this charter as O21–O22. It consumes these facts. It does not replace them.
 
 ## Phase 5 — additive
 
@@ -2674,6 +2674,9 @@ Map Outcomes work **forward**. The O1–O20 order in §88 is a cross-cutting tra
 ## Phase 9 — additive
 
 - Portfolio health, client success health, entitlements, operator exception queues.
+- Client Value V5 portfolio / renewal reporting when coverage exists.
+
+First Reveal client card (`docs/plans/FIRST_REVEAL_TRACK.md`): Control shows a business-language “your first Vector site — preview / approve / request changes” state. Do not expose hero schema, model prompts, or variant-score internals.
 
 ## Outcomes track (O1–O20)
 
@@ -2692,7 +2695,9 @@ Before first paying client, ensure:
 - client notification preferences exist;
 - data health can identify major broken sources;
 - dashboard uses business language;
-- approval center works.
+- approval center works;
+- First Reveal Gate pass or documented operator override (`docs/plans/FIRST_REVEAL_TRACK.md`);
+- V0 activity proof when package/fee is known. No ROI claim required (`docs/plans/CLIENT_VALUE_TRACK.md`).
 
 Revenue value may remain optional at first.
 
@@ -2889,7 +2894,12 @@ It is done when:
 
 # 88. Implementation Order
 
-Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These twenty items are the Outcomes track (O1–O20), not a new Vector phase.
+Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These twenty items are the Outcomes track (O1–O20), not a new Vector phase. Client Value extends them:
+
+21. Replacement-cost and time-savings ranges (V2 / O21). Versioned benchmarks or client baseline. Labeled estimated.
+22. Revenue-linked value statement (V3 / O22) only when O11–O12 coverage exists. Replacement cost is not ROI.
+
+V0 activity proof may ship before O1. V1 joins O1–O3. V4 incrementality waits for Phase 7 coverage. V5 waits for Phase 9 later.
 
 Recommended:
 

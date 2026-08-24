@@ -118,4 +118,4 @@ The seeded preview funnels meet the Phase 1 subset of `docs/27` §88: tokens, ac
 
 ## Locked attachments
 
-`docs/27` MVP gate is met. `brand_assets` + `offers` + `StorageProvider` are Creative C0 / Outcomes offer seed only. Do not reopen this exit for generated heroes, campaign-offer versions, or a client Today dashboard. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+`docs/27` MVP gate is met. `brand_assets` + `offers` + `StorageProvider` are Creative C0 / Outcomes offer seed only. Do not reopen this exit for generated heroes, campaign-offer versions, a client Today dashboard, or a Framer-class First Reveal. FR0–FR2 may run later on this engine. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

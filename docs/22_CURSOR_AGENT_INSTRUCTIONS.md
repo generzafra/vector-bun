@@ -2,7 +2,7 @@
 
 ## Read before coding
 
-`AGENTS.md`, all P0 documents, and `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` whenever the work touches onboarding, domains, hosting, delivery, launch, or scaling. Read `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` before creating or materially editing public frontend, funnels, landing pages, conversion, motion, or CRO variants. Read `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` and `docs/frontend/VECTOR_FRONTEND_MAP.md` before Control Plane or Vector-identity UI work. Read `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` before client images, generated media, composition, derivatives, creative approval, or social/email/funnel asset work. Read `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` before authenticated client UX, goals, sales outcomes, revenue, data health, notifications, or entitlements. Client UI is outcome-first; do not expose platform internals by default. Read `docs/plans/06_PHASE_6_SEO_AEO.md` and `docs/10_SEO_AEO_CONTENT_STANDARD.md` before SEO, AEO, GEO, structured data, search providers, answer targets, generative-visibility measurement, or search-to-outcome reporting. Phase 6 S0–S7 are in. Cadence, budgets, and portfolio queues are later S8.
+`AGENTS.md`, all P0 documents, and `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` whenever the work touches onboarding, domains, hosting, delivery, launch, or scaling. Read `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md` before creating or materially editing public frontend, funnels, landing pages, conversion, motion, or CRO variants. Read `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md` and `docs/frontend/VECTOR_FRONTEND_MAP.md` before Control Plane or Vector-identity UI work. Read `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md` before client images, generated media, composition, derivatives, creative approval, or social/email/funnel asset work. Read `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md` before authenticated client UX, goals, sales outcomes, revenue, data health, notifications, or entitlements. Client UI is outcome-first; do not expose platform internals by default. Read `docs/plans/FIRST_REVEAL_TRACK.md` before first client website preview, visual-direction candidates, or first-impression QA. Read `docs/plans/CLIENT_VALUE_TRACK.md` before client ROI, replacement cost, time savings, or value statements. Read `docs/plans/06_PHASE_6_SEO_AEO.md` and `docs/10_SEO_AEO_CONTENT_STANDARD.md` before SEO, AEO, GEO, structured data, search providers, answer targets, generative-visibility measurement, or search-to-outcome reporting. Phase 6 S0–S7 are in. Cadence, budgets, and portfolio queues are later S8.
 
 ## Work method
 
@@ -37,6 +37,8 @@ No 24-hour launch promise from contract signing.
 No architecture that cannot leave a single physical server later.
 No generic AI-style public marketing page.
 No production publication of a public page that fails the Frontend Release Gate in `docs/27`.
+No client First Reveal that skips the First Reveal Gate without a documented operator override.
+No client-facing ROI claim built from invented revenue, hours, or agency cost.
 
 ## Public frontend work item
 

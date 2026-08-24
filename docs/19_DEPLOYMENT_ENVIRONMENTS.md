@@ -49,7 +49,7 @@ GitHub Actions with type check, tests, build, migration validation, deployment, 
 
 ## Rule
 
-Development must not perform real client side effects. Use provider sandboxes or explicit test accounts. Preview must not send production email or social or become indexed.
+Development must not perform real client side effects. Use provider sandboxes or explicit test accounts. Preview must not send production email or social or become indexed. Test or demo First Reveal and Client Value data must never appear as production client value.
 
 Optional Trigger.dev: set `TRIGGER_SECRET_KEY` and `TRIGGER_PROJECT_REF`, then `bun run dev:jobs`. Tests ignore the secret key and stay in-process. The task host is `apps/jobs`, not a separate Vector product.
 

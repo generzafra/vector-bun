@@ -2,7 +2,7 @@
 
 Living map of **actual** frontend paths. Update this file when canonical paths change. Do not copy the recommended `src/lib/vector/` tree from `docs/28` as if it already exists.
 
-**Last inspected:** 23 August 2026
+**Last inspected:** 24 August 2026
 
 ## Planes
 
@@ -31,13 +31,14 @@ Delivery does not import `@vector/ui/tokens.css`. Client tokens remain `--bg`, `
 
 ## Shells
 
-| Shell                  | Path                                                                                          |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| Control app shell      | `apps/control/src/lib/vector/AppShell.svelte`                                                 |
-| Control root layout    | `apps/control/src/routes/+layout.svelte`                                                      |
-| Control auth           | `apps/control/src/routes/login/+page.svelte` (quiet canvas inside `AppShell` when signed out) |
-| Delivery layout        | `apps/delivery/src/routes/+layout.svelte`                                                     |
-| Delivery page renderer | `apps/delivery/src/lib/sections/PageRenderer.svelte`                                          |
+| Shell                  | Path                                                                                                             |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Control app shell      | `apps/control/src/lib/vector/AppShell.svelte`                                                                    |
+| Control root layout    | `apps/control/src/routes/+layout.svelte`                                                                         |
+| Control auth           | `apps/control/src/routes/login/+page.svelte` (quiet canvas inside `AppShell` when signed out)                    |
+| Control legal          | `apps/control/src/routes/privacy/+page.svelte`, `apps/control/src/routes/terms/+page.svelte` (public, `docs/28`) |
+| Delivery layout        | `apps/delivery/src/routes/+layout.svelte`                                                                        |
+| Delivery page renderer | `apps/delivery/src/lib/sections/PageRenderer.svelte`                                                             |
 
 ## Shared Control primitives
 
@@ -99,8 +100,12 @@ There is not yet a shared `Button.svelte` or form-control package. Control nativ
 | Portfolio    | `apps/control/src/routes/portfolio/+page.svelte`           |
 | Members      | `apps/control/src/routes/members/+page.svelte`             |
 | Login        | `apps/control/src/routes/login/+page.svelte`               |
+| Privacy      | `apps/control/src/routes/privacy/+page.svelte`             |
+| Terms        | `apps/control/src/routes/terms/+page.svelte`               |
 
 `/portfolio` is the Phase 9 Control surface for operator exceptions: Vector 24 clocks, launch blockers, and usage warnings for clients the actor can access. Enforce refuses over-limit API, AI, email, upload, and analytics consumes. It does not claim a commercial 24-hour promise or 20-client capacity. Class D is unpromised. Limit overrides require `scale.manage`, CSRF, a mode, and a written reason. `/intelligence` is the Phase 4 Control surface for drafts, recommendation cards, approvals, unpublished page artifacts, activity, tool-call audit, and the tenant cost ledger. Approved funnel/copy drafts are reviewed on `/funnel`; publication stays a Funnel action. `/autonomy` is the Phase 8 Control surface for the action-policy catalog, Level 3 and Level 4 eligibility, autonomy ceiling 0–4, privileged client kill-switch events, S1 Run now for an internal weekly report, S2 launch automation policy records, S3 Run now for opted-in unpublished queue QA and wire tracking, S4 Run now for a Phase 7 policy-ready experiment promote, and Rollback for selected succeeded executions. Confidence cannot authorize. The weekly report does not send or publish. Launch execute does not publish, send, create drafts, or go live. Generate drafts stays human-led. Experiment promote changes only that tenant's published pointer. Other preapproved classes stay evaluate-only. `/social` is the Phase 5 Control surface for LinkedIn, X, Facebook, and Instagram connections, official OAuth start, Facebook / Instagram Page picker, token refresh, Creative C0 uploads, post lifecycle, the scheduled list, publications, metrics, and attributed lead counts. `/social/oauth/callback` completes official OAuth or stores an encrypted Page-pick cookie and never renders tokens. Tokens and media grants are never rendered. `/search` is the Phase 6 Control surface for official Search Console / Bing properties, technical issues, official queries, schema entities, answer targets, source-backed FAQ gaps, a capped commercial GEO query set, recorded observations, and the SEO/AEO/GEO backlog. Credentials stay on the server. Refreshing answer readiness does not create a page. Recorded observations are labeled and can be stale; they are not a GEO score. Manual and operator-assisted measurement is available. Official generative-engine APIs stay unsupported. `/search` also shows a client-safe visibility snapshot, a Business impact panel, cadence/budget controls, this client's due queue, and portfolio exceptions for clients the actor can access. One observation is not a pattern, a stale snapshot is not current, and a mention is not a referred lead. Revenue stays unlabeled until a later revenue row exists. `/experiments` is the Phase 7 Control surface for tenant-scoped CRO proposals. Operators can approve, pause, resume, or start a recorded proposal. Fields lock after it is recorded. Start begins sticky Delivery assignment on published page versions. Preview stays test traffic. Measurement shows predetermined metric counts, horizon, sample, bot contamination, and source imbalance. Operators can record a policy-gated decision and a tenant-scoped learning object. A higher percentage is not a win. Early stop stays blocked. Campaigns, an automation canvas, and chart themes are still later. Analytics remains tables only.
+
+`/privacy` and `/terms` are public Vector product legal pages. They render `VECTOR_PRIVACY_POLICY.md` and `VECTOR_TERMS_OF_USE.md` without authoring notes, do not require a session, and must not be copied onto Delivery tenant hosts. Remaining contact placeholders stay visible until counsel replaces them. Client funnels keep tenant privacy acknowledgements; they do not use these Vector pages as the client privacy policy.
 
 ## Delivery public routes
 

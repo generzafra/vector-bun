@@ -9,7 +9,7 @@ Cursor Grok Bot implements this phase. Do not call the xAI Grok API. Do not run 
 
 Governing docs: `AGENTS.md`, `docs/03`, `docs/04`, `docs/05`, `docs/14`, `docs/18`, `docs/19`, `docs/21`, master plan §5–7, §29, §40–41.
 
-**Locked:** Charters 26–30 do not reopen this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+**Locked:** Charters 26–30 and First Reveal / Client Value tracks do not reopen this exit. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
 
 ---
 

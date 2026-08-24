@@ -53,3 +53,5 @@ Control visual language (`docs/28`) may be adopted incrementally on existing ope
 Creative MVP, when that track starts, is ingest, brand visual profile, image library, `ImageProvider`, deterministic composition, derivatives, approval, R2 via existing `StorageProvider`, QA, and usage tracking (`docs/29`). Advanced video, 3D, and a full creative studio are out of scope. Phase 1 `brand_assets` already cover identity-file upload. Generated visuals are not an MVP acceptance criterion.
 
 Outcomes MVP (`docs/30`) is visitor → lead → existing `won` / `lost` status → optional revenue value → attribution v1. Full CRM, forecasting, commissions, multi-touch attribution, ads, and billing are out of scope. A client Today dashboard is not an MVP exit blocker.
+
+First Reveal (`docs/plans/FIRST_REVEAL_TRACK.md`) is launch-readiness quality, not an MVP exit. Do not reopen Phase 1 for a Framer-class first site. Do not delay MVP for a sophisticated ROI engine (`docs/plans/CLIENT_VALUE_TRACK.md`). Activity proof without an ROI claim may appear before the first paying client.

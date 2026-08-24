@@ -111,7 +111,7 @@ Phase 2 events and Phase 1 immutable page versions exist.
 
 ## Locked attachments
 
-One experiment + learning object is the exit. Variants still pass `docs/27`. Creative C8 and Outcomes offer/revenue metrics are additive and require coverage. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+One experiment + learning object is the exit. Variants still pass `docs/27`. Creative C8, Outcomes offer/revenue metrics, FR9 learning, and V4 incrementality are additive and require coverage. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
 
 ## 10. S1 rules
 

@@ -2,7 +2,7 @@
 description: Vector testing rules
 alwaysApply: true
 ---
-Prioritize tests for tenant isolation, authorization, consent, suppression, attribution, provider idempotency, AI action policy, creative rights or generation isolation, lead-stage transitions, revenue isolation, entitlement deny, attribution-confidence labels, search/GEO tenant isolation, preview noindex, and factual schema fail-closed.
+Prioritize tests for tenant isolation, authorization, consent, suppression, attribution, provider idempotency, AI action policy, creative rights or generation isolation, lead-stage transitions, revenue isolation, entitlement deny, attribution-confidence labels, search/GEO tenant isolation, preview noindex, factual schema fail-closed, first-reveal gate and candidate isolation, and client-value snapshot isolation.
 Also test hostname-to-tenant routing, preview isolation, launch-time cross-tenant leakage, and preview isolation of sitemap, JSON-LD, and `llms.txt`.
 Use bun:test. Do not claim a feature is complete if required tests were not executed.
 Any bug involving cross tenant access requires a regression test.

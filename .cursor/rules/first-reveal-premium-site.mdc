@@ -1,0 +1,25 @@
+---
+description: Vector first client website reveal, premium composition, design direction, and first-impression quality
+alwaysApply: false
+---
+When implementing or changing first client preview generation, visual direction selection, premium public page composition, first reveal review, page candidate scoring, visual confidence, asset sufficiency, or client reveal UX, read:
+
+- docs/plans/FIRST_REVEAL_TRACK.md
+- docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md
+- docs/09_FUNNEL_ENGINE_DESIGN_SYSTEM.md
+- docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md
+
+Authenticated reveal chrome uses `docs/28`. Do not paint tenant Delivery sites with Vector identity. Do not treat `docs/28` as the Creative Engine.
+
+Do not create a parallel funnel engine or creative engine.
+
+Use:
+business truth → page narrative → visual-direction manifests → validated component variants → deterministic render → candidate score → selected winner → winner-only premium media generation → First Reveal Gate → client reveal
+
+Never default to three fully generated websites.
+
+Do not reveal a page merely because it renders successfully.
+
+Do not reopen the Phase 1 exit. Publication still requires the `docs/27` Frontend Release Gate. The First Reveal Gate is an additional pre-client gate.
+
+Treat the client's first visible website as a product-quality gate.

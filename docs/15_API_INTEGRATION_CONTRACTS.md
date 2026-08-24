@@ -14,6 +14,8 @@ Later Creative Engine adapters (`docs/29`): ImageProvider, then VideoProvider an
 
 Later Outcomes adapters (`docs/30`): CRMProvider, then RevenueProvider, BookingProvider, CommerceProvider, AdProvider, and BillingProvider. Do not couple the domain to one CRM, ad network, or payment processor. Do not let AI change ad budgets automatically.
 
+Client Value (`docs/plans/CLIENT_VALUE_TRACK.md`) consumes those adapters. Do not create a ValueProvider or a second revenue adapter family.
+
 `StorageProvider` is implemented in `packages/storage`. Local disk is the default. Cloudflare R2 is selected when R2 credentials are present. Object keys are `clients/{client_id}/...`. Metadata lives in PostgreSQL. Raw keys are not authorization. Creative bytes use the same adapter under `clients/{client_id}/creative/...` when C0 ships.
 
 ## Every adapter

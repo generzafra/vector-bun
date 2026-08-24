@@ -1,6 +1,6 @@
 # Vector UI migration status
 
-**Last updated:** 23 August 2026
+**Last updated:** 24 August 2026
 
 Identity migration applies to Control only. Delivery stays on client tokens and `docs/27`.
 
@@ -9,6 +9,8 @@ Identity migration applies to Control only. Delivery stays on client tokens and 
 | Route        | tokens wired | shell migrated | shared controls | responsive reviewed | accessibility reviewed | visual QA      | legacy CSS removed |
 | ------------ | ------------ | -------------- | --------------- | ------------------- | ---------------------- | -------------- | ------------------ |
 | Login        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] focus + labels     | [x] first pass | [x]                |
+| Privacy      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] headings + toc     | [ ]            | [x]                |
+| Terms        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] headings + toc     | [ ]            | [x]                |
 | Overview     | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Clients      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Knowledge    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |

@@ -18,6 +18,8 @@ Creative assets may contain people, customer photos, logos, copyrighted media, r
 
 Revenue and sales outcomes are commercially sensitive (`docs/30`). Apply role permissions, minimization, audit, tenant isolation, and retention. Do not expose internal client revenue to unauthorized MGE staff or unrelated client users.
 
+Client value baselines, replacement-cost benchmarks, salary/time inputs, and value snapshots are commercially sensitive (`docs/plans/CLIENT_VALUE_TRACK.md`). Do not expose MGE margin, wholesale provider cost, or internal labor cost on client views. Value exports are capability-gated.
+
 ## Consent
 
 Maintain a purpose based consent ledger and suppression records. Public forms must include required privacy acknowledgement and must not hide consent behind animation or unreadable placeholders (`docs/27`).
@@ -29,3 +31,5 @@ Define retention by data class and client jurisdiction. Do not keep all data for
 ## Legal configuration
 
 Support client specific jurisdiction profiles. Legal counsel should approve actual policy language and compliance configurations for markets served.
+
+Vector product Privacy Policy and Terms of Use are public Control routes (`/privacy`, `/terms`). They are not tenant Delivery pages and must not be treated as a client privacy policy. Counsel must replace remaining contact placeholders before production reliance.

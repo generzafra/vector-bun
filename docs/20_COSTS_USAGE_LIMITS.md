@@ -27,3 +27,5 @@ Use lower cost models for classification and extraction; reserve advanced models
 ## Reporting
 
 Expose internal cost per client, cost per qualified lead where possible, and margin by service package. Connect service cost to attributed client revenue and contribution margin (`docs/30`). Do not expose MGE internal margins to clients unless intentionally designed.
+
+Client-facing value (`docs/plans/CLIENT_VALUE_TRACK.md`) is a different ledger: measured outcomes, defensible time/replacement-cost ranges, and work delivered. First Reveal budgets (`first_reveal_candidate_limit`, AI/image/review/alternate/retry caps) are tenant-attributable and fail closed to a usable deterministic preview when policy is exceeded.
