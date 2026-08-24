@@ -14,16 +14,16 @@
 
 **Remaining execution (24 August 2026):** FR0–FR2 and thin FR7 are in. FR3–FR9 are open. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B. Creative dependencies: [CREATIVE_TRACK.md](CREATIVE_TRACK.md). Client reveal (FR8) uses `docs/30` business language; do not overwhelm with schema names, model names, or CSS tokens. Do not generate three full sites.
 
-| Slice | Status | Depends on |
-| ----- | ------ | ---------- |
-| FR0–FR2 | In | — |
-| Thin FR7 | In (deterministic checks + operator override; preview publish not blocked) | — |
-| FR3 | Open | C1 + C5 |
-| FR4–FR5 | Open | Structured AI; cheap candidates |
-| FR6 | Open | C2–C5 winner-only media |
-| FR7 remainder | Open | visual / a11y / perf / screenshots |
-| FR8 | Open | C7 + remaining FR7 |
-| FR9 | Open | Phase 9 later |
+| Slice         | Status                                                                     | Depends on                         |
+| ------------- | -------------------------------------------------------------------------- | ---------------------------------- |
+| FR0–FR2       | In                                                                         | —                                  |
+| Thin FR7      | In (deterministic checks + operator override; preview publish not blocked) | —                                  |
+| FR3           | Open                                                                       | C1 + C5                            |
+| FR4–FR5       | Open                                                                       | Structured AI; cheap candidates    |
+| FR6           | Open                                                                       | C2–C5 winner-only media            |
+| FR7 remainder | Open                                                                       | visual / a11y / perf / screenshots |
+| FR8           | Open                                                                       | C7 + remaining FR7                 |
+| FR9           | Open                                                                       | Phase 9 later                      |
 
 ---
 

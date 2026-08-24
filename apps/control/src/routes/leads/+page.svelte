@@ -3,9 +3,11 @@
 	import EmptyState from '$lib/vector/EmptyState.svelte';
 	import PageHeader from '$lib/vector/PageHeader.svelte';
 	import StatusChip from '$lib/vector/StatusChip.svelte';
+	import { hasOperatorControlNav } from '@vector/contracts';
 
 	let { data, form } = $props();
 	const canManage = $derived(data.permissions.includes('leads.manage'));
+	const operatorNav = $derived(hasOperatorControlNav(data.permissions));
 
 	function tone(status: string, isTest: boolean) {
 		if (isTest) return 'warning' as const;
@@ -17,9 +19,11 @@
 </script>
 
 <PageHeader
-	eyebrow="CRM"
+	eyebrow={operatorNav ? 'CRM' : undefined}
 	title="Leads"
-	description="Tenant-scoped contacts created from Delivery form submits. Attribution is first touch and last non-direct. Preview hosts stay test-mode."
+	description={operatorNav
+		? 'Contacts created from Delivery form submits. Attribution is first touch and last non-direct. Preview hosts stay test-mode.'
+		: 'People who asked to hear from you. Mark what happened so Vector can keep the record straight.'}
 />
 
 {#if form?.error}
@@ -34,7 +38,9 @@
 	<section>
 		<EmptyState
 			title="No leads yet."
-			detail="A tracked visitor submit on this client's funnel will appear here with consent and attribution."
+			detail={operatorNav
+				? "A tracked visitor submit on this client's funnel will appear here with consent and attribution."
+				: 'When someone submits a form on your site, they will appear here.'}
 		/>
 	</section>
 {:else}
@@ -44,10 +50,12 @@
 				<tr>
 					<th>Contact</th>
 					<th>Status</th>
-					<th>Score</th>
-					<th>First touch</th>
-					<th>Last non-direct</th>
-					<th>Host</th>
+					{#if operatorNav}
+						<th>Score</th>
+						<th>First touch</th>
+						<th>Last non-direct</th>
+						<th>Host</th>
+					{/if}
 					{#if canManage}<th>Update</th>{/if}
 				</tr>
 			</thead>
@@ -64,18 +72,20 @@
 								tone={tone(lead.status, lead.isTest)}
 							/>
 						</td>
-						<td>{lead.score ?? '—'}</td>
-						<td>
-							{lead.attribution
-								? `${lead.attribution.firstTouchChannel}${lead.attribution.firstTouchSource ? ` / ${lead.attribution.firstTouchSource}` : ''}`
-								: '—'}
-						</td>
-						<td>
-							{lead.attribution
-								? `${lead.attribution.lastNonDirectChannel}${lead.attribution.lastNonDirectSource ? ` / ${lead.attribution.lastNonDirectSource}` : ''}`
-								: '—'}
-						</td>
-						<td>{lead.hostname}</td>
+						{#if operatorNav}
+							<td>{lead.score ?? '—'}</td>
+							<td>
+								{lead.attribution
+									? `${lead.attribution.firstTouchChannel}${lead.attribution.firstTouchSource ? ` / ${lead.attribution.firstTouchSource}` : ''}`
+									: '—'}
+							</td>
+							<td>
+								{lead.attribution
+									? `${lead.attribution.lastNonDirectChannel}${lead.attribution.lastNonDirectSource ? ` / ${lead.attribution.lastNonDirectSource}` : ''}`
+									: '—'}
+							</td>
+							<td>{lead.hostname}</td>
+						{/if}
 						{#if canManage}
 							<td>
 								<form method="post" action="?/status">

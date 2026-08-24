@@ -3,9 +3,11 @@
 	import EmptyState from '$lib/vector/EmptyState.svelte';
 	import PageHeader from '$lib/vector/PageHeader.svelte';
 	import StatusChip from '$lib/vector/StatusChip.svelte';
+	import { hasOperatorControlNav } from '@vector/contracts';
 
 	let { data, form } = $props();
 	const canManage = $derived(data.permissions.includes('goals.manage'));
+	const operatorNav = $derived(hasOperatorControlNav(data.permissions));
 	const outcomes = $derived(data.outcomes);
 
 	function healthTone(status: string) {
@@ -24,9 +26,11 @@
 </script>
 
 <PageHeader
-	eyebrow="Outcomes"
+	eyebrow={operatorNav ? 'Outcomes' : undefined}
 	title="Goals"
-	description="Set the primary business target for this client. Data health flags a broken tracking source. Notification defaults are recorded here; they do not send mail by themselves."
+	description={operatorNav
+		? 'Set the primary business target for this client. Data health flags a broken tracking source. Notification defaults are recorded here; they do not send mail by themselves.'
+		: 'The main target Vector is working toward. If a tracking source is broken, Vector will say so here instead of guessing.'}
 />
 
 {#if form?.error}
@@ -56,7 +60,9 @@
 		{:else}
 			<EmptyState
 				title="No primary goal yet."
-				detail="A paying client needs one named target before the site is treated as commercially ready."
+				detail={operatorNav
+					? 'A paying client needs one named target before the site is treated as commercially ready.'
+					: 'Tell Vector what success looks like — for example, qualified leads this month.'}
 			/>
 		{/if}
 		{#if outcomes.goals.length > 0}
@@ -147,7 +153,9 @@
 	<section>
 		<h2>Data health</h2>
 		<p>
-			These checks do not invent revenue. A broken source must be visible before recommendations.
+			{operatorNav
+				? 'These checks do not invent revenue. A broken source must be visible before recommendations.'
+				: 'Vector will not invent results. A broken tracking source shows up here.'}
 		</p>
 		{#if outcomes.health.length === 0}
 			<EmptyState title="No health checks yet." />
@@ -177,7 +185,11 @@
 
 	<section>
 		<h2>Notifications</h2>
-		<p>High-intent leads and data-health alerts default on. Weekly digest defaults off.</p>
+		<p>
+			{operatorNav
+				? 'High-intent leads and data-health alerts default on. Weekly digest defaults off.'
+				: 'High-intent leads and tracking alerts default on. Weekly summary defaults off.'}
+		</p>
 		{#each outcomes.notifications as preference (preference.id)}
 			<div class="meta">
 				<p>{notificationLabel(preference.topic)}</p>

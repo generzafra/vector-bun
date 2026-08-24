@@ -1,28 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { controlNavFor } from '@vector/contracts';
 	import LegalLinks from '$lib/vector/LegalLinks.svelte';
 
-	let { userId, children }: { userId: string | null; children: import('svelte').Snippet } =
-		$props();
+	let {
+		userId,
+		permissions = [],
+		children
+	}: {
+		userId: string | null;
+		permissions?: string[];
+		children: import('svelte').Snippet;
+	} = $props();
 
-	const links = [
-		{ href: '/', label: 'Overview' },
-		{ href: '/clients', label: 'Clients' },
-		{ href: '/knowledge', label: 'Knowledge' },
-		{ href: '/funnel', label: 'Funnel' },
-		{ href: '/leads', label: 'Leads' },
-		{ href: '/goals', label: 'Goals' },
-		{ href: '/email', label: 'Email' },
-		{ href: '/social', label: 'Social' },
-		{ href: '/search', label: 'Search' },
-		{ href: '/intelligence', label: 'Intelligence' },
-		{ href: '/autonomy', label: 'Autonomy' },
-		{ href: '/analytics', label: 'Analytics' },
-		{ href: '/experiments', label: 'Experiments' },
-		{ href: '/launch', label: 'Launch' },
-		{ href: '/portfolio', label: 'Portfolio' },
-		{ href: '/members', label: 'Members' }
-	] as const;
+	const links = $derived(controlNavFor(permissions));
 
 	let navOpen = $state(false);
 	const current = $derived(page.url.pathname);

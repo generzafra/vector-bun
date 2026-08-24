@@ -4,9 +4,11 @@
 	import PageHeader from '$lib/vector/PageHeader.svelte';
 	import RecommendationCard from '$lib/vector/RecommendationCard.svelte';
 	import StatusChip from '$lib/vector/StatusChip.svelte';
+	import { hasOperatorControlNav } from '@vector/contracts';
 
 	let { data, form } = $props();
 	const canManage = $derived(data.permissions.includes('ai.manage'));
+	const operatorNav = $derived(hasOperatorControlNav(data.permissions));
 	const overview = $derived(data.overview);
 	const pending = $derived(
 		(overview?.approvals ?? [])
@@ -37,9 +39,11 @@
 </script>
 
 <PageHeader
-	eyebrow="Vector Intelligence"
-	title="Intelligence"
-	description="Agents research, draft, and recommend. Approving funnel or copy writes an unpublished page draft only. Nothing publishes, sends, or goes live. Confidence cannot approve an action or override a pause."
+	eyebrow={operatorNav ? 'Vector Intelligence' : undefined}
+	title={operatorNav ? 'Intelligence' : 'Approvals'}
+	description={operatorNav
+		? 'Agents research, draft, and recommend. Approving funnel or copy writes an unpublished page draft only. Nothing publishes, sends, or goes live. Confidence cannot approve an action or override a pause.'
+		: 'Items that need your decision. Approving a draft does not publish or send anything.'}
 />
 
 {#if form?.error}
@@ -54,83 +58,88 @@
 		<EmptyState title="Select a client on Overview first." />
 	</section>
 {:else}
-	<section>
-		<h2>Status</h2>
-		<p>
-			<StatusChip
-				label={overview.pausedGlobal || overview.settings.paused ? 'paused' : 'ready'}
-				tone={overview.pausedGlobal || overview.settings.paused ? 'danger' : 'success'}
-			/>
-			Provider: {overview.provider.adapter} — {overview.provider.detail}
-		</p>
-		<p>
-			Client pause: {overview.settings.paused ? 'on' : 'off'}. Platform pause:
-			{overview.pausedGlobal ? 'on' : 'off'}. Autonomy ceiling: {overview.settings.autonomyCeiling}
-			(Phase 4 max {overview.phase4MaxAutonomy}).
-		</p>
-		<p>Cost ledger: {overview.costTotalLabel} USD micros recorded for this tenant.</p>
-		{#if canManage}
-			<form method="post" action="?/pause" class="wide">
-				<input type="hidden" name="_csrf" value={data.csrf} />
-				<label>
-					Kill-switch reason
-					<textarea
-						name="reason"
-						required
-						minlength="8"
-						maxlength="400"
-						rows="2"
-						placeholder="Required. Confidence cannot override a pause."></textarea>
-				</label>
-				<div class="actions">
-					<button type="submit" name="paused" value="true" class="secondary"
-						>Pause this client</button
-					>
-					<button type="submit" name="paused" value="false" class="secondary"
-						>Resume this client</button
-					>
-				</div>
-			</form>
-			<p><a href="/autonomy">Open Autonomy policies</a></p>
-		{/if}
-	</section>
+	{#if operatorNav}
+		<section>
+			<h2>Status</h2>
+			<p>
+				<StatusChip
+					label={overview.pausedGlobal || overview.settings.paused ? 'paused' : 'ready'}
+					tone={overview.pausedGlobal || overview.settings.paused ? 'danger' : 'success'}
+				/>
+				Provider: {overview.provider.adapter} — {overview.provider.detail}
+			</p>
+			<p>
+				Client pause: {overview.settings.paused ? 'on' : 'off'}. Platform pause:
+				{overview.pausedGlobal ? 'on' : 'off'}. Autonomy ceiling: {overview.settings
+					.autonomyCeiling}
+				(Phase 4 max {overview.phase4MaxAutonomy}).
+			</p>
+			<p>Cost ledger: {overview.costTotalLabel} USD micros recorded for this tenant.</p>
+			{#if canManage}
+				<form method="post" action="?/pause" class="wide">
+					<input type="hidden" name="_csrf" value={data.csrf} />
+					<label>
+						Kill-switch reason
+						<textarea
+							name="reason"
+							required
+							minlength="8"
+							maxlength="400"
+							rows="2"
+							placeholder="Required. Confidence cannot override a pause."></textarea>
+					</label>
+					<div class="actions">
+						<button type="submit" name="paused" value="true" class="secondary"
+							>Pause this client</button
+						>
+						<button type="submit" name="paused" value="false" class="secondary"
+							>Resume this client</button
+						>
+					</div>
+				</form>
+				<p><a href="/autonomy">Open Autonomy policies</a></p>
+			{/if}
+		</section>
+
+		<section>
+			<h2>Run a draft</h2>
+			<p>
+				Research, copy, analytics, and funnel plans stay recommendations until an operator decides.
+				Approving funnel or copy writes an unpublished page version from the composer. Copy cannot
+				include HTML. Funnel plans use approved section types only.
+			</p>
+			{#if canManage}
+				<form method="post" action="?/run" class="wide">
+					<input type="hidden" name="_csrf" value={data.csrf} />
+					<label>
+						Agent
+						<select name="agentKey" required>
+							{#each overview.agents as agent (agent.id)}
+								<option value={agent.key}>{agent.name}</option>
+							{/each}
+						</select>
+					</label>
+					<label>
+						Brief
+						<textarea name="brief" rows="3" maxlength="2000" placeholder="Optional operator brief"
+						></textarea>
+					</label>
+					<button type="submit">Draft recommendation</button>
+				</form>
+			{:else}
+				<EmptyState title="You can read recommendations but cannot start a run." />
+			{/if}
+		</section>
+	{/if}
 
 	<section>
-		<h2>Run a draft</h2>
-		<p>
-			Research, copy, analytics, and funnel plans stay recommendations until an operator decides.
-			Approving funnel or copy writes an unpublished page version from the composer. Copy cannot
-			include HTML. Funnel plans use approved section types only.
-		</p>
-		{#if canManage}
-			<form method="post" action="?/run" class="wide">
-				<input type="hidden" name="_csrf" value={data.csrf} />
-				<label>
-					Agent
-					<select name="agentKey" required>
-						{#each overview.agents as agent (agent.id)}
-							<option value={agent.key}>{agent.name}</option>
-						{/each}
-					</select>
-				</label>
-				<label>
-					Brief
-					<textarea name="brief" rows="3" maxlength="2000" placeholder="Optional operator brief"
-					></textarea>
-				</label>
-				<button type="submit">Draft recommendation</button>
-			</form>
-		{:else}
-			<EmptyState title="You can read recommendations but cannot start a run." />
-		{/if}
-	</section>
-
-	<section>
-		<h2>Approval queue</h2>
+		<h2>{operatorNav ? 'Approval queue' : 'Needs you'}</h2>
 		{#if pending.length === 0}
 			<EmptyState
-				title="No pending recommendations."
-				detail="Successful runs appear here until an operator approves or rejects. Approving funnel or copy writes an unpublished draft. It still does not publish, send, or go live."
+				title={operatorNav ? 'No pending recommendations.' : 'Nothing needs you right now.'}
+				detail={operatorNav
+					? 'Successful runs appear here until an operator approves or rejects. Approving funnel or copy writes an unpublished draft. It still does not publish, send, or go live.'
+					: 'When a campaign or content change is ready, it will show here. Approving does not publish or send.'}
 			/>
 		{:else}
 			<div class="queue">
@@ -142,7 +151,7 @@
 						expectedImpact={item.decision?.expectedImpact ?? 'Not estimated.'}
 						confidence={item.decision?.confidence ?? 0}
 						risk={item.decision?.riskClass ?? item.approval.riskClass}
-						cost={costLabel(item.cost?.costMicros)}
+						cost={operatorNav ? costLabel(item.cost?.costMicros) : undefined}
 						approvalRequired={item.approval.required}
 						status={item.approval.status}
 					>
@@ -151,7 +160,7 @@
 								<input type="hidden" name="_csrf" value={data.csrf} />
 								<input type="hidden" name="id" value={item.approval.id} />
 								<input type="hidden" name="decision" value="approved" />
-								<button type="submit">Approve draft</button>
+								<button type="submit">{operatorNav ? 'Approve draft' : 'Approve'}</button>
 							</form>
 							<form method="post" action="?/decide">
 								<input type="hidden" name="_csrf" value={data.csrf} />
@@ -166,169 +175,171 @@
 		{/if}
 	</section>
 
-	<section>
-		<h2>Unpublished drafts</h2>
-		<p>
-			Approved funnel and copy artifacts stay drafts. Preview remains noindex. Review the current
-			draft on Funnel. Publication is a Funnel action, not an Intelligence approval.
-		</p>
-		{#if overview.artifacts.length === 0}
-			<EmptyState title="No unpublished page drafts from approvals." />
-		{:else}
-			<table>
-				<thead>
-					<tr>
-						<th>Agent</th>
-						<th>Version</th>
-						<th>Status</th>
-						<th>noindex</th>
-						<th>Review</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each overview.artifacts as artifact (artifact.pageVersionId)}
+	{#if operatorNav}
+		<section>
+			<h2>Unpublished drafts</h2>
+			<p>
+				Approved funnel and copy artifacts stay drafts. Preview remains noindex. Review the current
+				draft on Funnel. Publication is a Funnel action, not an Intelligence approval.
+			</p>
+			{#if overview.artifacts.length === 0}
+				<EmptyState title="No unpublished page drafts from approvals." />
+			{:else}
+				<table>
+					<thead>
 						<tr>
-							<td>{artifact.agentKey}</td>
-							<td>{artifact.version}</td>
-							<td>
-								<StatusChip
-									label={artifact.status}
-									tone={artifact.status === 'draft' ? 'warning' : 'muted'}
-								/>
-							</td>
-							<td>{artifact.noindex ? 'yes' : 'no'}</td>
-							<td>
-								<a href="/funnel">
-									{artifact.isCurrentFunnelDraft ? 'Current Funnel draft' : 'Open Funnel'}
-								</a>
-							</td>
+							<th>Agent</th>
+							<th>Version</th>
+							<th>Status</th>
+							<th>noindex</th>
+							<th>Review</th>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{/if}
-	</section>
+					</thead>
+					<tbody>
+						{#each overview.artifacts as artifact (artifact.pageVersionId)}
+							<tr>
+								<td>{artifact.agentKey}</td>
+								<td>{artifact.version}</td>
+								<td>
+									<StatusChip
+										label={artifact.status}
+										tone={artifact.status === 'draft' ? 'warning' : 'muted'}
+									/>
+								</td>
+								<td>{artifact.noindex ? 'yes' : 'no'}</td>
+								<td>
+									<a href="/funnel">
+										{artifact.isCurrentFunnelDraft ? 'Current Funnel draft' : 'Open Funnel'}
+									</a>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
+		</section>
 
-	<section>
-		<h2>Activity</h2>
-		{#if overview.activity.length === 0}
-			<EmptyState title="No intelligence activity for this client." />
-		{:else}
-			<table>
-				<thead>
-					<tr>
-						<th>When</th>
-						<th>Kind</th>
-						<th>Summary</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each overview.activity as item (item.id)}
+		<section>
+			<h2>Activity</h2>
+			{#if overview.activity.length === 0}
+				<EmptyState title="No intelligence activity for this client." />
+			{:else}
+				<table>
+					<thead>
 						<tr>
-							<td>{atLabel(item.at)}</td>
-							<td>{item.kind}</td>
-							<td>{item.summary}</td>
+							<th>When</th>
+							<th>Kind</th>
+							<th>Summary</th>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{/if}
-	</section>
+					</thead>
+					<tbody>
+						{#each overview.activity as item (item.id)}
+							<tr>
+								<td>{atLabel(item.at)}</td>
+								<td>{item.kind}</td>
+								<td>{item.summary}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
+		</section>
 
-	<section>
-		<h2>Runs</h2>
-		{#if overview.runs.length === 0}
-			<EmptyState title="No AI runs for this client." />
-		{:else}
-			<table>
-				<thead>
-					<tr>
-						<th>Agent</th>
-						<th>Status</th>
-						<th>Provider</th>
-						<th>Model</th>
-						<th>Schema</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each overview.runs as run (run.id)}
+		<section>
+			<h2>Runs</h2>
+			{#if overview.runs.length === 0}
+				<EmptyState title="No AI runs for this client." />
+			{:else}
+				<table>
+					<thead>
 						<tr>
-							<td>{run.agentKey}</td>
-							<td>
-								<StatusChip label={run.status} tone={runTone(run.status)} />
-							</td>
-							<td>{run.provider}</td>
-							<td>{run.model}</td>
-							<td>{run.schemaName}</td>
+							<th>Agent</th>
+							<th>Status</th>
+							<th>Provider</th>
+							<th>Model</th>
+							<th>Schema</th>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{/if}
-	</section>
+					</thead>
+					<tbody>
+						{#each overview.runs as run (run.id)}
+							<tr>
+								<td>{run.agentKey}</td>
+								<td>
+									<StatusChip label={run.status} tone={runTone(run.status)} />
+								</td>
+								<td>{run.provider}</td>
+								<td>{run.model}</td>
+								<td>{run.schemaName}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
+		</section>
 
-	<section>
-		<h2>Tool-call audit</h2>
-		<p>
-			Phase 4 agents cannot invoke SQL, shell, filesystem, HTTP, or secrets. Denied attempts are
-			recorded and never executed.
-		</p>
-		{#if overview.toolCalls.length === 0}
-			<EmptyState title="No tool calls for this client." />
-		{:else}
-			<table>
-				<thead>
-					<tr>
-						<th>Tool</th>
-						<th>Authorized</th>
-						<th>Blocked by</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each overview.toolCalls as call (call.id)}
+		<section>
+			<h2>Tool-call audit</h2>
+			<p>
+				Phase 4 agents cannot invoke SQL, shell, filesystem, HTTP, or secrets. Denied attempts are
+				recorded and never executed.
+			</p>
+			{#if overview.toolCalls.length === 0}
+				<EmptyState title="No tool calls for this client." />
+			{:else}
+				<table>
+					<thead>
 						<tr>
-							<td>{call.name}</td>
-							<td>
-								<StatusChip
-									label={call.authorized ? 'authorized' : 'denied'}
-									tone={call.authorized ? 'danger' : 'warning'}
-								/>
-							</td>
-							<td>{typeof call.output.blockedBy === 'string' ? call.output.blockedBy : '—'}</td>
+							<th>Tool</th>
+							<th>Authorized</th>
+							<th>Blocked by</th>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{/if}
-	</section>
+					</thead>
+					<tbody>
+						{#each overview.toolCalls as call (call.id)}
+							<tr>
+								<td>{call.name}</td>
+								<td>
+									<StatusChip
+										label={call.authorized ? 'authorized' : 'denied'}
+										tone={call.authorized ? 'danger' : 'warning'}
+									/>
+								</td>
+								<td>{typeof call.output.blockedBy === 'string' ? call.output.blockedBy : '—'}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
+		</section>
 
-	<section>
-		<h2>Cost ledger</h2>
-		{#if overview.costs.length === 0}
-			<EmptyState title="No cost events." />
-		{:else}
-			<table>
-				<thead>
-					<tr>
-						<th>Provider</th>
-						<th>Model</th>
-						<th>Tokens</th>
-						<th>Cost</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each overview.costs as event (event.id)}
+		<section>
+			<h2>Cost ledger</h2>
+			{#if overview.costs.length === 0}
+				<EmptyState title="No cost events." />
+			{:else}
+				<table>
+					<thead>
 						<tr>
-							<td>{event.provider}</td>
-							<td>{event.model}</td>
-							<td>{event.totalTokens}</td>
-							<td>{costLabel(event.costMicros)}</td>
+							<th>Provider</th>
+							<th>Model</th>
+							<th>Tokens</th>
+							<th>Cost</th>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{/if}
-	</section>
+					</thead>
+					<tbody>
+						{#each overview.costs as event (event.id)}
+							<tr>
+								<td>{event.provider}</td>
+								<td>{event.model}</td>
+								<td>{event.totalTokens}</td>
+								<td>{costLabel(event.costMicros)}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
+		</section>
+	{/if}
 {/if}
 
 <style>

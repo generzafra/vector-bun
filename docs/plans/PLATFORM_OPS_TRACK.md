@@ -33,7 +33,7 @@ Governing principle:
 
 Phase 9 **may already exit after S1** plus S0 portfolio clocks. S2–S4 and OPS* do not reopen that exit.
 
-Creative QuickStart, entitlements, client health, FR9, and V5 stay on their tracks. They are listed as Phase 9 *calendar* attachments in [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md), not as this file’s slices.
+Creative QuickStart, entitlements, client health, FR9, and V5 stay on their tracks. They are listed as Phase 9 _calendar_ attachments in [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md), not as this file’s slices.
 
 ---
 
@@ -75,19 +75,19 @@ Capabilities stay `scale.read` / `scale.manage` for portfolio/quota. Retention j
 
 ## 6. Implementation order
 
-| Slice       | Work                                                                                          | Gate        |
-| ----------- | --------------------------------------------------------------------------------------------- | ----------- |
-| **P9-S0**   | Usage limits evaluate-only, events, Control `/portfolio`                                      | **In**      |
-| **P9-S1**   | Enforce deny on API / AI / email / upload / analytics                                         | **In**      |
-| **P9-S2**   | Infrastructure snapshots + alerts (queue delay, origin p95, one-tenant share)                 | Wave E      |
-| **P9-S3**   | Client templates and operational queues on the portfolio surface                              | After S2    |
-| **P9-S4**   | Cost dashboard; cost/qualified lead only when observed                                        | After S3    |
-| **OPS1**    | Retention / deletion by data class (`docs/14`)                                                | Wave E      |
-| **OPS2**    | OpenTelemetry (`docs/16`)                                                                     | Wave E      |
-| **OPS3**    | Backups, restore test, RPO/RTO                                                                | Wave E      |
-| **OPS4**    | Deploy pipeline + smoke (`docs/19`)                                                           | When hosting |
-| **OPS5**    | 20-client load test before the capacity claim                                                 | Before claim |
-| **OPS6**    | Vector 24 metric productization (median ready-to-live, % under 24h/12h among promised classes) | After live clients |
+| Slice     | Work                                                                                           | Gate               |
+| --------- | ---------------------------------------------------------------------------------------------- | ------------------ |
+| **P9-S0** | Usage limits evaluate-only, events, Control `/portfolio`                                       | **In**             |
+| **P9-S1** | Enforce deny on API / AI / email / upload / analytics                                          | **In**             |
+| **P9-S2** | Infrastructure snapshots + alerts (queue delay, origin p95, one-tenant share)                  | Wave E             |
+| **P9-S3** | Client templates and operational queues on the portfolio surface                               | After S2           |
+| **P9-S4** | Cost dashboard; cost/qualified lead only when observed                                         | After S3           |
+| **OPS1**  | Retention / deletion by data class (`docs/14`)                                                 | Wave E             |
+| **OPS2**  | OpenTelemetry (`docs/16`)                                                                      | Wave E             |
+| **OPS3**  | Backups, restore test, RPO/RTO                                                                 | Wave E             |
+| **OPS4**  | Deploy pipeline + smoke (`docs/19`)                                                            | When hosting       |
+| **OPS5**  | 20-client load test before the capacity claim                                                  | Before claim       |
+| **OPS6**  | Vector 24 metric productization (median ready-to-live, % under 24h/12h among promised classes) | After live clients |
 
 ---
 

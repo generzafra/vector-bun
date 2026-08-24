@@ -1,6 +1,6 @@
 # Outcomes track — client UX + O3–O20
 
-**Status:** Implementation specification — O1, O2, O6, O7 thin-in; remainder open  
+**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; remainder open  
 **Track:** Outcomes (not a Vector phase)  
 **Standing law:** [`docs/30`](../30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md) §2, §5–7, §65, §81–88  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave A then C then E  
@@ -50,15 +50,17 @@ Insights
 
 Until Campaigns / Today / Approvals routes exist, show only the subset that exists (Overview, Leads, Approvals-or-Intelligence, Goals as “Goals” not a KPI lab). Do **not** put Knowledge, Funnel, Email, Social, Search, Autonomy, Portfolio, Experiments, Members, or Launch in the default client set.
 
-Operator (and client users with explicit expanded capabilities) keep the current cockpit.
+Operator (and client users granted `control.operator`) keep the current cockpit.
 
 Rules:
 
-- Authorize by capability, not role-string equality. Client Owner / Marketing / Sales / Reviewer from `docs/30` §34 map onto capabilities.
+- Authorize by capability, not role-string equality. Client Owner / Marketing / Sales / Reviewer from `docs/30` §34 map onto capabilities (`leads.read`, `ai.read`, `goals.read`). `control.operator` unlocks the operator shell.
 - Copy: plain, short, outcome-focused (`docs/30` §65). Prefer “Your Facebook connection expired” over “OAuth token invalid.”
 - Pass the Client UX Acceptance Checklist (`docs/30` §85) for every new or changed client-facing screen.
 - Chrome stays `docs/28`. Do not paint Delivery. Do not invent `apps/client`.
 - Tests: a client-capability actor does not see Autonomy / Portfolio / Knowledge in the default shell; an operator-capability actor does.
+
+**In:** Control `AppShell` filters by `controlNavFor`. Default client links are Overview, Leads, Approvals (`/intelligence` stand-in), Goals. Operator modules stay off the default client set. Client-facing copy on those four screens follows §85. Today / Campaigns / Insights / Approval Center grouping are later.
 
 ### CU1 — Outcomes QuickStart
 
@@ -165,36 +167,36 @@ Same `WorkflowRuntime` for alerts, reconciliation, digests.
 
 ## 7. Vector 24 hook
 
-Launch with a primary goal, conversion definition, minimal pipeline (already true), outcome method, and notification defaults. Full Today polish is not a Vector Ready blocker. CU0 is launch-readiness for a *paying client who logs in*, not a Phase 1 reopen.
+Launch with a primary goal, conversion definition, minimal pipeline (already true), outcome method, and notification defaults. Full Today polish is not a Vector Ready blocker. CU0 is launch-readiness for a _paying client who logs in_, not a Phase 1 reopen.
 
 ---
 
 ## 8. Implementation order
 
-| Slice    | Work                                                              | Gate                    |
-| -------- | ----------------------------------------------------------------- | ----------------------- |
-| **O1**   | Primary goal + Control `/goals`                                   | **In** (thin)           |
-| **O2**   | Keep `new \| working \| qualified \| won \| lost \| spam`         | **In** (Phase 2)        |
-| **O6**   | Data health flags                                                 | **In** (thin)           |
-| **O7**   | Notification preferences                                          | **In** (thin)           |
-| **CU0**  | Capability-filtered default nav + §85 copy                        | Wave A next             |
-| **CU1**  | Outcomes QuickStart                                               | Wave A                  |
-| **O8**   | Approval Center grouping                                          | Wave A                  |
-| **O3**   | `sales_outcomes`                                                  | Wave A; before V1 / O11 |
-| **O4**   | Overview outcome hierarchy                                        | Wave C                  |
-| **O5**   | Today                                                             | Wave C                  |
-| **O9**   | Offer versions                                                    | Wave C                  |
-| **O10**  | `CRMProvider` interface                                           | Wave C                  |
-| **O11**  | Revenue events                                                    | After O3                |
-| **O12**  | Attribution confidence                                            | After O11               |
-| **O13**  | Recommendation evidence + data-health gate                        | After O6 + O12          |
-| **O14**  | Monthly Growth Review                                             | After O13               |
-| **O15**  | Ask Vector                                                        | After O1–O3 + O6        |
-| **O16**  | Client health                                                     | Wave E                  |
-| **O17**  | Package entitlements                                              | Wave E                  |
-| **O18**  | Paid acquisition read-only                                        | P2                      |
-| **O19**  | Billing architecture                                              | P2                      |
-| **O20**  | Advanced revenue optimization                                     | Last                    |
+| Slice   | Work                                                      | Gate                    |
+| ------- | --------------------------------------------------------- | ----------------------- |
+| **O1**  | Primary goal + Control `/goals`                           | **In** (thin)           |
+| **O2**  | Keep `new \| working \| qualified \| won \| lost \| spam` | **In** (Phase 2)        |
+| **O6**  | Data health flags                                         | **In** (thin)           |
+| **O7**  | Notification preferences                                  | **In** (thin)           |
+| **CU0** | Capability-filtered default nav + §85 copy                | **In**                  |
+| **CU1** | Outcomes QuickStart                                       | Wave A                  |
+| **O8**  | Approval Center grouping                                  | Wave A                  |
+| **O3**  | `sales_outcomes`                                          | Wave A; before V1 / O11 |
+| **O4**  | Overview outcome hierarchy                                | Wave C                  |
+| **O5**  | Today                                                     | Wave C                  |
+| **O9**  | Offer versions                                            | Wave C                  |
+| **O10** | `CRMProvider` interface                                   | Wave C                  |
+| **O11** | Revenue events                                            | After O3                |
+| **O12** | Attribution confidence                                    | After O11               |
+| **O13** | Recommendation evidence + data-health gate                | After O6 + O12          |
+| **O14** | Monthly Growth Review                                     | After O13               |
+| **O15** | Ask Vector                                                | After O1–O3 + O6        |
+| **O16** | Client health                                             | Wave E                  |
+| **O17** | Package entitlements                                      | Wave E                  |
+| **O18** | Paid acquisition read-only                                | P2                      |
+| **O19** | Billing architecture                                      | P2                      |
+| **O20** | Advanced revenue optimization                             | Last                    |
 
 ---
 
@@ -256,7 +258,7 @@ Cross-tenant isolation on every new table. Capability nav tests (client vs opera
 
 ## 15. Do not start until
 
-CU0 can ship on current routes (hide operator links). O4/O5 should wait for O3 so Overview is not a lead-only vanity panel forever — a qualified-lead Overview is allowed if sales coverage is unknown and labeled.
+CU0 is in on current routes (hide operator links). O4/O5 should wait for O3 so Overview is not a lead-only vanity panel forever — a qualified-lead Overview is allowed if sales coverage is unknown and labeled.
 
 ## Locked attachments
 

@@ -25,10 +25,14 @@ export const CAPABILITIES = [
 	'scale.read',
 	'scale.manage',
 	'goals.read',
-	'goals.manage'
+	'goals.manage',
+	'control.operator'
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
+
+/** Operator Control cockpit. Client roles omit this; grant it to expand a client user. */
+export const OPERATOR_CONTROL_NAV_CAPABILITY = 'control.operator' satisfies Capability;
 
 export const ROLE_KEYS = [
 	'mge_super_admin',
@@ -68,7 +72,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'scale.read',
 		'scale.manage',
 		'goals.read',
-		'goals.manage'
+		'goals.manage',
+		'control.operator'
 	],
 	mge_operator: [
 		'clients.read',
@@ -97,7 +102,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'scale.read',
 		'scale.manage',
 		'goals.read',
-		'goals.manage'
+		'goals.manage',
+		'control.operator'
 	],
 	client_owner: [
 		'clients.read',

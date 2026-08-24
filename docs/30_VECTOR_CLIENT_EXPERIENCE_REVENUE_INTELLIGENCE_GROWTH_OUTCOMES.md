@@ -2682,7 +2682,7 @@ First Reveal client card (`docs/plans/FIRST_REVEAL_TRACK.md`): Control shows a b
 
 Build in the order in §88. First paying-client bar (§78) is launch readiness, not a Phase 0 reopen. Revenue value may remain optional. Ask Vector, CRM sync, ads, and billing stay later slices.
 
-Client operating UX is first-class: capability-filtered default nav, plain-language QuickStart, and Approval Center before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md) CU0–CU1 and O8. Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md) Wave A. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
+Client operating UX is first-class: capability-filtered default nav (CU0 in), plain-language QuickStart, and Approval Center before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md) CU1 and O8. Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md) Wave A. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
 
 ---
 

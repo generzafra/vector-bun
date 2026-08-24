@@ -91,18 +91,18 @@ A normal launch must not require hand-designing every asset. C1 + typography-led
 
 ## 7. Implementation order
 
-| Slice  | Work                                                                 | Gate        |
-| ------ | -------------------------------------------------------------------- | ----------- |
-| **C0** | Schema, versions, rights, `clients/{id}/creative/…`                  | **In**      |
-| **C1** | Brand visual profile + confirm/edit; prohibited styles               | Wave B next |
-| **C2** | `ImageProvider`, Grok image, job/cost/prompt versions                | After C1    |
-| **C3** | Deterministic compose: logo, type, tokens, OG/email/social shells    | After C1    |
-| **C4** | Derivatives / crop / compression                                     | After C3    |
-| **C5** | Funnel manifests; Delivery uses approved derivatives only            | After C3    |
-| **C6** | Social families + previews                                           | After C4–C5 |
-| **C7** | Automated QA + client approval/revision                              | Before FR8  |
-| **C8** | Publication usage, experiment join, learning objects                 | Wave D      |
-| **C9** | `VideoProvider`, short-form                                          | Last        |
+| Slice  | Work                                                              | Gate        |
+| ------ | ----------------------------------------------------------------- | ----------- |
+| **C0** | Schema, versions, rights, `clients/{id}/creative/…`               | **In**      |
+| **C1** | Brand visual profile + confirm/edit; prohibited styles            | Wave B next |
+| **C2** | `ImageProvider`, Grok image, job/cost/prompt versions             | After C1    |
+| **C3** | Deterministic compose: logo, type, tokens, OG/email/social shells | After C1    |
+| **C4** | Derivatives / crop / compression                                  | After C3    |
+| **C5** | Funnel manifests; Delivery uses approved derivatives only         | After C3    |
+| **C6** | Social families + previews                                        | After C4–C5 |
+| **C7** | Automated QA + client approval/revision                           | Before FR8  |
+| **C8** | Publication usage, experiment join, learning objects              | Wave D      |
+| **C9** | `VideoProvider`, short-form                                       | Last        |
 
 Do not start C2 before C0 (already true) or C1. C3 may start in parallel with C2 after C1.
 

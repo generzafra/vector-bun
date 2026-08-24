@@ -20,13 +20,13 @@ Governing principle:
 
 ## 2. What this track is not
 
-| Need | Correct plan |
-| ---- | ------------ |
-| Default client nav, Today, Approvals, Outcomes QuickStart | [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md) CU0–CU1, O4, O5, O8 |
-| Brand confirm, ImageProvider, compose, funnel manifests | [CREATIVE_TRACK.md](CREATIVE_TRACK.md) |
-| Direction candidates, First Reveal Gate remainder, client reveal | [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md) |
-| Activity proof / ROI | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md) |
-| Quotas, tracing, backups, load test | [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md) |
+| Need                                                             | Correct plan                                               |
+| ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| Default client nav, Today, Approvals, Outcomes QuickStart        | [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md) CU0–CU1, O4, O5, O8 |
+| Brand confirm, ImageProvider, compose, funnel manifests          | [CREATIVE_TRACK.md](CREATIVE_TRACK.md)                     |
+| Direction candidates, First Reveal Gate remainder, client reveal | [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md)             |
+| Activity proof / ROI                                             | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md)             |
+| Quotas, tracing, backups, load test                              | [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md)             |
 
 ---
 
@@ -56,15 +56,15 @@ FR2 already added `hero-editorial`, `services-editorial`, `proof-featured`, `cta
 
 Add **one family when a client needs it**. Each must pass the Frontend Release Gate in `docs/27`. Compose must select through schemas, not arbitrary HTML.
 
-| Slice | Family | Notes |
-| ----- | ------ | ----- |
-| **DQ1** | Case study section + optional inner page | Proof, not invented logos/press |
-| **DQ2** | Booking / confirmation block | Conversion path; analytics taxonomy |
-| **DQ3** | Sticky CTA header | Accessible; not obstructive on mobile |
-| **DQ4** | `hero-cinematic` / product-demo | Real client media; not Vector chrome |
-| **DQ5** | `hero-video` | After Creative C9 or authentic client video |
-| **DQ6** | `services-bento` / tabs / sticky | Prefer 1–2, not all |
-| **DQ7** | Interactive / calculator | Only with factual client inputs |
+| Slice   | Family                                   | Notes                                       |
+| ------- | ---------------------------------------- | ------------------------------------------- |
+| **DQ1** | Case study section + optional inner page | Proof, not invented logos/press             |
+| **DQ2** | Booking / confirmation block             | Conversion path; analytics taxonomy         |
+| **DQ3** | Sticky CTA header                        | Accessible; not obstructive on mobile       |
+| **DQ4** | `hero-cinematic` / product-demo          | Real client media; not Vector chrome        |
+| **DQ5** | `hero-video`                             | After Creative C9 or authentic client video |
+| **DQ6** | `services-bento` / tabs / sticky         | Prefer 1–2, not all                         |
+| **DQ7** | Interactive / calculator                 | Only with factual client inputs             |
 
 AI must not invent case-study results. JSON-LD stays factual and fail-closed.
 
@@ -74,13 +74,13 @@ AI must not invent case-study results. JSON-LD stays factual and fail-closed.
 
 Identity migration status: `docs/frontend/VECTOR_UI_MIGRATION_STATUS.md`. Tokens are on existing routes.
 
-| Slice | Work | Notes |
-| ----- | ---- | ----- |
-| **CX1** | Chart theme | When the first Control chart ships (`docs/28`) |
-| **CX2** | `/campaigns` | Client-default nav item in `docs/30` §5. Orchestration list, not a second plane. Uses `docs/28` |
-| **CX3** | Automation canvas | Phase 8 later. `/autonomy` table already exists. Do not invent a second node language |
-| **CX4** | Visual QA leftovers | Privacy, Terms, Portfolio |
-| **CX5** | Official SVG mark | Swap deprecated `VectorMark` when SVG exists |
+| Slice   | Work                | Notes                                                                                           |
+| ------- | ------------------- | ----------------------------------------------------------------------------------------------- |
+| **CX1** | Chart theme         | When the first Control chart ships (`docs/28`)                                                  |
+| **CX2** | `/campaigns`        | Client-default nav item in `docs/30` §5. Orchestration list, not a second plane. Uses `docs/28` |
+| **CX3** | Automation canvas   | Phase 8 later. `/autonomy` table already exists. Do not invent a second node language           |
+| **CX4** | Visual QA leftovers | Privacy, Terms, Portfolio                                                                       |
+| **CX5** | Official SVG mark   | Swap deprecated `VectorMark` when SVG exists                                                    |
 
 Client-simple **filtering** of this chrome is CU0, not CX*.
 
@@ -90,10 +90,10 @@ Client-simple **filtering** of this chrome is CU0, not CX*.
 
 `docs/11`: implement only platforms required by active clients.
 
-| Slice | Work |
-| ----- | ---- |
-| **CH1** | LinkedIn Company Page (`w_organization_social`) if a client needs org posting |
-| **CH2** | Additional networks (TikTok, YouTube, …) behind `SocialProvider` when required |
+| Slice   | Work                                                                                     |
+| ------- | ---------------------------------------------------------------------------------------- |
+| **CH1** | LinkedIn Company Page (`w_organization_social`) if a client needs org posting            |
+| **CH2** | Additional networks (TikTok, YouTube, …) behind `SocialProvider` when required           |
 | **CH3** | MGE as a Vector tenant on Delivery (`docs/19`, ADR-0002). Separate from Control identity |
 
 Do not build every network in advance. Official APIs only. No browser automation for production publish.

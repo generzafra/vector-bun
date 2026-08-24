@@ -9,6 +9,6 @@
 	<title>Vector Control</title>
 </svelte:head>
 
-<AppShell userId={data.userId}>
+<AppShell userId={data.userId} permissions={data.permissions}>
 	{@render children()}
 </AppShell>

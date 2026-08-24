@@ -19,7 +19,7 @@
 		expectedImpact: string;
 		confidence: number;
 		risk: string;
-		cost: string;
+		cost?: string;
 		approvalRequired: boolean;
 		status: string;
 		children?: import('svelte').Snippet;
@@ -61,10 +61,12 @@
 				<dt>Risk</dt>
 				<dd>{risk}</dd>
 			</div>
-			<div>
-				<dt>Cost</dt>
-				<dd>{cost}</dd>
-			</div>
+			{#if cost}
+				<div>
+					<dt>Cost</dt>
+					<dd>{cost}</dd>
+				</div>
+			{/if}
 			<div>
 				<dt>Human approval</dt>
 				<dd>{approvalRequired ? 'Required. Approval does not execute.' : 'Not required'}</dd>
