@@ -113,7 +113,9 @@ import {
 	draftSupportingImage,
 	listImageJobs,
 	composeCreativeShells,
-	listCreativeCompositions
+	listCreativeCompositions,
+	getFunnelAssetManifest,
+	placeFunnelShareCards
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
 
@@ -1327,6 +1329,38 @@ app.post('/v1/compositions/compose', async (c) => {
 	actorCan(session, 'pages.manage');
 	const ctx = contextFor(session, requestId);
 	const data = await composeCreativeShells(session, ctx, requestId);
+	return c.json({ requestId, data }, 201);
+});
+
+app.get('/v1/funnel-manifests', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'pages.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getFunnelAssetManifest(session, ctx) });
+});
+
+app.get('/v1/funnel-manifests/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'pages.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getFunnelAssetManifest(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/funnel-manifests/place', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await placeFunnelShareCards(session, ctx, requestId);
 	return c.json({ requestId, data }, 201);
 });
 

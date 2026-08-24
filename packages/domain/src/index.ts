@@ -26,3 +26,4 @@ export * from './outcomes';
 export * from './value';
 export * from './images';
 export * from './compositions';
+export * from './funnel-manifests';

@@ -1933,6 +1933,41 @@ export const creativeCompositions = pgTable(
 	]
 );
 
+export const funnelAssetManifests = pgTable(
+	'funnel_asset_manifests',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		schemaVersion: text('schema_version').notNull(),
+		ogCompositionId: uuid('og_composition_id').references(() => creativeCompositions.id, {
+			onDelete: 'set null'
+		}),
+		socialCompositionId: uuid('social_composition_id').references(() => creativeCompositions.id, {
+			onDelete: 'set null'
+		}),
+		emailCompositionId: uuid('email_composition_id').references(() => creativeCompositions.id, {
+			onDelete: 'set null'
+		}),
+		placedAt: timestamp('placed_at', { withTimezone: true }).notNull(),
+		placedBy: text('placed_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('funnel_asset_manifests_client_version_idx').on(t.clientId, t.pageVersionId),
+		index('funnel_asset_manifests_client_idx').on(t.clientId),
+		index('funnel_asset_manifests_org_idx').on(t.organizationId)
+	]
+);
+
 export type BrandVisualSnapshot = {
 	primaryLogoAssetId: string | null;
 	primaryColor: string | null;

@@ -274,6 +274,13 @@
 			"when": 1756220000000,
 			"tag": "0038_c3_compositions",
 			"breakpoints": true
+		},
+		{
+			"idx": 39,
+			"version": "7",
+			"when": 1756230000000,
+			"tag": "0039_c5_funnel_manifests",
+			"breakpoints": true
 		}
 	]
 }

@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, isNotNull, max } from 'drizzle-orm';
 import { assertSameClient, requireTenantContext, type TenantContext } from '@vector/contracts';
 import { normalizeHostname, type PageDocument } from '@vector/funnel-engine';
 import { db } from './client';
-import { clientDomains, funnels, pageVersions, pages, sites } from './schema';
+import { clientDomains, funnelAssetManifests, funnels, pageVersions, pages, sites } from './schema';
 
 export function assertPageClient(ctx: TenantContext, clientId: string) {
 	return assertSameClient(ctx, clientId);
@@ -429,6 +429,17 @@ export async function publishLatestDraftForTenant(ctx: TenantContext) {
 			.limit(1);
 		if (!draft) return null;
 
+		const [draftManifest] = await tx
+			.select()
+			.from(funnelAssetManifests)
+			.where(
+				and(
+					eq(funnelAssetManifests.clientId, required.clientId),
+					eq(funnelAssetManifests.pageVersionId, draft.id)
+				)
+			)
+			.limit(1);
+
 		const [versionRow] = await tx
 			.select({ version: max(pageVersions.version) })
 			.from(pageVersions)
@@ -445,6 +456,20 @@ export async function publishLatestDraftForTenant(ctx: TenantContext) {
 				publishedAt: new Date()
 			})
 			.returning();
+
+		if (draftManifest) {
+			await tx.insert(funnelAssetManifests).values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				pageVersionId: published.id,
+				schemaVersion: draftManifest.schemaVersion,
+				ogCompositionId: draftManifest.ogCompositionId,
+				socialCompositionId: draftManifest.socialCompositionId,
+				emailCompositionId: draftManifest.emailCompositionId,
+				placedAt: draftManifest.placedAt,
+				placedBy: draftManifest.placedBy
+			});
+		}
 
 		await tx
 			.update(pages)

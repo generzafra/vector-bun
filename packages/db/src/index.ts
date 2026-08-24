@@ -16,6 +16,7 @@ export * from './asset-sufficiency';
 export * from './visual-directions';
 export * from './image-jobs';
 export * from './compositions';
+export * from './funnel-manifests';
 export * from './social';
 export * from './search';
 export * from './experiments';

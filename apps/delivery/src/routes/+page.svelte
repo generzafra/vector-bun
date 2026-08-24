@@ -27,7 +27,13 @@
 	{/if}
 	<meta property="og:title" content={meta.title} />
 	<meta property="og:description" content={meta.description} />
-	<meta name="twitter:card" content="summary" />
+	{#if data.hasOgImage}
+		<meta property="og:image" content={`${page.url.origin}/og-image`} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:image" content={`${page.url.origin}/og-image`} />
+	{:else}
+		<meta name="twitter:card" content="summary" />
+	{/if}
 	{#if data.jsonLdHtml}
 		{@html data.jsonLdHtml}
 	{/if}

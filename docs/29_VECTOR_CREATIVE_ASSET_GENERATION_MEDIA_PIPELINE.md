@@ -2169,7 +2169,7 @@ In. `ImageProvider` in `packages/images` (memory default; Grok Imagine when `XAI
 
 ## Phase C3 — Composition
 
-In. Trusted software in `packages/compose` writes editorial/minimal SVG shells (OG 1200×630, social 1080×1080, email 600×200) from confirmed C1 tokens when present, otherwise brand tokens, plus approved Knowledge copy and existing logo bytes. Tenant-owned `creative_compositions` are versioned drafts. Bytes go through existing `StorageProvider` under `clients/{client_id}/creative/...`. Control `/funnel` previews through an authenticated route; Delivery does not serve unpublished shells. Models do not compose logos or marketing text. Sharp and C4 crop/compression wait. C5 funnel manifests still later.
+In. Trusted software in `packages/compose` writes editorial/minimal SVG shells (OG 1200×630, social 1080×1080, email 600×200) from confirmed C1 tokens when present, otherwise brand tokens, plus approved Knowledge copy and existing logo bytes. Tenant-owned `creative_compositions` are versioned drafts. Bytes go through existing `StorageProvider` under `clients/{client_id}/creative/...`. Control `/funnel` previews through an authenticated route; Delivery does not serve unpublished shells until thin C5 place + publish. Models do not compose logos or marketing text. Sharp and C4 crop/compression wait.
 
 ## Phase C4 — Derivatives
 
@@ -2181,11 +2181,14 @@ In. Trusted software in `packages/compose` writes editorial/minimal SVG shells (
 
 ## Phase C5 — Funnel Integration
 
+Thin slice in. Tenant-owned `funnel_asset_manifests` attach composition ids to immutable page versions. Operators place latest C3 OG / social / email shells onto a draft (`pages.manage`); publish copies the manifest to the new published version. Delivery hostname-scoped `/og-image` serves the published OG slot for that host's tenant only. Raw object-store keys are not authorization and do not appear in HTML. C4 derivatives, hero/service/case-study slots, and C7 approval remain later. JSON-LD and `llms.txt` stay approved knowledge only.
+
 - asset manifests;
-- hero assets;
-- service assets;
-- case study assets;
-- frontend renderer integration.
+- Delivery Open Graph placement;
+- hero assets (later);
+- service assets (later);
+- case study assets (later);
+- frontend renderer integration (later).
 
 ## Phase C6 — Social Integration
 

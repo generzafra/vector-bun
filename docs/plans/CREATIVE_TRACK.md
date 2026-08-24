@@ -1,6 +1,6 @@
 # Creative track — C1–C9
 
-**Status:** Implementation specification — C0–C3 in; thin FR3 consumes C1; C4–C9 open  
+**Status:** Implementation specification — C0–C3 and thin C5 in; thin FR3 consumes C1; C4, C6–C9 open  
 **Track:** Creative (not a Vector phase)  
 **Standing law:** [`docs/29`](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md) §63  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B then D  
@@ -73,7 +73,7 @@ No third plane. Bytes stay on `StorageProvider` under `clients/{client_id}/creat
 - C1: `brand_visual_profiles` (tenant-owned). Capabilities: extend `knowledge.manage` / `pages.manage` or add `creative.manage` if a third capability is required — authorize by capability, not role string.
 - C2: `image_generation_jobs` (tenant-owned); `packages/images` with `ImageProvider`
 - C3: `creative_compositions` (tenant-owned); `packages/compose` SVG compositor. C4 `creative_derivatives` later
-- C5: asset manifest JSON on page versions or `funnel_asset_manifests` (tenant-owned)
+- C5: `funnel_asset_manifests` (tenant-owned). Thin slice stores C3 composition ids per page version. C4 `creative_derivatives` later
 - C6: campaign family rows on existing `creative_assets` (kind/family), not a second blob store
 - C7: reuse `approval_requests` with creative subject types; do not invent a second approval product
 - C8: `creative_learning_objects` (tenant-owned), join Phase 7 learning objects
@@ -91,20 +91,20 @@ A normal launch must not require hand-designing every asset. C1 + typography-led
 
 ## 7. Implementation order
 
-| Slice  | Work                                                              | Gate        |
-| ------ | ----------------------------------------------------------------- | ----------- |
-| **C0** | Schema, versions, rights, `clients/{id}/creative/…`               | **In**      |
-| **C1** | Brand visual profile + confirm/edit; prohibited styles            | **In**      |
-| **C2** | `ImageProvider`, Grok image, job/cost/prompt versions             | **In**      |
-| **C3** | Deterministic compose: logo, type, tokens, OG/email/social shells | **In**      |
-| **C4** | Derivatives / crop / compression                                  | After C3    |
-| **C5** | Funnel manifests; Delivery uses approved derivatives only         | After C3    |
-| **C6** | Social families + previews                                        | After C4–C5 |
-| **C7** | Automated QA + client approval/revision                           | Before FR8  |
-| **C8** | Publication usage, experiment join, learning objects              | Wave D      |
-| **C9** | `VideoProvider`, short-form                                       | Last        |
+| Slice  | Work                                                              | Gate                                       |
+| ------ | ----------------------------------------------------------------- | ------------------------------------------ |
+| **C0** | Schema, versions, rights, `clients/{id}/creative/…`               | **In**                                     |
+| **C1** | Brand visual profile + confirm/edit; prohibited styles            | **In**                                     |
+| **C2** | `ImageProvider`, Grok image, job/cost/prompt versions             | **In**                                     |
+| **C3** | Deterministic compose: logo, type, tokens, OG/email/social shells | **In**                                     |
+| **C4** | Derivatives / crop / compression                                  | After C3                                   |
+| **C5** | Funnel manifests; Delivery uses approved derivatives only         | **In** (thin; C3 composition ids until C4) |
+| **C6** | Social families + previews                                        | After C4–C5                                |
+| **C7** | Automated QA + client approval/revision                           | Before FR8                                 |
+| **C8** | Publication usage, experiment join, learning objects              | Wave D                                     |
+| **C9** | `VideoProvider`, short-form                                       | Last                                       |
 
-Do not start FR6 until C3–C5. C3 is in. Thin C5 funnel manifests are the next Creative slice.
+Do not start FR6 until C3–C5. C3 and thin C5 are in. FR6 winner-only expensive media is the next First Reveal slice.
 
 ---
 
@@ -133,11 +133,11 @@ Do not start FR6 until C3–C5. C3 is in. Thin C5 funnel manifests are the next 
 
 ## 10. C3–C5 rules — compose, derivatives, funnel manifests
 
-- C3: logos and marketing text are composed deterministically from the C1 profile and approved copy. Prefer authentic client media. Authorize with `pages.read` / `pages.manage`. Control `/funnel` uses business language. Unpublished shells stay off Delivery.
-- Derivatives are immutable versions. Do not overwrite a public cached asset in place (`docs/19`).
-- Funnel manifests reference approved derivative ids, never raw object-store keys as authorization.
-- Delivery already has hostname-scoped `/brand-logo`. Campaign/hero slots follow the same tenant-host rule. Preview must not serve another tenant’s derivative.
-- JSON-LD and `llms.txt` still use approved knowledge only. Generated lifestyle images are not proof.
+- C3: logos and marketing text are composed deterministically from the C1 profile and approved copy. Prefer authentic client media. Authorize with `pages.read` / `pages.manage`. Control `/funnel` uses business language. Unpublished shells stay off Delivery until an operator places them on a page version and that version is published.
+- Derivatives are immutable versions. Do not overwrite a public cached asset in place (`docs/19`). Thin C5 treats C3 composition ids as the placed ids until C4 exists. Do not invent `creative_derivatives` in this slice.
+- Funnel manifests reference composition / later approved derivative ids, never raw object-store keys as authorization. Tenant-owned `funnel_asset_manifests` attach to immutable `page_versions`. Logo/composition FKs are `ON DELETE set null`. Do not `ON DELETE CASCADE`.
+- Delivery already has hostname-scoped `/brand-logo`. Thin C5 adds hostname-scoped `/og-image` from the published page version's placed OG composition. Preview must not serve another tenant’s derivative. Draft C3 shells stay on Control `/funnel/composition/:id`.
+- JSON-LD and `llms.txt` still use approved knowledge only. Generated lifestyle images are not proof. Composed share cards are not JSON-LD.
 
 ---
 
@@ -164,7 +164,7 @@ Cross-tenant isolation on every new table. Rights fail closed. Storage keys tena
 
 ## 14. Do not start until
 
-C0 exists (true). C1, C2, and C3 are in. Thin FR3 is in after C1. C5 funnel manifests remain before approved-derivative placement. FR6 waits for C3–C5. FR8 waits for C7.
+C0 exists (true). C1, C2, C3, and thin C5 are in. Thin FR3 is in after C1. FR6 waits for C2–C5 (now in). FR8 waits for C7. C4 remainder, C6, and C8 are Wave D.
 
 ## Locked attachments
 

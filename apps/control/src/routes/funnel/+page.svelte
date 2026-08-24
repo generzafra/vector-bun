@@ -30,6 +30,7 @@
 	);
 	const directions = $derived(data.funnel?.visualDirections ?? null);
 	const shareCards = $derived(data.funnel?.shareCards ?? []);
+	const shareCardPlacement = $derived(data.funnel?.shareCardPlacement ?? null);
 </script>
 
 <PageHeader
@@ -144,7 +145,7 @@
 		<h2>Share and email cards</h2>
 		<p>
 			Vector places your logo and approved copy on Open Graph, social, and email cards. These cards
-			are drafts and will not go live until they are approved.
+			are drafts and will not go live until you use them on the preview and publish.
 		</p>
 		{#if shareCards.length === 0}
 			<EmptyState title="No share cards yet." detail="Compose cards after Knowledge is saved." />
@@ -162,12 +163,33 @@
 					</figure>
 				{/each}
 			</div>
+			<p>
+				Preview status:
+				<StatusChip
+					label={shareCardPlacement?.live
+						? 'on the published preview'
+						: shareCardPlacement?.placed
+							? 'ready — publish to show'
+							: 'not on the preview yet'}
+					tone={shareCardPlacement?.live
+						? 'success'
+						: shareCardPlacement?.placed
+							? 'info'
+							: 'muted'}
+				/>
+			</p>
 		{/if}
 		{#if canManage}
 			<form method="post" action="?/composeCards">
 				<input type="hidden" name="_csrf" value={data.csrf} />
 				<button type="submit">Compose share and email cards</button>
 			</form>
+			{#if shareCards.length > 0}
+				<form method="post" action="?/placeCards">
+					<input type="hidden" name="_csrf" value={data.csrf} />
+					<button type="submit">Use these cards on the preview</button>
+				</form>
+			{/if}
 		{/if}
 	</section>
 

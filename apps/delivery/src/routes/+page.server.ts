@@ -5,6 +5,7 @@ import {
 	deliveryTenantContext,
 	exposeDeliveryPage,
 	hasBrandLogoForTenant,
+	hasPlacedOgImageForTenant,
 	recordDeliveryEvent
 } from '@vector/domain';
 import { jsonLdScript, publicJsonLd } from '@vector/funnel-engine';
@@ -98,14 +99,21 @@ export async function load({ locals, cookies, url, request, setHeaders }) {
 		logError('delivery.page_viewed', err, { requestId: locals.requestId, clientId: page.clientId });
 	}
 	let hasBrandLogo = false;
+	let hasOgImage = false;
 	try {
 		hasBrandLogo = await hasBrandLogoForTenant(deliveryTenantContext(page, locals.requestId));
 	} catch (err) {
 		logError('delivery.brand_logo', err, { requestId: locals.requestId, clientId: page.clientId });
 	}
+	try {
+		hasOgImage = await hasPlacedOgImageForTenant(deliveryTenantContext(page, locals.requestId));
+	} catch (err) {
+		logError('delivery.og_image', err, { requestId: locals.requestId, clientId: page.clientId });
+	}
 	return {
 		document: page.document,
 		hasBrandLogo,
+		hasOgImage,
 		domainKind: page.domainKind,
 		hostname: page.hostname,
 		pathname: url.pathname,

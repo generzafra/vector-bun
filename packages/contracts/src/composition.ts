@@ -7,6 +7,10 @@ export type CompositionKind = (typeof COMPOSITION_KINDS)[number];
 
 export const COMPOSITION_SCHEMA_VERSION = 'composition.shell.v1';
 
+export const FUNNEL_ASSET_MANIFEST_SCHEMA_VERSION = 'funnel.asset.manifest.v1';
+export const FUNNEL_ASSET_SLOTS = ['og', 'social', 'email'] as const;
+export type FunnelAssetSlot = (typeof FUNNEL_ASSET_SLOTS)[number];
+
 export const COMPOSITION_TEMPLATE_STYLES = ['editorial', 'minimal'] as const;
 export type CompositionTemplateStyle = (typeof COMPOSITION_TEMPLATE_STYLES)[number];
 

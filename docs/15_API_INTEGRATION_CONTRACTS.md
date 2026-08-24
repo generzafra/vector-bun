@@ -138,6 +138,14 @@ Creative C3 (authenticated session cookie plus CSRF on mutations; active client 
 
 Trusted software in `packages/compose` writes SVG. Control `/funnel` previews bytes through an authenticated `/funnel/composition/:id` route. Raw object-store keys are not authorization. Delivery does not serve unpublished C3 drafts.
 
+Creative C5 (authenticated session cookie plus CSRF on mutations; active client only):
+
+- `GET /v1/funnel-manifests` — placed composition ids on the current draft (`pages.read`). Storage keys omitted
+- `GET /v1/funnel-manifests/:clientId` — same record only when the actor already owns that client
+- `POST /v1/funnel-manifests/place` — attach latest C3 shells to the current draft page version (`pages.manage`, CSRF). Does not publish. Delivery `/og-image` serves the OG slot only after that draft is published
+
+Hostname-scoped Delivery `GET /og-image` is not an API key or storage-key URL. Unknown hosts 404 with no tenant names. JSON-LD and `llms.txt` stay approved knowledge only.
+
 `SocialProvider` lives in `packages/social`. Memory is the default. Official LinkedIn, X, and Meta (Facebook / Instagram) adapters run when `SOCIAL_ADAPTER=official`. Official OAuth start/complete uses `createAuthorizationUrl` and `exchangeAuthorizationCode`. Tokens are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in JSON. Refresh uses official OAuth token endpoints when client or app credentials are configured. Official adapters upload approved C0 images. `GET /v1/public/social-media` serves a short-lived HMAC grant so Instagram can fetch tenant-scoped bytes; forged, expired, or cross-tenant grants fail closed. Official Instagram Graph publish is media-required. `social-due-sweep` is tenant-scoped; `social-due-sweep-platform` fans out one job per client with due posts.
 
 ## Phase 6 Control API

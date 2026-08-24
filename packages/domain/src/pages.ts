@@ -29,6 +29,7 @@ import {
 	getClientForTenant,
 	listLatestCreativeCompositionsForTenant,
 	getFirstRevealGateForVersionForTenant,
+	getFunnelAssetManifestForVersionForTenant,
 	getHomePageForTenant,
 	getLatestDraftForTenant,
 	getLeadFunnelForTenant,
@@ -86,6 +87,12 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 		: [];
 	const selectedDirection = directionRows.find((row) => row.direction.status === 'selected');
 	const shareRows = await listLatestCreativeCompositionsForTenant(required);
+	const draftManifest = draft
+		? await getFunnelAssetManifestForVersionForTenant(required, draft.id)
+		: null;
+	const publishedManifest = published
+		? await getFunnelAssetManifestForVersionForTenant(required, published.version.id)
+		: null;
 	return {
 		site,
 		funnel,
@@ -131,6 +138,11 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 					}
 				: null,
 		shareCards: shareRows.map(publicComposition),
+		shareCardPlacement: {
+			placed: Boolean(draftManifest?.ogCompositionId),
+			live: Boolean(publishedManifest?.ogCompositionId),
+			ogCompositionId: draftManifest?.ogCompositionId ?? publishedManifest?.ogCompositionId ?? null
+		},
 		intelligenceDraft:
 			intelligenceRun && draft
 				? {

@@ -22,6 +22,10 @@ export function isBrandLogoPath(pathname: string) {
 	return pathname === '/brand-logo' || pathname === '/brand-logo/';
 }
 
+export function isOgImagePath(pathname: string) {
+	return pathname === '/og-image' || pathname === '/og-image/';
+}
+
 export function isUnsubscribePath(pathname: string) {
 	return pathname === '/unsubscribe' || pathname === '/unsubscribe/';
 }
