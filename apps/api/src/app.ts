@@ -103,6 +103,9 @@ import {
 	saveOutcomesQuickStart,
 	listSalesOutcomes,
 	recordSalesOutcome,
+	getClientValueProof,
+	saveClientValueProfile,
+	recordValueActivity,
 	overrideFirstRevealGate
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
@@ -534,6 +537,49 @@ app.get('/v1/outcomes/sales/:clientId', async (c) => {
 	return c.json({
 		requestId,
 		data: await listSalesOutcomes(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.get('/v1/value', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'goals.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getClientValueProof(session, ctx) });
+});
+
+app.post('/v1/value/profile', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'goals.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await saveClientValueProfile(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/value/activity', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'goals.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await recordValueActivity(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.get('/v1/value/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'goals.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getClientValueProof(session, ctx, c.req.param('clientId'))
 	});
 });
 

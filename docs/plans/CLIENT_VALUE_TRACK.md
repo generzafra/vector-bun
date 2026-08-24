@@ -12,11 +12,11 @@
 
 **Not `docs/32`.** Numbered charters stop at `docs/30`. This track **extends** Outcomes. It does not sit above `docs/30` as a second sales, revenue, or attribution source of truth. `docs/20` owns MGE operating cost. Client-facing value must not expose MGE margin. These slices do not reopen Phases 0–9.
 
-**Remaining execution (24 August 2026):** V0–V5 are open. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md). V0 is Wave A when fee/package is known (no ROI). V1 waits for Outcomes O3. Execution facts live in [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md). Trusted software calculates; AI explains.
+**Remaining execution (24 August 2026):** V0 is **in**. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md). Next Wave B **C1**. V1 waits for Wave C. Execution facts live in [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md). Trusted software calculates; AI explains.
 
 | Slice    | Status | Depends on                                                 |
 | -------- | ------ | ---------------------------------------------------------- |
-| V0       | Open   | Known fee/package. Activity proof only                     |
+| V0       | **In** | Known fee/package. Activity proof only                     |
 | V1       | Open   | O1–O3                                                      |
 | V2 / O21 | Open   | Versioned benchmarks or client baseline. Labeled estimated |
 | V3 / O22 | Open   | O11–O12 / O14 coverage. Replacement cost ≠ ROI             |
@@ -3801,6 +3801,8 @@ Implement:
 - monthly summary.
 
 No ROI claim required.
+
+**In:** Control `/value` records a tenant-owned package fee (`client_value_profiles`, integer `fee_minor` + currency) and optional activity notes (`value_activity_records`). The monthly summary counts this tenant’s observed leads, sales-outcome rows, sent email, published social, published pages, and recorded notes. Missing fee still shows activity labeled unknown. Caps reuse `goals.read` / `goals.manage` (`value.*` waits for a role migration). Not in default client nav; Overview links here. No ROI, replacement-cost money, invented hours, `value_snapshots`, or second revenue ledger.
 
 ---
 

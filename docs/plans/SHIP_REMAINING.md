@@ -49,6 +49,7 @@ Client UX is **not** a surface leftover. Default nav, Today, Approvals, and Quic
 | **CU1** Outcomes QuickStart                                                                        | Control `/quickstart` maps seven answers into goals, high-intent prefs, and a recorded approver    |
 | **O8** Approval Center                                                                             | Control `/approvals` groups existing `approval_requests`; decide does not publish or send          |
 | **O3** `sales_outcomes`                                                                            | Optional integer `amount_minor` + currency on Control `/leads`; does not replace `lead_status`     |
+| **V0** activity proof                                                                              | Control `/value`: known fee/package + observed monthly work. **No ROI**                            |
 
 Not in code: `ImageProvider`, `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `revenue_events`, visual-direction manifests, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements.
 
@@ -128,7 +129,7 @@ Spec remains [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md). Trusted software ca
 
 | Slice        | Status | Depends on                                                 |
 | ------------ | ------ | ---------------------------------------------------------- |
-| **V0**       | Open   | Known fee/package. **No ROI**                              |
+| **V0**       | **In** | Known fee/package. **No ROI**                              |
 | **V1**       | Open   | O1–O3                                                      |
 | **V2 / O21** | Open   | Versioned benchmarks or client baseline. Labeled estimated |
 | **V3 / O22** | Open   | O11–O12 / O14 coverage. Replacement cost ≠ ROI             |
@@ -163,7 +164,9 @@ Goal: a non-technical owner is not dropped into the operator cockpit, and §78 l
 2. **CU1** Outcomes QuickStart — **In**
 3. **O8** Approval Center — **In**
 4. **O3** `sales_outcomes` — **In**
-5. **V0** activity proof when fee/package is known (no ROI)
+5. **V0** activity proof when fee/package is known (no ROI) — **In**
+
+Wave A is complete. Next: Wave B **C1**.
 
 ### Wave B — first-site quality (still one engine)
 

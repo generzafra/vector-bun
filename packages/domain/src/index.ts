@@ -22,3 +22,4 @@ export * from './search';
 export * from './experiments';
 export * from './scale';
 export * from './outcomes';
+export * from './value';

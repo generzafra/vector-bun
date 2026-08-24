@@ -2684,7 +2684,7 @@ First Reveal client card (`docs/plans/FIRST_REVEAL_TRACK.md`): Control shows a b
 
 Build in the order in §88. First paying-client bar (§78) is launch readiness, not a Phase 0 reopen. Revenue value may remain optional. Ask Vector, CRM sync, ads, and billing stay later slices.
 
-Client operating UX is first-class: capability-filtered default nav (CU0 in), Outcomes QuickStart (CU1 in), Approval Center (O8 in), and `sales_outcomes` (O3 in) before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md) V0 next in Wave A, then O4. Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md) Wave A. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
+Client operating UX is first-class: capability-filtered default nav (CU0 in), Outcomes QuickStart (CU1 in), Approval Center (O8 in), `sales_outcomes` (O3 in), and V0 activity proof on `/value` before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md). Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md) Wave A complete; next Wave B **C1**, then Wave C O4. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
 
 ---
 
@@ -2701,7 +2701,7 @@ Before first paying client, ensure:
 - dashboard uses business language;
 - approval center works;
 - First Reveal Gate pass or documented operator override (`docs/plans/FIRST_REVEAL_TRACK.md`);
-- V0 activity proof when package/fee is known. No ROI claim required (`docs/plans/CLIENT_VALUE_TRACK.md`).
+- V0 activity proof when package/fee is known. No ROI claim required (`docs/plans/CLIENT_VALUE_TRACK.md`). **In** on Control `/value`.
 
 Revenue value may remain optional at first.
 
@@ -2903,7 +2903,7 @@ Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These twenty it
 21. Replacement-cost and time-savings ranges (V2 / O21). Versioned benchmarks or client baseline. Labeled estimated.
 22. Revenue-linked value statement (V3 / O22) only when O11–O12 coverage exists. Replacement cost is not ROI.
 
-V0 activity proof may ship before O1. V1 joins O1–O3. V4 incrementality waits for Phase 7 coverage. V5 waits for Phase 9 later.
+V0 activity proof is in on Control `/value`. V1 joins O1–O3 in Wave C. V4 incrementality waits for Phase 7 coverage. V5 waits for Phase 9 later.
 
 Recommended:
 

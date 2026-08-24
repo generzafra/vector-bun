@@ -3462,3 +3462,53 @@ export const salesOutcomes = pgTable(
 		index('sales_outcomes_org_idx').on(t.organizationId)
 	]
 );
+
+export const clientValueProfiles = pgTable(
+	'client_value_profiles',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		packageName: text('package_name').notNull(),
+		feeMinor: integer('fee_minor').notNull(),
+		currency: text('currency').notNull(),
+		recordedBy: text('recorded_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('client_value_profiles_client_idx').on(t.clientId),
+		index('client_value_profiles_org_idx').on(t.organizationId)
+	]
+);
+
+export const valueActivityRecords = pgTable(
+	'value_activity_records',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		activityType: text('activity_type').notNull(),
+		description: text('description').notNull(),
+		quantity: integer('quantity').notNull().default(1),
+		automated: boolean('automated').notNull().default(false),
+		clientVisible: boolean('client_visible').notNull().default(true),
+		status: text('status').notNull().default('completed'),
+		completedAt: timestamp('completed_at', { withTimezone: true }).notNull().defaultNow(),
+		recordedBy: text('recorded_by'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('value_activity_records_client_idx').on(t.clientId),
+		index('value_activity_records_client_completed_idx').on(t.clientId, t.completedAt),
+		index('value_activity_records_org_idx').on(t.organizationId)
+	]
+);

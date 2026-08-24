@@ -66,5 +66,6 @@
 			/>
 			<p><a href="/quickstart">Start QuickStart</a></p>
 		{/if}
+		<p><a href="/value">See what Vector did this month</a></p>
 	</section>
 {/if}

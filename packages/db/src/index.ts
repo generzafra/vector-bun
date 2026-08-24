@@ -17,3 +17,4 @@ export * from './experiments';
 export * from './autonomy';
 export * from './scale';
 export * from './outcomes';
+export * from './value';

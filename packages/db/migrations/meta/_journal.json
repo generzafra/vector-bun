@@ -232,6 +232,13 @@
 			"when": 1756160000000,
 			"tag": "0032_o3_sales_outcomes",
 			"breakpoints": true
+		},
+		{
+			"idx": 33,
+			"version": "7",
+			"when": 1756170000000,
+			"tag": "0033_v0_activity_proof",
+			"breakpoints": true
 		}
 	]
 }

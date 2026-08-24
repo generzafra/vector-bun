@@ -1,6 +1,6 @@
 # Outcomes track — client UX + O3–O20
 
-**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; **CU1 in**; **O8 in**; **O3 in**; remainder open  
+**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; **CU1 in**; **O8 in**; **O3 in**; Client Value **V0 in**; remainder open  
 **Track:** Outcomes (not a Vector phase)  
 **Standing law:** [`docs/30`](../30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md) §2, §5–7, §65, §81–88  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave A then C then E  
@@ -109,7 +109,7 @@ Rules:
 
 No phase exit. Phase 2 already exited with won/lost on `leads`.
 
-**Wave A must-take:** CU0, CU1, O8, O3 — **in**.  
+**Wave A must-take:** CU0, CU1, O8, O3, and Client Value V0 — **in**.  
 **Wave C:** O4, O5, O9–O14, then O15.  
 **Wave E:** O16–O20.
 
