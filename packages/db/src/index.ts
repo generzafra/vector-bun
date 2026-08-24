@@ -13,6 +13,7 @@ export * from './ai';
 export * from './creative';
 export * from './brand-visual';
 export * from './asset-sufficiency';
+export * from './visual-directions';
 export * from './social';
 export * from './search';
 export * from './experiments';

@@ -1,4 +1,12 @@
-import { ValidationError, type AssetMediaStrategy, type BrandTokens } from '@vector/contracts';
+import {
+	ValidationError,
+	type AssetMediaStrategy,
+	type BrandTokens,
+	type VisualDirectionCtaVariant,
+	type VisualDirectionHeroVariant,
+	type VisualDirectionProofVariant,
+	type VisualDirectionServicesVariant
+} from '@vector/contracts';
 import { formatMoneyLabel } from './money';
 import { parsePageDocument, type PageDocument, type PageSection } from './schema';
 
@@ -39,9 +47,66 @@ function layoutKind(
 	return 'split';
 }
 
+export type ComposeDirectionInput = {
+	heroVariant: VisualDirectionHeroVariant;
+	proofVariant: VisualDirectionProofVariant;
+	servicesVariant: VisualDirectionServicesVariant;
+	ctaVariant: VisualDirectionCtaVariant;
+};
+
+function composePlan(
+	personality: string | undefined,
+	mediaStrategy: AssetMediaStrategy | undefined,
+	direction?: ComposeDirectionInput
+): {
+	layout: LayoutKind;
+	heroType: VisualDirectionHeroVariant;
+	proofType: Exclude<VisualDirectionProofVariant, 'none'> | null;
+	servicesType: VisualDirectionServicesVariant;
+	ctaType: VisualDirectionCtaVariant;
+} {
+	if (direction) {
+		let heroType = direction.heroVariant;
+		if (mediaStrategy === 'typography_led' && heroType === 'hero-split') {
+			heroType =
+				personality === 'premium' || personality === 'creative' ? 'hero-editorial' : 'hero-minimal';
+		}
+		const layout: LayoutKind =
+			heroType === 'hero-editorial'
+				? 'editorial'
+				: heroType === 'hero-minimal'
+					? 'minimal'
+					: 'split';
+		return {
+			layout,
+			heroType,
+			proofType: direction.proofVariant === 'none' ? null : direction.proofVariant,
+			servicesType: direction.servicesVariant,
+			ctaType: direction.ctaVariant
+		};
+	}
+	const layout = layoutKind(personality, mediaStrategy);
+	return {
+		layout,
+		heroType:
+			layout === 'editorial'
+				? 'hero-editorial'
+				: layout === 'minimal'
+					? 'hero-minimal'
+					: 'hero-split',
+		proofType: layout === 'editorial' ? 'proof-featured' : 'proof',
+		servicesType: layout === 'editorial' ? 'services-editorial' : 'services',
+		ctaType: layout === 'editorial' ? 'cta-minimal' : 'cta'
+	};
+}
+
 export function composeLeadPage(
 	input: KnowledgeSnapshot,
-	options: { preview: boolean; mediaStrategy?: AssetMediaStrategy }
+	options: {
+		preview: boolean;
+		mediaStrategy?: AssetMediaStrategy;
+		direction?: ComposeDirectionInput;
+	}
 ): PageDocument {
 	const { brand, services, offers, claims } = input;
 	if (!brand.audience || !brand.offer || !brand.primaryConversion) {
@@ -52,7 +117,8 @@ export function composeLeadPage(
 	}
 
 	const personality = personalityOf(brand.brandPersonality);
-	const layout = layoutKind(personality, options.mediaStrategy);
+	const plan = composePlan(personality, options.mediaStrategy, options.direction);
+	const layout = plan.layout;
 	const approved = claims.filter((claim) => claim.kind === 'approved');
 	const offer = offers[0];
 	const primary = { label: brand.primaryConversion, href: '#lead' };
@@ -61,7 +127,7 @@ export function composeLeadPage(
 	const eyebrow = brand.audience.slice(0, 80);
 
 	const hero: PageSection =
-		layout === 'minimal'
+		plan.heroType === 'hero-minimal'
 			? {
 					id: 'hero',
 					type: 'hero-minimal',
@@ -70,7 +136,7 @@ export function composeLeadPage(
 					lede,
 					primaryCta: primary
 				}
-			: layout === 'editorial'
+			: plan.heroType === 'hero-editorial'
 				? {
 						id: 'hero',
 						type: 'hero-editorial',
@@ -91,7 +157,7 @@ export function composeLeadPage(
 					};
 
 	const serviceSection: PageSection =
-		layout === 'editorial'
+		plan.servicesType === 'services-editorial'
 			? {
 					id: 'services',
 					type: 'services-editorial',
@@ -142,7 +208,7 @@ export function composeLeadPage(
 	};
 
 	const cta: PageSection =
-		layout === 'editorial'
+		plan.ctaType === 'cta-minimal'
 			? {
 					id: 'cta',
 					type: 'cta-minimal',
@@ -175,10 +241,11 @@ export function composeLeadPage(
 	}));
 
 	const sections: PageSection[] = [hero];
-	if (layout !== 'minimal' && approved.length > 0) {
+	const proofType = approved.length > 0 ? plan.proofType : null;
+	if (layout !== 'minimal' && proofType) {
 		sections.push({
 			id: 'proof',
-			type: layout === 'editorial' ? 'proof-featured' : 'proof',
+			type: proofType,
 			heading: 'What we can state',
 			items: proofItems
 		});
@@ -206,10 +273,10 @@ export function composeLeadPage(
 				priceLabel: formatMoneyLabel(offer.startingPriceMinor, offer.currency)
 			});
 		}
-		if (approved.length > 0) {
+		if (proofType) {
 			sections.push({
 				id: 'proof',
-				type: 'proof',
+				type: proofType,
 				heading: 'Scope we will confirm',
 				items: proofItems
 			});

@@ -1,4 +1,5 @@
 export * from './apply-recommendation';
+export * from './candidate-score';
 export * from './compose';
 export * from './discoverability';
 export * from './first-reveal';

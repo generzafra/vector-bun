@@ -253,6 +253,13 @@
 			"when": 1756190000000,
 			"tag": "0035_fr3_asset_sufficiency",
 			"breakpoints": true
+		},
+		{
+			"idx": 36,
+			"version": "7",
+			"when": 1756200000000,
+			"tag": "0036_fr4_visual_directions",
+			"breakpoints": true
 		}
 	]
 }

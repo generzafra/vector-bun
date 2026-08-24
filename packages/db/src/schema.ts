@@ -3461,6 +3461,65 @@ export const assetSufficiencySnapshots = pgTable(
 	]
 );
 
+export const visualDirections = pgTable(
+	'visual_directions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		candidateIndex: integer('candidate_index').notNull(),
+		name: text('name').notNull(),
+		status: text('status').notNull().default('scored'),
+		source: text('source').notNull().default('deterministic'),
+		manifest: jsonb('manifest').$type<Record<string, unknown>>().notNull(),
+		rationale: text('rationale').notNull(),
+		selectedAt: timestamp('selected_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('visual_directions_client_version_idx').on(
+			t.clientId,
+			t.pageVersionId,
+			t.candidateIndex
+		),
+		index('visual_directions_client_idx').on(t.clientId),
+		index('visual_directions_org_idx').on(t.organizationId)
+	]
+);
+
+export const pageCandidateScores = pgTable(
+	'page_candidate_scores',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		visualDirectionId: uuid('visual_direction_id')
+			.notNull()
+			.references(() => visualDirections.id),
+		scoreTotal: integer('score_total').notNull(),
+		dimensions: jsonb('dimensions').$type<Record<string, number>>().notNull(),
+		scoringVersion: integer('scoring_version').notNull().default(1),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('page_candidate_scores_client_direction_idx').on(t.clientId, t.visualDirectionId),
+		index('page_candidate_scores_client_idx').on(t.clientId),
+		index('page_candidate_scores_org_idx').on(t.organizationId)
+	]
+);
+
 export const dataHealthChecks = pgTable(
 	'data_health_checks',
 	{

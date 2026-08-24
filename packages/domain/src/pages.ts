@@ -7,8 +7,13 @@ import {
 	assertActorOwnsContext,
 	assetMediaStrategyLabel,
 	brandVisualProfileConfirmed,
+	enumerateVisualDirectionCandidates,
 	evaluateAssetSufficiency,
 	parseAssetMediaStrategy,
+	selectWinningCandidateIndex,
+	visualDirectionFitCopy,
+	visualDirectionFitLabel,
+	VISUAL_DIRECTION_SCORING_VERSION,
 	overrideFirstRevealGateSchema,
 	parseContract,
 	type TenantContext
@@ -30,9 +35,12 @@ import {
 	getProductionDomainForTenant,
 	getPublishedHomeForTenant,
 	getSiteForTenant,
+	insertCandidateScoreForTenant,
+	insertVisualDirectionForTenant,
 	listClaimsForTenant,
 	listOffersForTenant,
 	listServicesForTenant,
+	listVisualDirectionsForVersionForTenant,
 	overrideFirstRevealGateForTenant,
 	publishLatestDraftForTenant,
 	updatePageVersionDocumentForTenant,
@@ -45,7 +53,8 @@ import {
 	evaluateFirstRevealGate,
 	parsePageDocument,
 	previewHostname,
-	previewOrigin
+	previewOrigin,
+	scoreVisualDirection
 } from '@vector/funnel-engine';
 import { recordAudit } from './audit';
 import { resolveBrandLogoForTenant } from './assets';
@@ -70,6 +79,10 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 	const sufficiency = draft
 		? await getAssetSufficiencyForVersionForTenant(required, draft.id)
 		: null;
+	const directionRows = draft
+		? await listVisualDirectionsForVersionForTenant(required, draft.id)
+		: [];
+	const selectedDirection = directionRows.find((row) => row.direction.status === 'selected');
 	return {
 		site,
 		funnel,
@@ -101,6 +114,19 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 					industryVisualDependency: sufficiency.industryVisualDependency
 				}
 			: null,
+		visualDirections:
+			directionRows.length > 0
+				? {
+						source: directionRows[0]?.direction.source ?? 'deterministic',
+						selectedName: selectedDirection?.direction.name ?? null,
+						items: directionRows.map((row) => ({
+							name: row.direction.name,
+							rationale: row.direction.rationale,
+							selected: row.direction.status === 'selected',
+							fit: visualDirectionFitCopy(visualDirectionFitLabel(row.score?.scoreTotal ?? 0))
+						}))
+					}
+				: null,
 		intelligenceDraft:
 			intelligenceRun && draft
 				? {
@@ -140,19 +166,49 @@ export async function composeFunnel(actor: Actor, ctx: TenantContext, requestId:
 		publishableCreativeImages,
 		unknownRightsCreative
 	});
-	const document = composeLeadPage(
-		{
-			clientSlug: client.slug,
-			brand: {
-				...brand,
-				tokens: applyConfirmedBrandVisualToTokens(brand.tokens, profile)
-			},
-			services,
-			offers,
-			claims
+	const knowledge = {
+		clientSlug: client.slug,
+		brand: {
+			...brand,
+			tokens: applyConfirmedBrandVisualToTokens(brand.tokens, profile)
 		},
-		{ preview: true, mediaStrategy: sufficiency.mediaStrategy }
+		services,
+		offers,
+		claims
+	};
+	const candidates = enumerateVisualDirectionCandidates({
+		mediaStrategy: sufficiency.mediaStrategy,
+		hasLogo: Boolean(logo),
+		personality: brand.brandPersonality,
+		hasApprovedClaims: claims.some((claim) => claim.kind === 'approved')
+	});
+	const scored = candidates.map((manifest) => {
+		const document = composeLeadPage(knowledge, {
+			preview: true,
+			mediaStrategy: sufficiency.mediaStrategy,
+			direction: manifest
+		});
+		return {
+			manifest,
+			document,
+			score: scoreVisualDirection({
+				document,
+				manifest,
+				hasLogo: Boolean(logo),
+				personality: brand.brandPersonality,
+				preview: true
+			})
+		};
+	});
+	const winnerIndex = selectWinningCandidateIndex(
+		scored.map((item) => ({
+			candidateIndex: item.manifest.candidateIndex,
+			total: item.score.total
+		}))
 	);
+	const winner = scored.find((item) => item.manifest.candidateIndex === winnerIndex) ?? scored[0];
+	if (!winner) throw new ValidationError('Could not select a layout direction');
+	const document = winner.document;
 	const composed = await composeLeadFunnelForTenant(required, {
 		siteName: brand.displayName,
 		title: document.seo.title,
@@ -181,6 +237,26 @@ export async function composeFunnel(actor: Actor, ctx: TenantContext, requestId:
 		logoAssetId: logo?.id ?? null,
 		summaryClient: sufficiency.summary
 	});
+	const selectedAt = new Date();
+	for (const item of scored) {
+		const selected = item.manifest.candidateIndex === winner.manifest.candidateIndex;
+		const direction = await insertVisualDirectionForTenant(required, {
+			pageVersionId: composed.draft.id,
+			candidateIndex: item.manifest.candidateIndex,
+			name: item.manifest.name,
+			status: selected ? 'selected' : 'scored',
+			source: 'deterministic',
+			manifest: { ...item.manifest } as Record<string, unknown>,
+			rationale: item.manifest.rationale,
+			selectedAt: selected ? selectedAt : null
+		});
+		await insertCandidateScoreForTenant(required, {
+			visualDirectionId: direction.id,
+			scoreTotal: item.score.total,
+			dimensions: item.score.dimensions,
+			scoringVersion: VISUAL_DIRECTION_SCORING_VERSION
+		});
+	}
 	await recordAudit({
 		organizationId: required.organizationId,
 		clientId: required.clientId,

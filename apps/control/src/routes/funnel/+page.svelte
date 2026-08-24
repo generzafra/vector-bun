@@ -28,6 +28,7 @@
 						? 'info'
 						: 'muted'
 	);
+	const directions = $derived(data.funnel?.visualDirections ?? null);
 </script>
 
 <PageHeader
@@ -96,6 +97,12 @@
 					<StatusChip label={sufficiency.label} tone={sufficiencyTone} />
 				</p>
 			{/if}
+			{#if directions?.selectedName}
+				<p>
+					Kept direction:
+					<StatusChip label={directions.selectedName} tone="success" />
+				</p>
+			{/if}
 		</div>
 	</section>
 
@@ -109,6 +116,26 @@
 					public reveal.
 				</p>
 			{/if}
+		</section>
+	{/if}
+
+	{#if directions}
+		<section>
+			<h2>Layout directions</h2>
+			<p>
+				Vector compared a few layout directions and kept one for this preview. This is not a client
+				reveal, and it is not three websites.
+			</p>
+			{#each directions.items as item (item.name)}
+				<p>
+					<StatusChip
+						label={item.selected ? 'Kept' : item.fit}
+						tone={item.selected ? 'success' : 'muted'}
+					/>
+					{item.name}
+				</p>
+				<p>{item.rationale}</p>
+			{/each}
 		</section>
 	{/if}
 

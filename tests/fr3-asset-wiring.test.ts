@@ -234,7 +234,8 @@ test('unconfirmed C1 still composes a typography-led preview', async () => {
 		'corporate'
 	);
 	const composed = await composeFunnel(actor, ctx, 'fr3-unconfirmed');
-	expect(composed.draft.document.sections[0]?.type).toBe('hero-minimal');
+	expect(['hero-minimal', 'hero-editorial']).toContain(composed.draft.document.sections[0]?.type);
+	expect(composed.draft.document.sections[0]?.type).not.toBe('hero-split');
 	const funnel = await getFunnel(actor, ctx);
 	expect(funnel.assetSufficiency?.profileConfirmed).toBe(false);
 	expect(funnel.assetSufficiency?.mediaStrategy).toBe('typography_led');
