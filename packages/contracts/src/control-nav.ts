@@ -22,7 +22,7 @@ export type ControlNavLink = {
  * Today, Campaigns, and Insights stay omitted until those routes exist.
  */
 export const CONTROL_NAV_ITEMS: readonly ControlNavItem[] = [
-	{ href: '/', label: 'Overview', shell: 'both' },
+	{ href: '/overview', label: 'Overview', shell: 'both' },
 	{ href: '/clients', label: 'Clients', capability: 'clients.read', shell: 'operator' },
 	{ href: '/knowledge', label: 'Knowledge', capability: 'knowledge.read', shell: 'operator' },
 	{ href: '/funnel', label: 'Funnel', capability: 'pages.read', shell: 'operator' },
@@ -41,7 +41,7 @@ export const CONTROL_NAV_ITEMS: readonly ControlNavItem[] = [
 	{ href: '/members', label: 'Members', capability: 'users.manage', shell: 'operator' }
 ];
 
-export const CLIENT_DEFAULT_NAV_HREFS = ['/', '/leads', '/approvals', '/goals'] as const;
+export const CLIENT_DEFAULT_NAV_HREFS = ['/overview', '/leads', '/approvals', '/goals'] as const;
 
 export const CLIENT_DEFAULT_NAV_LABELS = ['Overview', 'Leads', 'Approvals', 'Goals'] as const;
 

@@ -4,7 +4,7 @@ import { AppError } from '@vector/contracts';
 import { login } from '@vector/domain';
 
 export function load({ locals }) {
-	if (locals.session) throw redirect(303, '/');
+	if (locals.session) throw redirect(303, '/overview');
 }
 
 export const actions = {
@@ -25,6 +25,6 @@ export const actions = {
 			}
 			return fail(500, { error: 'Login failed' });
 		}
-		throw redirect(303, '/');
+		throw redirect(303, '/overview');
 	}
 };

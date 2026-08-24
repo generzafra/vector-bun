@@ -6,9 +6,13 @@
 </script>
 
 <svelte:head>
-	<title>Vector Control</title>
+	<title>{data.marketingShell ? 'Vector — Growth OS' : 'Vector Control'}</title>
 </svelte:head>
 
-<AppShell userId={data.userId} permissions={data.permissions}>
+{#if data.marketingShell}
 	{@render children()}
-</AppShell>
+{:else}
+	<AppShell userId={data.userId} permissions={data.permissions} csrf={data.csrf}>
+		{@render children()}
+	</AppShell>
+{/if}

@@ -12,6 +12,7 @@ Identity migration applies to Control only. Delivery stays on client tokens and 
 | Privacy      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] headings + toc     | [ ]            | [x]                |
 | Terms        | [x]          | [x]            | [x] CSS-native  | [x]                 | [x] headings + toc     | [ ]            | [x]                |
 | Overview     | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
+| Marketing    | [x]          | [x] homepage   | [x] CSS-native  | [ ]                 | [x] headings + skip    | [ ]            | [x]                |
 | Clients      | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Knowledge    | [x]          | [x]            | [x] CSS-native  | [x]                 | [x]                    | [x] first pass | [x]                |
 | Brand look   | [x]          | [x]            | [x] CSS-native  | [ ]                 | [x] labels + confirm   | [ ]            | [x]                |
@@ -44,7 +45,7 @@ Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. O
 | Automation canvas               | planned (later Phase 8); `/autonomy` policy table, S1 Run now, S2 launch plan, S3 unpublished launch execute, S4 promote/rollback shipped |
 | Intelligence explainability     | `/intelligence` cards, activity, draft artifacts                                                                                          |
 | Portfolio dashboard             | `/portfolio` S0–S1 shipped: exceptions, Vector 24 clocks, enforce / evaluate-only usage overrides                                         |
-| Vector marketing hero           | not in this repo                                                                                                                          |
+| Vector marketing hero           | Control `/` via `apps/control/src/lib/vector/marketing/`                                                                                  |
 
 ## Remaining follow-up
 

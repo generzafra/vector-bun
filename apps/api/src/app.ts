@@ -1,5 +1,5 @@
 import { Hono, type Context } from 'hono';
-import { getCookie, setCookie } from 'hono/cookie';
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { assertCsrf, consumeRateLimit, cookieName, sessionCookieOptions } from '@vector/auth';
 import { env } from '@vector/config';
 import { AppError, ForbiddenError, UnauthorizedError, ValidationError } from '@vector/contracts';
@@ -53,6 +53,7 @@ import {
 	unsubscribeByToken,
 	upsertSendingDomain,
 	login,
+	logout,
 	publishFunnel,
 	recalculateReadiness,
 	removeBrandAsset,
@@ -134,6 +135,21 @@ app.post('/v1/auth/login', async (c) => {
 			clientId: result.session.clientId
 		}
 	});
+});
+
+app.post('/v1/auth/logout', async (c) => {
+	const token = getCookie(c, cookieName()) ?? '';
+	const session = await resolveSession(token);
+	if (session) {
+		assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	}
+	await logout(token, session);
+	const cookie = sessionCookieOptions();
+	deleteCookie(c, cookieName(), {
+		path: cookie.path,
+		secure: cookie.secure
+	});
+	return c.json({ data: { ok: true } });
 });
 
 async function requireSession(c: Context) {

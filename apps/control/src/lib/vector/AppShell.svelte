@@ -6,10 +6,12 @@
 	let {
 		userId,
 		permissions = [],
+		csrf = null,
 		children
 	}: {
 		userId: string | null;
 		permissions?: string[];
+		csrf?: string | null;
 		children: import('svelte').Snippet;
 	} = $props();
 
@@ -32,7 +34,7 @@
 	<div class={['app', navOpen && 'open']}>
 		<a class="skip" href="#main">Skip to content</a>
 		<aside class="sidebar">
-			<a class="brand" href="/" onclick={closeNav}>
+			<a class="brand" href="/overview" onclick={closeNav}>
 				<img src="/brand/vector/logo/vector-wordmark.png" alt="Vector" />
 			</a>
 			<nav aria-label="Control">
@@ -61,6 +63,12 @@
 					Menu
 				</button>
 				<p class="workspace">Control</p>
+				{#if csrf}
+					<form class="logout" method="post" action="/logout">
+						<input type="hidden" name="_csrf" value={csrf} />
+						<button type="submit" class="secondary">Sign out</button>
+					</form>
+				{/if}
 			</header>
 			<main id="main" class="main">
 				{@render children()}
@@ -72,7 +80,7 @@
 	</div>
 {:else}
 	<div class={['auth', signedOutDocument && 'document']}>
-		<a class="brand" href="/login">
+		<a class="brand" href="/">
 			<img src="/brand/vector/logo/vector-wordmark.png" alt="Vector" />
 		</a>
 		<main id="main" class="auth-main">
@@ -179,6 +187,12 @@
 		font-size: 12px;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
+	}
+
+	.logout {
+		margin-left: auto;
+		max-width: none;
+		display: inline-flex;
 	}
 
 	.menu,

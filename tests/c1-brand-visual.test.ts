@@ -90,7 +90,10 @@ async function scopedActor(name: string, ip: string) {
 
 test('brand visual confirm stays off default client nav and uses business language', () => {
 	const page = readFileSync(join(root, 'apps/control/src/routes/brand/+page.svelte'), 'utf8');
-	const overview = readFileSync(join(root, 'apps/control/src/routes/+page.svelte'), 'utf8');
+	const overview = readFileSync(
+		join(root, 'apps/control/src/routes/overview/+page.svelte'),
+		'utf8'
+	);
 	const domain = readFileSync(join(root, 'packages/domain/src/brand-visual.ts'), 'utf8');
 	const migration = readFileSync(
 		join(root, 'packages/db/migrations/0034_c1_brand_visual.sql'),

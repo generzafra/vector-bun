@@ -6,7 +6,7 @@ Modular monolith with clear internal package boundaries and a separate Control P
 
 ## Control Plane
 
-Authenticated management of clients, brand data, funnels, campaigns, agents, approvals, analytics, policies, and integrations. Client and operator share this plane. Navigation differs by capability (`docs/30`). Default client nav is Overview / Leads / Approvals / Goals on current routes (CU0 in). Approvals is `/approvals` (O8 in). Outcomes QuickStart is at `/quickstart` (CU1 in). Leads can record tenant-owned `sales_outcomes` with optional money (O3 in). Activity proof is at `/value` (V0 in): known fee/package and observed monthly work, not ROI, and not in the default client nav. Today, Campaigns, and Insights wait for those routes. Do not fork `apps/client`.
+Authenticated management of clients, brand data, funnels, campaigns, agents, approvals, analytics, policies, and integrations. Client and operator share this plane. Navigation differs by capability (`docs/30`). Public `/` is Vector software marketing and does not use the dashboard shell. Default client nav is Overview (`/overview`) / Leads / Approvals / Goals (CU0 in). Approvals is `/approvals` (O8 in). Outcomes QuickStart is at `/quickstart` (CU1 in). Leads can record tenant-owned `sales_outcomes` with optional money (O3 in). Activity proof is at `/value` (V0 in): known fee/package and observed monthly work, not ROI, and not in the default client nav. Today, Campaigns, and Insights wait for those routes. Do not fork `apps/client`.
 
 ## Delivery Plane
 

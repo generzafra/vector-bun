@@ -32,4 +32,4 @@ Define retention by data class and client jurisdiction. Do not keep all data for
 
 Support client specific jurisdiction profiles. Legal counsel should approve actual policy language and compliance configurations for markets served.
 
-Vector product Privacy Policy and Terms of Use are public Control routes (`/privacy`, `/terms`). They are not tenant Delivery pages and must not be treated as a client privacy policy. Counsel must replace remaining contact placeholders before production reliance.
+Vector product Privacy Policy and Terms of Use are public Control routes (`/privacy`, `/terms`). The Control marketing homepage (`/`) is also public. POST `/logout` and POST `/v1/auth/logout` destroy the session and require CSRF when a session exists. They are not tenant Delivery pages and must not be treated as a client privacy policy. Counsel must replace remaining contact placeholders before production reliance.

@@ -22,6 +22,9 @@ test('client-capability actors see the default shell without operator modules', 
 		const labels = labelsFor(ROLE_CAPABILITIES[role]);
 		expect(hasOperatorControlNav(ROLE_CAPABILITIES[role])).toBe(false);
 		expect(labels).toEqual([...CLIENT_DEFAULT_NAV_LABELS]);
+		expect(
+			controlNavFor(ROLE_CAPABILITIES[role]).find((link) => link.label === 'Overview')?.href
+		).toBe('/overview');
 		for (const forbidden of OPERATOR_ONLY_NAV_LABELS) {
 			expect(labels).not.toContain(forbidden);
 		}
@@ -82,10 +85,16 @@ test('Control shell filters nav from capabilities instead of a hardcoded cockpit
 	expect(shell).not.toContain("href: '/autonomy'");
 	expect(shell).not.toContain("href: '/knowledge'");
 	expect(layout).toContain('permissions={data.permissions}');
+	expect(layout).toContain('marketingShell');
+	expect(shell).toContain('action="/logout"');
+	expect(shell).toContain('href="/overview"');
 });
 
 test('client Overview, Leads, Goals, and Approvals copy stays business language', () => {
-	const overview = readFileSync(join(root, 'apps/control/src/routes/+page.svelte'), 'utf8');
+	const overview = readFileSync(
+		join(root, 'apps/control/src/routes/overview/+page.svelte'),
+		'utf8'
+	);
 	const leads = readFileSync(join(root, 'apps/control/src/routes/leads/+page.svelte'), 'utf8');
 	const goals = readFileSync(join(root, 'apps/control/src/routes/goals/+page.svelte'), 'utf8');
 	const approvals = readFileSync(

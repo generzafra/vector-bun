@@ -86,7 +86,10 @@ test('QuickStart schema maps goals without inventing a pipeline enum', () => {
 		mapQuickStartGoal({ ...baseAnswers, goalChoice: 'subscriptions', hasTarget: false }).goalType
 	).toBe('custom');
 	const page = readFileSync(join(root, 'apps/control/src/routes/quickstart/+page.svelte'), 'utf8');
-	const overview = readFileSync(join(root, 'apps/control/src/routes/+page.svelte'), 'utf8');
+	const overview = readFileSync(
+		join(root, 'apps/control/src/routes/overview/+page.svelte'),
+		'utf8'
+	);
 	const goals = readFileSync(join(root, 'apps/control/src/routes/goals/+page.svelte'), 'utf8');
 	const domain = readFileSync(join(root, 'packages/domain/src/outcomes.ts'), 'utf8');
 	expect(page).toContain('What would you most like Vector to improve?');

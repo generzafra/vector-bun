@@ -96,7 +96,10 @@ async function insertBareLead(
 
 test('activity proof is not ROI and stays off default client nav', () => {
 	const page = readFileSync(join(root, 'apps/control/src/routes/value/+page.svelte'), 'utf8');
-	const overview = readFileSync(join(root, 'apps/control/src/routes/+page.svelte'), 'utf8');
+	const overview = readFileSync(
+		join(root, 'apps/control/src/routes/overview/+page.svelte'),
+		'utf8'
+	);
 	const domain = readFileSync(join(root, 'packages/domain/src/value.ts'), 'utf8');
 	const migration = readFileSync(
 		join(root, 'packages/db/migrations/0033_v0_activity_proof.sql'),

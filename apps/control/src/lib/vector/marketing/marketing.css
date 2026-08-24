@@ -1,0 +1,195 @@
+.marketing-page {
+	--space-4: var(--vector-space-1);
+	--space-8: var(--vector-space-2);
+	--space-12: var(--vector-space-3);
+	--space-16: var(--vector-space-4);
+	--space-20: var(--vector-space-5);
+	--space-24: var(--vector-space-6);
+	--space-32: var(--vector-space-8);
+	--space-40: var(--vector-space-10);
+	--space-48: var(--vector-space-12);
+	--space-64: 64px;
+	--space-80: 80px;
+	--space-96: 96px;
+	--space-128: 128px;
+	--font-primary: var(--vector-font);
+	--font-display: var(--vector-font);
+	--font-mono: var(--vector-font-mono);
+	--radius-sm: var(--vector-radius-sm);
+	--radius-btn: 10px;
+	--radius-card: var(--vector-radius-md);
+	--radius-panel: var(--vector-radius-lg);
+	min-height: 100svh;
+	display: flex;
+	flex-direction: column;
+	background: var(--vector-black);
+	color: var(--vector-white);
+	font-family: var(--vector-font);
+	-webkit-font-smoothing: antialiased;
+}
+
+.marketing-page :global(section) {
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: none;
+	box-shadow: none;
+}
+
+.marketing-page :global(h1),
+.marketing-page :global(h2),
+.marketing-page :global(h3) {
+	font-family: var(--font-display);
+	margin: 0;
+	color: var(--vector-white);
+}
+
+.marketing-page :global(h1) {
+	font-size: clamp(42px, 5vw, 76px);
+	line-height: 1;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+.marketing-page :global(h2) {
+	font-size: clamp(30px, 4vw, 44px);
+	line-height: 1.1;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+}
+
+.marketing-page :global(p) {
+	font-size: clamp(15px, 2vw, 17px);
+	line-height: 1.55;
+	color: var(--text-secondary);
+	margin: 0;
+}
+
+.marketing-page :global(.vector-container) {
+	max-width: 1440px;
+	padding-inline: clamp(24px, 4vw, 72px);
+	margin-inline: auto;
+}
+
+.marketing-page :global(.vector-btn) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 44px;
+	padding: 0 24px;
+	border-radius: var(--radius-btn);
+	font-family: var(--font-primary);
+	font-size: 15px;
+	font-weight: 500;
+	cursor: pointer;
+	text-decoration: none;
+	transition:
+		background 150ms var(--ease-standard),
+		transform 150ms var(--ease-standard),
+		box-shadow 150ms var(--ease-standard);
+	border: none;
+	box-sizing: border-box;
+}
+
+.marketing-page :global(.vector-btn-primary) {
+	background-color: var(--vector-blue);
+	color: var(--vector-white);
+}
+
+.marketing-page :global(.vector-btn-primary:hover) {
+	background-color: var(--blue-400);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px var(--blue-glow);
+}
+
+.marketing-page :global(.vector-btn-secondary) {
+	background-color: transparent;
+	color: var(--vector-white);
+	border: 1px solid var(--border-strong);
+}
+
+.marketing-page :global(.vector-btn-secondary:hover) {
+	background-color: rgba(255, 255, 255, 0.05);
+	transform: translateY(-1px);
+}
+
+.marketing-page :global(.vector-card) {
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0.012) 100%),
+		var(--vector-graphite);
+	border: 1px solid var(--vector-border);
+	box-shadow:
+		0 10px 30px rgba(0, 0, 0, 0.2),
+		inset 0 1px 0 rgba(255, 255, 255, 0.025);
+	border-radius: var(--radius-card);
+	padding: var(--space-24);
+}
+
+.marketing-page .skip {
+	position: absolute;
+	left: var(--vector-space-4);
+	top: -3rem;
+	z-index: 4;
+	background: var(--vector-surface-raised);
+	color: var(--vector-text-primary);
+	padding: 0.6rem 0.9rem;
+}
+
+.marketing-page .skip:focus {
+	top: var(--vector-space-4);
+}
+
+.marketing-bar {
+	position: relative;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-24);
+	padding: var(--space-20) clamp(24px, 4vw, 72px);
+	border-bottom: 1px solid var(--border-subtle);
+}
+
+.marketing-bar .brand {
+	display: flex;
+	align-items: center;
+}
+
+.marketing-bar .brand img {
+	display: block;
+	height: 28px;
+	width: auto;
+}
+
+.marketing-bar nav {
+	display: flex;
+	align-items: center;
+	gap: var(--space-24);
+}
+
+.marketing-bar nav a {
+	color: var(--text-secondary);
+	text-decoration: none;
+	font-size: 0.95rem;
+}
+
+.marketing-bar nav a:hover,
+.marketing-bar nav a.signin {
+	color: var(--vector-white);
+}
+
+.marketing-foot {
+	margin-top: auto;
+	padding: var(--space-32) clamp(24px, 4vw, 72px);
+	border-top: 1px solid var(--border-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.marketing-page :global(.vector-btn),
+	.marketing-page :global(.vector-btn-primary:hover),
+	.marketing-page :global(.vector-btn-secondary:hover) {
+		transition: none;
+		transform: none;
+	}
+}

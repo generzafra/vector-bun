@@ -30,11 +30,14 @@ function flattenDocument(blocks: BlockNode[]) {
 		.join('\n');
 }
 
-test('Control public paths allow login and Vector legal pages only', () => {
+test('Control public paths allow the marketing homepage, login, logout, and Vector legal pages', () => {
+	expect(isControlPublicPath('/')).toBe(true);
 	expect(isControlPublicPath('/login')).toBe(true);
+	expect(isControlPublicPath('/logout')).toBe(true);
 	expect(isControlPublicPath('/privacy')).toBe(true);
 	expect(isControlPublicPath('/terms')).toBe(true);
 	expect(isControlPublicPath('/privacy/')).toBe(true);
+	expect(isControlPublicPath('/overview')).toBe(false);
 	expect(isControlPublicPath('/clients')).toBe(false);
 	expect(isControlPublicPath('/privacy/export')).toBe(false);
 	expect(isControlPublicPath('/login/next')).toBe(false);
@@ -45,6 +48,7 @@ test('Control public legal GET pages stay available if session lookup fails', ()
 	expect(hooks).toContain('isControlPublicPath');
 	expect(hooks).toContain('catch (error)');
 	expect(hooks).toContain('if (!publicPath) throw error');
+	expect(hooks).toContain("normalizeControlPath(event.url.pathname) !== '/login'");
 });
 
 test('published Privacy Policy is parsed from the repository draft and omits authoring notes', () => {

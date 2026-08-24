@@ -37,6 +37,39 @@ test('session cookie options are HttpOnly', () => {
 	expect(sessionCookieOptions().sameSite).toBe('lax');
 });
 
+test('API logout requires CSRF and then rejects the session token', async () => {
+	const loginRes = await app.request('/v1/auth/login', {
+		method: 'POST',
+		headers: {
+			'content-type': 'application/json',
+			'x-forwarded-for': '10.0.0.92'
+		},
+		body: JSON.stringify({ email: env.SEED_USER_A_EMAIL, password: env.SEED_USER_A_PASSWORD })
+	});
+	expect(loginRes.status).toBe(200);
+	const cookie = sessionCookie(loginRes);
+	const { data } = (await loginRes.json()) as { data: { csrf: string } };
+	const token = cookie.split(';')[0]?.split('=')[1] ?? '';
+	expect(await resolveSession(token)).not.toBeNull();
+
+	const denied = await app.request('/v1/auth/logout', {
+		method: 'POST',
+		headers: { cookie }
+	});
+	expect(denied.status).toBe(403);
+	expect(await resolveSession(token)).not.toBeNull();
+
+	const ok = await app.request('/v1/auth/logout', {
+		method: 'POST',
+		headers: {
+			cookie,
+			'x-csrf-token': data.csrf
+		}
+	});
+	expect(ok.status).toBe(200);
+	expect(await resolveSession(token)).toBeNull();
+});
+
 test('user on client A cannot read or update client B', async () => {
 	const { alpha, beta } = await seededClients();
 	const { session } = await login(

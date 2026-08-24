@@ -51,7 +51,7 @@ apps/control/src/lib/vector  Control primitives and shell
 apps/delivery                client renderer — not this identity
 ```
 
-Current Control routes are Overview, Clients, Knowledge, Funnel, Launch, Members, and Login. Future information architecture follows master plan §28, not a fictional `/app` tree.
+Current Control routes are Overview at `/overview`, Clients, Knowledge, Funnel, Launch, Members, Login, and a public Vector marketing homepage at `/`. Future information architecture follows master plan §28, not a fictional `/app` tree.
 
 ---
 
