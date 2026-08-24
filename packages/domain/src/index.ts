@@ -17,6 +17,7 @@ export * from './memberships';
 export * from './pages';
 export * from './workflows';
 export * from './creative';
+export * from './brand-visual';
 export * from './social';
 export * from './search';
 export * from './experiments';

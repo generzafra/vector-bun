@@ -6,6 +6,7 @@ export * from './errors';
 export * from './outcomes-quickstart';
 export * from './sales-outcomes';
 export * from './client-value';
+export * from './brand-visual';
 export * from './launch';
 export * from './scale';
 export * from './schemas';

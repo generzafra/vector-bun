@@ -1,6 +1,6 @@
 # Creative track — C1–C9
 
-**Status:** Implementation specification — C0 in; C1–C9 open  
+**Status:** Implementation specification — C0–C1 in; C2–C9 open  
 **Track:** Creative (not a Vector phase)  
 **Standing law:** [`docs/29`](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md) §63  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B then D  
@@ -94,7 +94,7 @@ A normal launch must not require hand-designing every asset. C1 + typography-led
 | Slice  | Work                                                              | Gate        |
 | ------ | ----------------------------------------------------------------- | ----------- |
 | **C0** | Schema, versions, rights, `clients/{id}/creative/…`               | **In**      |
-| **C1** | Brand visual profile + confirm/edit; prohibited styles            | Wave B next |
+| **C1** | Brand visual profile + confirm/edit; prohibited styles            | **In**      |
 | **C2** | `ImageProvider`, Grok image, job/cost/prompt versions             | After C1    |
 | **C3** | Deterministic compose: logo, type, tokens, OG/email/social shells | After C1    |
 | **C4** | Derivatives / crop / compression                                  | After C3    |
@@ -104,14 +104,14 @@ A normal launch must not require hand-designing every asset. C1 + typography-led
 | **C8** | Publication usage, experiment join, learning objects              | Wave D      |
 | **C9** | `VideoProvider`, short-form                                       | Last        |
 
-Do not start C2 before C0 (already true) or C1. C3 may start in parallel with C2 after C1.
+Do not start C2 before C0 (already true) or C1 (now true). C3 may start in parallel with C2 after C1.
 
 ---
 
 ## 8. C1 rules — brand visual profile
 
 - Tenant-owned profile requires `client_id` and explicit `TenantContext`.
-- Client sees confirm/edit in business language: logo, colors, visual personality, photography direction, prohibited styles. Not a technical design questionnaire (`docs/29` §8, §49).
+- Client sees confirm/edit in business language on Control `/brand`: logo, colors, visual personality, photography direction, prohibited styles. Not a technical design questionnaire (`docs/29` §8, §49). Authorize with `knowledge.read` / `knowledge.manage`.
 - Vector may draft the profile from uploaded logo + existing `brands` / `brand_assets`. Full public-URL extraction is Wave E. C1 must still work with operator-assisted intake.
 - Prohibited styles are stored and must fail closed in C2 prompts and C3 templates.
 - Confirmed profile feeds FR3. Unconfirmed profile is not a license to show FR8.

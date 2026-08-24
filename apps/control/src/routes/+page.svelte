@@ -67,5 +67,15 @@
 			<p><a href="/quickstart">Start QuickStart</a></p>
 		{/if}
 		<p><a href="/value">See what Vector did this month</a></p>
+		{#if data.brandVisualConfirmed}
+			<p>Brand look is confirmed.</p>
+			<p><a href="/brand">Review brand look</a></p>
+		{:else if data.brandVisualConfirmed === false}
+			<EmptyState
+				title="Confirm how this brand should look."
+				detail="Logo, colors, and visual style. Not a design questionnaire."
+			/>
+			<p><a href="/brand">Confirm brand look</a></p>
+		{/if}
 	</section>
 {/if}

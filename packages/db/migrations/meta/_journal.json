@@ -239,6 +239,13 @@
 			"when": 1756170000000,
 			"tag": "0033_v0_activity_proof",
 			"breakpoints": true
+		},
+		{
+			"idx": 34,
+			"version": "7",
+			"when": 1756180000000,
+			"tag": "0034_c1_brand_visual",
+			"breakpoints": true
 		}
 	]
 }

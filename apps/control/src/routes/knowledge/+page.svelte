@@ -84,6 +84,7 @@
 				</label>
 				<button type="submit">Save brand</button>
 			</form>
+			<p><a href="/brand">Confirm brand look with the client</a></p>
 		{:else if data.knowledge.brand}
 			<p>{data.knowledge.brand.displayName}</p>
 			<p>{data.knowledge.brand.offer}</p>

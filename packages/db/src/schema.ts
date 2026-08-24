@@ -1844,6 +1844,74 @@ export const creativeAssetRights = pgTable(
 	]
 );
 
+export type BrandVisualSnapshot = {
+	primaryLogoAssetId: string | null;
+	primaryColor: string | null;
+	accentColor: string | null;
+	primaryFont: string | null;
+	visualPersonality: string;
+	photographyDirection: string;
+	prohibitedStyles: string[];
+};
+
+export const brandVisualProfiles = pgTable(
+	'brand_visual_profiles',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		status: text('status').notNull().default('draft'),
+		source: text('source').notNull().default('intake'),
+		currentVersion: integer('current_version').notNull().default(0),
+		primaryLogoAssetId: uuid('primary_logo_asset_id').references(() => brandAssets.id, {
+			onDelete: 'set null'
+		}),
+		primaryColor: text('primary_color'),
+		accentColor: text('accent_color'),
+		primaryFont: text('primary_font'),
+		visualPersonality: text('visual_personality').notNull().default(''),
+		photographyDirection: text('photography_direction').notNull().default(''),
+		prohibitedStyles: jsonb('prohibited_styles').$type<string[]>().notNull().default([]),
+		confirmedBy: text('confirmed_by'),
+		confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('brand_visual_profiles_client_idx').on(t.clientId),
+		index('brand_visual_profiles_org_idx').on(t.organizationId)
+	]
+);
+
+export const brandVisualProfileVersions = pgTable(
+	'brand_visual_profile_versions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		profileId: uuid('profile_id')
+			.notNull()
+			.references(() => brandVisualProfiles.id),
+		version: integer('version').notNull(),
+		snapshot: jsonb('snapshot').$type<BrandVisualSnapshot>().notNull(),
+		confirmedBy: text('confirmed_by'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('brand_visual_profile_versions_unique_idx').on(t.profileId, t.version),
+		index('brand_visual_profile_versions_client_idx').on(t.clientId),
+		index('brand_visual_profile_versions_org_idx').on(t.organizationId)
+	]
+);
+
 export const socialConnections = pgTable(
 	'social_connections',
 	{

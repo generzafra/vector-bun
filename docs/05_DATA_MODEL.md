@@ -39,6 +39,15 @@ creative_asset_rights
 
 Versions are immutable. Bytes live behind `StorageProvider` under `clients/{client_id}/creative/...`. Raw storage keys are not authorization. Posts may attach an approved asset version or stay text-only. Rights must be confirmed before approval.
 
+Creative C1 (tenant-owned, `client_id` required):
+
+```text
+brand_visual_profiles
+brand_visual_profile_versions
+```
+
+One current profile per client. Vector may draft from `brands` tokens and `brand_assets` logos; the client confirms or edits in business language on Control `/brand`. Confirmed snapshots are immutable versions. Edit after confirm returns the current row to `draft` until re-confirm. Unconfirmed is not a First Reveal license. Prohibited styles are stored and fail closed for later C2/C3. Full public-URL extraction remains later. Do not treat this as `ImageProvider`.
+
 Phase 5 social (tenant-owned, `client_id` required):
 
 ```text
@@ -86,7 +95,7 @@ attribution_results
 
 Email identity is unique per tenant. The same email on two clients is two contacts. Preview submits set `is_test`. Consent is a purpose ledger at form submit (`lead_follow_up` required, `marketing` granted or denied). Analytics sessions are not auth `sessions`. Postgres is the source of truth for leads and outcomes. Attribution v1 stores first touch and last non-direct; it is not presented as multi-touch truth.
 
-`leads.status` is `new | working | qualified | won | lost | spam`. Do not replace that enum. First-client-bar tables (`client_goals`, `data_health_checks`, `client_notification_preferences`, `client_outcome_quickstarts`, `sales_outcomes`, `client_value_profiles`, `value_activity_records`) and First Reveal `first_reveal_gate_results` are tenant-owned. `sales_outcomes` holds optional integer `amount_minor` + currency. Status `won` / `lost` on `leads` is not this row. A won lead may exist without a sales outcome. `client_value_profiles` holds one known package fee per client (integer `fee_minor` + currency). `value_activity_records` is an optional work ledger. V0 monthly counts are derived from existing tenant tables plus that ledger. Do not invent ROI. Later `value_snapshots`, `revenue_events`, entitlements, and client-health snapshots remain later Outcomes / Client Value work (`docs/30`, execution: `docs/plans/OUTCOMES_TRACK.md` and `docs/plans/CLIENT_VALUE_TRACK.md`). Revenue amounts stay optional. Brand visual profiles and generation jobs remain Creative-track work (`docs/29`, execution: `docs/plans/CREATIVE_TRACK.md`). Sequence for remaining tables: `docs/plans/SHIP_REMAINING.md`.
+`leads.status` is `new | working | qualified | won | lost | spam`. Do not replace that enum. First-client-bar tables (`client_goals`, `data_health_checks`, `client_notification_preferences`, `client_outcome_quickstarts`, `sales_outcomes`, `client_value_profiles`, `value_activity_records`) and First Reveal `first_reveal_gate_results` are tenant-owned. `sales_outcomes` holds optional integer `amount_minor` + currency. Status `won` / `lost` on `leads` is not this row. A won lead may exist without a sales outcome. `client_value_profiles` holds one known package fee per client (integer `fee_minor` + currency). `value_activity_records` is an optional work ledger. V0 monthly counts are derived from existing tenant tables plus that ledger. Do not invent ROI. Later `value_snapshots`, `revenue_events`, entitlements, and client-health snapshots remain later Outcomes / Client Value work (`docs/30`, execution: `docs/plans/OUTCOMES_TRACK.md` and `docs/plans/CLIENT_VALUE_TRACK.md`). Revenue amounts stay optional. `brand_visual_profiles` / versions are Creative C1 (`docs/29`, execution: `docs/plans/CREATIVE_TRACK.md`). Generation jobs remain later Creative-track work. Sequence for remaining tables: `docs/plans/SHIP_REMAINING.md`.
 
 First Reveal later tenant-owned tables (`docs/plans/FIRST_REVEAL_TRACK.md`): visual directions, page candidate scores, and client visual preferences. `first_reveal_gate_results` is in. They require `client_id`. Do not fork `page_versions`.
 

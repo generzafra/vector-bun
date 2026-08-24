@@ -2149,6 +2149,8 @@ Build in this order.
 
 ## Phase C1 — Brand Visual Profile
 
+In. Tenant-owned `brand_visual_profiles` plus immutable confirm versions. Control `/brand` drafts from uploaded logo and existing `brands` / `brand_assets`, then Confirm / Edit in business language. Prohibited styles are stored. Unconfirmed is not a First Reveal license. Full public-URL extraction remains later.
+
 - logos;
 - colors;
 - visual direction;

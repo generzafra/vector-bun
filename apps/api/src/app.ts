@@ -21,6 +21,9 @@ import {
 	submitClientDomain,
 	verifyClientDomain,
 	getKnowledge,
+	getBrandVisualProfile,
+	saveBrandVisualProfile,
+	confirmBrandVisualProfile,
 	getAnalyticsReport,
 	getLaunch,
 	listLeads,
@@ -315,6 +318,49 @@ app.delete('/v1/knowledge/assets/:id', async (c) => {
 	const ctx = contextFor(session, requestId);
 	await removeBrandAsset(session, ctx, c.req.param('id'), requestId);
 	return c.json({ requestId, data: { ok: true } });
+});
+
+app.get('/v1/brand-visual', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'knowledge.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getBrandVisualProfile(session, ctx) });
+});
+
+app.post('/v1/brand-visual', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'knowledge.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await saveBrandVisualProfile(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.post('/v1/brand-visual/confirm', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'knowledge.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await confirmBrandVisualProfile(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.get('/v1/brand-visual/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'knowledge.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getBrandVisualProfile(session, ctx, c.req.param('clientId'))
+	});
 });
 
 app.get('/v1/funnel', async (c) => {

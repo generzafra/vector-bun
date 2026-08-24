@@ -11,6 +11,7 @@ export * from './analytics';
 export * from './email';
 export * from './ai';
 export * from './creative';
+export * from './brand-visual';
 export * from './social';
 export * from './search';
 export * from './experiments';
