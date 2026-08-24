@@ -11,7 +11,7 @@ import {
 	uniqueIndex,
 	uuid
 } from 'drizzle-orm/pg-core';
-import type { PageDocument } from '@vector/funnel-engine';
+import type { FirstRevealCheck, PageDocument } from '@vector/funnel-engine';
 import { uuidv7 } from 'uuidv7';
 
 const id = () =>
@@ -3266,5 +3266,131 @@ export const tenantUsageEvents = pgTable(
 			t.resourceFamily
 		),
 		index('tenant_usage_events_window_idx').on(t.clientId, t.resourceFamily, t.windowStartedAt)
+	]
+);
+
+export const clientGoalType = pgEnum('client_goal_type', [
+	'qualified_leads',
+	'sales',
+	'revenue',
+	'bookings',
+	'appointments',
+	'custom'
+]);
+
+export const clientGoalPeriod = pgEnum('client_goal_period', ['month', 'quarter', 'year']);
+
+export const clientGoalStatus = pgEnum('client_goal_status', ['active', 'paused', 'completed']);
+
+export const dataHealthStatus = pgEnum('data_health_status', [
+	'healthy',
+	'warning',
+	'broken',
+	'unknown'
+]);
+
+export const clientGoals = pgTable(
+	'client_goals',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		name: text('name').notNull(),
+		goalType: clientGoalType('goal_type').notNull(),
+		targetValue: integer('target_value').notNull(),
+		unit: text('unit').notNull(),
+		currency: text('currency'),
+		period: clientGoalPeriod('period').notNull(),
+		baselineValue: integer('baseline_value'),
+		isPrimary: boolean('is_primary').notNull().default(false),
+		startOn: timestamp('start_on', { withTimezone: true }),
+		endOn: timestamp('end_on', { withTimezone: true }),
+		dataSource: text('data_source'),
+		status: clientGoalStatus('status').notNull().default('active'),
+		createdBy: text('created_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('client_goals_client_idx').on(t.clientId),
+		uniqueIndex('client_goals_one_primary_idx')
+			.on(t.clientId)
+			.where(sql`${t.isPrimary} = true`)
+	]
+);
+
+export const firstRevealGateResults = pgTable(
+	'first_reveal_gate_results',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		gateVersion: integer('gate_version').notNull().default(1),
+		passed: boolean('passed').notNull(),
+		checks: jsonb('checks').$type<FirstRevealCheck[]>().notNull(),
+		overrideReason: text('override_reason'),
+		overriddenBy: text('overridden_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('first_reveal_gate_results_client_version_idx').on(t.clientId, t.pageVersionId),
+		index('first_reveal_gate_results_client_idx').on(t.clientId)
+	]
+);
+
+export const dataHealthChecks = pgTable(
+	'data_health_checks',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		checkKey: text('check_key').notNull(),
+		status: dataHealthStatus('status').notNull(),
+		detail: text('detail').notNull(),
+		checkedAt: timestamp('checked_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('data_health_checks_client_key_idx').on(t.clientId, t.checkKey),
+		index('data_health_checks_client_idx').on(t.clientId)
+	]
+);
+
+export const clientNotificationPreferences = pgTable(
+	'client_notification_preferences',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		topic: text('topic').notNull(),
+		channel: text('channel').notNull().default('email'),
+		enabled: boolean('enabled').notNull(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('client_notification_preferences_client_topic_idx').on(t.clientId, t.topic),
+		index('client_notification_preferences_client_idx').on(t.clientId)
 	]
 );

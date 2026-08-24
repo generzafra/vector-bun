@@ -1,6 +1,6 @@
 # Roadmap and Acceptance Gates
 
-Detailed execution plans: [plans/README.md](plans/README.md). Cross-cutting Creative, Outcomes, First Reveal, and Client Value mapping: [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md). Implement one phase at a time. Cursor Grok Bot is the development agent. Production Grok API starts in Phase 4. Numbered charters stop at `docs/30`. First Reveal and Client Value are tracks (ADR-0012), not `docs/31` / `docs/32`.
+Detailed execution plans: [plans/README.md](plans/README.md). Cross-cutting Creative, Outcomes, First Reveal, and Client Value mapping: [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md). Remaining unimplemented slices: [plans/SHIP_REMAINING.md](plans/SHIP_REMAINING.md). Implement one phase or track slice at a time. Cursor Grok Bot is the development agent. Production Grok API starts in Phase 4. Numbered charters stop at `docs/30`. First Reveal and Client Value are tracks (ADR-0012), not `docs/31` / `docs/32`. Remaining work is sequenced as track plans in `docs/plans/` (ADR-0013), not new numbered charters.
 
 ## Phase 0
 
@@ -110,7 +110,7 @@ Multi-client operational scale: usage quotas, noisy-neighbor controls, scaling a
 
 **Exit:** operators can oversee many clients by exception, including Vector 24 clocks, and a single tenant cannot exhaust shared resources. Multiple clients can launch from the same engine without appearing to use the same templated website. The portfolio dashboard uses `docs/28` operational density. Client sites still must not share Vector product chrome. Creative QuickStart and automated asset gap analysis (`docs/29`) are additive so a normal launch does not require hand-designing every asset. Portfolio / client-success health, entitlements, and operator exception queues (`docs/30`) are additive.
 
-**Status (23 August 2026):** S0–S1 are in. Tenant-owned `tenant_usage_limits` and `tenant_usage_events` record the same six families for every client. Default mode is `enforce`. Trusted software refuses over-limit API, AI, email, upload, and analytics consumes and still records `would_deny`. Evaluate-only rows still record and return. Control `/portfolio` lists exceptions (usage warnings, launch failures, blockers, pauses, and Vector 24 class clocks) for clients the actor can access and can set enforce or evaluate-only with a written reason. KPI copy is observed ready-to-live among promised classes. Class D is unpromised. This does not claim 20-client capacity.
+**Status (23 August 2026):** S0–S1 are in. Tenant-owned `tenant_usage_limits` and `tenant_usage_events` record the same six families for every client. Default mode is `enforce`. Trusted software refuses over-limit API, AI, email, upload, and analytics consumes and still records `would_deny`. Evaluate-only rows still record and return. Control `/portfolio` lists exceptions (usage warnings, launch failures, blockers, pauses, and Vector 24 class clocks) for clients the actor can access and can set enforce or evaluate-only with a written reason. KPI copy is observed ready-to-live among promised classes. Class D is unpromised. This does not claim 20-client capacity. S2–S4 and SRE leftovers: [plans/PLATFORM_OPS_TRACK.md](plans/PLATFORM_OPS_TRACK.md).
 
 ## Vector 24
 
@@ -123,3 +123,5 @@ When a repeated manual launch step is discovered: record it, classify it as clie
 First Reveal FR0–FR9 and Client Value V0–V5 attach **inside or after** phases. They never reopen an exit. See [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md) and ADR-0012.
 
 **First paying client (launch readiness, not a Phase 0/1 reopen):** `docs/30` §78 plus First Reveal Gate pass or documented operator override, and V0 activity proof when fee/package is known. Not required: three design directions, winner image generation, Ask Vector, CRM, ads, billing, entitlements, or ROI claims.
+
+Remaining track execution (client-simple UX, Creative C1–C9, FR3–FR9, Value V0–V5, Phase 9 S2–S4): [plans/SHIP_REMAINING.md](plans/SHIP_REMAINING.md). Client default navigation and Outcomes QuickStart are [plans/OUTCOMES_TRACK.md](plans/OUTCOMES_TRACK.md), not extra operator screens.

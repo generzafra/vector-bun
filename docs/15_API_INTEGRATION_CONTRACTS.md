@@ -10,9 +10,9 @@ AIProvider, EmailProvider, SocialProvider, AnalyticsProvider, StorageProvider, S
 
 `SearchProvider` is the only search adapter family. It may expose property connect/health, official Search Console / Bing query and page sync, sitemap submit when the official API exists, and optional generative-visibility measurement that can return `unsupported` and fail closed. Do not invent `SearchPerformanceProvider`, `SearchIndexProvider`, `GenerativeVisibilityProvider`, or `SearchResearchProvider` as separate families. Do not hardcode a search or AI-discovery vendor into the domain. Memory is the default until credentials exist. Tokens never appear in Control or API JSON. Slice contracts land with Phase 6 (`docs/plans/06_PHASE_6_SEO_AEO.md`).
 
-Later Creative Engine adapters (`docs/29`): ImageProvider, then VideoProvider and ImageTransformProvider. Do not add `generateImage` to `AIProvider`. Do not invent `AssetStorageProvider`.
+Later Creative Engine adapters (`docs/29`): ImageProvider, then VideoProvider and ImageTransformProvider. Do not add `generateImage` to `AIProvider`. Do not invent `AssetStorageProvider`. Remaining slices: `docs/plans/CREATIVE_TRACK.md`.
 
-Later Outcomes adapters (`docs/30`): CRMProvider, then RevenueProvider, BookingProvider, CommerceProvider, AdProvider, and BillingProvider. Do not couple the domain to one CRM, ad network, or payment processor. Do not let AI change ad budgets automatically.
+Later Outcomes adapters (`docs/30`): CRMProvider, then RevenueProvider, BookingProvider, CommerceProvider, AdProvider, and BillingProvider. Do not couple the domain to one CRM, ad network, or payment processor. Do not let AI change ad budgets automatically. Remaining slices: `docs/plans/OUTCOMES_TRACK.md`. Sequence: `docs/plans/SHIP_REMAINING.md`.
 
 Client Value (`docs/plans/CLIENT_VALUE_TRACK.md`) consumes those adapters. Do not create a ValueProvider or a second revenue adapter family.
 

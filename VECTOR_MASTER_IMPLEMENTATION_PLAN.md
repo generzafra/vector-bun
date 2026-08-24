@@ -12,7 +12,7 @@
 **Document status:** Pre implementation master plan  
 **Version:** 1.1  
 **Prepared:** 22 August 2026  
-**Appendix folded:** `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` (MGE/Vector split, shared hosting, scaling, Vector 24). Public frontend quality: `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`. Control / Vector product identity: `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`. Client media production: `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`. Client outcomes and authenticated client UX: `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`. `/docs` charters stop at 30. First Reveal and Client Value are tracks (ADR-0012): `docs/plans/FIRST_REVEAL_TRACK.md`, `docs/plans/CLIENT_VALUE_TRACK.md`. Further numbered charters are forbidden.
+**Appendix folded:** `docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md` (MGE/Vector split, shared hosting, scaling, Vector 24). Public frontend quality: `docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md`. Control / Vector product identity: `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`. Client media production: `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`. Client outcomes and authenticated client UX: `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`. `/docs` charters stop at 30. First Reveal and Client Value are tracks (ADR-0012): `docs/plans/FIRST_REVEAL_TRACK.md`, `docs/plans/CLIENT_VALUE_TRACK.md`. Remaining unimplemented slices are sequenced in `docs/plans/SHIP_REMAINING.md` (ADR-0013), not as `docs/31` or Phase 10. Further numbered charters are forbidden.
 
 ---
 
@@ -96,7 +96,7 @@ Analytics, attribution, diagnosis, recommendations, experiments, and performance
 Client media ingest, generation, deterministic composition, approval, and distribution. Charter: `docs/29`. Not Control identity.
 
 **Vector Outcomes**  
-Goals, sales outcomes, optional revenue, data health, and authenticated client UX. Charter: `docs/30`. Uses Control identity. Client Value / ROI extends this charter (`docs/plans/CLIENT_VALUE_TRACK.md`). Not a second ledger.
+Goals, sales outcomes, optional revenue, data health, and authenticated client UX. Charter: `docs/30`. Uses Control identity. Client Value / ROI extends this charter (`docs/plans/CLIENT_VALUE_TRACK.md`). Not a second ledger. Remaining slices including client-simple nav: `docs/plans/OUTCOMES_TRACK.md`.
 
 **Vector First Reveal**  
 Pre-client website quality on the existing funnel engine and Creative Engine. Track: `docs/plans/FIRST_REVEAL_TRACK.md`. Not a numbered charter.
@@ -3066,7 +3066,7 @@ Use this only after Cursor has access to the repository and the documents in thi
 ```text
 You are implementing Vector, an Autonomous Growth Operating System.
 
-Read AGENTS.md, all P0 documents in /docs, and docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md before writing code that touches onboarding, domains, delivery, or launch. Read docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md before public frontend, funnel, or conversion work. Read docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md before Control Plane or Vector-identity UI work. Read docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md before client media, generated imagery, composition, or creative approval work. Read docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md before authenticated client UX, goals, sales outcomes, or revenue work. Read docs/plans/FIRST_REVEAL_TRACK.md before first client website preview or visual-direction work. Read docs/plans/CLIENT_VALUE_TRACK.md before client ROI or replacement-cost work.
+Read AGENTS.md, all P0 documents in /docs, and docs/26_MGE_VECTOR_HOSTING_SCALING_VECTOR24.md before writing code that touches onboarding, domains, delivery, or launch. Read docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md before public frontend, funnel, or conversion work. Read docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md before Control Plane or Vector-identity UI work. Read docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md before client media, generated imagery, composition, or creative approval work. Read docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md before authenticated client UX, goals, sales outcomes, or revenue work. Read docs/plans/SHIP_REMAINING.md before picking the next unimplemented slice. Read docs/plans/OUTCOMES_TRACK.md before client-simple Control nav, Today, Approvals, or Outcomes QuickStart. Read docs/plans/CREATIVE_TRACK.md before ImageProvider or brand visual profile work. Read docs/plans/FIRST_REVEAL_TRACK.md before first client website preview or visual-direction work. Read docs/plans/CLIENT_VALUE_TRACK.md before client ROI or replacement-cost work.
 
 Do not implement the entire product at once.
 

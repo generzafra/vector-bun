@@ -828,6 +828,89 @@ export const experimentClientIdSchema = z
 	})
 	.strict();
 
+export const CLIENT_GOAL_TYPES = [
+	'qualified_leads',
+	'sales',
+	'revenue',
+	'bookings',
+	'appointments',
+	'custom'
+] as const;
+export type ClientGoalType = (typeof CLIENT_GOAL_TYPES)[number];
+
+export const CLIENT_GOAL_PERIODS = ['month', 'quarter', 'year'] as const;
+export type ClientGoalPeriod = (typeof CLIENT_GOAL_PERIODS)[number];
+
+export const NOTIFICATION_TOPICS = [
+	'high_intent_lead',
+	'data_health_alert',
+	'weekly_digest'
+] as const;
+export type NotificationTopic = (typeof NOTIFICATION_TOPICS)[number];
+
+export const DATA_HEALTH_STATUSES = ['healthy', 'warning', 'broken', 'unknown'] as const;
+export type DataHealthStatus = (typeof DATA_HEALTH_STATUSES)[number];
+
+const optionalDateOn = z
+	.string()
+	.trim()
+	.optional()
+	.transform((value) => (value ? value : undefined));
+
+export const upsertClientGoalSchema = z
+	.object({
+		name: z.string().trim().min(1).max(120),
+		goalType: z.enum(CLIENT_GOAL_TYPES),
+		targetValue: z.number().int().positive().max(1_000_000_000_000),
+		unit: z.string().trim().min(1).max(40),
+		currency: z
+			.string()
+			.trim()
+			.toUpperCase()
+			.regex(/^[A-Z]{3}$/)
+			.optional()
+			.nullable(),
+		period: z.enum(CLIENT_GOAL_PERIODS),
+		isPrimary: z.boolean().default(false),
+		startOn: optionalDateOn,
+		endOn: optionalDateOn
+	})
+	.strict()
+	.superRefine((value, ctx) => {
+		if (value.goalType === 'revenue' && !value.currency) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['currency'],
+				message: 'Revenue goals require a currency'
+			});
+		}
+		if (value.startOn && !/^\d{4}-\d{2}-\d{2}$/.test(value.startOn)) {
+			ctx.addIssue({ code: 'custom', path: ['startOn'], message: 'Invalid start date' });
+		}
+		if (value.endOn && !/^\d{4}-\d{2}-\d{2}$/.test(value.endOn)) {
+			ctx.addIssue({ code: 'custom', path: ['endOn'], message: 'Invalid end date' });
+		}
+	});
+
+export const updateNotificationPreferenceSchema = z
+	.object({
+		topic: z.enum(NOTIFICATION_TOPICS),
+		enabled: z.boolean()
+	})
+	.strict();
+
+export const overrideFirstRevealGateSchema = z
+	.object({
+		reason: z.string().trim().min(12).max(400)
+	})
+	.strict();
+
+export const goalsClientIdSchema = z
+	.object({
+		clientId: z.string().uuid()
+	})
+	.strict();
+
 export function parseContract<T>(
 	schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } },
 	input: unknown

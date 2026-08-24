@@ -2682,6 +2682,8 @@ First Reveal client card (`docs/plans/FIRST_REVEAL_TRACK.md`): Control shows a b
 
 Build in the order in §88. First paying-client bar (§78) is launch readiness, not a Phase 0 reopen. Revenue value may remain optional. Ask Vector, CRM sync, ads, and billing stay later slices.
 
+Client operating UX is first-class: capability-filtered default nav, plain-language QuickStart, and Approval Center before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md) CU0–CU1 and O8. Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md) Wave A. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
+
 ---
 
 # 78. P0 Additions Before First Paying Client
@@ -2894,7 +2896,7 @@ It is done when:
 
 # 88. Implementation Order
 
-Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These twenty items are the Outcomes track (O1–O20), not a new Vector phase. Client Value extends them:
+Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These twenty items are the Outcomes track (O1–O20), not a new Vector phase. Client Value extends them. Remaining execution, including CU0–CU1 client operating UX before O4–O20: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md).
 
 21. Replacement-cost and time-savings ranges (V2 / O21). Versioned benchmarks or client baseline. Labeled estimated.
 22. Revenue-linked value statement (V3 / O22) only when O11–O12 coverage exists. Replacement cost is not ROI.
@@ -2903,6 +2905,7 @@ V0 activity proof may ship before O1. V1 joins O1–O3. V4 incrementality waits 
 
 Recommended:
 
+0. Capability-filtered client nav and Outcomes QuickStart (`docs/plans/OUTCOMES_TRACK.md` CU0–CU1) — do not overwhelm the client with operator modules.
 1. Client goals.
 2. Minimal lead stages.
 3. Sales outcome records.

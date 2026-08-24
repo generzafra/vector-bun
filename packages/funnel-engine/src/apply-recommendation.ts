@@ -1,7 +1,10 @@
 import { ValidationError } from '@vector/contracts';
 import {
 	isApprovedSectionType,
+	isCtaSection,
+	isHeroSection,
 	parsePageDocument,
+	sectionFamily,
 	type ApprovedSectionType,
 	type PageDocument,
 	type PageSection
@@ -18,13 +21,10 @@ export type CopyDraftApplication = {
 	variants: { label: string; text: string }[];
 };
 
-function isHeroType(type: string) {
-	return type === 'hero-minimal' || type === 'hero-split';
-}
-
 function pickSection(base: PageDocument, type: ApprovedSectionType): PageSection | undefined {
-	if (isHeroType(type)) {
-		return base.sections.find((section) => isHeroType(section.type));
+	const family = sectionFamily(type);
+	if (family !== type) {
+		return base.sections.find((section) => sectionFamily(section.type) === family);
 	}
 	return base.sections.find((section) => section.type === type);
 }
@@ -48,7 +48,7 @@ export function applyApprovedFunnelPlan(
 		}
 		const section = pickSection(base, item.type);
 		if (!section) continue;
-		const key = isHeroType(section.type) ? 'hero' : section.type;
+		const key = sectionFamily(section.type);
 		if (used.has(key)) continue;
 		used.add(key);
 		sections.push(section);
@@ -97,7 +97,7 @@ export function applyApprovedCopy(base: PageDocument, copy: CopyDraftApplication
 	}
 
 	const sections = base.sections.map((section) => {
-		if (section.type === 'hero-minimal' || section.type === 'hero-split') {
+		if (isHeroSection(section)) {
 			if (copy.kind === 'headline' || copy.kind === 'page') {
 				return { ...section, headline: primary.slice(0, 160) };
 			}
@@ -106,7 +106,7 @@ export function applyApprovedCopy(base: PageDocument, copy: CopyDraftApplication
 				primaryCta: { ...section.primaryCta, label: primary.slice(0, 80) }
 			};
 		}
-		if (section.type === 'cta' && copy.kind === 'cta') {
+		if (isCtaSection(section) && copy.kind === 'cta') {
 			return { ...section, heading: primary.slice(0, 120) };
 		}
 		return section;

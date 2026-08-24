@@ -2134,7 +2134,7 @@ The winning style can influence later recommendations.
 
 # 63. Initial Creative MVP
 
-Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These nine items are the Creative track (C0–C9), not a new Vector phase.
+Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These nine items are the Creative track (C0–C9), not a new Vector phase. C0 is in. Remaining slices: [`docs/plans/CREATIVE_TRACK.md`](plans/CREATIVE_TRACK.md). Ship order: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md) Wave B then D.
 
 Build in this order.
 

@@ -213,7 +213,10 @@ test('llms.txt is production-only and omits prohibited claims', () => {
 		tagline: null,
 		offer: 'Guided implant consults with a clear treatment plan',
 		audience: 'Local patients who need implant consults',
-		services: alphaDoc.sections.find((section) => section.type === 'services')?.items ?? [],
+		services:
+			alphaDoc.sections.find(
+				(section) => section.type === 'services' || section.type === 'services-editorial'
+			)?.items ?? [],
 		claims: [
 			{
 				kind: 'approved' as const,

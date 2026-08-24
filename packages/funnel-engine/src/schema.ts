@@ -4,15 +4,25 @@ import { brandTokensSchema, parseContract } from '@vector/contracts';
 export const APPROVED_SECTION_TYPES = [
 	'hero-minimal',
 	'hero-split',
+	'hero-editorial',
 	'proof',
+	'proof-featured',
 	'services',
+	'services-editorial',
 	'offer',
 	'cta',
+	'cta-minimal',
 	'faq',
 	'lead-form'
 ] as const;
 
 export type ApprovedSectionType = (typeof APPROVED_SECTION_TYPES)[number];
+
+export const HERO_SECTION_TYPES = ['hero-minimal', 'hero-split', 'hero-editorial'] as const;
+export const PROOF_SECTION_TYPES = ['proof', 'proof-featured'] as const;
+export const SERVICES_SECTION_TYPES = ['services', 'services-editorial'] as const;
+export const CTA_SECTION_TYPES = ['cta', 'cta-minimal'] as const;
+export const TYPOGRAPHY_LED_HERO_TYPES = ['hero-minimal', 'hero-editorial'] as const;
 
 const ctaSchema = z
 	.object({
@@ -47,22 +57,48 @@ const heroSplitSectionSchema = z
 	})
 	.strict();
 
+const heroEditorialSectionSchema = z
+	.object({
+		id: z.string().min(1).max(80),
+		type: z.literal('hero-editorial'),
+		eyebrow: z.string().max(80).optional(),
+		headline: z.string().min(1).max(160),
+		lede: z.string().min(1).max(400),
+		primaryCta: ctaSchema,
+		secondaryCta: ctaSchema.optional()
+	})
+	.strict();
+
+const proofItemSchema = z
+	.object({
+		statement: z.string().min(1).max(400),
+		evidence: z.string().max(400).optional()
+	})
+	.strict();
+
 const proofSectionSchema = z
 	.object({
 		id: z.string().min(1).max(80),
 		type: z.literal('proof'),
 		heading: z.string().min(1).max(120),
-		items: z
-			.array(
-				z
-					.object({
-						statement: z.string().min(1).max(400),
-						evidence: z.string().max(400).optional()
-					})
-					.strict()
-			)
-			.min(1)
-			.max(6)
+		items: z.array(proofItemSchema).min(1).max(6)
+	})
+	.strict();
+
+const proofFeaturedSectionSchema = z
+	.object({
+		id: z.string().min(1).max(80),
+		type: z.literal('proof-featured'),
+		heading: z.string().min(1).max(120),
+		items: z.array(proofItemSchema).min(1).max(6)
+	})
+	.strict();
+
+const serviceItemSchema = z
+	.object({
+		name: z.string().min(1).max(120),
+		outcome: z.string().min(1).max(200),
+		summary: z.string().min(1).max(400)
 	})
 	.strict();
 
@@ -71,18 +107,16 @@ const servicesSectionSchema = z
 		id: z.string().min(1).max(80),
 		type: z.literal('services'),
 		heading: z.string().min(1).max(120),
-		items: z
-			.array(
-				z
-					.object({
-						name: z.string().min(1).max(120),
-						outcome: z.string().min(1).max(200),
-						summary: z.string().min(1).max(400)
-					})
-					.strict()
-			)
-			.min(1)
-			.max(8)
+		items: z.array(serviceItemSchema).min(1).max(8)
+	})
+	.strict();
+
+const servicesEditorialSectionSchema = z
+	.object({
+		id: z.string().min(1).max(80),
+		type: z.literal('services-editorial'),
+		heading: z.string().min(1).max(120),
+		items: z.array(serviceItemSchema).min(1).max(8)
 	})
 	.strict();
 
@@ -101,6 +135,16 @@ const ctaSectionSchema = z
 	.object({
 		id: z.string().min(1).max(80),
 		type: z.literal('cta'),
+		heading: z.string().min(1).max(120),
+		body: z.string().min(1).max(400),
+		primaryCta: ctaSchema
+	})
+	.strict();
+
+const ctaMinimalSectionSchema = z
+	.object({
+		id: z.string().min(1).max(80),
+		type: z.literal('cta-minimal'),
 		heading: z.string().min(1).max(120),
 		body: z.string().min(1).max(400),
 		primaryCta: ctaSchema
@@ -143,10 +187,14 @@ const leadFormSectionSchema = z
 export const pageSectionSchema = z.discriminatedUnion('type', [
 	heroMinimalSectionSchema,
 	heroSplitSectionSchema,
+	heroEditorialSectionSchema,
 	proofSectionSchema,
+	proofFeaturedSectionSchema,
 	servicesSectionSchema,
+	servicesEditorialSectionSchema,
 	offerSectionSchema,
 	ctaSectionSchema,
+	ctaMinimalSectionSchema,
 	faqSectionSchema,
 	leadFormSectionSchema
 ]);
@@ -194,4 +242,60 @@ export function parsePageDocument(input: unknown): PageDocument {
 
 export function isApprovedSectionType(value: string): value is ApprovedSectionType {
 	return (APPROVED_SECTION_TYPES as readonly string[]).includes(value);
+}
+
+export function isHeroSectionType(value: string): value is (typeof HERO_SECTION_TYPES)[number] {
+	return (HERO_SECTION_TYPES as readonly string[]).includes(value);
+}
+
+export function isProofSectionType(value: string): value is (typeof PROOF_SECTION_TYPES)[number] {
+	return (PROOF_SECTION_TYPES as readonly string[]).includes(value);
+}
+
+export function isServicesSectionType(
+	value: string
+): value is (typeof SERVICES_SECTION_TYPES)[number] {
+	return (SERVICES_SECTION_TYPES as readonly string[]).includes(value);
+}
+
+export function isCtaSectionType(value: string): value is (typeof CTA_SECTION_TYPES)[number] {
+	return (CTA_SECTION_TYPES as readonly string[]).includes(value);
+}
+
+export function isTypographyLedHeroType(
+	value: string
+): value is (typeof TYPOGRAPHY_LED_HERO_TYPES)[number] {
+	return (TYPOGRAPHY_LED_HERO_TYPES as readonly string[]).includes(value);
+}
+
+export function isHeroSection(
+	section: PageSection
+): section is Extract<PageSection, { type: (typeof HERO_SECTION_TYPES)[number] }> {
+	return isHeroSectionType(section.type);
+}
+
+export function isProofSection(
+	section: PageSection
+): section is Extract<PageSection, { type: (typeof PROOF_SECTION_TYPES)[number] }> {
+	return isProofSectionType(section.type);
+}
+
+export function isServicesSection(
+	section: PageSection
+): section is Extract<PageSection, { type: (typeof SERVICES_SECTION_TYPES)[number] }> {
+	return isServicesSectionType(section.type);
+}
+
+export function isCtaSection(
+	section: PageSection
+): section is Extract<PageSection, { type: (typeof CTA_SECTION_TYPES)[number] }> {
+	return isCtaSectionType(section.type);
+}
+
+export function sectionFamily(type: string): string {
+	if (isHeroSectionType(type)) return 'hero';
+	if (isProofSectionType(type)) return 'proof';
+	if (isServicesSectionType(type)) return 'services';
+	if (isCtaSectionType(type)) return 'cta';
+	return type;
 }

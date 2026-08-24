@@ -91,7 +91,7 @@ test('compose uses approved claims only and keeps clients visually distinct', ()
 		},
 		{ preview: true }
 	);
-	expect(alpha.sections[0]?.type).toBe('hero-split');
+	expect(alpha.sections[0]?.type).toBe('hero-editorial');
 	expect(alpha.seo.noindex).toBe(true);
 	expect(JSON.stringify(alpha)).toContain('written treatment plan');
 	expect(JSON.stringify(alpha)).not.toContain('Guaranteed implant success');

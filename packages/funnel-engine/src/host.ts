@@ -18,6 +18,10 @@ export function isLlmsTxtPath(pathname: string) {
 	return pathname === '/llms.txt';
 }
 
+export function isBrandLogoPath(pathname: string) {
+	return pathname === '/brand-logo' || pathname === '/brand-logo/';
+}
+
 export function isUnsubscribePath(pathname: string) {
 	return pathname === '/unsubscribe' || pathname === '/unsubscribe/';
 }

@@ -4,14 +4,18 @@ import {
 	NotFoundError,
 	ValidationError,
 	assertActorOwnsContext,
+	overrideFirstRevealGateSchema,
+	parseContract,
 	type TenantContext
 } from '@vector/contracts';
 import {
 	assertPageClient,
 	composeLeadFunnelForTenant,
 	getClientForTenant,
+	getFirstRevealGateForVersionForTenant,
 	getHomePageForTenant,
 	getLatestDraftForTenant,
+	getLatestLogoAssetForTenant,
 	getLeadFunnelForTenant,
 	getPreviewDomainForTenant,
 	getProductionDomainForTenant,
@@ -20,13 +24,16 @@ import {
 	listClaimsForTenant,
 	listOffersForTenant,
 	listServicesForTenant,
+	overrideFirstRevealGateForTenant,
 	publishLatestDraftForTenant,
 	updatePageVersionDocumentForTenant,
+	upsertFirstRevealGateForTenant,
 	getAiRunForPageVersionForTenant,
 	getBrandForTenant
 } from '@vector/db';
 import {
 	composeLeadPage,
+	evaluateFirstRevealGate,
 	parsePageDocument,
 	previewHostname,
 	previewOrigin
@@ -49,6 +56,7 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 	]);
 	const hostname = domain?.hostname ?? null;
 	const intelligenceRun = draft ? await getAiRunForPageVersionForTenant(required, draft.id) : null;
+	const gate = draft ? await getFirstRevealGateForVersionForTenant(required, draft.id) : null;
 	return {
 		site,
 		funnel,
@@ -61,6 +69,16 @@ export async function getFunnel(actor: Actor, ctx: TenantContext, clientId?: str
 		previewUrl: hostname ? previewOrigin(hostname, env.DELIVERY_ORIGIN) : null,
 		productionHostname: production?.hostname ?? null,
 		productionUrl: production ? previewOrigin(production.hostname, env.DELIVERY_ORIGIN) : null,
+		firstReveal: gate
+			? {
+					pageVersionId: gate.pageVersionId,
+					passed: gate.passed,
+					checks: gate.checks,
+					overrideReason: gate.overrideReason,
+					overriddenBy: gate.overriddenBy,
+					effectivePass: gate.passed || Boolean(gate.overrideReason)
+				}
+			: null,
 		intelligenceDraft:
 			intelligenceRun && draft
 				? {
@@ -102,6 +120,18 @@ export async function composeFunnel(actor: Actor, ctx: TenantContext, requestId:
 		hostname: previewHostname(client.slug, env.DELIVERY_PREVIEW_PARENT_HOST),
 		document
 	});
+	const hasLogo = Boolean(await getLatestLogoAssetForTenant(required));
+	const evaluation = evaluateFirstRevealGate({
+		document,
+		preview: true,
+		hasLogo
+	});
+	await upsertFirstRevealGateForTenant(required, {
+		pageVersionId: composed.draft.id,
+		gateVersion: evaluation.version,
+		passed: evaluation.passed,
+		checks: evaluation.checks
+	});
 	await recordAudit({
 		organizationId: required.organizationId,
 		clientId: required.clientId,
@@ -132,6 +162,52 @@ export async function publishFunnel(actor: Actor, ctx: TenantContext, requestId:
 		requestId
 	});
 	return published;
+}
+
+export async function overrideFirstRevealGate(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'pages.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(overrideFirstRevealGateSchema, input);
+	const draft = await getLatestDraftForTenant(required);
+	if (!draft) throw new NotFoundError('Draft funnel not found');
+	let gate = await getFirstRevealGateForVersionForTenant(required, draft.id);
+	if (!gate) {
+		const hasLogo = Boolean(await getLatestLogoAssetForTenant(required));
+		const evaluation = evaluateFirstRevealGate({
+			document: parsePageDocument(draft.document),
+			preview: true,
+			hasLogo
+		});
+		gate = await upsertFirstRevealGateForTenant(required, {
+			pageVersionId: draft.id,
+			gateVersion: evaluation.version,
+			passed: evaluation.passed,
+			checks: evaluation.checks
+		});
+	}
+	const updated = await overrideFirstRevealGateForTenant(required, {
+		pageVersionId: draft.id,
+		reason: parsed.reason,
+		overriddenBy: actor.userId
+	});
+	if (!updated) throw new NotFoundError('First Reveal Gate result not found');
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'pages.first_reveal.override',
+		entityType: 'first_reveal_gate_result',
+		entityId: updated.id,
+		requestId,
+		reason: parsed.reason
+	});
+	return updated;
 }
 
 export async function tryUpdatePublishedDocument(

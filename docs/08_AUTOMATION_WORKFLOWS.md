@@ -31,9 +31,9 @@ Phase 8 S0 catalogs per-action policies (`ai_action_policies`) used by the auto-
 
 Phase 3 contracts live in `packages/automation` (`lead-captured`, `nurture-step`, `enroll-eligible`, `nurture-due-sweep`, `inbound-email`, `nurture-due-sweep-platform`). A Vector-owned `WorkflowRuntime` runs them. Tests and local default to in-process. `TRIGGER_SECRET_KEY` selects the Trigger.dev adapter. Task definitions live in `apps/jobs` and only call domain handlers. Inbound work records a draft only. The platform due-sweep returns tenant IDs, then each tenant job uses explicit `TenantContext`.
 
-Later Creative Engine workflows (`docs/29`) — ingest, generation, derivatives, QA, approval, channel-ready, archive, performance feedback — use the same `WorkflowRuntime`. They must not become a second job host.
+Later Creative Engine workflows (`docs/29`) — ingest, generation, derivatives, QA, approval, channel-ready, archive, performance feedback — use the same `WorkflowRuntime`. They must not become a second job host. Sequence: `docs/plans/CREATIVE_TRACK.md`.
 
-Later Outcomes workflows (`docs/30`) — lead-stage alerts, sales-outcome reconciliation, revenue import, attribution reconciliation, goal reviews, data-health checks, client digests, approval reminders — also use `WorkflowRuntime`.
+Later Outcomes workflows (`docs/30`) — lead-stage alerts, sales-outcome reconciliation, revenue import, attribution reconciliation, goal reviews, data-health checks, client digests, approval reminders — also use `WorkflowRuntime`. Sequence: `docs/plans/OUTCOMES_TRACK.md`. Retention/deletion jobs: `docs/plans/PLATFORM_OPS_TRACK.md` OPS1.
 
 First Reveal workflows (`docs/plans/FIRST_REVEAL_TRACK.md`) — candidate compose, score, winner media, gate, reveal — use the same host. Client Value workflows (`docs/plans/CLIENT_VALUE_TRACK.md`) — daily aggregation, monthly snapshot, benchmark refresh, value-risk, renewal review — also use the same host. Neither is a second job runtime.
 

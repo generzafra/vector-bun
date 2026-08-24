@@ -141,4 +141,4 @@ Multiple clients can launch without a code fork, and Phase 1 readiness / launch 
 
 ## Locked attachments
 
-Portfolio-by-exception is the exit. Additive: Creative QuickStart, Outcomes entitlements, client-success health, operator exception queues (`docs/29`, `docs/30`), FR9 similarity guard, V5 portfolio/renewal value. No numbered `docs/31`. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+Portfolio-by-exception is the exit. Additive: Creative QuickStart, Outcomes entitlements, client-success health, operator exception queues (`docs/29`, `docs/30`), FR9 similarity guard, V5 portfolio/renewal value. S2–S4 plus SRE/DR/retention sequence: [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md). No numbered `docs/31`. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md) and [SHIP_REMAINING.md](SHIP_REMAINING.md).

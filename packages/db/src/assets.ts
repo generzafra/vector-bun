@@ -7,6 +7,17 @@ export function assertAssetClient(ctx: TenantContext, clientId: string) {
 	return assertSameClient(ctx, clientId);
 }
 
+export async function getLatestLogoAssetForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select()
+		.from(brandAssets)
+		.where(and(eq(brandAssets.clientId, required.clientId), eq(brandAssets.purpose, 'logo')))
+		.orderBy(desc(brandAssets.createdAt))
+		.limit(1);
+	return row ?? null;
+}
+
 export async function listBrandAssetsForTenant(ctx: TenantContext) {
 	const required = requireTenantContext(ctx);
 	return db

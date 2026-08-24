@@ -4,6 +4,7 @@ import {
 	captureLead,
 	deliveryTenantContext,
 	exposeDeliveryPage,
+	hasBrandLogoForTenant,
 	recordDeliveryEvent
 } from '@vector/domain';
 import { jsonLdScript, publicJsonLd } from '@vector/funnel-engine';
@@ -96,8 +97,15 @@ export async function load({ locals, cookies, url, request, setHeaders }) {
 	} catch (err) {
 		logError('delivery.page_viewed', err, { requestId: locals.requestId, clientId: page.clientId });
 	}
+	let hasBrandLogo = false;
+	try {
+		hasBrandLogo = await hasBrandLogoForTenant(deliveryTenantContext(page, locals.requestId));
+	} catch (err) {
+		logError('delivery.brand_logo', err, { requestId: locals.requestId, clientId: page.clientId });
+	}
 	return {
 		document: page.document,
+		hasBrandLogo,
 		domainKind: page.domainKind,
 		hostname: page.hostname,
 		pathname: url.pathname,

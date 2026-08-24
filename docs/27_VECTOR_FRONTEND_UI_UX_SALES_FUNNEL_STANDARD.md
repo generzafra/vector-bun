@@ -1892,7 +1892,7 @@ Recommended base component families:
 
 Do not create one generic component for all projects.
 
-Each major section family should eventually support multiple variants.
+Each major section family should eventually support multiple variants. Do not dump this catalog in one change. FR2 already added a few strong heroes/services/proof/CTA. Further families are on-demand: [`docs/plans/SURFACE_COMPLETENESS_TRACK.md`](plans/SURFACE_COMPLETENESS_TRACK.md). Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md).
 
 Example:
 

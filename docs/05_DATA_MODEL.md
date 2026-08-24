@@ -86,9 +86,9 @@ attribution_results
 
 Email identity is unique per tenant. The same email on two clients is two contacts. Preview submits set `is_test`. Consent is a purpose ledger at form submit (`lead_follow_up` required, `marketing` granted or denied). Analytics sessions are not auth `sessions`. Postgres is the source of truth for leads and outcomes. Attribution v1 stores first touch and last non-direct; it is not presented as multi-touch truth.
 
-`leads.status` is `new | working | qualified | won | lost | spam`. Do not replace that enum. Later `sales_outcomes`, `client_goals`, `revenue_events`, `data_health_checks`, notification preferences, entitlements, and client-health snapshots are tenant-owned (`docs/30`). Status `won` / `lost` is not a revenue row. Revenue amounts are optional.
+`leads.status` is `new | working | qualified | won | lost | spam`. Do not replace that enum. First-client-bar tables (`client_goals`, `data_health_checks`, `client_notification_preferences`) and First Reveal `first_reveal_gate_results` are tenant-owned. Later `sales_outcomes`, `revenue_events`, entitlements, and client-health snapshots remain Outcomes-track work (`docs/30`, execution: `docs/plans/OUTCOMES_TRACK.md`). Status `won` / `lost` is not a revenue row. Revenue amounts are optional. Brand visual profiles and generation jobs remain Creative-track work (`docs/29`, execution: `docs/plans/CREATIVE_TRACK.md`). Sequence for remaining tables: `docs/plans/SHIP_REMAINING.md`.
 
-First Reveal later tenant-owned tables (`docs/plans/FIRST_REVEAL_TRACK.md`): visual directions, page candidate scores, first-reveal gate results, and client visual preferences. They require `client_id`. Do not fork `page_versions`.
+First Reveal later tenant-owned tables (`docs/plans/FIRST_REVEAL_TRACK.md`): visual directions, page candidate scores, and client visual preferences. `first_reveal_gate_results` is in. They require `client_id`. Do not fork `page_versions`.
 
 Client Value later tenant-owned tables (`docs/plans/CLIENT_VALUE_TRACK.md`): value profiles, baselines, versioned benchmarks, activity/work-unit records, value snapshots and components, tool-cost baselines, and client confirmations. They require `client_id`. Do not duplicate `revenue_events`, goals, or the `docs/20` cost ledger. Historical snapshots are immutable.
 

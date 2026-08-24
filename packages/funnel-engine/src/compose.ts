@@ -20,12 +20,16 @@ export type KnowledgeSnapshot = {
 
 const personalities = ['premium', 'technology', 'growth', 'creative', 'corporate'] as const;
 
+type LayoutKind = 'editorial' | 'minimal' | 'split';
+
 function personalityOf(value: string | null): (typeof personalities)[number] | undefined {
 	return personalities.find((item) => item === value);
 }
 
-function heroVariant(personality: string | undefined): 'hero-minimal' | 'hero-split' {
-	return personality === 'technology' || personality === 'growth' ? 'hero-minimal' : 'hero-split';
+function layoutKind(personality: string | undefined): LayoutKind {
+	if (personality === 'technology' || personality === 'growth') return 'minimal';
+	if (personality === 'premium' || personality === 'creative') return 'editorial';
+	return 'split';
 }
 
 export function composeLeadPage(
@@ -41,6 +45,7 @@ export function composeLeadPage(
 	}
 
 	const personality = personalityOf(brand.brandPersonality);
+	const layout = layoutKind(personality);
 	const approved = claims.filter((claim) => claim.kind === 'approved');
 	const offer = offers[0];
 	const primary = { label: brand.primaryConversion, href: '#lead' };
@@ -49,7 +54,7 @@ export function composeLeadPage(
 	const eyebrow = brand.audience.slice(0, 80);
 
 	const hero: PageSection =
-		heroVariant(personality) === 'hero-minimal'
+		layout === 'minimal'
 			? {
 					id: 'hero',
 					type: 'hero-minimal',
@@ -58,27 +63,48 @@ export function composeLeadPage(
 					lede,
 					primaryCta: primary
 				}
-			: {
-					id: 'hero',
-					type: 'hero-split',
-					eyebrow,
-					headline,
-					lede,
-					asideTitle: offer?.name ?? services[0].name,
-					asideBody: offer?.summary ?? services[0].outcome,
-					primaryCta: primary
-				};
+			: layout === 'editorial'
+				? {
+						id: 'hero',
+						type: 'hero-editorial',
+						eyebrow,
+						headline,
+						lede,
+						primaryCta: primary
+					}
+				: {
+						id: 'hero',
+						type: 'hero-split',
+						eyebrow,
+						headline,
+						lede,
+						asideTitle: offer?.name ?? services[0].name,
+						asideBody: offer?.summary ?? services[0].outcome,
+						primaryCta: primary
+					};
 
-	const serviceSection: PageSection = {
-		id: 'services',
-		type: 'services',
-		heading: `How ${brand.displayName} works`,
-		items: services.map((service) => ({
-			name: service.name,
-			outcome: service.outcome,
-			summary: service.summary
-		}))
-	};
+	const serviceSection: PageSection =
+		layout === 'editorial'
+			? {
+					id: 'services',
+					type: 'services-editorial',
+					heading: `How ${brand.displayName} works`,
+					items: services.map((service) => ({
+						name: service.name,
+						outcome: service.outcome,
+						summary: service.summary
+					}))
+				}
+			: {
+					id: 'services',
+					type: 'services',
+					heading: `How ${brand.displayName} works`,
+					items: services.map((service) => ({
+						name: service.name,
+						outcome: service.outcome,
+						summary: service.summary
+					}))
+				};
 
 	const faqItems = [
 		{
@@ -108,13 +134,22 @@ export function composeLeadPage(
 		items: faqItems.slice(0, 8)
 	};
 
-	const cta: PageSection = {
-		id: 'cta',
-		type: 'cta',
-		heading: brand.primaryConversion,
-		body: brand.offer,
-		primaryCta: primary
-	};
+	const cta: PageSection =
+		layout === 'editorial'
+			? {
+					id: 'cta',
+					type: 'cta-minimal',
+					heading: brand.primaryConversion,
+					body: brand.offer,
+					primaryCta: primary
+				}
+			: {
+					id: 'cta',
+					type: 'cta',
+					heading: brand.primaryConversion,
+					body: brand.offer,
+					primaryCta: primary
+				};
 
 	const lead: PageSection = {
 		id: 'lead',
@@ -127,16 +162,18 @@ export function composeLeadPage(
 		fields: ['name', 'email', 'message']
 	};
 
+	const proofItems = approved.slice(0, 6).map((claim) => ({
+		statement: claim.statement,
+		evidence: claim.evidence ?? undefined
+	}));
+
 	const sections: PageSection[] = [hero];
-	if (hero.type === 'hero-split' && approved.length > 0) {
+	if (layout !== 'minimal' && approved.length > 0) {
 		sections.push({
 			id: 'proof',
-			type: 'proof',
+			type: layout === 'editorial' ? 'proof-featured' : 'proof',
 			heading: 'What we can state',
-			items: approved.slice(0, 6).map((claim) => ({
-				statement: claim.statement,
-				evidence: claim.evidence ?? undefined
-			}))
+			items: proofItems
 		});
 		sections.push(serviceSection);
 		if (offer) {
@@ -167,10 +204,7 @@ export function composeLeadPage(
 				id: 'proof',
 				type: 'proof',
 				heading: 'Scope we will confirm',
-				items: approved.slice(0, 6).map((claim) => ({
-					statement: claim.statement,
-					evidence: claim.evidence ?? undefined
-				}))
+				items: proofItems
 			});
 		}
 		sections.push(lead, faq, cta);

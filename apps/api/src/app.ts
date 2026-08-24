@@ -94,7 +94,11 @@ import {
 	decideExperiment,
 	getExperimentOverview,
 	measureExperiment,
-	transitionExperiment
+	transitionExperiment,
+	getClientOutcomes,
+	upsertClientGoal,
+	updateNotificationPreference,
+	overrideFirstRevealGate
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
 
@@ -408,6 +412,60 @@ app.post('/v1/funnel/publish', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const row = await publishFunnel(session, ctx, requestId);
 	return c.json({ requestId, data: row });
+});
+
+app.post('/v1/funnel/first-reveal-override', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await overrideFirstRevealGate(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.get('/v1/goals', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'goals.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getClientOutcomes(session, ctx) });
+});
+
+app.post('/v1/goals', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'goals.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await upsertClientGoal(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/goals/notifications', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'goals.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await updateNotificationPreference(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row });
+});
+
+app.get('/v1/goals/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'goals.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getClientOutcomes(session, ctx, c.req.param('clientId'))
+	});
 });
 
 app.get('/v1/launch', async (c) => {

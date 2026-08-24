@@ -6,7 +6,7 @@ Modular monolith with clear internal package boundaries and a separate Control P
 
 ## Control Plane
 
-Authenticated management of clients, brand data, funnels, campaigns, agents, approvals, analytics, policies, and integrations. Client and operator share this plane. Navigation differs by capability (`docs/30`). Do not fork `apps/client`.
+Authenticated management of clients, brand data, funnels, campaigns, agents, approvals, analytics, policies, and integrations. Client and operator share this plane. Navigation differs by capability (`docs/30`). Default client nav is not the full operator cockpit. Execution: `docs/plans/OUTCOMES_TRACK.md` CU0. Do not fork `apps/client`.
 
 ## Delivery Plane
 

@@ -3,6 +3,7 @@ import {
 	isDomainChallengePath,
 	isHealthPath,
 	isLlmsTxtPath,
+	isBrandLogoPath,
 	isRobotsPath,
 	isSitemapPath,
 	isValidPublicHostname,
@@ -36,6 +37,8 @@ test('hostname normalization strips port and rejects empty hosts', () => {
 	expect(isRobotsPath('/robots.txt')).toBe(true);
 	expect(isSitemapPath('/sitemap.xml')).toBe(true);
 	expect(isLlmsTxtPath('/llms.txt')).toBe(true);
+	expect(isBrandLogoPath('/brand-logo')).toBe(true);
+	expect(isBrandLogoPath('/brand-logo/')).toBe(true);
 	expect(isValidPublicHostname('www.client.com')).toBe(true);
 	expect(isValidPublicHostname('preview-client.localhost')).toBe(false);
 });

@@ -5,6 +5,7 @@ import {
 	assertActorOwnsContext,
 	brandAssetIdSchema,
 	parseContract,
+	requireTenantContext,
 	uploadBrandAssetSchema,
 	type TenantContext
 } from '@vector/contracts';
@@ -12,6 +13,7 @@ import {
 	assertAssetClient,
 	deleteBrandAssetForTenant,
 	getBrandAssetForTenant,
+	getLatestLogoAssetForTenant,
 	insertBrandAssetForTenant,
 	listBrandAssetsForTenant
 } from '@vector/db';
@@ -79,6 +81,24 @@ export async function uploadBrandAsset(
 		await storageProvider().deleteObject(required.clientId, key);
 		throw error;
 	}
+}
+
+export async function hasBrandLogoForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const row = await getLatestLogoAssetForTenant(required);
+	return Boolean(row);
+}
+
+export async function getDeliveryBrandLogoBytes(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const row = await getLatestLogoAssetForTenant(required);
+	if (!row) throw new NotFoundError('Asset not found');
+	const object = await storageProvider().getObject(required.clientId, row.storageKey);
+	return {
+		asset: row,
+		bytes: object.bytes,
+		mimeType: row.mimeType
+	};
 }
 
 export async function getBrandAssetBytes(actor: Actor, ctx: TenantContext, id: string) {

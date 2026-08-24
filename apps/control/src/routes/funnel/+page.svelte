@@ -9,6 +9,13 @@
 	const document = $derived(
 		data.funnel?.draft?.document ?? data.funnel?.published?.document ?? null
 	);
+	const gate = $derived(data.funnel?.firstReveal ?? null);
+	const gateTone = $derived(
+		!gate ? 'muted' : gate.effectivePass ? (gate.passed ? 'success' : 'warning') : 'danger'
+	);
+	const gateLabel = $derived(
+		!gate ? 'not run' : gate.passed ? 'passed' : gate.overrideReason ? 'overridden' : 'failed'
+	);
 </script>
 
 <PageHeader
@@ -64,8 +71,58 @@
 			{:else}
 				<p>Production hostname is activated on Launch.</p>
 			{/if}
+			<p>
+				First Reveal Gate:
+				<StatusChip label={gateLabel} tone={gateTone} />
+			</p>
+			{#if gate?.overrideReason}
+				<p>Override reason: {gate.overrideReason}</p>
+			{/if}
 		</div>
 	</section>
+
+	{#if gate}
+		<section>
+			<h2>First Reveal Gate</h2>
+			<p>
+				This is a pre-client check. Preview publish is still allowed. The client should not see a
+				failed compose unless an operator records a written override.
+			</p>
+			<table>
+				<thead>
+					<tr>
+						<th>Check</th>
+						<th>Result</th>
+						<th>Detail</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each gate.checks as item (item.key)}
+						<tr>
+							<td>{item.key.replaceAll('_', ' ')}</td>
+							<td>
+								<StatusChip
+									label={item.passed ? 'pass' : 'fail'}
+									tone={item.passed ? 'success' : 'danger'}
+								/>
+							</td>
+							<td>{item.detail}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+			{#if canManage && !gate.passed && !gate.overrideReason}
+				<form method="post" action="?/overrideGate">
+					<input type="hidden" name="_csrf" value={data.csrf} />
+					<label>
+						Override reason
+						<textarea name="reason" required minlength="12" maxlength="400"></textarea>
+					</label>
+					<button type="submit">Record override</button>
+				</form>
+			{/if}
+		</section>
+	{/if}
 
 	{#if canManage}
 		<section>

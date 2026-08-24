@@ -1,4 +1,4 @@
-import type { PageDocument } from './schema';
+import { isServicesSection, type PageDocument } from './schema';
 import { publicCanonicalUrl, publicPath, type PublicDomainKind } from './meta';
 
 export const AI_RETRIEVAL_CRAWLERS = [
@@ -70,8 +70,8 @@ function faqItemsFrom(document: PageDocument) {
 }
 
 function servicesFrom(document: PageDocument) {
-	const section = document.sections.find((item) => item.type === 'services');
-	if (!section || section.type !== 'services') return [];
+	const section = document.sections.find((item) => isServicesSection(item));
+	if (!section) return [];
 	return section.items
 		.filter((item) => item.name.trim() && (item.outcome.trim() || item.summary.trim()))
 		.map((item) => ({

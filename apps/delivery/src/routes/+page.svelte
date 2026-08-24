@@ -44,7 +44,11 @@
 	<a class="skip" href="#main">Skip to content</a>
 	<header class="top">
 		<nav aria-label="Page">
-			<p class="brand">{data.document.identity.displayName}</p>
+			{#if data.hasBrandLogo}
+				<img class="brand-logo" src="/brand-logo" alt={data.document.identity.displayName} />
+			{:else}
+				<p class="brand">{data.document.identity.displayName}</p>
+			{/if}
 			<a class="cta" href="#lead" onclick={() => emitDeliveryEvent('cta_clicked')}>
 				{data.document.narrative.primaryConversion}
 			</a>

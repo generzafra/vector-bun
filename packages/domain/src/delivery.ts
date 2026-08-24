@@ -8,6 +8,7 @@ import {
 	getSiteForTenant
 } from '@vector/db';
 import {
+	isBrandLogoPath,
 	isDomainChallengePath,
 	isHealthPath,
 	isLlmsTxtPath,
@@ -41,6 +42,13 @@ export type DeliveryResolution =
 	  }
 	| {
 			kind: 'unsubscribe';
+			hostname: string;
+			domainKind: DeliveryDomainKind;
+			clientId: string;
+			organizationId: string;
+	  }
+	| {
+			kind: 'brand_logo';
 			hostname: string;
 			domainKind: DeliveryDomainKind;
 			clientId: string;
@@ -124,6 +132,15 @@ export async function resolveDeliveryPage(
 	if (isUnsubscribePath(pathname)) {
 		return {
 			kind: 'unsubscribe',
+			hostname: domain.hostname,
+			domainKind: domain.kind,
+			clientId: domain.clientId,
+			organizationId: domain.organizationId
+		};
+	}
+	if (isBrandLogoPath(pathname)) {
+		return {
+			kind: 'brand_logo',
 			hostname: domain.hostname,
 			domainKind: domain.kind,
 			clientId: domain.clientId,

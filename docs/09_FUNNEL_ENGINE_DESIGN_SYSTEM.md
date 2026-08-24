@@ -20,7 +20,7 @@ Hero, proof, benefits, services, offers, pricing, comparison, process, case stud
 
 Each major family needs multiple variants over time (`hero-minimal`, `hero-split`, `hero-cinematic`, `services-editorial`, `services-bento`, `cases-featured`). Prefer variants over one giant conditional component. AI selects a variant from context; it does not invent unsafe markup.
 
-Phase 1 approved section types (reject anything else): `hero-minimal`, `hero-split`, `proof`, `services`, `offer`, `cta`, `faq`, `lead-form`. Do not add cinematic or interactive variants until a real client needs them.
+Phase 1 approved section types: `hero-minimal`, `hero-split`, `proof`, `services`, `offer`, `cta`, `faq`, `lead-form`. First Reveal FR2 additive types (same engine, not a Phase 1 reopen): `hero-editorial`, `services-editorial`, `proof-featured`, `cta-minimal`. Do not add cinematic or interactive variants until a real client needs them.
 
 ## Publication
 

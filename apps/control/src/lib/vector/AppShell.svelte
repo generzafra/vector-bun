@@ -11,6 +11,7 @@
 		{ href: '/knowledge', label: 'Knowledge' },
 		{ href: '/funnel', label: 'Funnel' },
 		{ href: '/leads', label: 'Leads' },
+		{ href: '/goals', label: 'Goals' },
 		{ href: '/email', label: 'Email' },
 		{ href: '/social', label: 'Social' },
 		{ href: '/search', label: 'Search' },

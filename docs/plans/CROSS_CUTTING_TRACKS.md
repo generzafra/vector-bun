@@ -1,20 +1,22 @@
 # Cross-cutting tracks — locked mapping
 
-Charters in `/docs` stop at **30** (ADR-0009, ADR-0011, ADR-0012). Further product law is an ADR or a fold into an existing document, not a new numbered charter. Do not add `docs/31` or `docs/32`.
+Charters in `/docs` stop at **30** (ADR-0009, ADR-0011, ADR-0012, ADR-0013). Further product law is an ADR or a fold into an existing document, not a new numbered charter. Do not add `docs/31` or `docs/32`. Remaining execution lives in this folder: [SHIP_REMAINING.md](SHIP_REMAINING.md).
 
 First Reveal and Client Value are **tracks** with slice specs in this folder. Standing law lives in the charters named below.
 
 Phase exits in `../21_ROADMAP_ACCEPTANCE_GATES.md` still govern what a phase must ship. Tracks add work **inside or after** a phase. They never reopen an exited phase and never replace a phase exit.
 
-| Track                | Standing law                      | Slice spec                                     | What it is                                                                                          |
-| -------------------- | --------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Vector 24            | `docs/26`                         | —                                              | Ready → live operating standard                                                                     |
-| Delivery quality     | `docs/27`                         | —                                              | Public visitor UX; publication Frontend Release Gate                                                |
-| Control identity     | `docs/28`                         | —                                              | Operator and authenticated client chrome                                                            |
-| Creative C0–C9       | `docs/29` §63                     | —                                              | Media ingest → generate → compose → approve → learn                                                 |
-| Outcomes O1–O20      | `docs/30` §88                     | —                                              | Goals → pipeline → revenue → client UX → entitlements                                               |
-| First Reveal FR0–FR9 | `docs/09`, `17`, `26`, `27`, `29` | [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md) | Cheap direction candidates → winner-only media → pre-client gate. Control reveal chrome: `docs/28`  |
-| Client Value V0–V5   | `docs/30`, `docs/20`              | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md) | Activity proof → replacement cost / time → revenue-linked value. Extends Outcomes; not a second SoT |
+| Track                | Standing law                      | Slice spec                                                     | What it is                                                                                          |
+| -------------------- | --------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Vector 24            | `docs/26`                         | [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md) OPS6            | Ready → live operating standard                                                                     |
+| Delivery quality     | `docs/27`                         | [SURFACE_COMPLETENESS_TRACK.md](SURFACE_COMPLETENESS_TRACK.md) | Public visitor UX; publication Frontend Release Gate                                                |
+| Control identity     | `docs/28`                         | [SURFACE_COMPLETENESS_TRACK.md](SURFACE_COMPLETENESS_TRACK.md) | Operator chrome. Client-simple nav is Outcomes CU0, not this row                                    |
+| Creative C0–C9       | `docs/29` §63                     | [CREATIVE_TRACK.md](CREATIVE_TRACK.md)                         | Media ingest → generate → compose → approve → learn                                                 |
+| Outcomes O1–O20      | `docs/30` §88                     | [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md)                         | Client UX CU0–CU1 + goals → pipeline → revenue → entitlements                                       |
+| First Reveal FR0–FR9 | `docs/09`, `17`, `26`, `27`, `29` | [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md)                 | Cheap direction candidates → winner-only media → pre-client gate. Control reveal chrome: `docs/28`  |
+| Client Value V0–V5   | `docs/30`, `docs/20`              | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md)                 | Activity proof → replacement cost / time → revenue-linked value. Extends Outcomes; not a second SoT |
+
+Remaining unimplemented slices and ship waves: [SHIP_REMAINING.md](SHIP_REMAINING.md) (ADR-0013). Do not bury client operating UX under Delivery leftovers. Default client nav, Today, Approvals, and Outcomes QuickStart are [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md).
 
 `docs/28` is Control identity. `docs/29` is the Creative Engine. Do not swap those numbers.
 
@@ -73,7 +75,7 @@ Phase 5 **must** take C0. C2–C9 are not the Phase 5 exit.
 19. Billing architecture
 20. Advanced revenue optimization
 
-Phase 5 **may** persist social → lead. O1–O20 are not the Phase 5 exit. Revenue amounts stay optional. One Control app.
+Phase 5 **may** persist social → lead. O1–O20 are not the Phase 5 exit. Revenue amounts stay optional. One Control app; **nav differs by capability**. Client default nav is Overview / Today / Leads / Campaigns / Approvals / Insights (`docs/30` §5). Knowledge, Funnel, Autonomy, and Portfolio stay operator unless the actor has those capabilities. Execution: [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md) CU0–CU1 before more operator screens.
 
 ## First Reveal FR0–FR9 (do not show the client the raw first compose)
 
@@ -116,6 +118,10 @@ From `docs/30` §78, after supervised launch tooling exists:
 - First Reveal Gate pass **or** documented operator override (logo or typography-led fallback; approved media in slots; client does not automatically see the raw first compose)
 - V0 activity proof when package/fee is known. No replacement-cost or ROI claim required
 
+**In (this bar):** FR0–FR2 Delivery quality on the existing engine, hostname-scoped `/brand-logo`, a deterministic First Reveal Gate with operator override (thin FR7), Control `/goals` for a primary goal (O1), data-health flags (O6), and notification defaults (O7). Preview publish is not blocked by a failed gate.
+
+**Not in:** V0, FR3–FR6/FR8–FR9, ImageProvider, Ask Vector, CRM sync, ads, billing, entitlements, three design directions, capability-filtered client nav (CU0), Outcomes QuickStart (CU1), Approval Center grouping (O8).
+
 Not required: Ask Vector, CRM sync, ads, billing, entitlements, full Today polish, three design directions, winner image generation, mature ROI, DIY/agency calculator.
 
 ## Forbidden
@@ -135,3 +141,5 @@ Not required: Ask Vector, CRM sync, ads, billing, entitlements, full Today polis
 - Inventing sales, revenue, hours saved, previous spend, or agency cost
 - Painting tenant Delivery sites with `docs/28` Vector identity
 - Calling Control identity (`docs/28`) the Creative Engine (`docs/29`)
+- Putting Knowledge / Funnel / Autonomy / Portfolio in the **default client** navigation
+- Requiring the client to complete the `docs/17` 16-step catalog instead of confirm-and-blockers QuickStart

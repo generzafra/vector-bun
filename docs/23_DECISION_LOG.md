@@ -438,3 +438,57 @@ No First Reveal or Value Engine code is required to accept this ADR. Do not gene
 ### Reversal path
 
 Supersede this ADR. Leave the track specs as historical. Keep `docs/27` publication gate, `docs/29` Creative track, and `docs/30` Outcomes track.
+
+---
+
+## ADR-0013
+
+### Date
+
+24 August 2026
+
+### Status
+
+Accepted
+
+### Context
+
+Phase 0–5 and 7–8 exits are met. Phase 6 S0–S8 and Phase 9 S0–S1 are in. A thin first-client bar (FR0–FR2, thin FR7, O1/O6/O7) is in. Creative C1–C9, Outcomes O3–O20, First Reveal FR3–FR9, Client Value V0–V5, Phase 9 S2–S4, and client-simple Control UX remain unimplemented. Agents need a Cursor-ready sequence without new numbered charters or Phase 10/11.
+
+### Decision
+
+Remaining work is sequenced as **execution plans under `docs/plans/`**, not as `docs/31+` and not as new Vector phases.
+
+- Index and waves: `docs/plans/SHIP_REMAINING.md`
+- Client operating UX (CU0–CU1) + Outcomes O3–O20: `docs/plans/OUTCOMES_TRACK.md`
+- Creative C1–C9: `docs/plans/CREATIVE_TRACK.md`
+- First Reveal remainder: existing `docs/plans/FIRST_REVEAL_TRACK.md`
+- Client Value remainder: existing `docs/plans/CLIENT_VALUE_TRACK.md`
+- Phase 9 S2–S4 + SRE/DR/retention: `docs/plans/PLATFORM_OPS_TRACK.md` (S2–S4 rules stay in `docs/plans/09_PHASE_9_SCALE.md`)
+- Extra Delivery families, Control chrome leftovers, extra networks: `docs/plans/SURFACE_COMPLETENESS_TRACK.md`
+
+Client-simple UX is first-class Outcomes work (`docs/30` §2, §5, §81–85). It is not a Delivery catalog leftover. Default client nav is Overview / Today / Leads / Campaigns / Approvals / Insights. The `docs/17` 16-step catalog is readiness inventory, not the client form. CU0–CU1 must not wait for Phase 9 Creative QuickStart extraction.
+
+Next implementation slice is Wave A in `SHIP_REMAINING.md`.
+
+ADR-0012 still governs: charters stop at `docs/30`; First Reveal and Client Value are tracks; tracks never reopen an exited phase.
+
+### Alternatives considered
+
+Add `docs/31` for remaining work; treat leftover catalogs as one mega-phase; bury client UX under Control chrome leftovers; implement Creative C1–C9 before CU0.
+
+### Consequences
+
+Agents read `SHIP_REMAINING.md` before picking a remaining slice. Charters remain product law. No `apps/client` fork. No `generateImage` on `AIProvider`.
+
+### Security impact
+
+Every new tenant-owned table still requires `client_id`, explicit `TenantContext`, fail-closed missing context, and cross-tenant tests. Capability-filtered nav is authorization, not cosmetics.
+
+### Operational impact
+
+First clients stay supervised. Vector 24 remains a mature-state target. Do not delay a first paying client for Ask Vector, ads, billing, video, or cinematic Delivery families.
+
+### Reversal path
+
+Supersede this ADR. Keep the track specs as historical. Do not add numbered charters past 30 without a further ADR.

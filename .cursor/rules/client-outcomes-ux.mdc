@@ -12,7 +12,7 @@ Authenticated screens use `docs/28` Control tokens. Public visitor UX stays `doc
 Rules:
 - Client UX is outcome-first, not infrastructure-first.
 - Prefer simple business language.
-- Use progressive disclosure. One Control app; nav differs by capability.
+- Use progressive disclosure. One Control app; nav differs by capability. Default client nav is Overview / Today / Leads / Campaigns / Approvals / Insights (`docs/30` §5). Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client set. Execution: `docs/plans/OUTCOMES_TRACK.md` CU0–CU1.
 - Never imply attribution certainty when data is estimated or incomplete.
 - AI must check data health before important recommendations.
 - AI must not invent sales, revenue, close rates, or customer value.

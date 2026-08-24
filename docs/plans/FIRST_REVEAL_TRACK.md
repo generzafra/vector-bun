@@ -12,6 +12,19 @@
 
 **Not `docs/31`.** Numbered charters stop at `docs/30`. This file is the slice spec. It does not reopen Phase 1. Publication still uses the `docs/27` Frontend Release Gate. The First Reveal Gate is an additional pre-client gate. `docs/28` is Control identity, not the Creative Engine. `docs/29` owns ingest, generation, composition, rights, and approval.
 
+**Remaining execution (24 August 2026):** FR0–FR2 and thin FR7 are in. FR3–FR9 are open. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B. Creative dependencies: [CREATIVE_TRACK.md](CREATIVE_TRACK.md). Client reveal (FR8) uses `docs/30` business language; do not overwhelm with schema names, model names, or CSS tokens. Do not generate three full sites.
+
+| Slice | Status | Depends on |
+| ----- | ------ | ---------- |
+| FR0–FR2 | In | — |
+| Thin FR7 | In (deterministic checks + operator override; preview publish not blocked) | — |
+| FR3 | Open | C1 + C5 |
+| FR4–FR5 | Open | Structured AI; cheap candidates |
+| FR6 | Open | C2–C5 winner-only media |
+| FR7 remainder | Open | visual / a11y / perf / screenshots |
+| FR8 | Open | C7 + remaining FR7 |
+| FR9 | Open | Phase 9 later |
+
 ---
 
 # 1. Purpose
@@ -2978,6 +2991,8 @@ Recommended implementation order:
 
 ## FR0 — Audit Existing Delivery
 
+Thin first-client bar (24 Aug 2026): renderer, tokens, components, preview, and logo/media wiring are mapped. Delivery still has no ImageProvider or candidate renderer.
+
 - map current page renderer;
 - map current components;
 - map tokens;
@@ -2987,6 +3002,8 @@ Recommended implementation order:
 
 ## FR1 — Premium Foundation
 
+In for the first-client bar: type scale, spacing, radius/shadow, form polish, logo-capable nav via hostname-scoped `/brand-logo`, and mobile hero stacking. Client tokens only; no `docs/28` paint on Delivery.
+
 - typography scale;
 - spacing system;
 - radius/shadow/motion tokens;
@@ -2995,6 +3012,8 @@ Recommended implementation order:
 - responsive hero baseline.
 
 ## FR2 — High-Quality Component Variants
+
+In, additive on the Phase 1 engine: `hero-editorial`, `services-editorial`, `proof-featured`, `cta-minimal`. Premium/creative compose uses these. Technology/growth stay `hero-minimal`. Do not reopen the Phase 1 exit.
 
 - 2–4 premium hero variants;
 - 2 service variants;
@@ -3034,6 +3053,8 @@ Recommended implementation order:
 - generation budget enforcement.
 
 ## FR7 — First Reveal Gate
+
+Thin first-client bar: deterministic checks (headline, placeholder copy, preview noindex, primary CTA, logo or typography-led hero, known hero). Results persist on `first_reveal_gate_results`. Operators can override with a written reason. Preview publish is not blocked. Screenshots, AI visual review, and client reveal UX are later.
 
 - brand checks;
 - first-screen checks;

@@ -33,7 +33,7 @@ import {
 	listAiToolCallsForTenant,
 	listApprovalRequestsForTenant
 } from '@vector/db';
-import { isApprovedSectionType } from '@vector/funnel-engine';
+import { isApprovedSectionType, isHeroSectionType } from '@vector/funnel-engine';
 import {
 	composeFunnel,
 	contextFor,
@@ -423,9 +423,7 @@ test('approving copy writes a noindex headline draft without markup or publish',
 	expect(decided.executed).toBe(false);
 	expect(decided.artifact?.kind).toBe('page_draft');
 	const version = await getPageVersionForTenant(ctx, decided.artifact!.pageVersionId);
-	const hero = version?.document.sections.find(
-		(section) => section.type === 'hero-minimal' || section.type === 'hero-split'
-	);
+	const hero = version?.document.sections.find((section) => isHeroSectionType(section.type));
 	expect(hero && 'headline' in hero ? hero.headline : '').toContain('Client Alpha Dental');
 	expect(copyContainsMarkup([{ text: hero && 'headline' in hero ? hero.headline : '' }])).toBe(
 		false

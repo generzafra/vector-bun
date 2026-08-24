@@ -1,5 +1,12 @@
 import { expect, test } from 'bun:test';
-import { composeLeadPage, publicPageMeta } from '@vector/funnel-engine';
+import {
+	composeLeadPage,
+	isCtaSectionType,
+	isHeroSectionType,
+	isProofSectionType,
+	isServicesSectionType,
+	publicPageMeta
+} from '@vector/funnel-engine';
 
 const alpha = composeLeadPage(
 	{
@@ -77,10 +84,10 @@ test('production canonical is path-aware', () => {
 
 test('Phase 1 funnel has one hero, proof or services, CTA path, and crawlable copy', () => {
 	const types = alpha.sections.map((section) => section.type);
-	expect(types.filter((type) => type === 'hero-split' || type === 'hero-minimal')).toHaveLength(1);
-	expect(types).toContain('services');
-	expect(types).toContain('proof');
-	expect(types).toContain('cta');
+	expect(types.filter((type) => isHeroSectionType(type))).toHaveLength(1);
+	expect(types.some((type) => isServicesSectionType(type))).toBe(true);
+	expect(types.some((type) => isProofSectionType(type))).toBe(true);
+	expect(types.some((type) => isCtaSectionType(type))).toBe(true);
 	expect(types).toContain('lead-form');
 	expect(JSON.stringify(alpha)).toContain('implant');
 	expect(JSON.stringify(alpha)).not.toContain('Guaranteed implant success');
