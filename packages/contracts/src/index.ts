@@ -9,6 +9,7 @@ export * from './client-value';
 export * from './brand-visual';
 export * from './asset-sufficiency';
 export * from './visual-direction';
+export * from './image-generation';
 export * from './launch';
 export * from './scale';
 export * from './schemas';

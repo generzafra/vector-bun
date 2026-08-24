@@ -36,6 +36,7 @@
 		"@vector/db": "workspace:*",
 		"@vector/domain": "workspace:*",
 		"@vector/funnel-engine": "workspace:*",
+		"@vector/images": "workspace:*",
 		"@vector/storage": "workspace:*",
 		"@vector/ui": "workspace:*",
 		"drizzle-orm": "^0.44.5"

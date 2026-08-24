@@ -1,6 +1,6 @@
 # Creative track — C1–C9
 
-**Status:** Implementation specification — C0–C1 in; thin FR3 consumes C1; C2–C9 open  
+**Status:** Implementation specification — C0–C2 in; thin FR3 consumes C1; C3–C9 open  
 **Track:** Creative (not a Vector phase)  
 **Standing law:** [`docs/29`](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md) §63  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B then D  
@@ -95,7 +95,7 @@ A normal launch must not require hand-designing every asset. C1 + typography-led
 | ------ | ----------------------------------------------------------------- | ----------- |
 | **C0** | Schema, versions, rights, `clients/{id}/creative/…`               | **In**      |
 | **C1** | Brand visual profile + confirm/edit; prohibited styles            | **In**      |
-| **C2** | `ImageProvider`, Grok image, job/cost/prompt versions             | After C1    |
+| **C2** | `ImageProvider`, Grok image, job/cost/prompt versions             | **In**      |
 | **C3** | Deterministic compose: logo, type, tokens, OG/email/social shells | After C1    |
 | **C4** | Derivatives / crop / compression                                  | After C3    |
 | **C5** | Funnel manifests; Delivery uses approved derivatives only         | After C3    |
@@ -104,7 +104,7 @@ A normal launch must not require hand-designing every asset. C1 + typography-led
 | **C8** | Publication usage, experiment join, learning objects              | Wave D      |
 | **C9** | `VideoProvider`, short-form                                       | Last        |
 
-Do not start C2 before C0 (already true) or C1 (now true). C3 may start in parallel with C2 after C1.
+Do not start FR6 until C3–C5. C2 is in. C3 is the next Creative slice.
 
 ---
 
@@ -122,7 +122,7 @@ Do not start C2 before C0 (already true) or C1 (now true). C3 may start in paral
 
 ## 9. C2 rules — ImageProvider
 
-- New adapter family `ImageProvider`. Typed IO, timeout, retry, idempotency, normalized errors, health, audit, cost in integer minor units + currency.
+- New adapter family `ImageProvider` in `packages/images`. Typed IO, timeout, retry, idempotency, normalized errors, health, audit, cost in integer minor units + currency. Authorize jobs with `ai.read` / `ai.manage`. Do not add `creative.*` capabilities in this slice.
 - Do not add `generateImage` to `AIProvider`.
 - Jobs are tenant-owned. Cost attributed to `client_id` (and campaign when present). Per-client generation budget fails closed to typography-led / authentic media.
 - Models must not publish, overwrite approved logos, invent testimonials, or place assets into production. C7 + existing approval policy decide.
@@ -164,7 +164,7 @@ Cross-tenant isolation on every new table. Rights fail closed. Storage keys tena
 
 ## 14. Do not start until
 
-C0 exists (true). Thin FR3 is in after C1. C5 funnel manifests remain before approved-derivative placement. FR6 waits for C2–C5. FR8 waits for C7.
+C0 exists (true). C1 and C2 are in. Thin FR3 is in after C1. C5 funnel manifests remain before approved-derivative placement. FR6 waits for C3–C5. FR8 waits for C7.
 
 ## Locked attachments
 

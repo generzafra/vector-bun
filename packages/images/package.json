@@ -1,0 +1,16 @@
+{
+	"name": "@vector/images",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit -p tsconfig.json"
+	},
+	"dependencies": {
+		"@vector/config": "workspace:*",
+		"@vector/contracts": "workspace:*",
+		"@vector/observability": "workspace:*"
+	}
+}

@@ -20,7 +20,7 @@
 | Thin FR7      | In (deterministic checks + operator override; preview publish not blocked)  | —                                  |
 | FR3           | Thin in (C1 consume, sufficiency, typography-led fallback; C5 later)        | C1 in; C5 later                    |
 | FR4–FR5       | Thin in (cheap manifests, diversity, deterministic score, one winner draft) | Existing compose engine            |
-| FR6           | Open                                                                        | C2–C5 winner-only media            |
+| FR6           | Open                                                                        | C3–C5 winner-only media (C2 in)    |
 | FR7 remainder | Open                                                                        | visual / a11y / perf / screenshots |
 | FR8           | Open                                                                        | C7 + remaining FR7                 |
 | FR9           | Open                                                                        | Phase 9 later                      |

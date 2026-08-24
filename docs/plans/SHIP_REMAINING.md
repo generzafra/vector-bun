@@ -51,10 +51,11 @@ Client UX is **not** a surface leftover. Default nav, Today, Approvals, and Quic
 | **O3** `sales_outcomes`                                                                            | Optional integer `amount_minor` + currency on Control `/leads`; does not replace `lead_status`         |
 | **V0** activity proof                                                                              | Control `/value`: known fee/package + observed monthly work. **No ROI**                                |
 | Creative **C1**                                                                                    | Tenant-owned `brand_visual_profiles` + versions; Control `/brand` confirm/edit. Unconfirmed is not FR8 |
+| Creative **C2**                                                                                    | `ImageProvider` in `packages/images`; tenant-owned `image_generation_jobs`; draft-only C0 rows         |
 | First Reveal **thin FR3**                                                                          | Consume confirmed C1 on compose; `asset_sufficiency_snapshots`; typography-led fallback. C5 later      |
 | First Reveal **thin FR4–FR5**                                                                      | Cheap direction manifests, diversity, deterministic scoring, one winner draft. Not three sites         |
 
-Not in code: `ImageProvider`, `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `revenue_events`, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements.
+Not in code: `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `revenue_events`, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements.
 
 ---
 
@@ -83,7 +84,7 @@ The 16-step catalog in `docs/17` is the **readiness inventory**. It is not the c
 | ------ | ----------------------------------------- | ----------------------- |
 | C0     | Asset schema, versions, rights            | **In**                  |
 | **C1** | Brand visual profile + onboarding confirm | **In**                  |
-| **C2** | `ImageProvider` (not `AIProvider`)        | After C1                |
+| **C2** | `ImageProvider` (not `AIProvider`)        | **In**                  |
 | **C3** | Deterministic composition                 | After C1                |
 | **C4** | Derivatives                               | After C3                |
 | **C5** | Funnel asset manifests                    | After C3                |
@@ -121,7 +122,7 @@ Spec remains [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md). Do not generate thr
 | **FR3**           | **Thin in**                                | C1 consumed; C5 funnel manifests still later                |
 | **FR4**           | **Thin in**                                | Schema, diversity, deterministic grammar enumerator         |
 | **FR5**           | **Thin in**                                | In-memory render + deterministic score; winner is the draft |
-| **FR6**           | Open                                       | C2–C5 winner-only media                                     |
+| **FR6**           | Open                                       | C3–C5 winner-only media (C2 in)                             |
 | **FR7 remainder** | Open                                       | visual / a11y / perf / screenshots                          |
 | **FR8**           | Open                                       | C7 + remaining FR7; Control `docs/28` + `docs/30` language  |
 | **FR9**           | Open                                       | Phase 9 later                                               |
@@ -169,14 +170,14 @@ Goal: a non-technical owner is not dropped into the operator cockpit, and §78 l
 4. **O3** `sales_outcomes` — **In**
 5. **V0** activity proof when fee/package is known (no ROI) — **In**
 
-Wave A is complete. Wave B **C1**, **thin FR3**, and **thin FR4–FR5** are in. Next: Wave B **C2**.
+Wave A is complete. Wave B **C1**, **thin FR3**, **thin FR4–FR5**, and **C2** are in. Next: Wave B **C3–C5**.
 
 ### Wave B — first-site quality (still one engine)
 
 1. **C1** brand visual profile + confirm — **In**
 2. **FR3** asset wiring / sufficiency / typography-led fallback — **Thin in** (C5 later)
 3. **FR4–FR5** cheap direction manifests + scoring (not three sites) — **Thin in** (screenshots / AI visual review later)
-4. **C2** `ImageProvider`
+4. **C2** `ImageProvider` — **In**
 5. **C3–C5** compose + funnel manifests
 6. **FR6** winner-only expensive media
 7. **C7** QA + client creative approval

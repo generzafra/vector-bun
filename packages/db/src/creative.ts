@@ -121,6 +121,7 @@ export async function insertCreativeAssetForTenant(
 		sizeBytes: number;
 		checksum: string;
 		createdBy?: string | null;
+		sourceType?: 'operator_upload' | 'generated';
 	}
 ) {
 	const required = requireTenantContext(ctx);
@@ -133,7 +134,7 @@ export async function insertCreativeAssetForTenant(
 				title: input.title,
 				kind: input.kind,
 				status: 'draft',
-				sourceType: 'operator_upload',
+				sourceType: input.sourceType ?? 'operator_upload',
 				currentVersion: 1,
 				createdBy: input.createdBy ?? null
 			})

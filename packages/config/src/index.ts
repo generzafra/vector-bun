@@ -73,6 +73,10 @@ const schema = z.object({
 	XAI_MODEL_RESEARCH: z.string().min(1).default('grok-4'),
 	AI_EXECUTION_PAUSED: z.boolean().default(false),
 	AI_COST_CEILING_MICROS: z.coerce.number().int().nonnegative().default(5_000_000),
+	IMAGE_GENERATION_PAUSED: z.boolean().default(false),
+	IMAGE_COST_CEILING_MICROS: z.coerce.number().int().nonnegative().default(5_000_000),
+	IMAGE_COST_PER_IMAGE_MICROS: z.coerce.number().int().nonnegative().default(40_000),
+	XAI_IMAGE_MODEL: z.string().min(1).default('grok-imagine-image-2.0'),
 	AI_INPUT_MICROS_PER_TOKEN: z.coerce.number().int().nonnegative().default(3),
 	AI_OUTPUT_MICROS_PER_TOKEN: z.coerce.number().int().nonnegative().default(15),
 	TOKEN_ENCRYPTION_KEY: z.string().min(32).default('vector-token-encryption-test-key-32'),
@@ -135,6 +139,11 @@ export const env = schema.parse({
 	AI_EXECUTION_PAUSED:
 		process.env.AI_EXECUTION_PAUSED === 'true' || process.env.AI_EXECUTION_PAUSED === '1',
 	AI_COST_CEILING_MICROS: process.env.AI_COST_CEILING_MICROS,
+	IMAGE_GENERATION_PAUSED:
+		process.env.IMAGE_GENERATION_PAUSED === 'true' || process.env.IMAGE_GENERATION_PAUSED === '1',
+	IMAGE_COST_CEILING_MICROS: process.env.IMAGE_COST_CEILING_MICROS,
+	IMAGE_COST_PER_IMAGE_MICROS: process.env.IMAGE_COST_PER_IMAGE_MICROS,
+	XAI_IMAGE_MODEL: process.env.XAI_IMAGE_MODEL,
 	AI_INPUT_MICROS_PER_TOKEN: process.env.AI_INPUT_MICROS_PER_TOKEN,
 	AI_OUTPUT_MICROS_PER_TOKEN: process.env.AI_OUTPUT_MICROS_PER_TOKEN,
 	TOKEN_ENCRYPTION_KEY: process.env.TOKEN_ENCRYPTION_KEY,

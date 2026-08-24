@@ -6,6 +6,8 @@
 
 	let { data, form } = $props();
 	const canManage = $derived(data.permissions.includes('social.manage'));
+	const canDraftPhoto = $derived(data.permissions.includes('ai.manage'));
+	const imageJobs = $derived(data.imageJobs ?? []);
 	const overview = $derived(data.overview);
 	const approvedAssets = $derived(
 		overview?.creative.filter((asset) => asset.status === 'approved') ?? []
@@ -218,7 +220,10 @@
 
 	<section>
 		<h2>Creative library</h2>
-		<p>Operator uploads only. Bytes stay on StorageProvider under the tenant creative prefix.</p>
+		<p>
+			Prefer authentic uploaded photos. Vector can draft a supporting photo. It will not go live,
+			replace the logo, or count as a testimonial.
+		</p>
 		{#if overview.creative.length === 0}
 			<EmptyState title="No creative assets uploaded." />
 		{:else}
@@ -283,6 +288,55 @@
 				</label>
 				<button type="submit">Upload asset</button>
 			</form>
+		{/if}
+		{#if canDraftPhoto}
+			<form method="post" action="?/draftPhoto">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Title
+					<input name="title" maxlength="160" placeholder="Quiet hallway" />
+				</label>
+				<label>
+					What should the photo show?
+					<textarea
+						name="brief"
+						rows="3"
+						maxlength="500"
+						required
+						placeholder="Natural light in a calm waiting room. No people, logos, or text."
+					></textarea>
+				</label>
+				<button type="submit">Draft supporting photo</button>
+			</form>
+		{/if}
+		{#if imageJobs.length > 0}
+			<table>
+				<thead>
+					<tr>
+						<th>Draft photo</th>
+						<th>Status</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each imageJobs as job (job.id)}
+						<tr>
+							<td>{job.title}</td>
+							<td>
+								<StatusChip
+									label={job.status}
+									tone={job.status === 'succeeded'
+										? 'info'
+										: job.status === 'denied'
+											? 'warning'
+											: 'danger'}
+								/>
+							</td>
+							<td>{job.denyLabel ?? ''}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		{/if}
 	</section>
 

@@ -2159,6 +2159,8 @@ In. Tenant-owned `brand_visual_profiles` plus immutable confirm versions. Contro
 
 ## Phase C2 — Image Provider
 
+In. `ImageProvider` in `packages/images` (memory default; Grok Imagine when `XAI_API_KEY` is present). Tenant-owned `image_generation_jobs` with prompt/schema versions and integer `cost_micros`. Draft bytes go through existing `StorageProvider` under `clients/{client_id}/generated/...` as unpublished C0 rows. Kill switch, per-client budget, logo overwrite, invented proof, and prohibited styles fail closed. Do not add `generateImage` to `AIProvider`. Edit/variants stay on the adapter; C2 domain drafts supporting photos only. C3 composition and FR6 winner media remain later.
+
 - `ImageProvider`;
 - Grok image provider;
 - generation job tracking;

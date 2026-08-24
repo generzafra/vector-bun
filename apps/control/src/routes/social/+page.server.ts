@@ -18,13 +18,21 @@ import {
 	syncSocialMetricsForOperator,
 	transitionSocialPost,
 	uploadCreativeAsset,
-	upsertSocialConnection
+	upsertSocialConnection,
+	draftSupportingImage,
+	listImageJobs
 } from '@vector/domain';
 
 export async function load({ locals, url, cookies }) {
 	const session = locals.session!;
 	if (!session.clientId) {
-		return { overview: null, needsClient: true, oauthNotice: null, pageChoices: null };
+		return {
+			overview: null,
+			needsClient: true,
+			oauthNotice: null,
+			pageChoices: null,
+			imageJobs: []
+		};
 	}
 	const ctx = contextFor(session, locals.requestId);
 	const oauth = url.searchParams.get('oauth');
@@ -46,6 +54,7 @@ export async function load({ locals, url, cookies }) {
 		overview: await getSocialOverview(session, ctx),
 		needsClient: false,
 		pageChoices,
+		imageJobs: session.permissions.includes('ai.read') ? await listImageJobs(session, ctx) : [],
 		oauthNotice:
 			oauth === 'connected'
 				? 'Official OAuth connection stored. Tokens stay encrypted and are not shown.'
@@ -180,6 +189,30 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not upload creative asset' });
+		}
+	},
+	draftPhoto: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			await draftSupportingImage(
+				session,
+				contextFor(session, locals.requestId),
+				{
+					title: String(form.get('title') ?? '') || undefined,
+					brief: String(form.get('brief') ?? ''),
+					purpose: 'supporting'
+				},
+				locals.requestId
+			);
+			return {
+				ok: true,
+				notice: 'Draft photo stored. It will not go live until rights and approval.'
+			};
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not draft a supporting photo' });
 		}
 	},
 	confirmRights: async ({ request, locals }) => {

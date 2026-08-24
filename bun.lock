@@ -17,6 +17,7 @@
         "@vector/email": "workspace:*",
         "@vector/experiments": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
+        "@vector/images": "workspace:*",
         "@vector/search": "workspace:*",
         "@vector/social": "workspace:*",
         "@vector/storage": "workspace:*",
@@ -175,6 +176,7 @@
         "@vector/email": "workspace:*",
         "@vector/experiments": "workspace:*",
         "@vector/funnel-engine": "workspace:*",
+        "@vector/images": "workspace:*",
         "@vector/observability": "workspace:*",
         "@vector/search": "workspace:*",
         "@vector/social": "workspace:*",
@@ -201,6 +203,14 @@
       "dependencies": {
         "@vector/contracts": "workspace:*",
         "zod": "^4.1.5",
+      },
+    },
+    "packages/images": {
+      "name": "@vector/images",
+      "dependencies": {
+        "@vector/config": "workspace:*",
+        "@vector/contracts": "workspace:*",
+        "@vector/observability": "workspace:*",
       },
     },
     "packages/observability": {
@@ -474,6 +484,8 @@
     "@vector/experiments": ["@vector/experiments@workspace:packages/experiments"],
 
     "@vector/funnel-engine": ["@vector/funnel-engine@workspace:packages/funnel-engine"],
+
+    "@vector/images": ["@vector/images@workspace:packages/images"],
 
     "@vector/jobs": ["@vector/jobs@workspace:apps/jobs"],
 

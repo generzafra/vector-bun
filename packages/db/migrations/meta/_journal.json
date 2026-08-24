@@ -260,6 +260,13 @@
 			"when": 1756200000000,
 			"tag": "0036_fr4_visual_directions",
 			"breakpoints": true
+		},
+		{
+			"idx": 37,
+			"version": "7",
+			"when": 1756210000000,
+			"tag": "0037_c2_image_generation",
+			"breakpoints": true
 		}
 	]
 }

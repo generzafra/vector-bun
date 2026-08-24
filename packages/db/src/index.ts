@@ -14,6 +14,7 @@ export * from './creative';
 export * from './brand-visual';
 export * from './asset-sufficiency';
 export * from './visual-directions';
+export * from './image-jobs';
 export * from './social';
 export * from './search';
 export * from './experiments';

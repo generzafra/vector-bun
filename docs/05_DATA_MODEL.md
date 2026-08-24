@@ -46,7 +46,15 @@ brand_visual_profiles
 brand_visual_profile_versions
 ```
 
-One current profile per client. Vector may draft from `brands` tokens and `brand_assets` logos; the client confirms or edits in business language on Control `/brand`. Confirmed snapshots are immutable versions. Edit after confirm returns the current row to `draft` until re-confirm. Unconfirmed is not a First Reveal license. Prohibited styles are stored and fail closed for later C2/C3. Full public-URL extraction remains later. Do not treat this as `ImageProvider`.
+One current profile per client. Vector may draft from `brands` tokens and `brand_assets` logos; the client confirms or edits in business language on Control `/brand`. Confirmed snapshots are immutable versions. Edit after confirm returns the current row to `draft` until re-confirm. Unconfirmed is not a First Reveal license. Prohibited styles are stored and fail closed for C2/C3. Full public-URL extraction remains later. Do not treat this as `ImageProvider`.
+
+Creative C2 (tenant-owned, `client_id` required):
+
+```text
+image_generation_jobs
+```
+
+Jobs record prompt/schema versions, adapter, model, integer `cost_micros` + currency, and deny reasons (`budget`, `paused`, `policy`). Succeeded jobs store bytes through existing `StorageProvider` under `clients/{client_id}/generated/...` and insert a C0 `creative_assets` draft with `source_type=generated` and `rights_status=unknown`. Models do not publish, overwrite logos, or invent proof. `ImageProvider` lives in `packages/images`. Do not add `generateImage` to `AIProvider`. Do not invent a second object store.
 
 Phase 5 social (tenant-owned, `client_id` required):
 

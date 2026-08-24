@@ -109,7 +109,9 @@ import {
 	getClientValueProof,
 	saveClientValueProfile,
 	recordValueActivity,
-	overrideFirstRevealGate
+	overrideFirstRevealGate,
+	draftSupportingImage,
+	listImageJobs
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
 
@@ -1260,6 +1262,38 @@ app.post('/v1/creative/assets/:id/approve', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const data = await approveCreativeAsset(session, ctx, { id: c.req.param('id') }, requestId);
 	return c.json({ requestId, data });
+});
+
+app.get('/v1/images/jobs', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'ai.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await listImageJobs(session, ctx) });
+});
+
+app.get('/v1/images/jobs/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'ai.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await listImageJobs(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.post('/v1/images/generate', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'ai.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await draftSupportingImage(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data }, 201);
 });
 
 app.get('/v1/search', async (c) => {

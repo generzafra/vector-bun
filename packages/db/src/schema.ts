@@ -1844,6 +1844,45 @@ export const creativeAssetRights = pgTable(
 	]
 );
 
+export const imageGenerationJobs = pgTable(
+	'image_generation_jobs',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		status: text('status').notNull(),
+		purpose: text('purpose').notNull().default('supporting'),
+		title: text('title').notNull(),
+		promptText: text('prompt_text').notNull(),
+		promptVersion: text('prompt_version').notNull(),
+		schemaVersion: text('schema_version').notNull(),
+		adapter: text('adapter').notNull(),
+		model: text('model').notNull(),
+		providerRequestId: text('provider_request_id'),
+		idempotencyKey: text('idempotency_key').notNull(),
+		costMicros: integer('cost_micros').notNull().default(0),
+		currency: text('currency').notNull().default('USD'),
+		denyReason: text('deny_reason'),
+		error: text('error'),
+		storageKey: text('storage_key'),
+		creativeAssetId: uuid('creative_asset_id').references(() => creativeAssets.id, {
+			onDelete: 'set null'
+		}),
+		createdBy: text('created_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('image_generation_jobs_client_idempotency_idx').on(t.clientId, t.idempotencyKey),
+		index('image_generation_jobs_client_idx').on(t.clientId),
+		index('image_generation_jobs_org_idx').on(t.organizationId)
+	]
+);
+
 export type BrandVisualSnapshot = {
 	primaryLogoAssetId: string | null;
 	primaryColor: string | null;

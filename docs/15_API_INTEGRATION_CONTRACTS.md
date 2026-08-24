@@ -10,7 +10,7 @@ AIProvider, EmailProvider, SocialProvider, AnalyticsProvider, StorageProvider, S
 
 `SearchProvider` is the only search adapter family. It may expose property connect/health, official Search Console / Bing query and page sync, sitemap submit when the official API exists, and optional generative-visibility measurement that can return `unsupported` and fail closed. Do not invent `SearchPerformanceProvider`, `SearchIndexProvider`, `GenerativeVisibilityProvider`, or `SearchResearchProvider` as separate families. Do not hardcode a search or AI-discovery vendor into the domain. Memory is the default until credentials exist. Tokens never appear in Control or API JSON. Slice contracts land with Phase 6 (`docs/plans/06_PHASE_6_SEO_AEO.md`).
 
-Later Creative Engine adapters (`docs/29`): ImageProvider, then VideoProvider and ImageTransformProvider. Do not add `generateImage` to `AIProvider`. Do not invent `AssetStorageProvider`. Remaining slices: `docs/plans/CREATIVE_TRACK.md`.
+Later Creative Engine adapters (`docs/29`): ImageProvider (C2 in: `packages/images`, Grok Imagine when `XAI_API_KEY` is set, otherwise memory), then VideoProvider and ImageTransformProvider. Do not add `generateImage` to `AIProvider`. Do not invent `AssetStorageProvider`. Remaining slices: `docs/plans/CREATIVE_TRACK.md`.
 
 Later Outcomes adapters (`docs/30`): CRMProvider, then RevenueProvider, BookingProvider, CommerceProvider, AdProvider, and BillingProvider. Do not couple the domain to one CRM, ad network, or payment processor. Do not let AI change ad budgets automatically. Remaining slices: `docs/plans/OUTCOMES_TRACK.md`. Sequence: `docs/plans/SHIP_REMAINING.md`.
 
@@ -121,6 +121,14 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `GET /v1/creative/assets/:id` — tenant-scoped bytes
 - `POST /v1/creative/assets/:id/rights` — confirm rights
 - `POST /v1/creative/assets/:id/approve` — approve after rights are confirmed
+
+Creative C2 (authenticated session cookie plus CSRF on mutations; active client only):
+
+- `GET /v1/images/jobs` — tenant image draft jobs (`ai.read`). Cost, prompts, and storage keys are omitted
+- `GET /v1/images/jobs/:clientId` — same list only when the actor already owns that client
+- `POST /v1/images/generate` — draft a supporting photo (`ai.manage`, CSRF). Stores a C0 draft with unknown rights. Does not publish
+
+`ImageProvider` lives in `packages/images`. Memory is the default. xAI Grok Imagine is selected when `XAI_API_KEY` is present. `AI_EXECUTION_PAUSED` and `IMAGE_GENERATION_PAUSED` wrap the adapter as disabled. Client Intelligence pause also denies jobs. Per-client `IMAGE_COST_CEILING_MICROS` fails closed. Tokens stay in env, not the browser, logs, or prompts.
 
 `SocialProvider` lives in `packages/social`. Memory is the default. Official LinkedIn, X, and Meta (Facebook / Instagram) adapters run when `SOCIAL_ADAPTER=official`. Official OAuth start/complete uses `createAuthorizationUrl` and `exchangeAuthorizationCode`. Tokens are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in JSON. Refresh uses official OAuth token endpoints when client or app credentials are configured. Official adapters upload approved C0 images. `GET /v1/public/social-media` serves a short-lived HMAC grant so Instagram can fetch tenant-scoped bytes; forged, expired, or cross-tenant grants fail closed. Official Instagram Graph publish is media-required. `social-due-sweep` is tenant-scoped; `social-due-sweep-platform` fans out one job per client with due posts.
 

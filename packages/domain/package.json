@@ -22,6 +22,7 @@
 		"@vector/contracts": "workspace:*",
 		"@vector/db": "workspace:*",
 		"@vector/funnel-engine": "workspace:*",
+		"@vector/images": "workspace:*",
 		"@vector/observability": "workspace:*",
 		"@vector/storage": "workspace:*",
 		"drizzle-orm": "^0.44.5"
