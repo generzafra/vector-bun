@@ -4,8 +4,11 @@ import {
 	ValidationError,
 	assertActorOwnsContext,
 	goalsClientIdSchema,
+	leadStatusForSalesOutcome,
 	mapQuickStartGoal,
 	parseContract,
+	recordSalesOutcomeSchema,
+	salesOutcomesClientIdSchema,
 	saveOutcomesQuickStartSchema,
 	updateNotificationPreferenceSchema,
 	upsertClientGoalSchema,
@@ -14,15 +17,21 @@ import {
 } from '@vector/contracts';
 import {
 	assertGoalClient,
+	assertLeadClient,
 	countAnalyticsEventsForTenant,
 	ensureNotificationPreferencesForTenant,
+	getLeadForTenant,
 	getProductionDomainForTenant,
 	getPublishedHomeForTenant,
+	getSalesOutcomeCoverageForTenant,
 	insertClientGoalForTenant,
+	insertSalesOutcomeForTenant,
 	listClientGoalsForTenant,
 	listDataHealthChecksForTenant,
+	listSalesOutcomesForTenant,
 	getOutcomesQuickStartForTenant,
 	saveOutcomesQuickStartForTenant,
+	updateLeadStatusForTenant,
 	updateNotificationPreferenceForTenant,
 	upsertDataHealthCheckForTenant
 } from '@vector/db';
@@ -243,4 +252,76 @@ export async function saveOutcomesQuickStart(
 		requestId
 	});
 	return row;
+}
+
+export async function listSalesOutcomes(actor: Actor, ctx: TenantContext, clientId?: string) {
+	requireCapability(actor.permissions, 'leads.read');
+	const required = assertActorOwnsContext(actor, ctx);
+	if (clientId) {
+		parseContract(salesOutcomesClientIdSchema, { clientId });
+		assertLeadClient(required, clientId);
+	}
+	const [outcomes, coverage] = await Promise.all([
+		listSalesOutcomesForTenant(required),
+		getSalesOutcomeCoverageForTenant(required)
+	]);
+	return { outcomes, coverage };
+}
+
+export async function getSalesOutcomeCoverage(actor: Actor, ctx: TenantContext, clientId?: string) {
+	requireCapability(actor.permissions, 'leads.read');
+	const required = assertActorOwnsContext(actor, ctx);
+	if (clientId) {
+		parseContract(salesOutcomesClientIdSchema, { clientId });
+		assertLeadClient(required, clientId);
+	}
+	return getSalesOutcomeCoverageForTenant(required);
+}
+
+export async function recordSalesOutcome(
+	actor: Actor,
+	ctx: TenantContext,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'leads.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(recordSalesOutcomeSchema, input);
+	const existing = await getLeadForTenant(required, parsed.leadId);
+	if (!existing) throw new NotFoundError('Lead not found');
+	if (existing.status === 'spam') {
+		throw new ValidationError('Spam leads cannot receive a sales outcome');
+	}
+	const outcome = await insertSalesOutcomeForTenant(required, {
+		leadId: parsed.leadId,
+		outcomeType: parsed.outcomeType,
+		amountMinor: parsed.amountMinor ?? null,
+		currency: parsed.currency ?? null,
+		note: parsed.note ?? null,
+		recordedBy: actor.userId
+	});
+	const nextStatus = leadStatusForSalesOutcome(parsed.outcomeType, existing.status);
+	let lead = existing;
+	if (nextStatus) {
+		const updated = await updateLeadStatusForTenant(required, {
+			leadId: existing.id,
+			status: nextStatus,
+			reason: `Recorded ${parsed.outcomeType} sales outcome`,
+			actorId: actor.userId,
+			requestId
+		});
+		if (updated) lead = updated.lead;
+	}
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'outcomes.sales.record',
+		entityType: 'sales_outcome',
+		entityId: outcome.id,
+		requestId,
+		reason: parsed.outcomeType
+	});
+	return { outcome, lead };
 }

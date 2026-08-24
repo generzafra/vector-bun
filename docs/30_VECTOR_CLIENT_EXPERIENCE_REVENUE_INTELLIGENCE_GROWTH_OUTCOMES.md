@@ -815,6 +815,8 @@ spam
 
 `working` is the contacted state. `spam` stays as a quality isolation state. `appointment` and `proposal` belong on `sales_outcomes.outcome_type` (or a later additive stage) rather than a destructive enum replace.
 
+O3 is in: tenant-owned `sales_outcomes` with optional integer `amount_minor` + currency. Control `/leads` records Contacted / Qualified / Appointment / Won / Lost. Appointment does not change `lead_status`. A won lead may exist without this row.
+
 Allow client-specific stage configuration later. Every transition still records actor, reason, and timestamp on `lead_status_history`.
 
 ## 9.1 Lead Record
@@ -2682,7 +2684,7 @@ First Reveal client card (`docs/plans/FIRST_REVEAL_TRACK.md`): Control shows a b
 
 Build in the order in §88. First paying-client bar (§78) is launch readiness, not a Phase 0 reopen. Revenue value may remain optional. Ask Vector, CRM sync, ads, and billing stay later slices.
 
-Client operating UX is first-class: capability-filtered default nav (CU0 in), Outcomes QuickStart (CU1 in), and Approval Center (O8 in) before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md) O3. Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md) Wave A. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
+Client operating UX is first-class: capability-filtered default nav (CU0 in), Outcomes QuickStart (CU1 in), Approval Center (O8 in), and `sales_outcomes` (O3 in) before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md) V0 next in Wave A, then O4. Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md) Wave A. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
 
 ---
 
@@ -2908,7 +2910,7 @@ Recommended:
 0. Capability-filtered client nav (CU0 in) and Outcomes QuickStart (CU1 in) (`docs/plans/OUTCOMES_TRACK.md`) — do not overwhelm the client with operator modules.
 1. Client goals.
 2. Minimal lead stages.
-3. Sales outcome records.
+3. Sales outcome records (O3 in).
 4. Client dashboard outcome hierarchy.
 5. Today view.
 6. Data health foundation.

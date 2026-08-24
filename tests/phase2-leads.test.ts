@@ -305,9 +305,8 @@ test('the same email on two tenants stays isolated', async () => {
 
 	const listed = await listLeads(actor, betaCtx);
 	expect(listed.some((lead) => lead.contact.email === sharedEmail)).toBe(true);
-	expect(
-		listed.every((lead) => lead.hostname.includes('beta') || lead.contact.email === sharedEmail)
-	).toBe(true);
+	const shared = listed.find((lead) => lead.contact.email === sharedEmail);
+	expect(shared?.hostname).toContain('beta');
 	const leaked = listed.filter((lead) => lead.hostname.includes('alpha'));
 	expect(leaked).toHaveLength(0);
 });

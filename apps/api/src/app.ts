@@ -101,6 +101,8 @@ import {
 	updateNotificationPreference,
 	getOutcomesQuickStart,
 	saveOutcomesQuickStart,
+	listSalesOutcomes,
+	recordSalesOutcome,
 	overrideFirstRevealGate
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
@@ -500,6 +502,38 @@ app.get('/v1/outcomes/quickstart/:clientId', async (c) => {
 	return c.json({
 		requestId,
 		data: await getOutcomesQuickStart(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.get('/v1/outcomes/sales', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'leads.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await listSalesOutcomes(session, ctx) });
+});
+
+app.post('/v1/outcomes/sales', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'leads.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await recordSalesOutcome(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.get('/v1/outcomes/sales/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'leads.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await listSalesOutcomes(session, ctx, c.req.param('clientId'))
 	});
 });
 

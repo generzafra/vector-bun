@@ -3433,3 +3433,32 @@ export const clientOutcomeQuickstarts = pgTable(
 		index('client_outcome_quickstarts_org_idx').on(t.organizationId)
 	]
 );
+
+export const salesOutcomes = pgTable(
+	'sales_outcomes',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		leadId: uuid('lead_id')
+			.notNull()
+			.references(() => leads.id),
+		outcomeType: text('outcome_type').notNull(),
+		amountMinor: integer('amount_minor'),
+		currency: text('currency'),
+		note: text('note'),
+		recordedBy: text('recorded_by'),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('sales_outcomes_client_idx').on(t.clientId),
+		index('sales_outcomes_client_lead_idx').on(t.clientId, t.leadId),
+		index('sales_outcomes_org_idx').on(t.organizationId)
+	]
+);

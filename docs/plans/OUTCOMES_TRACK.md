@@ -1,6 +1,6 @@
 # Outcomes track — client UX + O3–O20
 
-**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; **CU1 in**; **O8 in**; remainder open  
+**Status:** Implementation specification — O1, O2, O6, O7 thin-in; **CU0 in**; **CU1 in**; **O8 in**; **O3 in**; remainder open  
 **Track:** Outcomes (not a Vector phase)  
 **Standing law:** [`docs/30`](../30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md) §2, §5–7, §65, §81–88  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave A then C then E  
@@ -109,7 +109,7 @@ Rules:
 
 No phase exit. Phase 2 already exited with won/lost on `leads`.
 
-**Wave A must-take:** CU0, CU1, O8, O3.  
+**Wave A must-take:** CU0, CU1, O8, O3 — **in**.  
 **Wave C:** O4, O5, O9–O14, then O15.  
 **Wave E:** O16–O20.
 
@@ -148,7 +148,7 @@ V0–V5 stay in [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md). They consume the
 
 No new package for CU0/CU1/O8 (Control + existing approvals + goals).
 
-- O3: `sales_outcomes` (tenant-owned). Optional `amount_minor` + `currency`. Status `won`/`lost` on `leads` is not this row.
+- O3: `sales_outcomes` (tenant-owned). Optional `amount_minor` + `currency`. Status `won`/`lost` on `leads` is not this row. **In.**
 - O4/O5: views over existing facts; no vanity invented metrics
 - O9: `offer_versions` (immutable), extend Phase 1 `offers`
 - O10: `packages/crm` with `CRMProvider` (memory default)
@@ -163,7 +163,7 @@ No new package for CU0/CU1/O8 (Control + existing approvals + goals).
 - O19: `BillingProvider` architecture only until a processor is chosen
 - O20: later
 
-Capabilities: keep `goals.read` / `goals.manage`. Add `outcomes.read` / `outcomes.manage` when sales/revenue land if goals caps are too narrow. Authorize by capability.
+Capabilities: keep `goals.read` / `goals.manage`. O3 records sales with `leads.read` / `leads.manage` (capture is a lead action). Add `outcomes.read` / `outcomes.manage` when O11 revenue events need a ledger cap that is not lead manage. Authorize by capability.
 
 Same `WorkflowRuntime` for alerts, reconciliation, digests.
 
@@ -177,30 +177,30 @@ Launch with a primary goal, conversion definition, minimal pipeline (already tru
 
 ## 8. Implementation order
 
-| Slice   | Work                                                      | Gate                    |
-| ------- | --------------------------------------------------------- | ----------------------- |
-| **O1**  | Primary goal + Control `/goals`                           | **In** (thin)           |
-| **O2**  | Keep `new \| working \| qualified \| won \| lost \| spam` | **In** (Phase 2)        |
-| **O6**  | Data health flags                                         | **In** (thin)           |
-| **O7**  | Notification preferences                                  | **In** (thin)           |
-| **CU0** | Capability-filtered default nav + §85 copy                | **In**                  |
-| **CU1** | Outcomes QuickStart                                       | **In**                  |
-| **O8**  | Approval Center grouping                                  | **In**                  |
-| **O3**  | `sales_outcomes`                                          | Wave A; before V1 / O11 |
-| **O4**  | Overview outcome hierarchy                                | Wave C                  |
-| **O5**  | Today                                                     | Wave C                  |
-| **O9**  | Offer versions                                            | Wave C                  |
-| **O10** | `CRMProvider` interface                                   | Wave C                  |
-| **O11** | Revenue events                                            | After O3                |
-| **O12** | Attribution confidence                                    | After O11               |
-| **O13** | Recommendation evidence + data-health gate                | After O6 + O12          |
-| **O14** | Monthly Growth Review                                     | After O13               |
-| **O15** | Ask Vector                                                | After O1–O3 + O6        |
-| **O16** | Client health                                             | Wave E                  |
-| **O17** | Package entitlements                                      | Wave E                  |
-| **O18** | Paid acquisition read-only                                | P2                      |
-| **O19** | Billing architecture                                      | P2                      |
-| **O20** | Advanced revenue optimization                             | Last                    |
+| Slice   | Work                                                      | Gate             |
+| ------- | --------------------------------------------------------- | ---------------- |
+| **O1**  | Primary goal + Control `/goals`                           | **In** (thin)    |
+| **O2**  | Keep `new \| working \| qualified \| won \| lost \| spam` | **In** (Phase 2) |
+| **O6**  | Data health flags                                         | **In** (thin)    |
+| **O7**  | Notification preferences                                  | **In** (thin)    |
+| **CU0** | Capability-filtered default nav + §85 copy                | **In**           |
+| **CU1** | Outcomes QuickStart                                       | **In**           |
+| **O8**  | Approval Center grouping                                  | **In**           |
+| **O3**  | `sales_outcomes`                                          | **In**           |
+| **O4**  | Overview outcome hierarchy                                | Wave C           |
+| **O5**  | Today                                                     | Wave C           |
+| **O9**  | Offer versions                                            | Wave C           |
+| **O10** | `CRMProvider` interface                                   | Wave C           |
+| **O11** | Revenue events                                            | After O3         |
+| **O12** | Attribution confidence                                    | After O11        |
+| **O13** | Recommendation evidence + data-health gate                | After O6 + O12   |
+| **O14** | Monthly Growth Review                                     | After O13        |
+| **O15** | Ask Vector                                                | After O1–O3 + O6 |
+| **O16** | Client health                                             | Wave E           |
+| **O17** | Package entitlements                                      | Wave E           |
+| **O18** | Paid acquisition read-only                                | P2               |
+| **O19** | Billing architecture                                      | P2               |
+| **O20** | Advanced revenue optimization                             | Last             |
 
 ---
 
@@ -211,6 +211,8 @@ Launch with a primary goal, conversion definition, minimal pipeline (already tru
 - Fast mobile capture (`docs/30` §84): Contacted / Qualified / Appointment / Won / Lost on the existing lead, plus optional amount when won.
 - AI must not invent outcomes. Empty state asks the client to mark outcomes or connect CRM later.
 - Alpha cannot read Beta outcomes.
+
+**In:** Tenant-owned `sales_outcomes` with optional integer `amount_minor` + currency. Control `/leads` fast-captures Contacted / Qualified / Appointment / Won / Lost. Appointment does not change `lead_status`. A won lead may exist without this row; coverage is observed. No `CRMProvider`. AI does not invent amounts.
 
 ---
 

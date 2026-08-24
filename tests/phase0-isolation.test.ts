@@ -41,7 +41,7 @@ test('user on client A cannot read or update client B', async () => {
 	const { alpha, beta } = await seededClients();
 	const { session } = await login(
 		{ email: env.SEED_USER_A_EMAIL, password: env.SEED_USER_A_PASSWORD },
-		'127.0.0.1'
+		'10.0.0.12'
 	);
 	const visible = await listClientsForActor(session);
 	expect(visible.map((row) => row.slug)).toEqual(['alpha']);
@@ -61,7 +61,10 @@ test('user on client A cannot read or update client B', async () => {
 test('missing capability returns 403', async () => {
 	const loginRes = await app.request('/v1/auth/login', {
 		method: 'POST',
-		headers: { 'content-type': 'application/json' },
+		headers: {
+			'content-type': 'application/json',
+			'x-forwarded-for': '10.0.0.10'
+		},
 		body: JSON.stringify({ email: env.SEED_USER_A_EMAIL, password: env.SEED_USER_A_PASSWORD })
 	});
 	expect(loginRes.status).toBe(200);
@@ -86,7 +89,10 @@ test('route client id does not leak the other tenant through the API', async () 
 	const { beta } = await seededClients();
 	const loginRes = await app.request('/v1/auth/login', {
 		method: 'POST',
-		headers: { 'content-type': 'application/json' },
+		headers: {
+			'content-type': 'application/json',
+			'x-forwarded-for': '10.0.0.11'
+		},
 		body: JSON.stringify({ email: env.SEED_USER_A_EMAIL, password: env.SEED_USER_A_PASSWORD })
 	});
 	const cookie = sessionCookie(loginRes);

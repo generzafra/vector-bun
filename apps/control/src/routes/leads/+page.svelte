@@ -3,11 +3,16 @@
 	import EmptyState from '$lib/vector/EmptyState.svelte';
 	import PageHeader from '$lib/vector/PageHeader.svelte';
 	import StatusChip from '$lib/vector/StatusChip.svelte';
-	import { hasOperatorControlNav } from '@vector/contracts';
+	import {
+		SALES_OUTCOME_CAPTURE,
+		formatMinorUnits,
+		hasOperatorControlNav
+	} from '@vector/contracts';
 
 	let { data, form } = $props();
 	const canManage = $derived(data.permissions.includes('leads.manage'));
 	const operatorNav = $derived(hasOperatorControlNav(data.permissions));
+	const coverage = $derived(data.coverage);
 
 	function tone(status: string, isTest: boolean) {
 		if (isTest) return 'warning' as const;
@@ -15,6 +20,26 @@
 		if (status === 'lost' || status === 'spam') return 'danger' as const;
 		if (status === 'working') return 'info' as const;
 		return 'muted' as const;
+	}
+
+	function statusLabel(status: string) {
+		if (status === 'working') return 'Contacted';
+		if (status === 'new') return 'New';
+		if (status === 'qualified') return 'Qualified';
+		if (status === 'won') return 'Won';
+		if (status === 'lost') return 'Lost';
+		if (status === 'spam') return 'Spam';
+		return status;
+	}
+
+	function outcomeLabel(type: string) {
+		if (type === 'contacted') return 'Contacted';
+		if (type === 'qualified') return 'Qualified';
+		if (type === 'appointment') return 'Appointment';
+		if (type === 'proposal') return 'Proposal';
+		if (type === 'won') return 'Won';
+		if (type === 'lost') return 'Lost';
+		return type;
 	}
 </script>
 
@@ -40,10 +65,31 @@
 			title="No leads yet."
 			detail={operatorNav
 				? "A tracked visitor submit on this client's funnel will appear here with consent and attribution."
-				: 'When someone submits a form on your site, they will appear here.'}
+				: 'When someone submits a form on your site, they will appear here. Mark what happened, or connect a CRM later. Vector will not invent sales.'}
 		/>
 	</section>
 {:else}
+	{#if coverage}
+		<section>
+			<h2>Outcome coverage</h2>
+			{#if coverage.qualifiedCount === 0}
+				<p>
+					Qualified leads with a sale, loss, or appointment will show coverage here. Vector will not
+					invent sales.
+				</p>
+			{:else}
+				<p>
+					{coverage.knownCount} of {coverage.qualifiedCount} qualified leads have a recorded outcome{coverage.coveragePercent !=
+					null
+						? ` (${coverage.coveragePercent}%, ${coverage.evidenceClass})`
+						: ''}.
+				</p>
+				{#if coverage.knownCount < coverage.qualifiedCount}
+					<p>Mark what happened, or connect a CRM later. Vector will not invent sales.</p>
+				{/if}
+			{/if}
+		</section>
+	{/if}
 	<section>
 		<table>
 			<thead>
@@ -56,7 +102,8 @@
 						<th>Last non-direct</th>
 						<th>Host</th>
 					{/if}
-					{#if canManage}<th>Update</th>{/if}
+					{#if canManage}<th>What happened</th>{/if}
+					{#if canManage && operatorNav}<th>Update</th>{/if}
 				</tr>
 			</thead>
 			<tbody>
@@ -68,9 +115,19 @@
 						</td>
 						<td>
 							<StatusChip
-								label={lead.isTest ? `${lead.status} · test` : lead.status}
+								label={lead.isTest
+									? `${statusLabel(lead.status)} · test`
+									: statusLabel(lead.status)}
 								tone={tone(lead.status, lead.isTest)}
 							/>
+							{#if lead.salesOutcome}
+								<p>
+									{outcomeLabel(lead.salesOutcome.outcomeType)}
+									{#if lead.salesOutcome.amountMinor != null && lead.salesOutcome.currency}
+										· {formatMinorUnits(lead.salesOutcome.amountMinor, lead.salesOutcome.currency)}
+									{/if}
+								</p>
+							{/if}
 						</td>
 						{#if operatorNav}
 							<td>{lead.score ?? '—'}</td>
@@ -87,6 +144,35 @@
 							<td>{lead.hostname}</td>
 						{/if}
 						{#if canManage}
+							<td>
+								<div class="lead-capture">
+									{#each SALES_OUTCOME_CAPTURE as item (item.type)}
+										<form method="post" action="?/outcome">
+											<input type="hidden" name="_csrf" value={data.csrf} />
+											<input type="hidden" name="leadId" value={lead.id} />
+											<input type="hidden" name="outcomeType" value={item.type} />
+											{#if item.type === 'won'}
+												<label>
+													Amount (optional)
+													<input
+														name="amountMajor"
+														inputmode="numeric"
+														pattern="[0-9]*"
+														placeholder="85000"
+													/>
+												</label>
+												<label>
+													Currency
+													<input name="currency" maxlength="3" placeholder="PHP" />
+												</label>
+											{/if}
+											<button type="submit" class="secondary">{item.label}</button>
+										</form>
+									{/each}
+								</div>
+							</td>
+						{/if}
+						{#if canManage && operatorNav}
 							<td>
 								<form method="post" action="?/status">
 									<input type="hidden" name="_csrf" value={data.csrf} />

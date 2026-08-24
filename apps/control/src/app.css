@@ -186,6 +186,26 @@ tr:hover td {
 	background: color-mix(in srgb, var(--surface-2) 70%, transparent);
 }
 
+.lead-capture {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--vector-space-2);
+	align-items: end;
+}
+
+.lead-capture form {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--vector-space-2);
+	align-items: end;
+	max-width: none;
+	margin: 0;
+}
+
+.lead-capture button {
+	min-height: 40px;
+}
+
 .assets {
 	display: grid;
 	gap: var(--vector-space-3);

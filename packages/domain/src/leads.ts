@@ -31,6 +31,7 @@ import {
 	listAnalyticsEventsForTenant,
 	listConsentForContact,
 	listLeadsForTenant,
+	listSalesOutcomesForLeadsForTenant,
 	listTouchpointsForVisitor,
 	persistCapturedLead,
 	persistDeliveryVisit,
@@ -348,32 +349,52 @@ export async function listLeads(actor: Actor, ctx: TenantContext, clientId?: str
 	const required = assertActorOwnsContext(actor, ctx);
 	if (clientId) assertLeadClient(required, clientId);
 	const rows = await listLeadsForTenant(required);
-	return rows.map((row) => ({
-		id: row.lead.id,
-		status: row.lead.status,
-		isTest: row.lead.isTest,
-		message: row.lead.message,
-		hostname: row.lead.hostname,
-		createdAt: row.lead.createdAt,
-		contact: {
-			id: row.contact.id,
-			displayName: row.contact.displayName,
-			email: row.contact.email,
-			phone: row.contact.phone,
-			company: row.contact.company
-		},
-		score: row.score?.score ?? null,
-		attribution: row.attribution
-			? {
-					firstTouchChannel: row.attribution.firstTouchChannel,
-					firstTouchSource: row.attribution.firstTouchSource,
-					firstTouchCampaign: row.attribution.firstTouchCampaign,
-					lastNonDirectChannel: row.attribution.lastNonDirectChannel,
-					lastNonDirectSource: row.attribution.lastNonDirectSource,
-					lastNonDirectCampaign: row.attribution.lastNonDirectCampaign
-				}
-			: null
-	}));
+	const outcomes = await listSalesOutcomesForLeadsForTenant(
+		required,
+		rows.map((row) => row.lead.id)
+	);
+	const latestByLead = new Map<string, (typeof outcomes)[number]>();
+	for (const outcome of outcomes) {
+		if (!latestByLead.has(outcome.leadId)) latestByLead.set(outcome.leadId, outcome);
+	}
+	return rows.map((row) => {
+		const latest = latestByLead.get(row.lead.id) ?? null;
+		return {
+			id: row.lead.id,
+			status: row.lead.status,
+			isTest: row.lead.isTest,
+			message: row.lead.message,
+			hostname: row.lead.hostname,
+			createdAt: row.lead.createdAt,
+			contact: {
+				id: row.contact.id,
+				displayName: row.contact.displayName,
+				email: row.contact.email,
+				phone: row.contact.phone,
+				company: row.contact.company
+			},
+			score: row.score?.score ?? null,
+			attribution: row.attribution
+				? {
+						firstTouchChannel: row.attribution.firstTouchChannel,
+						firstTouchSource: row.attribution.firstTouchSource,
+						firstTouchCampaign: row.attribution.firstTouchCampaign,
+						lastNonDirectChannel: row.attribution.lastNonDirectChannel,
+						lastNonDirectSource: row.attribution.lastNonDirectSource,
+						lastNonDirectCampaign: row.attribution.lastNonDirectCampaign
+					}
+				: null,
+			salesOutcome: latest
+				? {
+						id: latest.id,
+						outcomeType: latest.outcomeType,
+						amountMinor: latest.amountMinor,
+						currency: latest.currency,
+						occurredAt: latest.occurredAt
+					}
+				: null
+		};
+	});
 }
 
 export async function updateLeadStatus(

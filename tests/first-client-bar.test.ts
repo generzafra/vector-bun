@@ -167,7 +167,10 @@ test('route client id cannot leak the other tenant goals through the API', async
 	const { beta } = await seededClients();
 	const loginRes = await app.request('/v1/auth/login', {
 		method: 'POST',
-		headers: { 'content-type': 'application/json' },
+		headers: {
+			'content-type': 'application/json',
+			'x-forwarded-for': '10.0.6.40'
+		},
 		body: JSON.stringify({ email: env.SEED_USER_A_EMAIL, password: env.SEED_USER_A_PASSWORD })
 	});
 	const cookie = sessionCookie(loginRes);

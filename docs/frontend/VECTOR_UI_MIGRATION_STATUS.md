@@ -47,7 +47,7 @@ Hard-coded Control hex (`#12161d`, `#3b6fd9`) was replaced by semantic tokens. O
 
 ## Remaining follow-up
 
-- Capability-filtered **client** nav is in (CU0): Overview / Leads / Approvals (`/approvals`) / Goals. Outcomes QuickStart is in (CU1) at `/quickstart`. Approval Center grouping is in (O8). Today, Campaigns, and Insights wait. See `docs/plans/OUTCOMES_TRACK.md`.
+- Capability-filtered **client** nav is in (CU0): Overview / Leads / Approvals (`/approvals`) / Goals. Outcomes QuickStart is in (CU1) at `/quickstart`. Approval Center grouping is in (O8). `sales_outcomes` capture is in (O3) on `/leads`. Today, Campaigns, and Insights wait. See `docs/plans/OUTCOMES_TRACK.md`.
 - Drop official mark/wordmark PNGs or SVGs into a brand registry and swap `VectorMark` (`docs/plans/SURFACE_COMPLETENESS_TRACK.md` CX5).
 - Extract a shared `Button` only if Control grows incompatible variants.
 - Add chart theme when the first Control chart ships (CX1).

@@ -1,12 +1,29 @@
 import { fail } from '@sveltejs/kit';
-import { AppError } from '@vector/contracts';
-import { contextFor, listLeads, updateLeadStatus } from '@vector/domain';
+import { AppError, ValidationError } from '@vector/contracts';
+import {
+	contextFor,
+	getSalesOutcomeCoverage,
+	listLeads,
+	recordSalesOutcome,
+	updateLeadStatus
+} from '@vector/domain';
+
+function amountMinorFromMajor(raw: string) {
+	const value = raw.trim();
+	if (!value) return null;
+	if (!/^\d+$/.test(value)) throw new ValidationError('Amount must be a whole number');
+	return Number(value) * 100;
+}
 
 export async function load({ locals }) {
 	const session = locals.session!;
-	if (!session.clientId) return { leads: [], needsClient: true };
+	if (!session.clientId) return { leads: [], coverage: null, needsClient: true };
 	const ctx = contextFor(session, locals.requestId);
-	return { leads: await listLeads(session, ctx), needsClient: false };
+	const [leads, coverage] = await Promise.all([
+		listLeads(session, ctx),
+		getSalesOutcomeCoverage(session, ctx)
+	]);
+	return { leads, coverage, needsClient: false };
 }
 
 export const actions = {
@@ -29,6 +46,31 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not update lead status' });
+		}
+	},
+	outcome: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			const currency = String(form.get('currency') ?? '')
+				.trim()
+				.toUpperCase();
+			await recordSalesOutcome(
+				session,
+				contextFor(session, locals.requestId),
+				{
+					leadId: String(form.get('leadId') ?? ''),
+					outcomeType: String(form.get('outcomeType') ?? ''),
+					amountMinor: amountMinorFromMajor(String(form.get('amountMajor') ?? '')),
+					currency: currency || null
+				},
+				locals.requestId
+			);
+			return { ok: true };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not record what happened' });
 		}
 	}
 };

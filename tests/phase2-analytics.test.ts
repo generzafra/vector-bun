@@ -14,7 +14,8 @@ import {
 	getLaunchForTenant,
 	getPublishedHomeForTenant,
 	getSiteForTenant,
-	insertLaunchEventForTenant
+	insertLaunchEventForTenant,
+	listLaunchEventsForTenant
 } from '@vector/db';
 import {
 	captureLead,
@@ -285,7 +286,7 @@ test('launch transitions stay tenant scoped', async () => {
 	const { alpha, beta } = await seededClients();
 	const { session } = await login(
 		{ email: env.SEED_ADMIN_EMAIL, password: env.SEED_ADMIN_PASSWORD },
-		'10.0.3.6'
+		'10.0.3.66'
 	);
 	await switchActiveClient(session, session.token, alpha.id, 'analytics-launch-alpha');
 	let actor = await resolveSession(session.token);
@@ -300,11 +301,12 @@ test('launch transitions stay tenant scoped', async () => {
 	const betaCtx = contextFor(actor, 'analytics-launch-beta');
 	const betaLaunch = await getLaunchForTenant(betaCtx);
 	if (!betaLaunch) throw new Error('Beta launch missing');
+	const marker = `analytics-isolation-${crypto.randomUUID()}`;
 	await insertLaunchEventForTenant(betaCtx, {
 		launchId: betaLaunch.id,
 		fromStatus: betaLaunch.status,
 		toStatus: 'paused',
-		reason: 'analytics-isolation',
+		reason: marker,
 		actorId: actor.userId,
 		requestId: 'analytics-launch-beta'
 	});
@@ -313,8 +315,13 @@ test('launch transitions stay tenant scoped', async () => {
 	actor = await resolveSession(session.token);
 	if (!actor) throw new Error('session missing');
 	const after = await getAnalyticsReport(actor, contextFor(actor, 'analytics-launch-back'));
-	expect(after.launch?.transitions).toEqual(before.launch?.transitions);
+	expect(JSON.stringify(after)).not.toContain(marker);
 	expect(JSON.stringify(after).toLowerCase()).not.toContain('beta logistics');
+	const betaEvents = await listLaunchEventsForTenant(betaCtx);
+	expect(betaEvents.some((row) => row.reason === marker && row.clientId === beta.id)).toBe(true);
+	expect((await listLaunchEventsForTenant(alphaCtx)).some((row) => row.reason === marker)).toBe(
+		false
+	);
 	await expect(
 		getAnalyticsReport(actor, { ...betaCtx, requestId: 'analytics-launch-beta-leak' })
 	).rejects.toBeInstanceOf(TenantContextError);

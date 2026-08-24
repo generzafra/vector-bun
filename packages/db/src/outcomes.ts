@@ -1,10 +1,12 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import {
 	assertSameClient,
 	requireTenantContext,
+	SALES_OUTCOME_KNOWN_TYPES,
 	type ClientGoalPeriod,
 	type ClientGoalType,
 	type DataHealthStatus,
+	type SalesOutcomeType,
 	type SaveOutcomesQuickStartInput,
 	type TenantContext
 } from '@vector/contracts';
@@ -15,7 +17,9 @@ import {
 	clientNotificationPreferences,
 	clientOutcomeQuickstarts,
 	dataHealthChecks,
-	firstRevealGateResults
+	firstRevealGateResults,
+	leads,
+	salesOutcomes
 } from './schema';
 
 export function assertGoalClient(ctx: TenantContext, clientId: string) {
@@ -387,4 +391,94 @@ export async function saveOutcomesQuickStartForTenant(
 
 		return quickstart;
 	});
+}
+
+const QUALIFIED_POOL_STATUSES = ['qualified', 'won', 'lost'] as const;
+
+export async function listSalesOutcomesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(salesOutcomes)
+		.where(eq(salesOutcomes.clientId, required.clientId))
+		.orderBy(desc(salesOutcomes.createdAt))
+		.limit(200);
+}
+
+export async function listSalesOutcomesForLeadsForTenant(ctx: TenantContext, leadIds: string[]) {
+	const required = requireTenantContext(ctx);
+	if (leadIds.length === 0) return [];
+	return db
+		.select()
+		.from(salesOutcomes)
+		.where(
+			and(eq(salesOutcomes.clientId, required.clientId), inArray(salesOutcomes.leadId, leadIds))
+		)
+		.orderBy(desc(salesOutcomes.createdAt));
+}
+
+export async function insertSalesOutcomeForTenant(
+	ctx: TenantContext,
+	input: {
+		leadId: string;
+		outcomeType: SalesOutcomeType;
+		amountMinor: number | null;
+		currency: string | null;
+		note: string | null;
+		recordedBy: string | null;
+	}
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.insert(salesOutcomes)
+		.values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			leadId: input.leadId,
+			outcomeType: input.outcomeType,
+			amountMinor: input.amountMinor,
+			currency: input.currency,
+			note: input.note,
+			recordedBy: input.recordedBy,
+			occurredAt: new Date()
+		})
+		.returning();
+	return row;
+}
+
+export async function getSalesOutcomeCoverageForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [pool] = await db
+		.select({ total: sql<number>`count(*)::int` })
+		.from(leads)
+		.where(
+			and(
+				eq(leads.clientId, required.clientId),
+				eq(leads.isTest, false),
+				inArray(leads.status, [...QUALIFIED_POOL_STATUSES])
+			)
+		);
+	const [known] = await db
+		.select({ total: sql<number>`count(distinct ${salesOutcomes.leadId})::int` })
+		.from(salesOutcomes)
+		.innerJoin(
+			leads,
+			and(eq(leads.id, salesOutcomes.leadId), eq(leads.clientId, required.clientId))
+		)
+		.where(
+			and(
+				eq(salesOutcomes.clientId, required.clientId),
+				eq(leads.isTest, false),
+				inArray(leads.status, [...QUALIFIED_POOL_STATUSES]),
+				inArray(salesOutcomes.outcomeType, [...SALES_OUTCOME_KNOWN_TYPES])
+			)
+		);
+	const qualifiedCount = Number(pool?.total ?? 0);
+	const knownCount = Number(known?.total ?? 0);
+	return {
+		qualifiedCount,
+		knownCount,
+		coveragePercent: qualifiedCount === 0 ? null : Math.round((knownCount / qualifiedCount) * 100),
+		evidenceClass: qualifiedCount === 0 ? ('unknown' as const) : ('observed' as const)
+	};
 }
