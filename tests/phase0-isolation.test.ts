@@ -7,7 +7,6 @@ import { auditLogs, clients, db, updateClientSettingsForTenant } from '@vector/d
 import {
 	addMembership,
 	contextFor,
-	createClient,
 	getClient,
 	listClientsForActor,
 	login,
@@ -15,6 +14,7 @@ import {
 	switchActiveClient,
 	updateClientSettings
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { app } from '../apps/api/src/app';
 
 async function seededClients() {

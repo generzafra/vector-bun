@@ -542,4 +542,3 @@ No CE code is required to accept this ADR. Do not add Playwright or a new browse
 ### Reversal path
 
 Supersede this ADR. Leave the blueprint and track spec as historical. Keep `docs/27`, `docs/09`, and `docs/29` as the law for public pages, section grammar, and media.
-

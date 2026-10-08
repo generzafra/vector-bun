@@ -2,6 +2,8 @@ import { fail } from '@sveltejs/kit';
 import { AppError, ValidationError } from '@vector/contracts';
 import {
 	contextFor,
+	getAttributionConfidence,
+	getCrmStatus,
 	getSalesOutcomeCoverage,
 	listLeads,
 	recordSalesOutcome,
@@ -17,13 +19,17 @@ function amountMinorFromMajor(raw: string) {
 
 export async function load({ locals }) {
 	const session = locals.session!;
-	if (!session.clientId) return { leads: [], coverage: null, needsClient: true };
+	if (!session.clientId) {
+		return { leads: [], coverage: null, crm: null, attribution: null, needsClient: true };
+	}
 	const ctx = contextFor(session, locals.requestId);
-	const [leads, coverage] = await Promise.all([
+	const [leads, coverage, crm, attribution] = await Promise.all([
 		listLeads(session, ctx),
-		getSalesOutcomeCoverage(session, ctx)
+		getSalesOutcomeCoverage(session, ctx),
+		getCrmStatus(session, ctx),
+		getAttributionConfidence(session, ctx)
 	]);
-	return { leads, coverage, needsClient: false };
+	return { leads, coverage, crm, attribution, needsClient: false };
 }
 
 export const actions = {

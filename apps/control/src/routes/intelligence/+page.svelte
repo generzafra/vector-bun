@@ -16,7 +16,10 @@
 			.map((approval) => {
 				const decision = overview?.decisions.find((item) => item.id === approval.decisionId);
 				const cost = overview?.costs.find((item) => item.runId === approval.runId);
-				return { approval, decision, cost };
+				const evidence = (overview?.evidence ?? []).filter(
+					(row) => row.recommendationId === approval.decisionId
+				);
+				return { approval, decision, cost, evidence };
 			})
 	);
 
@@ -45,6 +48,13 @@
 		? 'Agents research, draft, and recommend. Approving funnel or copy writes an unpublished page draft only. Nothing publishes, sends, or goes live. Confidence cannot approve an action or override a pause.'
 		: 'Items that need your decision. Approving a draft does not publish or send anything.'}
 />
+
+{#if overview?.dataHealth}
+	<section>
+		<h2>Data health</h2>
+		<p>{overview.dataHealth.detail}</p>
+	</section>
+{/if}
 
 {#if form?.error}
 	<Alert>{form.error}</Alert>
@@ -155,6 +165,9 @@
 						approvalRequired={item.approval.required}
 						status={item.approval.status}
 					>
+						{#each item.evidence as row (row.id)}
+							<p>{row.description}</p>
+						{/each}
 						{#if canManage}
 							<form method="post" action="?/decide">
 								<input type="hidden" name="_csrf" value={data.csrf} />

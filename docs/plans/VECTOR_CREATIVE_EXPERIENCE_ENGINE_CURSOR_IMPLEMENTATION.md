@@ -1,4 +1,5 @@
 # VECTOR CREATIVE EXPERIENCE ENGINE
+
 ## Cursor Implementation Blueprint, Architecture, Delivery Plan and Acceptance Standard
 
 **Project:** Vector Autonomous Growth OS  
@@ -32,7 +33,7 @@ The Creative Experience Engine is an **extension** of:
 - `packages/images` and `packages/compose` for image generation and deterministic art composition.
 - Existing brand profiles, creative assets, funnel manifests, approvals, storage, workflows, tests, analytics and experiments.
 
-It must never permit models to execute arbitrary JS/CSS/HTML on client-facing sites. AI proposes *data describing approved design capabilities*; trusted code validates and renders that data.
+It must never permit models to execute arbitrary JS/CSS/HTML on client-facing sites. AI proposes _data describing approved design capabilities_; trusted code validates and renders that data.
 
 ---
 
@@ -60,7 +61,7 @@ Cursor must inspect current files, not rely solely on this snapshot. Read:
 18. `apps/delivery/src/lib/sections/*`, `apps/delivery/src/routes/+page.svelte`, `apps/delivery/src/app.css`
 19. Current `packages/contracts` manifest types, `packages/images`, `packages/compose`, asset and brand database tables, Control `/brand` and `/funnel` routes, existing tests, workflow adapters and CI.
 
-**Precedence:** Standing charters and accepted ADRs override this blueprint. Changes to governed behavior require a documented ADR. Numbered charters stop at `docs/30`; **do not create `docs/31` or a new phase**. This track is adopted as `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` (ADR-0014) and attached to Wave D. Do not silently resequence outstanding roadmap work. The next slice remains Wave C O4 / O5.
+**Precedence:** Standing charters and accepted ADRs override this blueprint. Changes to governed behavior require a documented ADR. Numbered charters stop at `docs/30`; **do not create `docs/31` or a new phase**. This track is adopted as `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` (ADR-0014) and attached to Wave D. Do not silently resequence outstanding roadmap work. The next slice remains Wave D CE0.
 
 ## 2.1 Verified baseline at document creation
 
@@ -73,7 +74,7 @@ A repository inspection on 8 October 2026 showed:
 - `candidate-score.ts` scores mostly structural heuristics, not screenshots of the actual rendered result.
 - `first-reveal.ts` checks the original thin gate plus contrast, form, section weight, and a first-screen description. That is still not screenshot, pixel, or AI visual review.
 - `app.css` establishes responsive basic typography, spacing and reduced-motion rules, with a constrained central `main` column suitable for early MVP but not all cinematic compositions.
-- Reconciled status on 8 October 2026: Wave B is in, including thin FR3, thin FR4–FR5, C1, C2, C3, thin C5, thin FR6 (one hybrid winner photo), C7, deterministic FR7 remainder, and thin FR8 on Control `/reveal`. C4, C6, C8, FR9, pixel screenshots, motion presets, and the CE grammar are open. The next repository slice is Wave C O4 / O5. Do not restart FR6.
+- Reconciled status on 8 October 2026: Wave B is in, including thin FR3, thin FR4–FR5, C1, C2, C3, thin C5, thin FR6 (one hybrid winner photo), C7, deterministic FR7 remainder, and thin FR8 on Control `/reveal`. C4, C6, C8, FR9, pixel screenshots, motion presets, and the CE grammar are open. The next repository slice is Wave D CE0. Do not restart FR6.
 
 **Preserve** all implemented functionality, previous exit gates, tenant security and integration contracts. Do not regenerate completed milestones just to rename them.
 
@@ -238,14 +239,14 @@ Use existing brand profile and asset sufficiency snapshot if possible. The brief
 
 Examples:
 
-| Supplied evidence | Potential treatment | Prohibited shortcut |
-|---|---|---|
-| Strong authentic hotel photos | Full-bleed editorial hero, restrained transitions | Generate fake hotel interiors |
-| Pack-shot of a consumer product | Authentic product cutout with governed atmosphere | Change label wording or product geometry |
-| Technical SaaS screenshots | Product-led showcase, progressive demo | Invent UI functions or metrics |
-| Sparse service-business assets | Typography-led narrative, diagrams, evidence-backed proof | Fake employees or office photos |
-| Illustrated children's products | Playful color, soft motion, illustration-led sections | Random generic cartoon template |
-| Boutique property photography | Architectural editorial rhythm | Fabricate amenities or nearby landmarks |
+| Supplied evidence               | Potential treatment                                       | Prohibited shortcut                      |
+| ------------------------------- | --------------------------------------------------------- | ---------------------------------------- |
+| Strong authentic hotel photos   | Full-bleed editorial hero, restrained transitions         | Generate fake hotel interiors            |
+| Pack-shot of a consumer product | Authentic product cutout with governed atmosphere         | Change label wording or product geometry |
+| Technical SaaS screenshots      | Product-led showcase, progressive demo                    | Invent UI functions or metrics           |
+| Sparse service-business assets  | Typography-led narrative, diagrams, evidence-backed proof | Fake employees or office photos          |
+| Illustrated children's products | Playful color, soft motion, illustration-led sections     | Random generic cartoon template          |
+| Boutique property photography   | Architectural editorial rhythm                            | Fabricate amenities or nearby landmarks  |
 
 ---
 
@@ -258,38 +259,38 @@ Prefer a **versioned extension** of the existing `VisualDirectionManifest` and c
 ```ts
 // Proposed fields: merge carefully with existing manifest contract.
 type CreativeExperienceManifestV2 = {
-  schemaVersion: 2;
-  directionId: string;
-  briefId: string;
-  concept: {
-    name: string;
-    rationale: string;
-    emotionalIntent: 'trust' | 'desire' | 'clarity' | 'excitement' | 'prestige' | 'warmth';
-    visualMotifs: string[];
-  };
-  artDirection: {
-    layoutLanguage: 'editorial' | 'cinematic' | 'modular' | 'expressive' | 'product_led';
-    typographyCharacter: 'refined' | 'bold' | 'playful' | 'technical' | 'classic';
-    density: 'sparse' | 'balanced' | 'dense';
-    rhythm: Array<'dramatic' | 'intimate' | 'informative' | 'immersive' | 'conversion'>;
-    motionLevel: 'none' | 'restrained' | 'expressive';
-  };
-  hero: {
-    variant: string; // strict allowlist, never arbitrary component path
-    mediaAssetId?: string;
-    mediaRole: 'authentic' | 'generated_support' | 'typography_only';
-    focalPoint?: { x: number; y: number };
-    mobileTreatment: 'crop' | 'alternate_asset' | 'stack' | 'typography_first';
-  };
-  sections: Array<{
-    id: string;
-    role: 'mechanism' | 'benefits' | 'proof' | 'offer' | 'faq' | 'conversion' | 'story';
-    variant: string; // registered section grammar only
-    mediaAssetIds?: string[];
-    motionPreset?: string; // registered preset only
-  }>;
-  conversion: { primaryAction: string; intentStage: string };
-  costClass: 'R0' | 'R1' | 'R2' | 'R3' | 'R4' | 'R5';
+	schemaVersion: 2;
+	directionId: string;
+	briefId: string;
+	concept: {
+		name: string;
+		rationale: string;
+		emotionalIntent: 'trust' | 'desire' | 'clarity' | 'excitement' | 'prestige' | 'warmth';
+		visualMotifs: string[];
+	};
+	artDirection: {
+		layoutLanguage: 'editorial' | 'cinematic' | 'modular' | 'expressive' | 'product_led';
+		typographyCharacter: 'refined' | 'bold' | 'playful' | 'technical' | 'classic';
+		density: 'sparse' | 'balanced' | 'dense';
+		rhythm: Array<'dramatic' | 'intimate' | 'informative' | 'immersive' | 'conversion'>;
+		motionLevel: 'none' | 'restrained' | 'expressive';
+	};
+	hero: {
+		variant: string; // strict allowlist, never arbitrary component path
+		mediaAssetId?: string;
+		mediaRole: 'authentic' | 'generated_support' | 'typography_only';
+		focalPoint?: { x: number; y: number };
+		mobileTreatment: 'crop' | 'alternate_asset' | 'stack' | 'typography_first';
+	};
+	sections: Array<{
+		id: string;
+		role: 'mechanism' | 'benefits' | 'proof' | 'offer' | 'faq' | 'conversion' | 'story';
+		variant: string; // registered section grammar only
+		mediaAssetIds?: string[];
+		motionPreset?: string; // registered preset only
+	}>;
+	conversion: { primaryAction: string; intentStage: string };
+	costClass: 'R0' | 'R1' | 'R2' | 'R3' | 'R4' | 'R5';
 };
 ```
 
@@ -339,6 +340,7 @@ Extend `apps/delivery/src/lib/sections/` with a registry of approved section var
 ### Recommended section capability catalog
 
 **Hero**
+
 - Editorial photograph, edge-to-edge within full-bleed container.
 - Cinematic product cutout with layered atmosphere.
 - Architectural whitespace and oversized display type.
@@ -347,6 +349,7 @@ Extend `apps/delivery/src/lib/sections/` with a registry of approved section var
 - Typography-only prestige mode for low-asset clients.
 
 **Story / product**
+
 - Scroll-led “one idea per viewport” product reveal.
 - Sticky visual plus progressive explanatory copy.
 - Editorial gallery with mixed media sizes and purposeful captions.
@@ -355,6 +358,7 @@ Extend `apps/delivery/src/lib/sections/` with a registry of approved section var
 - Timeline or process visualization.
 
 **Commercial trust and offer**
+
 - Featured evidence-backed case study.
 - Credible proof rail or press/reference grid with rights.
 - Service portfolio and outcome cards, not repetitive icon grids.
@@ -363,6 +367,7 @@ Extend `apps/delivery/src/lib/sections/` with a registry of approved section var
 - Elegant multi-step or short lead qualification where warranted.
 
 **Conversion**
+
 - Contextual sticky CTA (device-appropriate, never obstructive).
 - High-impact final CTA with genuine relevant media.
 - Click-to-book/request demo/contact with transparent next-step expectations.
@@ -497,7 +502,7 @@ Suggested fingerprint dimensions:
 
 - Compare candidates to recent generated designs using privacy-safe fingerprints, not images or tenant content exposed to other tenants.
 - Use a configurable weighted similarity metric with test fixtures.
-- High similarity should trigger *candidate revision*, not automatic aesthetic randomness.
+- High similarity should trigger _candidate revision_, not automatic aesthetic randomness.
 - Similarity is secondary to brand fit, accessibility, conversion and industry appropriateness.
 - Avoid rejecting inherently similar business designs, such as minimal legal-service pages, simply to force novelty.
 - Do not expose one client's brand or protected media to another client.
@@ -689,7 +694,7 @@ Implement per-client/campaign budgets, idempotency, cost ledgers, provider failu
 
 # 17. Rollout Plan: Small, Testable Vertical Slices
 
-**Important:** These are **CE** enhancement slices. They extend current Creative C and First Reveal FR work. Wave B is complete, including thin FR6, C7, deterministic FR7, and thin FR8. Do not restart FR0–FR8. The next repository slice is Wave C O4 / O5. CE work is Wave D in `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` and must not jump that queue.
+**Important:** These are **CE** enhancement slices. They extend current Creative C and First Reveal FR work. Wave B is complete, including thin FR6, C7, deterministic FR7, and thin FR8. Do not restart FR0–FR8. The next repository slice is Wave D CE0. CE work is Wave D in `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` and must not jump that queue.
 
 ## CE0 — Implementation Audit and Baseline Fixtures
 
@@ -850,20 +855,20 @@ Do not declare success based on AI reviewer praise alone.
 
 # 19. Suggested Test Matrix
 
-| Test area | Cases |
-|---|---|
-| Schema/versioning | Existing v1, valid v2, invalid component, unknown motion, overlong copy |
-| Multi-tenancy | Client A cannot read B's manifests, assets, screenshots, feedback, fingerprints where sensitive |
-| Rights/claims | Expired asset license, unconfirmed logo, prohibited styles, fake testimonial rejection |
-| Media | No uploads, portrait-only images, awkward aspect ratio, focal point at edge, corrupted image |
-| Responsiveness | 320, 390, 768, 1440; landscape phone; large system text |
-| Accessibility | Keyboard, focus order, contrast, reduced motion, semantic headings, form errors |
-| Performance | Slow mobile, cold cache, hero images, font fallback, no animation JS |
-| Quality gate | Broken crop, headline overflow, missing CTA, false proof, absent logo fallback |
-| Publication | Preview noindex, unknown host 404, draft-only media, approved immutable version, rollback |
-| Budget | Provider timeout, insufficient budget, retry idempotency, fallback, cost attribution |
-| Experiments | Stable assignments, valid conversion events, no early unsupported conclusions |
-| Feedback | Request change preserves facts and previously approved assets, auditable diff |
+| Test area         | Cases                                                                                           |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| Schema/versioning | Existing v1, valid v2, invalid component, unknown motion, overlong copy                         |
+| Multi-tenancy     | Client A cannot read B's manifests, assets, screenshots, feedback, fingerprints where sensitive |
+| Rights/claims     | Expired asset license, unconfirmed logo, prohibited styles, fake testimonial rejection          |
+| Media             | No uploads, portrait-only images, awkward aspect ratio, focal point at edge, corrupted image    |
+| Responsiveness    | 320, 390, 768, 1440; landscape phone; large system text                                         |
+| Accessibility     | Keyboard, focus order, contrast, reduced motion, semantic headings, form errors                 |
+| Performance       | Slow mobile, cold cache, hero images, font fallback, no animation JS                            |
+| Quality gate      | Broken crop, headline overflow, missing CTA, false proof, absent logo fallback                  |
+| Publication       | Preview noindex, unknown host 404, draft-only media, approved immutable version, rollback       |
+| Budget            | Provider timeout, insufficient budget, retry idempotency, fallback, cost attribution            |
+| Experiments       | Stable assignments, valid conversion events, no early unsupported conclusions                   |
+| Feedback          | Request change preserves facts and previously approved assets, auditable diff                   |
 
 Prefer tests close to existing packages and repository conventions. Do not introduce an independent integration test framework without a reason.
 
@@ -873,21 +878,21 @@ Prefer tests close to existing packages and repository conventions. Do not intro
 
 Inspect first; exact edits depend on current tree and contracts.
 
-| Existing path | Expected extension |
-|---|---|
-| `packages/funnel-engine/src/schema.ts` | Versioned section grammar, width/media/motion fields with strict validation |
-| `packages/funnel-engine/src/compose.ts` | Brief-aware narrative and flexible sequence, not just personality layout switch |
-| `packages/funnel-engine/src/candidate-score.ts` | Separate pre-render proxies from screenshot-backed visual quality |
-| `packages/funnel-engine/src/first-reveal.ts` | Extend thin checks through actual rendered QA, preserve existing gate APIs or version carefully |
-| `packages/contracts` | Additive typed manifest/brief/QA contracts; no second competing schema source |
-| `apps/delivery/src/lib/sections/` | Premium approved hero/story/conversion components and component registry |
-| `apps/delivery/src/routes/+page.svelte` | Validated section width/layout handling, safe media resolution and metadata |
-| `apps/delivery/src/app.css` | Section-level width strategy, typography scales and global reduced-motion fallback |
-| `packages/images` / `packages/compose` | Winner-only generated support media and brand-safe deterministic composition |
-| Existing C0 assets/C5 manifests | Approved asset references, later C4 derivatives, immutable publication |
-| Control `/brand`, `/funnel`, `/approvals` | Client-friendly direction, preview, feedback and existing approval integration |
-| Existing tests / CI | Desktop/mobile screenshot assertions, security regression and design fixtures |
-| `docs/plans/SHIP_REMAINING.md` | CE0–CE7 registered as Wave D. Next slice remains Wave C O4 / O5 |
+| Existing path                                   | Expected extension                                                                              |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `packages/funnel-engine/src/schema.ts`          | Versioned section grammar, width/media/motion fields with strict validation                     |
+| `packages/funnel-engine/src/compose.ts`         | Brief-aware narrative and flexible sequence, not just personality layout switch                 |
+| `packages/funnel-engine/src/candidate-score.ts` | Separate pre-render proxies from screenshot-backed visual quality                               |
+| `packages/funnel-engine/src/first-reveal.ts`    | Extend thin checks through actual rendered QA, preserve existing gate APIs or version carefully |
+| `packages/contracts`                            | Additive typed manifest/brief/QA contracts; no second competing schema source                   |
+| `apps/delivery/src/lib/sections/`               | Premium approved hero/story/conversion components and component registry                        |
+| `apps/delivery/src/routes/+page.svelte`         | Validated section width/layout handling, safe media resolution and metadata                     |
+| `apps/delivery/src/app.css`                     | Section-level width strategy, typography scales and global reduced-motion fallback              |
+| `packages/images` / `packages/compose`          | Winner-only generated support media and brand-safe deterministic composition                    |
+| Existing C0 assets/C5 manifests                 | Approved asset references, later C4 derivatives, immutable publication                          |
+| Control `/brand`, `/funnel`, `/approvals`       | Client-friendly direction, preview, feedback and existing approval integration                  |
+| Existing tests / CI                             | Desktop/mobile screenshot assertions, security regression and design fixtures                   |
+| `docs/plans/SHIP_REMAINING.md`                  | CE0–CE7 registered as Wave D. Next slice remains Wave D CE0                                     |
 
 Do not add an entire `packages/creative-experience-engine` package by default. New package boundaries require demonstrated shared domain complexity and a review of existing code ownership.
 
@@ -926,18 +931,18 @@ Do not optimize blindly for a single score. A lower-cost restrained direction th
 
 # 22. Risks and Mitigations
 
-| Risk | Mitigation |
-|---|---|
-| Generic AI-like sameness | Brief-led concept, multi-variant grammar, privacy-safe fingerprints, visual tests |
-| AI-generated untrue visuals | Source classification, authenticity-first, rights/claims gates, human approval |
-| Costs explode | Low-cost manifests, winner-only assets, budgets, idempotency and fallbacks |
-| Pretty but poor-converting output | Narrative architecture, clear CTAs, business outcome experiments |
-| Desktop-only polish | Mobile-specific hero treatments and mandatory viewport tests |
-| Slow cinematic effects | M0-M2 defaults, lazy media, lab/field performance checks, reduced motion |
-| New features break old pages | Schema version compatibility, flag rollout and regression tests |
-| Security/tenant leak | Explicit context, scoped references, hostile negative tests, fail-closed serving |
-| Model visual review overconfidence | Evidence-based QA, uncertainty, deterministic blockers, operator escalation |
-| Too much implementation scope | One bounded vertical slice per PR, no wholesale refactor |
+| Risk                               | Mitigation                                                                        |
+| ---------------------------------- | --------------------------------------------------------------------------------- |
+| Generic AI-like sameness           | Brief-led concept, multi-variant grammar, privacy-safe fingerprints, visual tests |
+| AI-generated untrue visuals        | Source classification, authenticity-first, rights/claims gates, human approval    |
+| Costs explode                      | Low-cost manifests, winner-only assets, budgets, idempotency and fallbacks        |
+| Pretty but poor-converting output  | Narrative architecture, clear CTAs, business outcome experiments                  |
+| Desktop-only polish                | Mobile-specific hero treatments and mandatory viewport tests                      |
+| Slow cinematic effects             | M0-M2 defaults, lazy media, lab/field performance checks, reduced motion          |
+| New features break old pages       | Schema version compatibility, flag rollout and regression tests                   |
+| Security/tenant leak               | Explicit context, scoped references, hostile negative tests, fail-closed serving  |
+| Model visual review overconfidence | Evidence-based QA, uncertainty, deterministic blockers, operator escalation       |
+| Too much implementation scope      | One bounded vertical slice per PR, no wholesale refactor                          |
 
 ---
 
@@ -1028,7 +1033,7 @@ CRITICAL RULES
 - Maintain backwards compatibility with existing page versions.
 
 EXECUTION MODE
-1. The next repository slice is Wave C O4 / O5 unless the task names a CE slice.
+1. The next repository slice is Wave D CE0 unless the task names a later CE slice.
 2. When a CE slice is authorized, start with CE0 only if it is not already done.
 3. Do not rebuild thin FR6, C7, deterministic FR7, or thin FR8.
 4. Present a file-level, bounded implementation plan.
@@ -1050,7 +1055,7 @@ Do not invent a performance uplift or ROI. Treat synthetic fixture pages
 as QA demonstrations, not evidence of real customer conversion.
 
 FIRST TASK
-Do not start CE work while Wave C O4 / O5 is the next repository slice.
+CE0 is the next repository slice. Do not start CE1 ahead of it.
 When a CE slice is the authorized task, inspect current source and follow
 docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md. CE0 is an audit with no
 production behavior change. Only edit code after that slice's boundaries

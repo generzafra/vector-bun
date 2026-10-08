@@ -24,7 +24,6 @@ import {
 } from '@vector/db';
 import {
 	contextFor,
-	createClient,
 	getClientValueProof,
 	login,
 	recordValueActivity,
@@ -32,6 +31,7 @@ import {
 	saveClientValueProfile,
 	switchActiveClient
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { app } from '../apps/api/src/app';
 
 const root = join(import.meta.dir, '..');

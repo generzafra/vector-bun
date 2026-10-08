@@ -1,7 +1,7 @@
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { assertSameClient, requireTenantContext, type TenantContext } from '@vector/contracts';
 import { db } from './client';
-import { brands, claims, offers, services, type BrandTokens } from './schema';
+import { brands, claims, offerVersions, offers, services, type BrandTokens } from './schema';
 
 export async function getBrandForTenant(ctx: TenantContext) {
 	const required = requireTenantContext(ctx);
@@ -115,27 +115,166 @@ export async function insertOfferForTenant(
 		summary: string;
 		startingPriceMinor?: number | null;
 		currency: string;
+	},
+	createdBy?: string | null
+) {
+	const required = requireTenantContext(ctx);
+	return db.transaction(async (tx) => {
+		const [row] = await tx
+			.insert(offers)
+			.values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				...input
+			})
+			.returning();
+		if (!row) return row;
+		await tx.insert(offerVersions).values({
+			organizationId: required.organizationId,
+			clientId: required.clientId,
+			offerId: row.id,
+			version: 1,
+			name: row.name,
+			summary: row.summary,
+			offerType: 'other',
+			priceMinor: row.startingPriceMinor,
+			currency: row.currency,
+			createdBy: createdBy ?? null
+		});
+		return row;
+	});
+}
+
+export async function listOfferVersionsForTenant(ctx: TenantContext, offerId?: string) {
+	const required = requireTenantContext(ctx);
+	const where = offerId
+		? and(eq(offerVersions.clientId, required.clientId), eq(offerVersions.offerId, offerId))
+		: eq(offerVersions.clientId, required.clientId);
+	return db.select().from(offerVersions).where(where).orderBy(offerVersions.version);
+}
+
+export async function appendOfferVersionForTenant(
+	ctx: TenantContext,
+	offerId: string,
+	input: {
+		name: string;
+		summary: string;
+		offerType: 'consultation' | 'package' | 'promotion' | 'other';
+		serviceId?: string | null;
+		priceMinor?: number | null;
+		discountMinor?: number | null;
+		currency: string;
+		validFrom?: Date | null;
+		validUntil?: Date | null;
+		eligibility?: string | null;
+		terms?: string | null;
+		primaryCta?: string | null;
+		createdBy?: string | null;
 	}
 ) {
 	const required = requireTenantContext(ctx);
-	const [row] = await db
-		.insert(offers)
-		.values({
-			organizationId: required.organizationId,
-			clientId: required.clientId,
-			...input
-		})
-		.returning();
-	return row;
+	return db.transaction(async (tx) => {
+		const [offer] = await tx
+			.select()
+			.from(offers)
+			.where(and(eq(offers.id, offerId), eq(offers.clientId, required.clientId)))
+			.limit(1);
+		if (!offer) return null;
+		if (input.serviceId) {
+			const [service] = await tx
+				.select({ id: services.id })
+				.from(services)
+				.where(and(eq(services.id, input.serviceId), eq(services.clientId, required.clientId)))
+				.limit(1);
+			if (!service) return { missingService: true as const };
+		}
+		const [latest] = await tx
+			.select({ version: offerVersions.version })
+			.from(offerVersions)
+			.where(and(eq(offerVersions.offerId, offerId), eq(offerVersions.clientId, required.clientId)))
+			.orderBy(desc(offerVersions.version))
+			.limit(1);
+		let next = (latest?.version ?? 0) + 1;
+		if (!latest) {
+			await tx.insert(offerVersions).values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				offerId,
+				version: 1,
+				name: offer.name,
+				summary: offer.summary,
+				offerType: 'other',
+				priceMinor: offer.startingPriceMinor,
+				currency: offer.currency,
+				createdBy: null
+			});
+			next = 2;
+		}
+		const [version] = await tx
+			.insert(offerVersions)
+			.values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				offerId,
+				version: next,
+				name: input.name,
+				summary: input.summary,
+				offerType: input.offerType,
+				serviceId: input.serviceId ?? null,
+				priceMinor: input.priceMinor ?? null,
+				discountMinor: input.discountMinor ?? null,
+				currency: input.currency,
+				validFrom: input.validFrom ?? null,
+				validUntil: input.validUntil ?? null,
+				eligibility: input.eligibility ?? null,
+				terms: input.terms ?? null,
+				primaryCta: input.primaryCta ?? null,
+				createdBy: input.createdBy ?? null
+			})
+			.returning();
+		await tx
+			.update(offers)
+			.set({
+				name: input.name,
+				summary: input.summary,
+				startingPriceMinor: input.priceMinor ?? null,
+				currency: input.currency,
+				updatedAt: new Date()
+			})
+			.where(and(eq(offers.id, offerId), eq(offers.clientId, required.clientId)));
+		return version ?? null;
+	});
 }
 
 export async function deleteOfferForTenant(ctx: TenantContext, offerId: string) {
 	const required = requireTenantContext(ctx);
-	const [row] = await db
-		.delete(offers)
-		.where(and(eq(offers.id, offerId), eq(offers.clientId, required.clientId)))
-		.returning();
-	return row ?? null;
+	return db.transaction(async (tx) => {
+		const [offer] = await tx
+			.select()
+			.from(offers)
+			.where(and(eq(offers.id, offerId), eq(offers.clientId, required.clientId)))
+			.limit(1);
+		if (!offer) return null;
+		const versions = await tx
+			.select({ version: offerVersions.version })
+			.from(offerVersions)
+			.where(
+				and(eq(offerVersions.offerId, offerId), eq(offerVersions.clientId, required.clientId))
+			);
+		if (versions.some((row) => row.version > 1)) return { blocked: true as const };
+		if (versions.length > 0) {
+			await tx
+				.delete(offerVersions)
+				.where(
+					and(eq(offerVersions.offerId, offerId), eq(offerVersions.clientId, required.clientId))
+				);
+		}
+		const [row] = await tx
+			.delete(offers)
+			.where(and(eq(offers.id, offerId), eq(offers.clientId, required.clientId)))
+			.returning();
+		return row ?? null;
+	});
 }
 
 export async function listClaimsForTenant(ctx: TenantContext) {

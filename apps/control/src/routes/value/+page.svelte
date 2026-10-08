@@ -110,6 +110,27 @@
 	</section>
 
 	<section>
+		<h2>Leads and the main goal</h2>
+		<p>Qualified leads this month: {proof.counts.qualifiedLeads} observed.</p>
+		<p>Source coverage is {proof.leadValue.attributionEvidence}.</p>
+		{#if proof.leadValue.goal}
+			<p>{proof.leadValue.goal.name}</p>
+			{#if proof.leadValue.goal.evidenceClass === 'observed'}
+				<p>
+					{proof.leadValue.goal.observedValue} of {proof.leadValue.goal.targetValue}
+					{proof.leadValue.goal.unit}
+				</p>
+			{:else}
+				<p>Unknown</p>
+			{/if}
+			<p>{proof.leadValue.goal.detail}</p>
+		{:else}
+			<p>No primary goal yet.</p>
+		{/if}
+		<p>Vector does not rank a channel from this.</p>
+	</section>
+
+	<section>
 		<h2>Recorded notes</h2>
 		{#if proof.activities.length === 0}
 			<EmptyState

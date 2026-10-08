@@ -20,7 +20,6 @@ import {
 	composeCreativeShells,
 	composeFunnel,
 	contextFor,
-	createClient,
 	getDeliveryOgImageBytes,
 	getFunnel,
 	getFunnelAssetManifest,
@@ -33,6 +32,7 @@ import {
 	saveBrand,
 	switchActiveClient
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { isOgImagePath, previewHostname, unknownHostPayload } from '@vector/funnel-engine';
 import { app } from '../apps/api/src/app';
 

@@ -4,7 +4,7 @@
 **Track:** Cross-cutting extension of Creative and First Reveal. Not a Vector phase. Not `docs/31`.  
 **Design blueprint:** [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md)  
 **Standing law:** [`docs/27`](../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md) (public quality and the Frontend Release Gate), [`docs/09`](../09_FUNNEL_ENGINE_DESIGN_SYSTEM.md) (section grammar), [`docs/29`](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md) (media, rights, composition), [`docs/28`](../28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md) (Control chrome only), [`docs/10`](../10_SEO_AEO_CONTENT_STANDARD.md), [`docs/14`](../14_SECURITY_PRIVACY_COMPLIANCE.md)  
-**Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md). Next implementation slice remains Wave C **O4 / O5**. This track is Wave D. Do not start it early.
+**Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md). Next implementation slice is Wave D **CE0**. O15 Ask Vector, V1 lead and goal value join, O4 Overview, O5 Today, O9 offer versions, O10 `CRMProvider`, O11 revenue events, O12 attribution confidence, O13 recommendation evidence, and O14 monthly growth review are in. This track is Wave D. Do not start CE1 ahead of CE0.
 
 Where this file and the blueprint disagree on order or current status, this file wins. Where either disagrees with a charter or an accepted ADR on product law, the charter or ADR wins.
 
@@ -36,29 +36,29 @@ AI proposes validated data for approved components. Trusted code renders it. Mod
 
 ## 3. Already satisfied — do not rebuild
 
-| Blueprint need | Repo status on 8 October 2026 |
-| --- | --- |
-| Cheap direction manifests, one winner draft | Thin FR4–FR5 |
-| Winner-only image spend | Thin FR6: one `ImageProvider` job when strategy is hybrid. Typography-led and authentic do not generate |
-| Rights, size, alt text, prohibited style, invented-proof check | C7 `creative_qa_reviews` |
-| Pre-client reveal | Thin FR8 on Control `/reveal`: one direction, rationale, desktop or phone frame, approve or request changes. Approving does not publish |
-| Deterministic first-screen checks | FR7 remainder: contrast when both colors exist, form, section count, headline and action. **Not** pixel screenshots |
-| Placed share cards on a published page | Thin C5 |
+| Blueprint need                                                 | Repo status on 8 October 2026                                                                                                           |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Cheap direction manifests, one winner draft                    | Thin FR4–FR5                                                                                                                            |
+| Winner-only image spend                                        | Thin FR6: one `ImageProvider` job when strategy is hybrid. Typography-led and authentic do not generate                                 |
+| Rights, size, alt text, prohibited style, invented-proof check | C7 `creative_qa_reviews`                                                                                                                |
+| Pre-client reveal                                              | Thin FR8 on Control `/reveal`: one direction, rationale, desktop or phone frame, approve or request changes. Approving does not publish |
+| Deterministic first-screen checks                              | FR7 remainder: contrast when both colors exist, form, section count, headline and action. **Not** pixel screenshots                     |
+| Placed share cards on a published page                         | Thin C5                                                                                                                                 |
 
 ---
 
 ## 4. Still open
 
-| Slice | Work | Maps to | Gate |
-| --- | --- | --- | --- |
-| **CE0** | Fixture audit and baseline notes. Five synthetic industries. No production behavior change | — | Wave D, before CE1 |
-| **CE1** | Versioned creative brief and experience fields on the existing direction manifest. Legacy pages keep rendering | FR4 | After CE0 |
-| **CE2** | Section width modes and a small grammar: 3 heroes, 3 story sections, 2 conversion treatments, with mobile treatments | FR2, `docs/09` | After CE1. No cinematic or interactive variant until a real client needs it |
-| **CE3** | Winner asset-gap list, focal points, responsive derivatives, typography-led fallback | C4. Thin FR6 stays | With C4 |
-| **CE4** | Allowlisted M0–M2 motion. M3, WebGL, and video wait | `docs/27` motion | After CE2 |
-| **CE5** | Desktop and mobile screenshots, geometry checks, fingerprint v1. A high score cannot override a hard blocker | FR7 remainder | After CE2. Current FR7 does not include this |
-| **CE6** | Plain-language change categories and a revision linked to the prior direction | Thin FR8 | After CE5. Do not publish on approve |
-| **CE7** | Learning from Phase 7 outcomes. No invented ROI | C8 | Wave D, after Phase 7 coverage |
+| Slice   | Work                                                                                                                 | Maps to            | Gate                                                                        |
+| ------- | -------------------------------------------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| **CE0** | Fixture audit and baseline notes. Five synthetic industries. No production behavior change                           | —                  | Wave D, before CE1                                                          |
+| **CE1** | Versioned creative brief and experience fields on the existing direction manifest. Legacy pages keep rendering       | FR4                | After CE0                                                                   |
+| **CE2** | Section width modes and a small grammar: 3 heroes, 3 story sections, 2 conversion treatments, with mobile treatments | FR2, `docs/09`     | After CE1. No cinematic or interactive variant until a real client needs it |
+| **CE3** | Winner asset-gap list, focal points, responsive derivatives, typography-led fallback                                 | C4. Thin FR6 stays | With C4                                                                     |
+| **CE4** | Allowlisted M0–M2 motion. M3, WebGL, and video wait                                                                  | `docs/27` motion   | After CE2                                                                   |
+| **CE5** | Desktop and mobile screenshots, geometry checks, fingerprint v1. A high score cannot override a hard blocker         | FR7 remainder      | After CE2. Current FR7 does not include this                                |
+| **CE6** | Plain-language change categories and a revision linked to the prior direction                                        | Thin FR8           | After CE5. Do not publish on approve                                        |
+| **CE7** | Learning from Phase 7 outcomes. No invented ROI                                                                      | C8                 | Wave D, after Phase 7 coverage                                              |
 
 Default motion is restrained. M3 is a later opt-in. Design fingerprints are privacy-safe derived features, not another tenant's copy or media. Image-layout embeddings wait for a privacy review.
 

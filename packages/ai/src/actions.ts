@@ -5,6 +5,7 @@ import {
 	PHASE_8_MAX_AUTONOMY,
 	S2_LAUNCH_AUTO_EXECUTE_CANDIDATES,
 	S4_CONDITIONAL_ACTIONS,
+	type AttributionEvidenceClass,
 	type AutonomyRiskClass
 } from '@vector/contracts';
 import { confidenceCannotAuthorize } from './policy';
@@ -48,7 +49,8 @@ export type AutoExecuteBlockedBy =
 	| 'phase8_autonomy'
 	| 'not_conditional_action'
 	| 'experiment_not_ready'
-	| 'ambiguous_experiment';
+	| 'ambiguous_experiment'
+	| 'attribution_coverage';
 
 export type AutoExecuteResult =
 	{ allowed: true } | { allowed: false; blockedBy: AutoExecuteBlockedBy };
@@ -85,7 +87,14 @@ export function evaluateAutoExecute(input: AutoExecuteInput): AutoExecuteResult 
 	return { allowed: true };
 }
 
-export function evaluateConditionalAutoExecute(input: AutoExecuteInput): AutoExecuteResult {
+export type HighImpactAutoExecuteInput = AutoExecuteInput & {
+	/** Present only when Phase 8 S5 asks to unlock a high-impact action. Omitted keeps the shipped Level 4 path. */
+	attributionEvidence?: AttributionEvidenceClass;
+};
+
+export function evaluateConditionalAutoExecute(
+	input: HighImpactAutoExecuteInput
+): AutoExecuteResult {
 	confidenceCannotAuthorize(input.confidence);
 	if (input.pausedGlobal) return { allowed: false, blockedBy: 'global_pause' };
 	if (input.pausedClient) return { allowed: false, blockedBy: 'client_pause' };
@@ -116,6 +125,9 @@ export function evaluateConditionalAutoExecute(input: AutoExecuteInput): AutoExe
 	}
 	if (input.requestedAutonomy > input.autonomyCeiling) {
 		return { allowed: false, blockedBy: 'autonomy_ceiling' };
+	}
+	if (input.attributionEvidence !== undefined && input.attributionEvidence !== 'measured') {
+		return { allowed: false, blockedBy: 'attribution_coverage' };
 	}
 	return { allowed: true };
 }

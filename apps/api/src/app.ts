@@ -8,6 +8,7 @@ import {
 	contextFor,
 	addClaim,
 	addOffer,
+	reviseOffer,
 	addService,
 	createClient,
 	getBrandAssetBytes,
@@ -21,6 +22,9 @@ import {
 	submitClientDomain,
 	verifyClientDomain,
 	getKnowledge,
+	getCrmStatus,
+	pushLeadToCrm,
+	pullCrmLead,
 	getBrandVisualProfile,
 	saveBrandVisualProfile,
 	confirmBrandVisualProfile,
@@ -101,6 +105,14 @@ import {
 	measureExperiment,
 	transitionExperiment,
 	getClientOutcomes,
+	getClientOverview,
+	listRevenueEvents,
+	recordRevenueEvent,
+	listMonthlyGrowthReports,
+	recordMonthlyGrowthReport,
+	askVector,
+	listAskVectorTurns,
+	getClientToday,
 	upsertClientGoal,
 	updateNotificationPreference,
 	getOutcomesQuickStart,
@@ -278,6 +290,17 @@ app.post('/v1/knowledge/offers', async (c) => {
 	actorCan(session, 'knowledge.manage');
 	const ctx = contextFor(session, requestId);
 	const row = await addOffer(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data: row }, 201);
+});
+
+app.post('/v1/knowledge/offers/:id/versions', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'knowledge.manage');
+	const ctx = contextFor(session, requestId);
+	const row = await reviseOffer(session, ctx, c.req.param('id'), await c.req.json(), requestId);
 	return c.json({ requestId, data: row }, 201);
 });
 
@@ -545,6 +568,143 @@ app.get('/v1/goals/:clientId', async (c) => {
 	return c.json({
 		requestId,
 		data: await getClientOutcomes(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.get('/v1/overview', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	if (!session.permissions.includes('goals.read') && !session.permissions.includes('leads.read')) {
+		actorCan(session, 'goals.read');
+	}
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getClientOverview(session, ctx) });
+});
+
+app.get('/v1/overview/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	if (!session.permissions.includes('goals.read') && !session.permissions.includes('leads.read')) {
+		actorCan(session, 'goals.read');
+	}
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getClientOverview(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.get('/v1/revenue', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'outcomes.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await listRevenueEvents(session, ctx) });
+});
+
+app.post('/v1/revenue', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'outcomes.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await recordRevenueEvent(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data }, 201);
+});
+
+app.get('/v1/revenue/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'outcomes.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await listRevenueEvents(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.get('/v1/reviews', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'outcomes.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await listMonthlyGrowthReports(session, ctx) });
+});
+
+app.post('/v1/reviews', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'outcomes.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await recordMonthlyGrowthReport(session, ctx, requestId);
+	return c.json({ requestId, data }, data.replayed ? 200 : 201);
+});
+
+app.get('/v1/reviews/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'outcomes.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await listMonthlyGrowthReports(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.get('/v1/ask', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await listAskVectorTurns(session, ctx) });
+});
+
+app.post('/v1/ask', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	const ctx = contextFor(session, requestId);
+	const data = await askVector(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data }, data.authorized ? 201 : 200);
+});
+
+app.get('/v1/ask/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await listAskVectorTurns(session, ctx, c.req.param('clientId'))
+	});
+});
+
+app.get('/v1/today', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getClientToday(session, ctx) });
+});
+
+app.get('/v1/today/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	const ctx = contextFor(session, requestId);
+	return c.json({
+		requestId,
+		data: await getClientToday(session, ctx, c.req.param('clientId'))
 	});
 });
 
@@ -1032,6 +1192,45 @@ app.post('/v1/public/email/unsubscribe', async (c) => {
 		c.req.header('x-forwarded-for') ?? '127.0.0.1'
 	);
 	return c.json({ requestId, data });
+});
+
+app.get('/v1/crm', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'leads.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getCrmStatus(session, ctx) });
+});
+
+app.get('/v1/crm/leads/:id', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'leads.read');
+	const ctx = contextFor(session, requestId);
+	const data = await pullCrmLead(session, ctx, c.req.param('id'), requestId);
+	return c.json({ requestId, data });
+});
+
+app.post('/v1/crm/leads/:id/push', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'leads.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await pushLeadToCrm(session, ctx, c.req.param('id'), requestId);
+	return c.json({ requestId, data });
+});
+
+app.get('/v1/crm/:clientId', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	actorCan(session, 'leads.read');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getCrmStatus(session, ctx, c.req.param('clientId')) });
 });
 
 app.post('/v1/leads/:id/status', async (c) => {

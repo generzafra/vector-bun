@@ -29,7 +29,6 @@ import {
 import {
 	confirmBrandVisualProfile,
 	contextFor,
-	createClient,
 	getBrandVisualProfile,
 	listBrandVisualVersions,
 	login,
@@ -39,6 +38,7 @@ import {
 	switchActiveClient,
 	uploadBrandAsset
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { app } from '../apps/api/src/app';
 
 const root = join(import.meta.dir, '..');

@@ -20,14 +20,14 @@ Governing principle:
 
 ## 2. What this track is not
 
-| Need                                                             | Correct plan                                               |
-| ---------------------------------------------------------------- | ---------------------------------------------------------- |
-| Default client nav, Today, Approvals, Outcomes QuickStart        | [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md) CU0–CU1, O4, O5, O8 |
-| Brand confirm, ImageProvider, compose, funnel manifests          | [CREATIVE_TRACK.md](CREATIVE_TRACK.md)                     |
-| Direction candidates, First Reveal Gate remainder, client reveal | [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md)             |
-| Art-directed grammar, briefs, motion, screenshot QA               | [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md) Wave D |
-| Activity proof / ROI                                             | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md)             |
-| Quotas, tracing, backups, load test                              | [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md)             |
+| Need                                                             | Correct plan                                                                      |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Default client nav, Today, Approvals, Outcomes QuickStart        | [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md) CU0–CU1, O4, O5, O8                        |
+| Brand confirm, ImageProvider, compose, funnel manifests          | [CREATIVE_TRACK.md](CREATIVE_TRACK.md)                                            |
+| Direction candidates, First Reveal Gate remainder, client reveal | [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md)                                    |
+| Art-directed grammar, briefs, motion, screenshot QA              | [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md) Wave D |
+| Activity proof / ROI                                             | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md)                                    |
+| Quotas, tracing, backups, load test                              | [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md)                                    |
 
 ---
 

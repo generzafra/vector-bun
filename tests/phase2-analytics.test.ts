@@ -20,7 +20,6 @@ import {
 import {
 	captureLead,
 	contextFor,
-	createClient,
 	deliveryTenantContext,
 	getAnalyticsReport,
 	login,
@@ -30,6 +29,7 @@ import {
 	setAnalyticsProvider,
 	switchActiveClient
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { eq } from 'drizzle-orm';
 import { app } from '../apps/api/src/app';
 

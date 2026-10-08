@@ -164,7 +164,7 @@ Cross-tenant isolation on every new table. Rights fail closed. Storage keys tena
 
 ## 14. Do not start until
 
-C0 exists (true). C1, C2, C3, thin C5, and C7 are in. FR6 and FR8 are in. FR9 waits. C4 remainder is CE3, C8 is CE7, and both sit in Wave D with the rest of [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). C6 is Wave D. Do not start CE0 before Wave C O4 / O5.
+C0 exists (true). C1, C2, C3, thin C5, and C7 are in. FR6 and FR8 are in. FR9 waits. C4 remainder is CE3, C8 is CE7, and both sit in Wave D with the rest of [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). C6 is Wave D. Wave C is complete through O15. Next is CE0.
 
 ## Locked attachments
 

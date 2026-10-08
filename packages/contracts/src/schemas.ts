@@ -92,6 +92,33 @@ export const createOfferSchema = z
 	})
 	.strict();
 
+export const OFFER_TYPES = ['consultation', 'package', 'promotion', 'other'] as const;
+
+export const reviseOfferSchema = z
+	.object({
+		name: z.string().min(1).max(120),
+		summary: z.string().min(1).max(400),
+		offerType: z.enum(OFFER_TYPES),
+		serviceId: z.string().uuid().nullable().optional(),
+		priceMinor: z.number().int().nonnegative().nullable().optional(),
+		discountMinor: z.number().int().nonnegative().nullable().optional(),
+		currency: z.string().length(3),
+		validFrom: z
+			.string()
+			.regex(/^\d{4}-\d{2}-\d{2}$/)
+			.nullable()
+			.optional(),
+		validUntil: z
+			.string()
+			.regex(/^\d{4}-\d{2}-\d{2}$/)
+			.nullable()
+			.optional(),
+		eligibility: z.string().max(400).nullable().optional(),
+		terms: z.string().max(800).nullable().optional(),
+		primaryCta: z.string().max(80).nullable().optional()
+	})
+	.strict();
+
 export const createClaimSchema = z
 	.object({
 		kind: z.enum(['approved', 'prohibited']),

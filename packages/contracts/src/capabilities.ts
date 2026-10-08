@@ -26,6 +26,8 @@ export const CAPABILITIES = [
 	'scale.manage',
 	'goals.read',
 	'goals.manage',
+	'outcomes.read',
+	'outcomes.manage',
 	'control.operator'
 ] as const;
 
@@ -73,6 +75,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'scale.manage',
 		'goals.read',
 		'goals.manage',
+		'outcomes.read',
+		'outcomes.manage',
 		'control.operator'
 	],
 	mge_operator: [
@@ -103,6 +107,8 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'scale.manage',
 		'goals.read',
 		'goals.manage',
+		'outcomes.read',
+		'outcomes.manage',
 		'control.operator'
 	],
 	client_owner: [
@@ -130,7 +136,9 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'ai.manage',
 		'scale.read',
 		'goals.read',
-		'goals.manage'
+		'goals.manage',
+		'outcomes.read',
+		'outcomes.manage'
 	],
 	client_admin: [
 		'clients.read',
@@ -156,7 +164,9 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'ai.manage',
 		'scale.read',
 		'goals.read',
-		'goals.manage'
+		'goals.manage',
+		'outcomes.read',
+		'outcomes.manage'
 	],
 	read_only: [
 		'clients.read',
@@ -172,6 +182,7 @@ export const ROLE_CAPABILITIES: Record<RoleKey, Capability[]> = {
 		'experiments.read',
 		'ai.read',
 		'scale.read',
-		'goals.read'
+		'goals.read',
+		'outcomes.read'
 	]
 };

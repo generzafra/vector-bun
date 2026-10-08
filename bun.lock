@@ -13,6 +13,7 @@
         "@vector/compose": "workspace:*",
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
+        "@vector/crm": "workspace:*",
         "@vector/db": "workspace:*",
         "@vector/domain": "workspace:*",
         "@vector/email": "workspace:*",
@@ -155,6 +156,13 @@
         "zod": "^4.1.5",
       },
     },
+    "packages/crm": {
+      "name": "@vector/crm",
+      "dependencies": {
+        "@vector/contracts": "workspace:*",
+        "@vector/observability": "workspace:*",
+      },
+    },
     "packages/db": {
       "name": "@vector/db",
       "dependencies": {
@@ -180,6 +188,7 @@
         "@vector/compose": "workspace:*",
         "@vector/config": "workspace:*",
         "@vector/contracts": "workspace:*",
+        "@vector/crm": "workspace:*",
         "@vector/db": "workspace:*",
         "@vector/email": "workspace:*",
         "@vector/experiments": "workspace:*",
@@ -482,6 +491,8 @@
     "@vector/contracts": ["@vector/contracts@workspace:packages/contracts"],
 
     "@vector/control": ["@vector/control@workspace:apps/control"],
+
+    "@vector/crm": ["@vector/crm@workspace:packages/crm"],
 
     "@vector/db": ["@vector/db@workspace:packages/db"],
 

@@ -1,5 +1,10 @@
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
-import { assertSameClient, requireTenantContext, type TenantContext } from '@vector/contracts';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import {
+	attributionEvidenceClass,
+	assertSameClient,
+	requireTenantContext,
+	type TenantContext
+} from '@vector/contracts';
 import { db } from './client';
 import {
 	analyticsEvents,
@@ -135,10 +140,32 @@ export async function listLeadsForTenant(ctx: TenantContext) {
 		.from(leads)
 		.innerJoin(contacts, eq(contacts.id, leads.contactId))
 		.leftJoin(leadScores, eq(leadScores.leadId, leads.id))
-		.leftJoin(attributionResults, eq(attributionResults.leadId, leads.id))
+		.leftJoin(
+			attributionResults,
+			and(
+				eq(attributionResults.leadId, leads.id),
+				eq(attributionResults.clientId, required.clientId)
+			)
+		)
 		.where(eq(leads.clientId, required.clientId))
 		.orderBy(desc(leads.createdAt))
 		.limit(100);
+}
+
+export async function attributionEvidenceForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [leadRow] = await db
+		.select({ total: sql<number>`count(*)::int` })
+		.from(leads)
+		.where(eq(leads.clientId, required.clientId));
+	const rows = await db
+		.select({ evidenceClass: attributionResults.evidenceClass })
+		.from(attributionResults)
+		.where(eq(attributionResults.clientId, required.clientId));
+	return {
+		leadCount: Number(leadRow?.total ?? 0),
+		classes: rows.map((row) => row.evidenceClass)
+	};
 }
 
 export async function getLeadForTenant(ctx: TenantContext, leadId: string) {
@@ -618,10 +645,15 @@ export async function persistCapturedLead(
 				)
 			)
 			.limit(1);
+		const evidenceClass = attributionEvidenceClass({
+			lastNonDirectChannel: input.attribution.lastNonDirectChannel,
+			lastNonDirectCampaign: input.attribution.lastNonDirectCampaign
+		});
+		const attribution = { ...input.attribution, evidenceClass };
 		if (existingAttribution) {
 			await tx
 				.update(attributionResults)
-				.set({ ...input.attribution, computedAt: now, updatedAt: now })
+				.set({ ...attribution, computedAt: now, updatedAt: now })
 				.where(
 					and(
 						eq(attributionResults.id, existingAttribution.id),
@@ -633,7 +665,7 @@ export async function persistCapturedLead(
 				organizationId: required.organizationId,
 				clientId: required.clientId,
 				leadId: lead.id,
-				...input.attribution
+				...attribution
 			});
 		}
 

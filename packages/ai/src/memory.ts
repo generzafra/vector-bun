@@ -139,6 +139,9 @@ export class MemoryAIProvider implements AIProvider {
 			};
 			return copy;
 		}
+		if (request.schemaName === 'ask.v1') {
+			return { explanation: 'This note does not add a figure.' };
+		}
 		if (request.schemaName === 'analytics.v1') {
 			const analyticsOut: AnalyticsOutput = {
 				summary: `Tenant production funnel: ${analytics.pageViewed} views, ${analytics.leadCreated} leads.`,

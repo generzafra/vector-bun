@@ -13,6 +13,15 @@
 	const canManage = $derived(data.permissions.includes('leads.manage'));
 	const operatorNav = $derived(hasOperatorControlNav(data.permissions));
 	const coverage = $derived(data.coverage);
+	const attribution = $derived(data.attribution);
+
+	function evidenceWord(value: string | null | undefined) {
+		if (value === 'measured') return 'Measured';
+		if (value === 'observed') return 'Observed';
+		if (value === 'inferred') return 'Inferred';
+		if (value === 'estimated') return 'Estimated';
+		return 'Unknown';
+	}
 
 	function tone(status: string, isTest: boolean) {
 		if (isTest) return 'warning' as const;
@@ -50,6 +59,20 @@
 		? 'Contacts created from Delivery form submits. Attribution is first touch and last non-direct. Preview hosts stay test-mode.'
 		: 'People who asked to hear from you. Mark what happened so Vector can keep the record straight.'}
 />
+
+{#if data.crm}
+	<p>{data.crm.detail}</p>
+{/if}
+
+{#if attribution}
+	<section>
+		<h2>Attribution</h2>
+		<p>
+			{evidenceWord(attribution.evidenceClass)}.
+			{operatorNav ? attribution.detail : 'This is the source already stored for these leads.'}
+		</p>
+	</section>
+{/if}
 
 {#if form?.error}
 	<Alert>{form.error}</Alert>
@@ -120,6 +143,7 @@
 									: statusLabel(lead.status)}
 								tone={tone(lead.status, lead.isTest)}
 							/>
+							<p>{evidenceWord(lead.attribution?.evidenceClass)}</p>
 							{#if lead.salesOutcome}
 								<p>
 									{outcomeLabel(lead.salesOutcome.outcomeType)}
@@ -138,7 +162,7 @@
 							</td>
 							<td>
 								{lead.attribution
-									? `${lead.attribution.lastNonDirectChannel}${lead.attribution.lastNonDirectSource ? ` / ${lead.attribution.lastNonDirectSource}` : ''}`
+									? `${lead.attribution.lastNonDirectChannel}${lead.attribution.lastNonDirectSource ? ` / ${lead.attribution.lastNonDirectSource}` : ''} · ${evidenceWord(lead.attribution.evidenceClass)}`
 									: '—'}
 							</td>
 							<td>{lead.hostname}</td>

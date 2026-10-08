@@ -13,7 +13,6 @@ import {
 import { clients, db, listApprovalRequestsForTenant } from '@vector/db';
 import {
 	contextFor,
-	createClient,
 	decideApprovalCenterGroup,
 	decideIntelligenceApproval,
 	getApprovalCenter,
@@ -25,6 +24,7 @@ import {
 	resetDomainAIProvider,
 	switchActiveClient
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { app } from '../apps/api/src/app';
 
 const root = join(import.meta.dir, '..');

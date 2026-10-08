@@ -26,7 +26,6 @@ import {
 	composeCreativeShells,
 	confirmBrandVisualProfile,
 	contextFor,
-	createClient,
 	getCreativeCompositionBytes,
 	getFunnel,
 	listCreativeCompositions,
@@ -36,6 +35,7 @@ import {
 	switchActiveClient,
 	uploadBrandAsset
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { inspectComposedSvg } from '@vector/storage';
 import { app } from '../apps/api/src/app';
 

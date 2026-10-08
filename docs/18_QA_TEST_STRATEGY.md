@@ -36,6 +36,12 @@ Creative QA (`docs/29`) combines deterministic checks (dimensions, format, size,
 
 Outcomes QA (`docs/30`) covers stage transitions, revenue recording and isolation, attribution-confidence labels, goal math, entitlements, notification routing, client-health scoring, and data-confidence display. Client-facing screens also pass the client UX checklist: plain language, estimates labeled, action obvious, mobile Today/approvals usable.
 
+## Local database
+
+Tests use the same Postgres database as local development. A test that needs its own tenant imports `createTestClient` from `tests/support/tenant-cleanup.ts`. After the test, that client, its rows, and its local storage prefix are deleted. Foreign keys are followed explicitly. Leads, consents, analytics, and audit are not removed by schema cascade.
+
+Seed clients `alpha` and `beta` are never purged. Rows a test writes onto those two clients stay until you clear them. `bun run db:clear-seed-activity` deletes that activity. It keeps each client's brand, seed service, seed offer, two seed claims, preview domain, lead homepage and its current published version, launch and readiness shells reset to draft, AI settings reset to the seed defaults, and the `welcome_v1` sequence with its two seed steps. Everything else on those clients is removed: goals, extra email sequences and sending domains, social connections, creative files, search and GEO rows, experiments, autonomy history, older page drafts, and local storage under `clients/<id>`. Global complaint suppressions addressed to `shared-<uuid>@example.test` are removed too. Any other global suppression stays. Reconnect social accounts after a clear. An open Control login on Alpha or Beta ends. Shared catalogs such as AI agents and action policies are not tenant rows and stay. `bun run db:purge-test-tenants` deletes leftover clients whose slugs end in a hyphen and 8 hex characters, and `member-*@vector.test` users created by isolation tests. The activity clear removes those users too. Any other client is left in place.
+
 ## Infrastructure tests
 
 Before claiming support for 20 ordinary clients, load-test cached and uncached public traffic, concurrent lead submissions, analytics ingestion, webhook bursts, database concurrency, Control Plane use under public traffic, and deploy-while-serving.

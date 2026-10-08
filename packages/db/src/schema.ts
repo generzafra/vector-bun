@@ -309,6 +309,44 @@ export const offers = pgTable(
 	(t) => [index('offers_client_idx').on(t.clientId)]
 );
 
+export const offerType = pgEnum('offer_type', ['consultation', 'package', 'promotion', 'other']);
+
+export const offerVersions = pgTable(
+	'offer_versions',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		offerId: uuid('offer_id')
+			.notNull()
+			.references(() => offers.id),
+		version: integer('version').notNull(),
+		name: text('name').notNull(),
+		summary: text('summary').notNull(),
+		offerType: offerType('offer_type').notNull(),
+		serviceId: uuid('service_id').references(() => services.id, { onDelete: 'set null' }),
+		priceMinor: integer('price_minor'),
+		discountMinor: integer('discount_minor'),
+		currency: text('currency').notNull(),
+		validFrom: timestamp('valid_from', { withTimezone: true }),
+		validUntil: timestamp('valid_until', { withTimezone: true }),
+		eligibility: text('eligibility'),
+		terms: text('terms'),
+		primaryCta: text('primary_cta'),
+		createdBy: text('created_by'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('offer_versions_client_offer_version_idx').on(t.clientId, t.offerId, t.version),
+		index('offer_versions_client_idx').on(t.clientId),
+		index('offer_versions_offer_idx').on(t.offerId)
+	]
+);
+
 export const claims = pgTable(
 	'claims',
 	{
@@ -1008,6 +1046,7 @@ export const attributionResults = pgTable(
 		lastNonDirectSource: text('last_non_direct_source'),
 		lastNonDirectMedium: text('last_non_direct_medium'),
 		lastNonDirectCampaign: text('last_non_direct_campaign'),
+		evidenceClass: text('evidence_class').notNull().default('unknown'),
 		computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
 		createdAt: createdAt(),
 		updatedAt: updatedAt()
@@ -1617,6 +1656,34 @@ export const aiDecisions = pgTable(
 	(t) => [
 		uniqueIndex('ai_decisions_run_idx').on(t.runId),
 		index('ai_decisions_client_idx').on(t.clientId)
+	]
+);
+
+export const recommendationEvidence = pgTable(
+	'recommendation_evidence',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		recommendationId: uuid('recommendation_id')
+			.notNull()
+			.references(() => aiDecisions.id),
+		evidenceType: text('evidence_type').notNull(),
+		sourceReference: text('source_reference').notNull(),
+		metricName: text('metric_name').notNull(),
+		metricValue: text('metric_value'),
+		comparisonValue: text('comparison_value'),
+		confidence: integer('confidence').notNull(),
+		description: text('description').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		index('recommendation_evidence_client_idx').on(t.clientId),
+		index('recommendation_evidence_recommendation_idx').on(t.clientId, t.recommendationId)
 	]
 );
 
@@ -3793,6 +3860,94 @@ export const salesOutcomes = pgTable(
 		index('sales_outcomes_client_lead_idx').on(t.clientId, t.leadId),
 		index('sales_outcomes_org_idx').on(t.organizationId)
 	]
+);
+
+export const revenueEvents = pgTable(
+	'revenue_events',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		leadId: uuid('lead_id').references(() => leads.id),
+		salesOutcomeId: uuid('sales_outcome_id').references(() => salesOutcomes.id),
+		amountMinor: integer('amount_minor').notNull(),
+		currency: text('currency').notNull(),
+		source: text('source').notNull(),
+		evidenceClass: text('evidence_class').notNull(),
+		note: text('note'),
+		idempotencyKey: text('idempotency_key'),
+		recordedBy: text('recorded_by'),
+		occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		index('revenue_events_client_idx').on(t.clientId),
+		index('revenue_events_client_occurred_idx').on(t.clientId, t.occurredAt),
+		uniqueIndex('revenue_events_client_idempotency_idx').on(t.clientId, t.idempotencyKey),
+		index('revenue_events_org_idx').on(t.organizationId)
+	]
+);
+
+export const monthlyGrowthReports = pgTable(
+	'monthly_growth_reports',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		periodKey: text('period_key').notNull(),
+		timeZone: text('time_zone').notNull(),
+		periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
+		periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
+		qualifiedLeads: integer('qualified_leads').notNull(),
+		salesCount: integer('sales_count'),
+		salesEvidence: text('sales_evidence').notNull(),
+		revenueAmountMinor: integer('revenue_amount_minor'),
+		revenueCurrency: text('revenue_currency'),
+		revenueEvidence: text('revenue_evidence').notNull(),
+		revenueDetail: text('revenue_detail').notNull(),
+		handledCount: integer('handled_count').notNull(),
+		attributionEvidence: text('attribution_evidence').notNull(),
+		dataHealthEvidence: text('data_health_evidence').notNull(),
+		narrative: text('narrative').notNull(),
+		recordedBy: text('recorded_by'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('monthly_growth_reports_client_period_idx').on(t.clientId, t.periodKey),
+		index('monthly_growth_reports_client_idx').on(t.clientId)
+	]
+);
+
+export const askVectorTurns = pgTable(
+	'ask_vector_turns',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		intent: text('intent').notNull(),
+		toolName: text('tool_name').notNull(),
+		authorized: boolean('authorized').notNull(),
+		evidenceClass: text('evidence_class').notNull(),
+		answer: text('answer').notNull(),
+		explanation: text('explanation'),
+		costMicros: integer('cost_micros'),
+		askedBy: text('asked_by'),
+		createdAt: createdAt()
+	},
+	(t) => [index('ask_vector_turns_client_idx').on(t.clientId)]
 );
 
 export const clientValueProfiles = pgTable(

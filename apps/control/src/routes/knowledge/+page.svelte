@@ -203,6 +203,7 @@
 
 	<section>
 		<h2>Offers</h2>
+		<p>Each change is a new version. Earlier versions stay as recorded.</p>
 		{#if data.knowledge.offers.length === 0}
 			<p>No offers yet.</p>
 		{:else}
@@ -211,6 +212,7 @@
 					<tr>
 						<th>Name</th>
 						<th>Price (minor)</th>
+						<th>Version</th>
 						{#if canManage}<th></th>{/if}
 					</tr>
 				</thead>
@@ -219,19 +221,96 @@
 						<tr>
 							<td>{offer.name}</td>
 							<td>{offer.startingPriceMinor ?? '—'} {offer.currency}</td>
+							<td>{offer.versions.at(-1)?.version ?? '—'}</td>
 							{#if canManage}
 								<td>
-									<form method="post" action="?/removeOffer">
-										<input type="hidden" name="_csrf" value={data.csrf} />
-										<input type="hidden" name="id" value={offer.id} />
-										<button type="submit">Remove</button>
-									</form>
+									{#if offer.versions.length < 2}
+										<form method="post" action="?/removeOffer">
+											<input type="hidden" name="_csrf" value={data.csrf} />
+											<input type="hidden" name="id" value={offer.id} />
+											<button type="submit">Remove</button>
+										</form>
+									{:else}
+										Earlier versions stay recorded.
+									{/if}
 								</td>
 							{/if}
 						</tr>
+						{#each offer.versions as version (version.id)}
+							<tr>
+								<td colspan={canManage ? 4 : 3}>
+									Version {version.version}: {version.name} · {version.offerType} ·
+									{version.priceMinor ?? '—'}
+									{version.currency}
+								</td>
+							</tr>
+						{/each}
 					{/each}
 				</tbody>
 			</table>
+		{/if}
+		{#if canManage && data.knowledge.offers.length > 0}
+			<form class="wide" method="post" action="?/reviseOffer">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Offer
+					<select name="offerId" required>
+						{#each data.knowledge.offers as offer (offer.id)}
+							<option value={offer.id}>{offer.name}</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					Name
+					<input name="name" required />
+				</label>
+				<label>
+					Summary
+					<textarea name="summary" required></textarea>
+				</label>
+				<label>
+					Type
+					<select name="offerType">
+						<option value="consultation">Consultation</option>
+						<option value="package">Package</option>
+						<option value="promotion">Promotion</option>
+						<option value="other">Other</option>
+					</select>
+				</label>
+				<label>
+					Price (minor units)
+					<input name="priceMinor" type="number" min="0" />
+				</label>
+				<label>
+					Discount (minor units)
+					<input name="discountMinor" type="number" min="0" />
+				</label>
+				<label>
+					Currency
+					<input name="currency" value="USD" maxlength="3" />
+				</label>
+				<label>
+					Valid from
+					<input name="validFrom" type="date" />
+				</label>
+				<label>
+					Valid until
+					<input name="validUntil" type="date" />
+				</label>
+				<label>
+					Eligibility
+					<input name="eligibility" />
+				</label>
+				<label>
+					Terms
+					<textarea name="terms"></textarea>
+				</label>
+				<label>
+					Primary call to action
+					<input name="primaryCta" />
+				</label>
+				<button type="submit">Record a new version</button>
+			</form>
 		{/if}
 		{#if canManage}
 			<form class="wide" method="post" action="?/addOffer">

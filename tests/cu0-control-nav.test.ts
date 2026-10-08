@@ -28,7 +28,6 @@ test('client-capability actors see the default shell without operator modules', 
 		for (const forbidden of OPERATOR_ONLY_NAV_LABELS) {
 			expect(labels).not.toContain(forbidden);
 		}
-		expect(labels).not.toContain('Today');
 		expect(labels).not.toContain('Campaigns');
 		expect(labels).not.toContain('Insights');
 	}
@@ -50,10 +49,10 @@ test('operator-capability actors keep the Control cockpit', () => {
 
 test('nav authorizes by capability, not role-string equality', () => {
 	const salesLike = ['leads.read'] as const;
-	expect(labelsFor(salesLike)).toEqual(['Overview', 'Leads']);
+	expect(labelsFor(salesLike)).toEqual(['Overview', 'Today', 'Leads']);
 
 	const reviewerLike = ['ai.read'] as const;
-	expect(labelsFor(reviewerLike)).toEqual(['Overview', 'Approvals']);
+	expect(labelsFor(reviewerLike)).toEqual(['Overview', 'Today', 'Approvals']);
 	expect(controlNavFor(reviewerLike).find((link) => link.label === 'Approvals')?.href).toBe(
 		'/approvals'
 	);
@@ -107,7 +106,7 @@ test('client Overview, Leads, Goals, and Approvals copy stays business language'
 	);
 	expect(overview).toContain('hasOperatorControlNav');
 	expect(overview).toContain(
-		'Sales and qualified-lead summaries will appear here once they are recorded'
+		'Sales, qualified leads, and progress on the main goal. Vector does not fill in numbers it has not recorded.'
 	);
 	expect(overview).not.toContain('knowledge, funnel, or launch');
 	expect(leads).toContain('People who asked to hear from you');

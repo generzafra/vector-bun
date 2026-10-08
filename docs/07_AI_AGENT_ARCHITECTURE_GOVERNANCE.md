@@ -57,7 +57,7 @@ New shared components enter the codebase through engineering review and tests, n
 
 Image and video models follow the same rule: AI proposes, policy decides, trusted software executes (`docs/29`). They may generate, edit, classify, write alt text, or review drafts. They must not publish, overwrite approved brand marks, invent proof or people-as-evidence, bypass rights, or place assets into production. Exact logos and marketing text are composed deterministically. `ImageProvider` is a separate adapter family from `AIProvider`. Visual agents are not Phase 4 scope.
 
-Sales and revenue analysis (`docs/30`) must distinguish observed, directly measured, inferred, estimated, and unknown. Agents must not invent sales, revenue, profit, close rates, attribution, or customer value. Check data health before important recommendations. Ask Vector is a later tenant-scoped interface to verified facts, not a generic chatbot and not Phase 4 scope.
+Sales and revenue analysis (`docs/30`) must distinguish observed, directly measured, inferred, estimated, and unknown. Agents must not invent sales, revenue, profit, close rates, attribution, or customer value. Check data health before important recommendations. Ask Vector is a closed set of questions over verified facts on Control `/overview`. It is not a generic chatbot, and it does not enable Phase 4 agent tools.
 
 First Reveal intelligence (`docs/plans/FIRST_REVEAL_TRACK.md`) may return multiple structured visual-direction manifests in one call. It must not write production HTML/CSS/JS or publish. Candidate scoring is deterministic first; optional visual review is advisory.
 

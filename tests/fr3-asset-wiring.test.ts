@@ -23,7 +23,6 @@ import {
 	composeFunnel,
 	confirmBrandVisualProfile,
 	contextFor,
-	createClient,
 	getDeliveryBrandLogoBytes,
 	getFunnel,
 	login,
@@ -32,6 +31,7 @@ import {
 	switchActiveClient,
 	uploadBrandAsset
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { composeLeadPage } from '@vector/funnel-engine';
 import { app } from '../apps/api/src/app';
 

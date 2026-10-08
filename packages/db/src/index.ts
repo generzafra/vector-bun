@@ -1,4 +1,12 @@
 export { closeDb, db, schema } from './client';
+export {
+	clearSeedClientActivity,
+	orderTenantDeletes,
+	purgeOrphanTestMembers,
+	purgeTenants,
+	purgeTestTenants,
+	TEST_TENANT_SLUG
+} from './purge-tenant';
 export * from './schema';
 export * from './repos';
 export * from './knowledge';
@@ -10,6 +18,7 @@ export * from './leads';
 export * from './analytics';
 export * from './email';
 export * from './ai';
+export * from './recommendation-evidence';
 export * from './creative';
 export * from './brand-visual';
 export * from './asset-sufficiency';
@@ -24,4 +33,8 @@ export * from './experiments';
 export * from './autonomy';
 export * from './scale';
 export * from './outcomes';
+export * from './revenue';
+export * from './monthly-review';
+export * from './ask';
+export * from './today';
 export * from './value';

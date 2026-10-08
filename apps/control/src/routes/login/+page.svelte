@@ -5,10 +5,7 @@
 	let { form } = $props();
 </script>
 
-<PageHeader
-	eyebrow="Authenticated access"
-	title="Sign in"
-/>
+<PageHeader eyebrow="Authenticated access" title="Sign in" />
 
 {#if form?.error}
 	<Alert>{form.error}</Alert>

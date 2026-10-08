@@ -14,16 +14,16 @@
 
 **Remaining execution (8 October 2026):** FR0–FR8 are in. FR9 is open. FR7 remainder is deterministic contrast, form, section weight, and a first-screen description. Pixel screenshots and AI visual review are CE5, not this runtime. Structured reveal feedback is CE6. Both are Wave D in [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md). Next is Wave C. Client reveal is Control `/reveal` in business language. Do not generate three full sites.
 
-| Slice         | Status                                                                      | Depends on                            |
-| ------------- | --------------------------------------------------------------------------- | ------------------------------------- |
-| FR0–FR2       | In                                                                          | —                                     |
-| Thin FR7      | In (deterministic checks + operator override; preview publish not blocked)  | —                                     |
-| FR3           | Thin in (C1 consume, sufficiency, typography-led fallback; thin C5 OG in)   | C1 in; thin C5 in                     |
-| FR4–FR5       | Thin in (cheap manifests, diversity, deterministic score, one winner draft) | Existing compose engine               |
-| FR6           | In (one supporting photo for the hybrid winner; other directions stay cheap) | C2–C5 in                          |
-| FR7 remainder | In (contrast, form, section weight, first-screen text; no pixel screenshots) | —                                 |
-| FR8           | In (Control `/reveal`, approve or request changes, does not publish)         | C7 in                             |
-| FR9           | Open                                                                        | Phase 9 later                         |
+| Slice         | Status                                                                       | Depends on              |
+| ------------- | ---------------------------------------------------------------------------- | ----------------------- |
+| FR0–FR2       | In                                                                           | —                       |
+| Thin FR7      | In (deterministic checks + operator override; preview publish not blocked)   | —                       |
+| FR3           | Thin in (C1 consume, sufficiency, typography-led fallback; thin C5 OG in)    | C1 in; thin C5 in       |
+| FR4–FR5       | Thin in (cheap manifests, diversity, deterministic score, one winner draft)  | Existing compose engine |
+| FR6           | In (one supporting photo for the hybrid winner; other directions stay cheap) | C2–C5 in                |
+| FR7 remainder | In (contrast, form, section weight, first-screen text; no pixel screenshots) | —                       |
+| FR8           | In (Control `/reveal`, approve or request changes, does not publish)         | C7 in                   |
+| FR9           | Open                                                                         | Phase 9 later           |
 
 ---
 

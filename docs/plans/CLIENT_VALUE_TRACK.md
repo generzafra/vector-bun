@@ -12,12 +12,12 @@
 
 **Not `docs/32`.** Numbered charters stop at `docs/30`. This track **extends** Outcomes. It does not sit above `docs/30` as a second sales, revenue, or attribution source of truth. `docs/20` owns MGE operating cost. Client-facing value must not expose MGE margin. These slices do not reopen Phases 0–9.
 
-**Remaining execution (24 August 2026):** V0 is **in**. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md). Next Wave B **C1**. V1 waits for Wave C. Execution facts live in [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md). Trusted software calculates; AI explains.
+**Remaining execution (8 October 2026):** V0 and V1 are **in**. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md). Next is Wave D CE0. O15 Ask Vector is in. Execution facts live in [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md). Trusted software calculates; AI explains.
 
 | Slice    | Status | Depends on                                                 |
 | -------- | ------ | ---------------------------------------------------------- |
 | V0       | **In** | Known fee/package. Activity proof only                     |
-| V1       | Open   | O1–O3                                                      |
+| V1       | **In** | O1–O3. Qualified leads, source label, primary goal. No ROI |
 | V2 / O21 | Open   | Versioned benchmarks or client baseline. Labeled estimated |
 | V3 / O22 | Open   | O11–O12 / O14 coverage. Replacement cost ≠ ROI             |
 | V4       | Open   | Phase 7 + data health                                      |
@@ -3814,6 +3814,8 @@ Add:
 - qualified leads;
 - basic attribution;
 - client goal progress.
+
+**In:** Control `/value` joins this month’s qualified leads, the stored attribution coverage label, and the primary goal. Qualified-lead and sales progress use the same observed counts as Overview. A revenue goal, and any goal that is not qualified leads or sales, stays unknown. A won lead without a recorded sale leaves sales progress unknown. Source coverage is the existing label. It does not rank a channel. No new table, no ROI, and no second ledger.
 
 ---
 

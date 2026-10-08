@@ -22,7 +22,6 @@ import {
 } from '@vector/db';
 import {
 	contextFor,
-	createClient,
 	draftSupportingImage,
 	listImageJobs,
 	login,
@@ -30,6 +29,7 @@ import {
 	resolveSession,
 	switchActiveClient
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { MemoryImageProvider, resetImageProvider, setImageProvider } from '@vector/images';
 import { app } from '../apps/api/src/app';
 

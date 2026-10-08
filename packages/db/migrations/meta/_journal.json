@@ -295,6 +295,48 @@
 			"when": 1756250000000,
 			"tag": "0041_c7_creative_qa",
 			"breakpoints": true
+		},
+		{
+			"idx": 42,
+			"version": "7",
+			"when": 1756260000000,
+			"tag": "0042_o9_offer_versions",
+			"breakpoints": true
+		},
+		{
+			"idx": 43,
+			"version": "7",
+			"when": 1756270000000,
+			"tag": "0043_o11_revenue_events",
+			"breakpoints": true
+		},
+		{
+			"idx": 44,
+			"version": "7",
+			"when": 1756280000000,
+			"tag": "0044_o12_attribution_confidence",
+			"breakpoints": true
+		},
+		{
+			"idx": 45,
+			"version": "7",
+			"when": 1756290000000,
+			"tag": "0045_o13_recommendation_evidence",
+			"breakpoints": true
+		},
+		{
+			"idx": 46,
+			"version": "7",
+			"when": 1756300000000,
+			"tag": "0046_o14_monthly_growth_reports",
+			"breakpoints": true
+		},
+		{
+			"idx": 47,
+			"version": "7",
+			"when": 1756310000000,
+			"tag": "0047_o15_ask_vector",
+			"breakpoints": true
 		}
 	]
 }

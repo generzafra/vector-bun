@@ -1,15 +1,18 @@
 import { requireCapability } from '@vector/auth';
 import {
 	NotFoundError,
+	ValidationError,
 	createClaimSchema,
 	createOfferSchema,
 	createServiceSchema,
 	assertActorOwnsContext,
 	parseContract,
+	reviseOfferSchema,
 	upsertBrandSchema,
 	type TenantContext
 } from '@vector/contracts';
 import {
+	appendOfferVersionForTenant,
 	assertKnowledgeClient,
 	deleteClaimForTenant,
 	deleteOfferForTenant,
@@ -21,6 +24,7 @@ import {
 	insertOfferForTenant,
 	insertServiceForTenant,
 	listClaimsForTenant,
+	listOfferVersionsForTenant,
 	listOffersForTenant,
 	listServicesForTenant,
 	upsertBrandForTenant
@@ -32,17 +36,27 @@ export async function getKnowledge(actor: Actor, ctx: TenantContext, clientId?: 
 	requireCapability(actor.permissions, 'knowledge.read');
 	const required = assertActorOwnsContext(actor, ctx);
 	if (clientId) assertKnowledgeClient(required, clientId);
-	const [brand, services, offers, claims, assets] = await Promise.all([
+	const [brand, services, offers, versions, claims, assets] = await Promise.all([
 		getBrandForTenant(required),
 		listServicesForTenant(required),
 		listOffersForTenant(required),
+		listOfferVersionsForTenant(required),
 		listClaimsForTenant(required),
 		listBrandAssetsForTenant(required)
 	]);
+	const versionsByOffer = new Map<string, typeof versions>();
+	for (const version of versions) {
+		const rows = versionsByOffer.get(version.offerId) ?? [];
+		rows.push(version);
+		versionsByOffer.set(version.offerId, rows);
+	}
 	return {
 		brand,
 		services,
-		offers,
+		offers: offers.map((offer) => ({
+			...offer,
+			versions: versionsByOffer.get(offer.id) ?? []
+		})),
 		claims,
 		assets: assets.map(({ storageKey: _storageKey, ...asset }) => asset)
 	};
@@ -126,7 +140,7 @@ export async function addOffer(
 	requireCapability(actor.permissions, 'knowledge.manage');
 	const required = assertActorOwnsContext(actor, ctx);
 	const parsed = parseContract(createOfferSchema, input);
-	const row = await insertOfferForTenant(required, parsed);
+	const row = await insertOfferForTenant(required, parsed, actor.userId);
 	await recordAudit({
 		organizationId: required.organizationId,
 		clientId: required.clientId,
@@ -149,6 +163,9 @@ export async function removeOffer(
 	requireCapability(actor.permissions, 'knowledge.manage');
 	const required = assertActorOwnsContext(actor, ctx);
 	const row = await deleteOfferForTenant(required, offerId);
+	if (row && 'blocked' in row) {
+		throw new ValidationError('This offer has a recorded revision. It stays in history.');
+	}
 	if (!row) throw new NotFoundError('Offer not found');
 	await recordAudit({
 		organizationId: required.organizationId,
@@ -160,6 +177,61 @@ export async function removeOffer(
 		entityId: offerId,
 		requestId
 	});
+}
+
+function offerInstant(day: string | null | undefined, end: boolean) {
+	if (!day) return null;
+	return new Date(`${day}T${end ? '23:59:59.999' : '00:00:00.000'}Z`);
+}
+
+export async function reviseOffer(
+	actor: Actor,
+	ctx: TenantContext,
+	offerId: string,
+	input: unknown,
+	requestId: string
+) {
+	requireCapability(actor.permissions, 'knowledge.manage');
+	const required = assertActorOwnsContext(actor, ctx);
+	const parsed = parseContract(reviseOfferSchema, input);
+	if (parsed.validFrom && parsed.validUntil && parsed.validUntil < parsed.validFrom) {
+		throw new ValidationError('The end date is before the start date.');
+	}
+	if (
+		parsed.priceMinor != null &&
+		parsed.discountMinor != null &&
+		parsed.discountMinor > parsed.priceMinor
+	) {
+		throw new ValidationError('The discount is larger than the price.');
+	}
+	const version = await appendOfferVersionForTenant(required, offerId, {
+		name: parsed.name,
+		summary: parsed.summary,
+		offerType: parsed.offerType,
+		serviceId: parsed.serviceId ?? null,
+		priceMinor: parsed.priceMinor ?? null,
+		discountMinor: parsed.discountMinor ?? null,
+		currency: parsed.currency.toUpperCase(),
+		validFrom: offerInstant(parsed.validFrom, false),
+		validUntil: offerInstant(parsed.validUntil, true),
+		eligibility: parsed.eligibility ?? null,
+		terms: parsed.terms ?? null,
+		primaryCta: parsed.primaryCta ?? null,
+		createdBy: actor.userId
+	});
+	if (version && 'missingService' in version) throw new NotFoundError('Service not found');
+	if (!version) throw new NotFoundError('Offer not found');
+	await recordAudit({
+		organizationId: required.organizationId,
+		clientId: required.clientId,
+		actorType: 'human',
+		actorId: actor.userId,
+		action: 'knowledge.offer.revise',
+		entityType: 'offer_version',
+		entityId: version.id,
+		requestId
+	});
+	return version;
 }
 
 export async function addClaim(

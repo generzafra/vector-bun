@@ -18,14 +18,14 @@ Read before coding a remaining slice:
 2. The track plan named below
 3. The standing-law charter named in [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md)
 
-| Remaining work                                                    | Standing law                               | Slice plan                                                                                                     |
-| ----------------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| Client operating UX + Outcomes O3–O20                             | `docs/30`                                  | [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md)                                                                         |
-| Creative C1–C9                                                    | `docs/29`                                  | [CREATIVE_TRACK.md](CREATIVE_TRACK.md)                                                                         |
-| First Reveal FR3–FR9                                              | `docs/09`, `17`, `26`, `27`, `29`          | [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md) (spec) — remaining table in §3                                  |
-| Client Value V0–V5                                                | `docs/30`, `docs/20`                       | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md) (spec) — remaining table in §3                                  |
-| Phase 9 S2–S4 + SRE / DR / retention                              | `docs/08`, `14`, `16`, `19`, `20`, `26`    | [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md); S2–S4 rules stay in [09_PHASE_9_SCALE.md](09_PHASE_9_SCALE.md) |
-| Extra Delivery variants, Control chrome leftovers, extra networks | `docs/27`, `docs/28`, `docs/11`, `docs/17` | [SURFACE_COMPLETENESS_TRACK.md](SURFACE_COMPLETENESS_TRACK.md)                                                 |
+| Remaining work                                                    | Standing law                               | Slice plan                                                                                                                                                                                                      |
+| ----------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Client operating UX + Outcomes O3–O20                             | `docs/30`                                  | [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md)                                                                                                                                                                          |
+| Creative C1–C9                                                    | `docs/29`                                  | [CREATIVE_TRACK.md](CREATIVE_TRACK.md)                                                                                                                                                                          |
+| First Reveal FR3–FR9                                              | `docs/09`, `17`, `26`, `27`, `29`          | [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md) (spec) — remaining table in §3                                                                                                                                   |
+| Client Value V0–V5                                                | `docs/30`, `docs/20`                       | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md) (spec) — remaining table in §3                                                                                                                                   |
+| Phase 9 S2–S4 + SRE / DR / retention                              | `docs/08`, `14`, `16`, `19`, `20`, `26`    | [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md); S2–S4 rules stay in [09_PHASE_9_SCALE.md](09_PHASE_9_SCALE.md)                                                                                                  |
+| Extra Delivery variants, Control chrome leftovers, extra networks | `docs/27`, `docs/28`, `docs/11`, `docs/17` | [SURFACE_COMPLETENESS_TRACK.md](SURFACE_COMPLETENESS_TRACK.md)                                                                                                                                                  |
 | Creative Experience CE0–CE7                                       | `docs/27`, `docs/09`, `docs/29`            | [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Blueprint: [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md) |
 
 Client UX is **not** a surface leftover. Default nav, Today, Approvals, and QuickStart live in [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md) § Client operating UX. Creative confirm is C1. First-site reveal is FR8. Do not dump Knowledge / Funnel / Autonomy on a client by default.
@@ -58,7 +58,7 @@ Client UX is **not** a surface leftover. Default nav, Today, Approvals, and Quic
 | First Reveal **thin FR3**                                                                          | Consume confirmed C1 on compose; `asset_sufficiency_snapshots`; typography-led fallback                        |
 | First Reveal **thin FR4–FR5**                                                                      | Cheap direction manifests, diversity, deterministic scoring, one winner draft. Not three sites                 |
 
-Not in code: `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `revenue_events`, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements, Creative Experience CE0–CE7 (briefs, width modes, motion presets, pixel screenshots, reveal change categories).
+Not in code: `AdProvider`, `BillingProvider`, `VideoProvider`, value snapshots, Ask Vector, Campaigns, Insights, Creative QuickStart extraction, entitlements, Creative Experience CE0–CE7 (briefs, width modes, motion presets, pixel screenshots, reveal change categories).
 
 ---
 
@@ -74,8 +74,8 @@ Law: `docs/30` §2, §5–7, §65, §81–85. One Control app; **nav differs by 
 | **CU1** | Outcomes QuickStart (seven plain questions, not the 16-step Knowledge dump) | Outcomes     | **In**                   |
 | **O8**  | Approval Center grouping in business language                               | Outcomes     | **In**                   |
 | **O3**  | `sales_outcomes` on Control `/leads`                                        | Outcomes     | **In**                   |
-| **O4**  | Client Overview outcome hierarchy                                           | Outcomes     | After O3                 |
-| **O5**  | Today view (under one minute)                                               | Outcomes     | After O4                 |
+| **O4**  | Client Overview outcome hierarchy                                           | Outcomes     | **In**                   |
+| **O5**  | Today view (under one minute)                                               | Outcomes     | **In**                   |
 | **C1**  | Brand visual profile + confirm/edit (Creative QuickStart confirm)           | Creative     | **In**                   |
 | **FR8** | Client reveal: one direction, Approve / Request changes, no jargon          | First Reveal | After C7 + remaining FR7 |
 
@@ -98,52 +98,52 @@ The 16-step catalog in `docs/17` is the **readiness inventory**. It is not the c
 
 ### Outcomes O3–O20
 
-| Slice             | Work                                           | Gate                               |
-| ----------------- | ---------------------------------------------- | ---------------------------------- |
-| O1 / O2 / O6 / O7 | Goals, lead_status, data health, notifications | **In** (thin)                      |
-| **O3**            | `sales_outcomes` (optional `amount_minor`)     | **In**                             |
-| **O8**            | Approval Center                                | **In**                             |
-| **O4 / O5**       | Overview / Today                               | After O3                           |
-| **O9**            | Offer versions (extend `offers`)               | —                                  |
-| **O10**           | `CRMProvider` (memory first)                   | After O3                           |
-| **O11**           | Revenue events                                 | After O3                           |
-| **O12**           | Attribution confidence labels                  | After O11                          |
-| **O13**           | Recommendation evidence + data-health gate     | After O6 + O12                     |
-| **O14**           | Monthly Growth Review                          | After O13                          |
-| **O15**           | Ask Vector                                     | **Only after O1–O3 + data health** |
-| **O16 / O17**     | Client health / entitlements                   | Wave E / Phase 9 later             |
-| **O18–O20**       | Ads read-only, billing, advanced revenue       | P2 / last                          |
+| Slice             | Work                                           | Gate                   |
+| ----------------- | ---------------------------------------------- | ---------------------- |
+| O1 / O2 / O6 / O7 | Goals, lead_status, data health, notifications | **In** (thin)          |
+| **O3**            | `sales_outcomes` (optional `amount_minor`)     | **In**                 |
+| **O8**            | Approval Center                                | **In**                 |
+| **O4 / O5**       | Overview / Today                               | **In**                 |
+| **O9**            | Offer versions (extend `offers`)               | **In**                 |
+| **O10**           | `CRMProvider` (memory first)                   | **In**                 |
+| **O11**           | Revenue events                                 | **In**                 |
+| **O12**           | Attribution confidence labels                  | **In**                 |
+| **O13**           | Recommendation evidence + data-health gate     | **In**                 |
+| **O14**           | Monthly Growth Review                          | **In**                 |
+| **O15**           | Ask Vector                                     | **In**                 |
+| **O16 / O17**     | Client health / entitlements                   | Wave E / Phase 9 later |
+| **O18–O20**       | Ads read-only, billing, advanced revenue       | P2 / last              |
 
 ### First Reveal FR3–FR9
 
 Spec remains [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md). Do not generate three full sites.
 
-| Slice             | Status                                     | Depends on                                                  |
-| ----------------- | ------------------------------------------ | ----------------------------------------------------------- |
-| FR0–FR2           | **In**                                     | —                                                           |
-| Thin FR7          | **In** (no screenshots / AI visual review) | —                                                           |
-| **FR3**           | **Thin in**                                | C1 consumed; C5 placement in                                |
-| **FR4**           | **Thin in**                                | Schema, diversity, deterministic grammar enumerator         |
-| **FR5**           | **Thin in**                                | In-memory render + deterministic score; winner is the draft |
-| **FR6**           | **In**                                     | One ImageProvider job for the hybrid winner only            |
-| **FR7 remainder** | **In** (deterministic)                     | Contrast, form, section weight, first-screen description    |
+| Slice             | Status                                     | Depends on                                                   |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| FR0–FR2           | **In**                                     | —                                                            |
+| Thin FR7          | **In** (no screenshots / AI visual review) | —                                                            |
+| **FR3**           | **Thin in**                                | C1 consumed; C5 placement in                                 |
+| **FR4**           | **Thin in**                                | Schema, diversity, deterministic grammar enumerator          |
+| **FR5**           | **Thin in**                                | In-memory render + deterministic score; winner is the draft  |
+| **FR6**           | **In**                                     | One ImageProvider job for the hybrid winner only             |
+| **FR7 remainder** | **In** (deterministic)                     | Contrast, form, section weight, first-screen description     |
 | **FR8**           | **In**                                     | Control `/reveal`: one direction, approve or request changes |
-| **FR9**           | Open                                       | Phase 9 later                                               |
+| **FR9**           | Open                                       | Phase 9 later                                                |
 
 ### Creative Experience CE0–CE7
 
-Design blueprint: [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md). Sequence and status: [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Same funnel engine and Creative Engine. Wave D. Do not start before Wave C **O4 / O5**.
+Design blueprint: [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md). Sequence and status: [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Same funnel engine and Creative Engine. Wave D. Do not start CE1 before CE0. Wave C is complete through O15. V1, O4, O5, O9, O10, O11, O12, O13, and O14 are in.
 
-| Slice | Status | Depends on |
-| ----- | ------ | ---------- |
-| **CE0** | Open | Audit and synthetic fixtures only. No production change |
-| **CE1** | Open | Versioned brief on the existing direction manifest |
-| **CE2** | Open | Width modes and a small grammar. No cinematic variant until a real client needs it |
-| **CE3** | Open | C4 derivatives. Thin FR6 is already in |
-| **CE4** | Open | Allowlisted M0–M2 motion |
-| **CE5** | Open | Rendered screenshots. Current FR7 is deterministic only |
-| **CE6** | Open | Change categories on thin FR8. Approving still does not publish |
-| **CE7** | Open | C8 learning. No invented ROI |
+| Slice   | Status | Depends on                                                                         |
+| ------- | ------ | ---------------------------------------------------------------------------------- |
+| **CE0** | Open   | Audit and synthetic fixtures only. No production change                            |
+| **CE1** | Open   | Versioned brief on the existing direction manifest                                 |
+| **CE2** | Open   | Width modes and a small grammar. No cinematic variant until a real client needs it |
+| **CE3** | Open   | C4 derivatives. Thin FR6 is already in                                             |
+| **CE4** | Open   | Allowlisted M0–M2 motion                                                           |
+| **CE5** | Open   | Rendered screenshots. Current FR7 is deterministic only                            |
+| **CE6** | Open   | Change categories on thin FR8. Approving still does not publish                    |
+| **CE7** | Open   | C8 learning. No invented ROI                                                       |
 
 ### Client Value V0–V5
 
@@ -152,7 +152,7 @@ Spec remains [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md). Trusted software ca
 | Slice        | Status | Depends on                                                 |
 | ------------ | ------ | ---------------------------------------------------------- |
 | **V0**       | **In** | Known fee/package. **No ROI**                              |
-| **V1**       | Open   | O1–O3                                                      |
+| **V1**       | **In** | O1–O3. Qualified leads, source label, primary goal. No ROI |
 | **V2 / O21** | Open   | Versioned benchmarks or client baseline. Labeled estimated |
 | **V3 / O22** | Open   | O11–O12 / O14 coverage. Replacement cost ≠ ROI             |
 | **V4**       | Open   | Phase 7 + data health                                      |
@@ -188,7 +188,7 @@ Goal: a non-technical owner is not dropped into the operator cockpit, and §78 l
 4. **O3** `sales_outcomes` — **In**
 5. **V0** activity proof when fee/package is known (no ROI) — **In**
 
-Wave A is complete. Wave B is complete. Next: Wave C **O4 / O5**.
+Wave A is complete. Wave B is complete. O4 Overview, O5 Today, O9 offer versions, O10 `CRMProvider`, O11 revenue events, O12 attribution confidence, O13 recommendation evidence, O14 monthly growth review, V1 lead and goal value join, and O15 Ask Vector are in. Next: Wave D **CE0**.
 
 ### Wave B — first-site quality (still one engine)
 
@@ -204,12 +204,12 @@ Wave A is complete. Wave B is complete. Next: Wave C **O4 / O5**.
 
 ### Wave C — client operating system
 
-1. **O4 / O5** Overview + Today
-2. **O9** offer versions
-3. **O10** `CRMProvider`
-4. **O11–O14** revenue, confidence, evidence, monthly review
-5. **V1** lead/goal value join
-6. **O15** Ask Vector only then
+1. **O4** Overview — **In**. **O5** Today — **In**
+2. **O9** offer versions — **In**
+3. **O10** `CRMProvider` — **In**
+4. **O11** revenue events — **In**. **O12** attribution confidence — **In**. **O13** recommendation evidence — **In**. **O14** monthly review — **In**
+5. **V1** lead/goal value join — **In**
+6. **O15** Ask Vector — **In**
 
 ### Wave D — creative experience, creative maturity, and value
 

@@ -23,6 +23,10 @@ import {
 	NotFoundError,
 	ProviderError,
 	ValidationError,
+	attributionCoverage,
+	capRecommendationConfidence,
+	recommendationConfidenceAfterDataHealth,
+	recommendationDataHealthGate,
 	assertActorOwnsContext,
 	decideApprovalSchema,
 	parseContract,
@@ -44,7 +48,11 @@ import {
 	getBrandForTenant,
 	getClientForTenant,
 	getHomePageForTenant,
+	attributionEvidenceForTenant,
 	getLatestDraftForTenant,
+	insertRecommendationEvidenceForTenant,
+	listDataHealthChecksForTenant,
+	listRecommendationEvidenceForTenant,
 	getPageVersionForTenant,
 	getPreviewDomainForTenant,
 	getPublishedAgentByKey,
@@ -83,6 +91,7 @@ import {
 } from '@vector/funnel-engine';
 import { logError, logInfo } from '@vector/observability';
 import { recordAudit } from './audit';
+import { evaluateDataHealthForTenant } from './outcomes';
 import { consumeTenantUsage } from './scale';
 import type { Actor } from './auth-service';
 
@@ -337,7 +346,9 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 		costs,
 		costTotal,
 		health,
-		latestDraft
+		latestDraft,
+		evidence,
+		checks
 	] = await Promise.all([
 		listAiAgents(),
 		listAiRunsForTenant(required),
@@ -349,7 +360,9 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 		listAiCostEventsForTenant(required),
 		sumAiCostMicrosForTenant(required),
 		getDomainAIProvider().health(),
-		getLatestDraftForTenant(required)
+		getLatestDraftForTenant(required),
+		listRecommendationEvidenceForTenant(required),
+		listDataHealthChecksForTenant(required)
 	]);
 	const artifacts = [];
 	for (const run of runs) {
@@ -382,8 +395,24 @@ export async function getIntelligenceOverview(actor: Actor, ctx: TenantContext, 
 		activity: buildIntelligenceActivity({ runs, approvalHistory, feedback, toolCalls }),
 		costs,
 		costTotalMicros: costTotal,
-		costTotalLabel: formatCostUsd(costTotal)
+		costTotalLabel: formatCostUsd(costTotal),
+		evidence,
+		dataHealth: recommendationDataHealthGate(checks, {
+			riskClass: 'financial',
+			recommendedAutonomy: 1
+		})
 	};
+}
+
+export async function listRecommendationEvidence(
+	actor: Actor,
+	ctx: TenantContext,
+	clientId?: string
+) {
+	requireCapability(actor.permissions, 'ai.read');
+	const required = assertActorOwnsContext(actor, ctx);
+	if (clientId) assertAiClient(required, clientId);
+	return listRecommendationEvidenceForTenant(required);
 }
 
 export async function runIntelligence(
@@ -516,6 +545,16 @@ export async function runIntelligence(
 		});
 		assertCopyPolicy(result.output, catalog.version.schemaName);
 		const recommendation = recommendationFrom(result.output, catalog.version.schemaName);
+		const [checks, attributionCounts] = await Promise.all([
+			evaluateDataHealthForTenant(required),
+			attributionEvidenceForTenant(required)
+		]);
+		const healthGate = recommendationDataHealthGate(checks, recommendation);
+		const attribution = attributionCoverage(attributionCounts);
+		const confidence = recommendationConfidenceAfterDataHealth(
+			recommendation.confidence,
+			healthGate
+		);
 		await insertAiMessageForTenant(required, {
 			runId: run.id,
 			role: 'assistant',
@@ -544,10 +583,45 @@ export async function runIntelligence(
 			evidence: recommendation.evidence,
 			proposedAction: recommendation.proposedAction,
 			expectedImpact: recommendation.expectedImpact,
-			confidence: recommendation.confidence,
+			confidence,
 			riskClass: recommendation.riskClass,
 			recommendedAutonomy: recommendation.recommendedAutonomy
 		});
+		if (!decision) throw new ValidationError('Recommendation was not recorded');
+		const recordedEvidence = await insertRecommendationEvidenceForTenant(required, decision.id, [
+			{
+				evidenceType: healthGate.evidenceClass,
+				sourceReference: 'data_health_checks',
+				metricName: 'data_health',
+				metricValue: healthGate.evidenceClass,
+				confidence: capRecommendationConfidence(100, healthGate.evidenceClass),
+				description: healthGate.detail
+			},
+			...checks.map((check) => ({
+				evidenceType:
+					check.status === 'healthy'
+						? 'observed'
+						: check.status === 'warning'
+							? 'estimated'
+							: 'unknown',
+				sourceReference: check.id,
+				metricName: check.checkKey,
+				metricValue: check.status,
+				confidence: check.status === 'healthy' ? 100 : 0,
+				description: check.detail
+			})),
+			{
+				evidenceType: attribution.evidenceClass,
+				sourceReference: 'attribution_results',
+				metricName: 'attribution_coverage',
+				metricValue: attribution.evidenceClass,
+				confidence: capRecommendationConfidence(100, attribution.evidenceClass),
+				description: `Source coverage is ${attribution.evidenceClass}.`
+			}
+		]);
+		if (recordedEvidence.missingRecommendation) {
+			throw new NotFoundError('Recommendation not found');
+		}
 		const approval = await insertApprovalRequestForTenant(required, {
 			runId: run.id,
 			decisionId: decision.id,
@@ -609,6 +683,13 @@ export async function decideIntelligenceApproval(
 	if (approval.status !== 'pending') throw new ValidationError('Approval is already decided');
 	const run = await getAiRunForTenant(required, approval.runId);
 	if (!run) throw new NotFoundError('AI run not found');
+	if (parsed.decision === 'approved') {
+		const decision = await getAiDecisionForRun(required, run.id);
+		if (!decision) throw new NotFoundError('Recommendation not found');
+		const checks = await listDataHealthChecksForTenant(required);
+		const gate = recommendationDataHealthGate(checks, decision);
+		if (!gate.allowed) throw new ValidationError(gate.detail);
+	}
 	const [pagesBefore, homeBefore, previewBefore] = await Promise.all([
 		countPublishedPageVersionsForTenant(required),
 		getHomePageForTenant(required),

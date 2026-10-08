@@ -19,10 +19,11 @@ export type ControlNavLink = {
 /**
  * Operator catalog order matches the existing Control cockpit.
  * Default client shell uses existing routes only (`docs/30` §5, CU0).
- * Today, Campaigns, and Insights stay omitted until those routes exist.
+ * Campaigns and Insights stay omitted until those routes exist.
  */
 export const CONTROL_NAV_ITEMS: readonly ControlNavItem[] = [
 	{ href: '/overview', label: 'Overview', shell: 'both' },
+	{ href: '/today', label: 'Today', shell: 'both' },
 	{ href: '/clients', label: 'Clients', capability: 'clients.read', shell: 'operator' },
 	{ href: '/knowledge', label: 'Knowledge', capability: 'knowledge.read', shell: 'operator' },
 	{ href: '/funnel', label: 'Funnel', capability: 'pages.read', shell: 'operator' },
@@ -41,9 +42,21 @@ export const CONTROL_NAV_ITEMS: readonly ControlNavItem[] = [
 	{ href: '/members', label: 'Members', capability: 'users.manage', shell: 'operator' }
 ];
 
-export const CLIENT_DEFAULT_NAV_HREFS = ['/overview', '/leads', '/approvals', '/goals'] as const;
+export const CLIENT_DEFAULT_NAV_HREFS = [
+	'/overview',
+	'/today',
+	'/leads',
+	'/approvals',
+	'/goals'
+] as const;
 
-export const CLIENT_DEFAULT_NAV_LABELS = ['Overview', 'Leads', 'Approvals', 'Goals'] as const;
+export const CLIENT_DEFAULT_NAV_LABELS = [
+	'Overview',
+	'Today',
+	'Leads',
+	'Approvals',
+	'Goals'
+] as const;
 
 export const OPERATOR_ONLY_NAV_LABELS = [
 	'Clients',

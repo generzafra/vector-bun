@@ -60,7 +60,7 @@ Rules:
 - Chrome stays `docs/28`. Do not paint Delivery. Do not invent `apps/client`.
 - Tests: a client-capability actor does not see Autonomy / Portfolio / Knowledge in the default shell; an operator-capability actor does.
 
-**In:** Control `AppShell` filters by `controlNavFor`. Default client links are Overview, Leads, Approvals (`/approvals`), Goals. Operator modules stay off the default client set. Client-facing copy on those four screens follows §85. Today / Campaigns / Insights wait for those routes.
+**In:** Control `AppShell` filters by `controlNavFor`. Default client links are Overview, Today (`/today`), Leads, Approvals (`/approvals`), and Goals. Operator modules stay off the default client set. Campaigns and Insights still wait.
 
 ### CU1 — Outcomes QuickStart
 
@@ -156,7 +156,7 @@ No new package for CU0/CU1/O8 (Control + existing approvals + goals).
 - O12: confidence on existing `attribution_results` or `attribution_confidence` rows — observed / measured / inferred / estimated / unknown
 - O13: `recommendation_evidence` (tenant-owned)
 - O14: `monthly_growth_reports` (tenant-owned)
-- O15: Ask Vector uses existing `AIProvider` + tools already denied; new tools stay narrow, typed, tenant-scoped
+- O15: Ask Vector uses existing `AIProvider` + tools already denied; new tools stay narrow, typed, tenant-scoped. **In.** `ask_vector_turns` is tenant-owned. Each turn is one closed question. The calculated answer is stored. A model note is stored only when it adds no figure. `goals.read`, `leads.read`, or `outcomes.read` can ask. The matching tool still requires its own capability. Phase 4 `useTools` stays denied. Control `/overview` shows the question. It is not in the default client nav.
 - O16: `client_health_snapshots`
 - O17: `client_entitlements` / usage
 - O18: `AdProvider` read-only
@@ -187,14 +187,14 @@ Launch with a primary goal, conversion definition, minimal pipeline (already tru
 | **CU1** | Outcomes QuickStart                                       | **In**           |
 | **O8**  | Approval Center grouping                                  | **In**           |
 | **O3**  | `sales_outcomes`                                          | **In**           |
-| **O4**  | Overview outcome hierarchy                                | Wave C           |
-| **O5**  | Today                                                     | Wave C           |
-| **O9**  | Offer versions                                            | Wave C           |
-| **O10** | `CRMProvider` interface                                   | Wave C           |
-| **O11** | Revenue events                                            | After O3         |
-| **O12** | Attribution confidence                                    | After O11        |
-| **O13** | Recommendation evidence + data-health gate                | After O6 + O12   |
-| **O14** | Monthly Growth Review                                     | After O13        |
+| **O4**  | Overview outcome hierarchy                                | **In**           |
+| **O5**  | Today                                                     | **In**           |
+| **O9**  | Offer versions                                            | **In**           |
+| **O10** | `CRMProvider` interface                                   | **In**           |
+| **O11** | Revenue events                                            | **In**           |
+| **O12** | Attribution confidence                                    | **In**           |
+| **O13** | Recommendation evidence + data-health gate                | **In**           |
+| **O14** | Monthly Growth Review                                     | **In**           |
 | **O15** | Ask Vector                                                | After O1–O3 + O6 |
 | **O16** | Client health                                             | Wave E           |
 | **O17** | Package entitlements                                      | Wave E           |
@@ -218,6 +218,10 @@ Launch with a primary goal, conversion definition, minimal pipeline (already tru
 
 ## 10. O4–O5 rules — Overview and Today
 
+O4 is in on Control `/overview`. It shows observed qualified leads, observed sales, and primary-goal progress. Revenue comes from `revenue_events` when `outcomes.read` is present. A sale amount is not revenue. A won lead without a recorded sale leaves the sales total unknown. Data-health warnings are visible.
+
+O5 is in on Control `/today` and in the default client nav. The day follows the client timezone. It counts new leads, high-intent leads (stored score at least 50 on the existing v1 scale), and recorded sales for that day. What needs you is pending approvals plus data-health warnings. What Vector handled is nurture sends and published social posts. Important changes compare today's new-lead count with yesterday's. Revenue stays unknown. Channel percentages are not shown.
+
 - Level 1 executive: sales, qualified leads, goal progress; revenue only when O11 coverage exists. Unknown stays unlabeled.
 - Do not turn home into a dense analytics console.
 - Today: new leads, high-intent, sales, what needs you, what Vector handled, important changes. Understandable in under one minute. Mobile-first (`docs/30` §35).
@@ -228,12 +232,13 @@ Launch with a primary goal, conversion definition, minimal pipeline (already tru
 
 ## 11. O9–O14 rules
 
-- O9 versions are immutable. Do not collide with Phase 1 `offers`.
-- O10 is an adapter family. Memory default. Do not couple the domain to one CRM.
-- O11 revenue events are the money ledger. Client Value reads them. No second revenue store.
-- O12 labels evidence class. Incomplete coverage lowers recommendation confidence and cannot unlock high-impact auto-execute (Phase 8 S5 later).
-- O13 evidence rows on existing Intelligence recommendations. Data health must be checked before important recommendations.
-- O14 is a monthly client-safe report. Operator internals stay off the client copy.
+- O9 versions are immutable. Do not collide with Phase 1 `offers`. **In.** `offer_versions` is tenant-owned and append-only. Creating an offer records version 1. A revision appends the next version and copies the latest name, summary, and starting price onto the live `offers` row. Version rows are not updated. An offer with a revision is not deleted. Money stays integer minor units plus currency. A linked service must belong to the same client. Control `/knowledge` lists the history. `knowledge.manage` records a version. `knowledge.read` can list it. This is not a second `offers` table.
+- O10 is an adapter family. Memory default. Do not couple the domain to one CRM. **In.** `packages/crm` exposes `CRMProvider` with `pushLead`, `syncContact`, `pullStages`, `pullDeals`, and `pullRevenue`. The factory returns memory. `external` stays false until a vendor adapter exists. A recorded sales outcome wins: a pull does not change the lead or the sale. CRM money is integer minor units. The same idempotency key is stored once per client. Control `/leads` says no external CRM is connected. Manual sales still record when the adapter is disabled.
+- O11 revenue events are the money ledger. Client Value reads them. No second revenue store. **In.** `revenue_events` is tenant-owned. Amounts are integer minor units plus currency. Source is `manual` and evidence is `observed`. A sales outcome amount is not copied in. Mixed currencies have no single total. Overview and Today read this ledger. `outcomes.read` lists it. `outcomes.manage` records it. The same idempotency key is stored once per client.
+- O12 labels evidence class. Incomplete coverage lowers recommendation confidence and cannot unlock high-impact auto-execute (Phase 8 S5 later). **In.** `attribution_results.evidence_class` is `observed`, `measured`, `inferred`, `estimated`, or `unknown`. Capture assigns `measured` only when the last non-direct touch has a campaign id. A non-direct touch without one is `observed`. Direct is `inferred`. A missing channel stays `unknown`. `estimated` is reserved and is not assigned from missing data. Incomplete coverage lowers the recommendation confidence cap and blocks a high-impact auto-execute check. Existing Level 3 auto-execute is unchanged. Phase 8 S5 is still later. Control `/leads` shows the label. `leads.read` reads it.
+- O13 evidence rows on existing Intelligence recommendations. Data health must be checked before important recommendations. **In.** `recommendation_evidence` is tenant-owned and append-only. Each new Intelligence recommendation records the data-health check and the attribution coverage label. `observed`, `measured`, `inferred`, `estimated`, and `unknown` stay the evidence classes. A financial, legal, or autonomy-3 recommendation cannot be approved while any data-health check is missing, unknown, broken, or only a warning. Content drafts stay human-reviewed. `ai.read` lists the evidence.
+- O14 is a monthly client-safe report. Operator internals stay off the client copy. **In.** `monthly_growth_reports` is tenant-owned and is not rewritten after it is recorded. The report is the last completed month in the client timezone. It states qualified leads, recorded sales, recorded revenue, and observed nurture sends plus published posts. A won lead without a sale leaves sales unknown. Incomplete data health does not rank a channel or a campaign. Percentages, Ask Vector, and operator internals stay off the copy. `outcomes.read` lists it. `outcomes.manage` plus `leads.read` records it. Control `/overview` shows it.
+- V1 joins leads and the primary goal onto the existing value proof. **In.** Control `/value` shows this month’s qualified leads, the stored attribution coverage label, and primary-goal progress. Qualified-lead and sales progress use the same observed counts as Overview. A revenue goal stays unknown. A won lead without a recorded sale leaves sales progress unknown. The label does not rank a channel. No new table and no ROI.
 
 ---
 
@@ -243,6 +248,8 @@ Launch with a primary goal, conversion definition, minimal pipeline (already tru
 - Tools remain narrow, typed, authorized, tenant-scoped. No unrestricted SQL, shell, HTTP, or secrets.
 - Answers must distinguish observed / measured / inferred / estimated / unknown. Must not invent revenue.
 - Kill switch still wins.
+
+**In.** Control `/overview` asks a closed question. Trusted software calculates qualified leads, source coverage, the primary goal, recorded revenue, or data health. The model may add a note only when that note has no figure. A question the actor cannot access does not run and does not read that fact. The Phase 4 agent tool path stays denied. A client or global pause blocks the ask before any read. No free-text chatbot, no channel ranking, and no new nav item.
 
 ---
 
@@ -268,4 +275,4 @@ CU0 is in on current routes (hide operator links). O4/O5 should wait for O3 so O
 
 ## Locked attachments
 
-V1 joins O1–O3. V3 waits for O11–O12 / O14. Phase 8 S5 conditions autonomy on data health. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).
+V1 joins O1–O3 and is in on Control `/value`. V3 waits for O11–O12 / O14. Phase 8 S5 conditions autonomy on data health. See [CROSS_CUTTING_TRACKS.md](CROSS_CUTTING_TRACKS.md).

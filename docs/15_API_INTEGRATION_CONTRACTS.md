@@ -12,7 +12,7 @@ AIProvider, EmailProvider, SocialProvider, AnalyticsProvider, StorageProvider, S
 
 Later Creative Engine adapters (`docs/29`): ImageProvider (C2 in: `packages/images`, Grok Imagine when `XAI_API_KEY` is set, otherwise memory), then VideoProvider and ImageTransformProvider. Do not add `generateImage` to `AIProvider`. Do not invent `AssetStorageProvider`. Remaining slices: `docs/plans/CREATIVE_TRACK.md`.
 
-Later Outcomes adapters (`docs/30`): CRMProvider, then RevenueProvider, BookingProvider, CommerceProvider, AdProvider, and BillingProvider. Do not couple the domain to one CRM, ad network, or payment processor. Do not let AI change ad budgets automatically. Remaining slices: `docs/plans/OUTCOMES_TRACK.md`. Sequence: `docs/plans/SHIP_REMAINING.md`.
+Later Outcomes adapters (`docs/30`): `CRMProvider` is in (`packages/crm`, memory default, no vendor adapter). Then RevenueProvider, BookingProvider, CommerceProvider, AdProvider, and BillingProvider. Do not couple the domain to one CRM, ad network, or payment processor. A recorded sales outcome stays authoritative over a CRM pull. Do not let AI change ad budgets automatically. Remaining slices: `docs/plans/OUTCOMES_TRACK.md`. Sequence: `docs/plans/SHIP_REMAINING.md`.
 
 Client Value (`docs/plans/CLIENT_VALUE_TRACK.md`) consumes those adapters. Do not create a ValueProvider or a second revenue adapter family.
 
@@ -51,11 +51,27 @@ Delivery challenge: `GET /.well-known/vector-domain` on the submitted Host. Unkn
 
 Authenticated session cookie. Tenant context is the active client, never a route id alone.
 
-- `GET /v1/leads` — list leads for the active client (`leads.read`)
+- `GET /v1/leads` — list leads for the active client (`leads.read`). Each lead's attribution includes `evidenceClass`: `observed`, `measured`, `inferred`, `estimated`, or `unknown`. Unknown is not measured.
 - `GET /v1/leads/:clientId` — same list only when the actor already owns that client
 - `POST /v1/leads/:id/status` — update lead status (`leads.manage`, CSRF)
 - `GET /v1/analytics` — conversion and launch-funnel report for the active client (`analytics.read`)
 - `GET /v1/analytics/:clientId` — same report only when the actor already owns that client
+- `GET /v1/overview` — qualified leads, recorded sales, and primary-goal progress for the active client (`goals.read` or `leads.read`). Revenue is unknown until a revenue ledger exists. A route client id that is not the active client fails closed.
+- `GET /v1/today` — this client-timezone day: new leads, high-intent leads, recorded sales, pending approvals, nurture sends, and published posts (`leads.read`, `ai.read`, `email.read`, or `social.read` for the matching section). Revenue stays unknown. A route client id that is not the active client fails closed.
+- `POST /v1/knowledge/offers/:id/versions` — append an immutable offer version and copy the latest name, summary, and price onto the live offer (`knowledge.manage`, CSRF). An offer id from another client is not found. Money is integer minor units.
+- `GET /v1/crm` — CRM adapter health for the active client (`leads.read`). Memory reports no external CRM. A route client id that is not the active client fails closed.
+- `POST /v1/crm/leads/:id/push` — idempotent lead push (`leads.manage`, CSRF). A lead from another client is not found.
+- `GET /v1/crm/leads/:id` — CRM stage, deal, and revenue preview (`leads.read`). A recorded sale is not replaced.
+- `GET /v1/revenue` — recorded revenue total and events for the active client (`outcomes.read`). A sale amount is not included. Mixed currencies have no single total.
+- `POST /v1/revenue` — record a manual revenue event (`outcomes.manage`, CSRF). Money is integer minor units. The same idempotency key is stored once per client.
+- `GET /v1/revenue/:clientId` — same ledger only when that client is the active client.
+- `GET /v1/reviews` — recorded monthly reviews for the active client (`outcomes.read`). The copy states observed counts and does not rank a channel.
+- `POST /v1/reviews` — record the last completed month (`outcomes.manage` and `leads.read`, CSRF). Recording the same month again does not rewrite it.
+- `GET /v1/reviews/:clientId` — same reviews only when that client is the active client.
+- `GET /v1/ask` — recent closed questions for the active client (`goals.read`, `leads.read`, or `outcomes.read`). The answer is calculated. A model note is omitted when it adds a figure.
+- `POST /v1/ask` — ask one closed question (CSRF). The tool runs only when the actor has that tool's capability. A pause blocks the ask before the read.
+- `GET /v1/ask/:clientId` — same questions only when that client is the active client.
+- `GET /v1/value` — this month’s observed work, qualified leads, stored source coverage, and primary-goal progress (`goals.read`). A revenue goal has no progress figure. This is not ROI. A route client id that is not the active client fails closed.
 
 Postgres is the source of truth for leads and conversion counts. PostHog is an optional production fan-out.
 
@@ -86,8 +102,8 @@ Authenticated session cookie plus CSRF on mutations. Tenant context is the activ
 - `GET /v1/funnel` — existing pages overview; includes `intelligenceDraft` when the current latest draft was created by an approved Intelligence run (`pages.read`)
 - `GET /v1/approvals` — pending `approval_requests` grouped for the client Approval Center (`ai.read`)
 - `GET /v1/approvals/:clientId` — same overview only when the actor already owns that client
-- `GET /v1/intelligence` — agents, runs, decisions, approvals, feedback, tool-call audit, unpublished artifacts, activity, cost ledger, provider and pause status (`ai.read`)
-- `GET /v1/intelligence/:clientId` — same overview only when the actor already owns that client
+- `GET /v1/intelligence` — agents, runs, decisions, approvals, recommendation evidence, data-health gate, feedback, tool-call audit, unpublished artifacts, activity, cost ledger, provider and pause status (`ai.read`)
+- `GET /v1/intelligence/:clientId` — same overview only when the actor already owns that client. A financial, legal, or autonomy-3 recommendation cannot be approved while data health is incomplete.
 - `POST /v1/intelligence/runs` — start a typed draft (`ai.manage`, CSRF). Body: `agentKey`, optional `brief`, optional `idempotencyKey`
 - `POST /v1/intelligence/approvals/:id/decide` — approve or reject; may write an unpublished page draft for funnel/copy; never publishes, sends, or executes (`ai.manage`, CSRF)
 - `POST /v1/intelligence/pause` — set the client AI kill switch; body requires `paused` and `reason` (`ai.manage`, CSRF)

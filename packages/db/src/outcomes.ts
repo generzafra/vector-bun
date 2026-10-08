@@ -482,3 +482,33 @@ export async function getSalesOutcomeCoverageForTenant(ctx: TenantContext) {
 		evidenceClass: qualifiedCount === 0 ? ('unknown' as const) : ('observed' as const)
 	};
 }
+
+export async function getOverviewFactsForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const coverage = await getSalesOutcomeCoverageForTenant(required);
+	const [wonLeads] = await db
+		.select({ total: sql<number>`count(*)::int` })
+		.from(leads)
+		.where(
+			and(eq(leads.clientId, required.clientId), eq(leads.isTest, false), eq(leads.status, 'won'))
+		);
+	const [wonOutcomes] = await db
+		.select({ total: sql<number>`count(distinct ${salesOutcomes.leadId})::int` })
+		.from(salesOutcomes)
+		.innerJoin(
+			leads,
+			and(eq(leads.id, salesOutcomes.leadId), eq(leads.clientId, required.clientId))
+		)
+		.where(
+			and(
+				eq(salesOutcomes.clientId, required.clientId),
+				eq(leads.isTest, false),
+				eq(salesOutcomes.outcomeType, 'won')
+			)
+		);
+	return {
+		qualifiedCount: coverage.qualifiedCount,
+		wonLeadCount: Number(wonLeads?.total ?? 0),
+		wonOutcomeCount: Number(wonOutcomes?.total ?? 0)
+	};
+}

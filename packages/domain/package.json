@@ -20,6 +20,7 @@
 		"@vector/search": "workspace:*",
 		"@vector/experiments": "workspace:*",
 		"@vector/config": "workspace:*",
+		"@vector/crm": "workspace:*",
 		"@vector/contracts": "workspace:*",
 		"@vector/db": "workspace:*",
 		"@vector/funnel-engine": "workspace:*",

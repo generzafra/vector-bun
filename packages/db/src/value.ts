@@ -135,89 +135,111 @@ export async function countObservedWorkForTenant(
 	range: { start: Date; end: Date } = utcMonthWindow()
 ) {
 	const required = requireTenantContext(ctx);
-	const [leadsCount, salesCount, emailCount, socialCount, pageCount, recordedCount] =
-		await Promise.all([
-			countRows(
-				db
-					.select({ total: sql<number>`count(*)::int` })
-					.from(leads)
-					.where(
-						and(
-							eq(leads.clientId, required.clientId),
-							eq(leads.isTest, false),
-							gte(leads.createdAt, range.start),
-							lt(leads.createdAt, range.end)
-						)
+	const [
+		leadsCount,
+		qualifiedCount,
+		salesCount,
+		emailCount,
+		socialCount,
+		pageCount,
+		recordedCount
+	] = await Promise.all([
+		countRows(
+			db
+				.select({ total: sql<number>`count(*)::int` })
+				.from(leads)
+				.where(
+					and(
+						eq(leads.clientId, required.clientId),
+						eq(leads.isTest, false),
+						gte(leads.createdAt, range.start),
+						lt(leads.createdAt, range.end)
 					)
-			),
-			countRows(
-				db
-					.select({ total: sql<number>`count(*)::int` })
-					.from(salesOutcomes)
-					.where(
-						and(
-							eq(salesOutcomes.clientId, required.clientId),
-							gte(salesOutcomes.occurredAt, range.start),
-							lt(salesOutcomes.occurredAt, range.end)
-						)
+				)
+		),
+		countRows(
+			db
+				.select({ total: sql<number>`count(*)::int` })
+				.from(leads)
+				.where(
+					and(
+						eq(leads.clientId, required.clientId),
+						eq(leads.isTest, false),
+						inArray(leads.status, ['qualified', 'won', 'lost']),
+						gte(leads.createdAt, range.start),
+						lt(leads.createdAt, range.end)
 					)
-			),
-			countRows(
-				db
-					.select({ total: sql<number>`count(*)::int` })
-					.from(emailMessages)
-					.where(
-						and(
-							eq(emailMessages.clientId, required.clientId),
-							eq(emailMessages.isTest, false),
-							inArray(emailMessages.status, ['sent', 'delivered']),
-							gte(emailMessages.createdAt, range.start),
-							lt(emailMessages.createdAt, range.end)
-						)
+				)
+		),
+		countRows(
+			db
+				.select({ total: sql<number>`count(*)::int` })
+				.from(salesOutcomes)
+				.where(
+					and(
+						eq(salesOutcomes.clientId, required.clientId),
+						gte(salesOutcomes.occurredAt, range.start),
+						lt(salesOutcomes.occurredAt, range.end)
 					)
-			),
-			countRows(
-				db
-					.select({ total: sql<number>`count(*)::int` })
-					.from(socialPosts)
-					.where(
-						and(
-							eq(socialPosts.clientId, required.clientId),
-							eq(socialPosts.status, 'published'),
-							gte(socialPosts.updatedAt, range.start),
-							lt(socialPosts.updatedAt, range.end)
-						)
+				)
+		),
+		countRows(
+			db
+				.select({ total: sql<number>`count(*)::int` })
+				.from(emailMessages)
+				.where(
+					and(
+						eq(emailMessages.clientId, required.clientId),
+						eq(emailMessages.isTest, false),
+						inArray(emailMessages.status, ['sent', 'delivered']),
+						gte(emailMessages.createdAt, range.start),
+						lt(emailMessages.createdAt, range.end)
 					)
-			),
-			countRows(
-				db
-					.select({ total: sql<number>`count(*)::int` })
-					.from(pageVersions)
-					.where(
-						and(
-							eq(pageVersions.clientId, required.clientId),
-							eq(pageVersions.status, 'published'),
-							gte(pageVersions.publishedAt, range.start),
-							lt(pageVersions.publishedAt, range.end)
-						)
+				)
+		),
+		countRows(
+			db
+				.select({ total: sql<number>`count(*)::int` })
+				.from(socialPosts)
+				.where(
+					and(
+						eq(socialPosts.clientId, required.clientId),
+						eq(socialPosts.status, 'published'),
+						gte(socialPosts.updatedAt, range.start),
+						lt(socialPosts.updatedAt, range.end)
 					)
-			),
-			countRows(
-				db
-					.select({ total: sql<number>`count(*)::int` })
-					.from(valueActivityRecords)
-					.where(
-						and(
-							eq(valueActivityRecords.clientId, required.clientId),
-							eq(valueActivityRecords.clientVisible, true),
-							gte(valueActivityRecords.completedAt, range.start),
-							lt(valueActivityRecords.completedAt, range.end)
-						)
+				)
+		),
+		countRows(
+			db
+				.select({ total: sql<number>`count(*)::int` })
+				.from(pageVersions)
+				.where(
+					and(
+						eq(pageVersions.clientId, required.clientId),
+						eq(pageVersions.status, 'published'),
+						gte(pageVersions.publishedAt, range.start),
+						lt(pageVersions.publishedAt, range.end)
 					)
-			)
-		]);
+				)
+		),
+		countRows(
+			db
+				.select({ total: sql<number>`count(*)::int` })
+				.from(valueActivityRecords)
+				.where(
+					and(
+						eq(valueActivityRecords.clientId, required.clientId),
+						eq(valueActivityRecords.clientVisible, true),
+						gte(valueActivityRecords.completedAt, range.start),
+						lt(valueActivityRecords.completedAt, range.end)
+					)
+				)
+		)
+	]);
 	return {
 		leads: leadsCount,
+		qualifiedLeads: qualifiedCount,
 		salesOutcomes: salesCount,
 		emailsSent: emailCount,
 		socialPublished: socialCount,

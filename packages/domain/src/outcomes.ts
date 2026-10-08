@@ -21,6 +21,7 @@ import {
 	countAnalyticsEventsForTenant,
 	ensureNotificationPreferencesForTenant,
 	getLeadForTenant,
+	getOverviewFactsForTenant,
 	getProductionDomainForTenant,
 	getPublishedHomeForTenant,
 	getSalesOutcomeCoverageForTenant,
@@ -36,6 +37,7 @@ import {
 	upsertDataHealthCheckForTenant
 } from '@vector/db';
 import { recordAudit } from './audit';
+import { summarizeRecordedRevenue } from './revenue';
 import type { Actor } from './auth-service';
 
 function parseDay(value: string | undefined): Date | null {
@@ -149,7 +151,7 @@ export async function evaluateDataHealth(actor: Actor, ctx: TenantContext, clien
 	return evaluateDataHealthForTenant(required);
 }
 
-async function evaluateDataHealthForTenant(ctx: TenantContext) {
+export async function evaluateDataHealthForTenant(ctx: TenantContext) {
 	const [published, production, events] = await Promise.all([
 		getPublishedHomeForTenant(ctx),
 		getProductionDomainForTenant(ctx),
@@ -324,4 +326,147 @@ export async function recordSalesOutcome(
 		reason: parsed.outcomeType
 	});
 	return { outcome, lead };
+}
+
+type OverviewCount = {
+	evidenceClass: 'observed' | 'unknown';
+	count: number | null;
+	detail: string;
+};
+
+type OverviewGoal = {
+	name: string;
+	goalType: string;
+	targetValue: number;
+	unit: string;
+	currency: string | null;
+	period: string;
+	observedValue: number | null;
+	evidenceClass: 'observed' | 'unknown';
+	detail: string;
+};
+
+function unknownCount(detail: string): OverviewCount {
+	return { evidenceClass: 'unknown', count: null, detail };
+}
+
+function observedCount(count: number, detail: string): OverviewCount {
+	return { evidenceClass: 'observed', count, detail };
+}
+
+export async function getClientOverview(actor: Actor, ctx: TenantContext, clientId?: string) {
+	const canGoals = actor.permissions.includes('goals.read');
+	const canLeads = actor.permissions.includes('leads.read');
+	const canOutcomes = actor.permissions.includes('outcomes.read');
+	if (!canGoals && !canLeads) {
+		requireCapability(actor.permissions, 'goals.read');
+	}
+	const required = assertActorOwnsContext(actor, ctx);
+	if (clientId) {
+		parseContract(goalsClientIdSchema, { clientId });
+		assertGoalClient(required, clientId);
+	}
+
+	const facts = canLeads ? await getOverviewFactsForTenant(required) : null;
+	const goals = canGoals ? await listClientGoalsForTenant(required) : [];
+	const health = canGoals ? await evaluateDataHealth(actor, required) : [];
+	const primary = goals.find((row) => row.isPrimary) ?? null;
+
+	const qualified: OverviewCount = facts
+		? observedCount(
+				facts.qualifiedCount,
+				facts.qualifiedCount === 0
+					? 'No qualified leads recorded yet.'
+					: `${facts.qualifiedCount} qualified ${facts.qualifiedCount === 1 ? 'lead' : 'leads'} recorded.`
+			)
+		: unknownCount('Qualified leads need lead access.');
+
+	const salesIncomplete = facts !== null && facts.wonLeadCount > facts.wonOutcomeCount;
+	const sales: OverviewCount = !facts
+		? unknownCount('Sales need lead access.')
+		: salesIncomplete
+			? unknownCount('Some won leads have no recorded sale, so the sales total is unknown.')
+			: observedCount(
+					facts.wonOutcomeCount,
+					facts.wonOutcomeCount === 0
+						? 'No sales recorded yet.'
+						: `${facts.wonOutcomeCount} recorded ${facts.wonOutcomeCount === 1 ? 'sale' : 'sales'}.`
+				);
+
+	let goal: OverviewGoal | null = null;
+	if (primary) {
+		const base = {
+			name: primary.name,
+			goalType: primary.goalType,
+			targetValue: primary.targetValue,
+			unit: primary.unit,
+			currency: primary.currency,
+			period: primary.period
+		};
+		if (primary.goalType === 'revenue') {
+			goal = {
+				...base,
+				observedValue: null,
+				evidenceClass: 'unknown',
+				detail: 'Revenue is not recorded yet, so this goal has no progress figure.'
+			};
+		} else if (primary.goalType !== 'qualified_leads' && primary.goalType !== 'sales') {
+			goal = {
+				...base,
+				observedValue: null,
+				evidenceClass: 'unknown',
+				detail: 'This goal is not measured on Overview yet.'
+			};
+		} else if (!facts) {
+			goal = {
+				...base,
+				observedValue: null,
+				evidenceClass: 'unknown',
+				detail: 'Goal progress needs lead access.'
+			};
+		} else if (primary.goalType === 'sales' && salesIncomplete) {
+			goal = {
+				...base,
+				observedValue: null,
+				evidenceClass: 'unknown',
+				detail: 'Some won leads have no recorded sale, so goal progress is unknown.'
+			};
+		} else {
+			const observedValue =
+				primary.goalType === 'qualified_leads' ? facts.qualifiedCount : facts.wonOutcomeCount;
+			goal = {
+				...base,
+				observedValue,
+				evidenceClass: 'observed',
+				detail: `${observedValue} of ${primary.targetValue} ${primary.unit} recorded.`
+			};
+		}
+	}
+
+	const warnings = health
+		.filter((row) => row.status === 'warning' || row.status === 'broken')
+		.map((row) => ({ checkKey: row.checkKey, status: row.status, detail: row.detail }));
+	const trackingUnknown = !canGoals || health.some((row) => row.status === 'unknown');
+	const trackingHealthy =
+		canGoals && health.length > 0 && !trackingUnknown && warnings.length === 0;
+	const revenue = canOutcomes
+		? await summarizeRecordedRevenue(required)
+		: {
+				evidenceClass: 'unknown' as const,
+				amountMinor: null,
+				currency: null,
+				count: null,
+				detail: 'Revenue needs access.'
+			};
+
+	return {
+		qualified,
+		sales,
+		revenue,
+		goalsAvailable: canGoals,
+		goal,
+		warnings,
+		trackingUnknown,
+		trackingHealthy
+	};
 }

@@ -9,6 +9,7 @@ import {
 	removeBrandAsset,
 	removeClaim,
 	removeOffer,
+	reviseOffer,
 	removeService,
 	saveBrand,
 	uploadBrandAsset
@@ -112,6 +113,42 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not add offer' });
+		}
+	},
+	reviseOffer: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		const rawPrice = String(form.get('priceMinor') ?? '').trim();
+		const rawDiscount = String(form.get('discountMinor') ?? '').trim();
+		const serviceId = String(form.get('serviceId') ?? '').trim();
+		const validFrom = String(form.get('validFrom') ?? '').trim();
+		const validUntil = String(form.get('validUntil') ?? '').trim();
+		try {
+			await reviseOffer(
+				session,
+				contextFor(session, locals.requestId),
+				String(form.get('offerId') ?? ''),
+				{
+					name: String(form.get('name') ?? ''),
+					summary: String(form.get('summary') ?? ''),
+					offerType: String(form.get('offerType') ?? 'other'),
+					serviceId: serviceId || null,
+					priceMinor: rawPrice ? Number(rawPrice) : null,
+					discountMinor: rawDiscount ? Number(rawDiscount) : null,
+					currency: String(form.get('currency') ?? 'USD'),
+					validFrom: validFrom || null,
+					validUntil: validUntil || null,
+					eligibility: String(form.get('eligibility') ?? '').trim() || null,
+					terms: String(form.get('terms') ?? '').trim() || null,
+					primaryCta: String(form.get('primaryCta') ?? '').trim() || null
+				},
+				locals.requestId
+			);
+			return { ok: true };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not record this offer version' });
 		}
 	},
 	removeOffer: async ({ request, locals }) => {

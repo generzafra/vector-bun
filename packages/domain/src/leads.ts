@@ -15,6 +15,10 @@ import {
 import {
 	NotFoundError,
 	ValidationError,
+	attributionCoverage,
+	capRecommendationConfidence,
+	highImpactAutoExecuteGate,
+	storedAttributionEvidence,
 	assertActorOwnsContext,
 	captureLeadSchema,
 	parseContract,
@@ -24,6 +28,7 @@ import {
 } from '@vector/contracts';
 import {
 	assertLeadClient,
+	attributionEvidenceForTenant,
 	findFormStartedEvent,
 	getLeadForTenant,
 	insertAnalyticsEventForTenant,
@@ -381,7 +386,8 @@ export async function listLeads(actor: Actor, ctx: TenantContext, clientId?: str
 						firstTouchCampaign: row.attribution.firstTouchCampaign,
 						lastNonDirectChannel: row.attribution.lastNonDirectChannel,
 						lastNonDirectSource: row.attribution.lastNonDirectSource,
-						lastNonDirectCampaign: row.attribution.lastNonDirectCampaign
+						lastNonDirectCampaign: row.attribution.lastNonDirectCampaign,
+						evidenceClass: storedAttributionEvidence(row.attribution.evidenceClass)
 					}
 				: null,
 			salesOutcome: latest
@@ -395,6 +401,23 @@ export async function listLeads(actor: Actor, ctx: TenantContext, clientId?: str
 				: null
 		};
 	});
+}
+
+export async function getAttributionConfidence(
+	actor: Actor,
+	ctx: TenantContext,
+	clientId?: string
+) {
+	requireCapability(actor.permissions, 'leads.read');
+	const required = assertActorOwnsContext(actor, ctx);
+	if (clientId) assertLeadClient(required, clientId);
+	const counts = await attributionEvidenceForTenant(required);
+	const coverage = attributionCoverage(counts);
+	return {
+		...coverage,
+		recommendationConfidenceCap: capRecommendationConfidence(100, coverage.evidenceClass),
+		highImpact: highImpactAutoExecuteGate(coverage)
+	};
 }
 
 export async function updateLeadStatus(

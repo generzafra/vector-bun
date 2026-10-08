@@ -21,7 +21,6 @@ import {
 	confirmBrandVisualProfile,
 	confirmCreativeRights,
 	contextFor,
-	createClient,
 	decideClientReveal,
 	getClientReveal,
 	login,
@@ -33,6 +32,7 @@ import {
 	uploadBrandAsset,
 	winnerMediaDirectionIds
 } from '@vector/domain';
+import { createTestClient as createClient } from './support/tenant-cleanup';
 import { composeLeadPage, evaluateFirstRevealGate } from '@vector/funnel-engine';
 import { listVisualDirectionsForVersionForTenant } from '@vector/db';
 
