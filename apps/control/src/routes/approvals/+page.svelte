@@ -14,6 +14,8 @@
 	description="Items that need your decision, grouped into campaigns, content, site direction, and connections. Approving does not publish or send."
 />
 
+<p><a href="/reveal">Review your site</a></p>
+
 {#if form?.error}
 	<Alert>{form.error}</Alert>
 {/if}

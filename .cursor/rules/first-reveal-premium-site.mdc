@@ -5,6 +5,7 @@ alwaysApply: false
 When implementing or changing first client preview generation, visual direction selection, premium public page composition, first reveal review, page candidate scoring, visual confidence, asset sufficiency, or client reveal UX, read:
 
 - docs/plans/FIRST_REVEAL_TRACK.md
+- docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md when the change is art direction, width modes, motion presets, screenshot QA, or reveal feedback. That work is Wave D.
 - docs/27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md
 - docs/09_FUNNEL_ENGINE_DESIGN_SYSTEM.md
 - docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md

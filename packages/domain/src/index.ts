@@ -27,3 +27,5 @@ export * from './value';
 export * from './images';
 export * from './compositions';
 export * from './funnel-manifests';
+export * from './winner-media';
+export * from './creative-qa';

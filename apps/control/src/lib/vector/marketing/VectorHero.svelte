@@ -15,7 +15,7 @@
 				</h1>
 				<p class="supporting-copy">
 					Stop managing fragmented agencies. Manage your business. Vector builds and operates the
-					digital customer-acquisition engine behind your business.
+					customer-acquisition engine behind your business.
 				</p>
 				<div class="cta-group">
 					<a class="vector-btn vector-btn-primary" href="#get-started">Request Growth Audit</a>

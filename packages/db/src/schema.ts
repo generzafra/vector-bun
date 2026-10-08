@@ -1872,6 +1872,9 @@ export const imageGenerationJobs = pgTable(
 		creativeAssetId: uuid('creative_asset_id').references(() => creativeAssets.id, {
 			onDelete: 'set null'
 		}),
+		visualDirectionId: uuid('visual_direction_id').references(() => visualDirections.id, {
+			onDelete: 'set null'
+		}),
 		createdBy: text('created_by'),
 		createdAt: createdAt(),
 		updatedAt: updatedAt()
@@ -1879,6 +1882,7 @@ export const imageGenerationJobs = pgTable(
 	(t) => [
 		uniqueIndex('image_generation_jobs_client_idempotency_idx').on(t.clientId, t.idempotencyKey),
 		index('image_generation_jobs_client_idx').on(t.clientId),
+		index('image_generation_jobs_direction_idx').on(t.clientId, t.visualDirectionId),
 		index('image_generation_jobs_org_idx').on(t.organizationId)
 	]
 );
@@ -1965,6 +1969,40 @@ export const funnelAssetManifests = pgTable(
 		uniqueIndex('funnel_asset_manifests_client_version_idx').on(t.clientId, t.pageVersionId),
 		index('funnel_asset_manifests_client_idx').on(t.clientId),
 		index('funnel_asset_manifests_org_idx').on(t.organizationId)
+	]
+);
+
+export const creativeQaReviews = pgTable(
+	'creative_qa_reviews',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		creativeAssetId: uuid('creative_asset_id').references(() => creativeAssets.id, {
+			onDelete: 'set null'
+		}),
+		checks: jsonb('checks').$type<{ key: string; passed: boolean; detail: string }[]>().notNull(),
+		passed: boolean('passed').notNull(),
+		status: text('status').notNull().default('pending'),
+		summary: text('summary').notNull(),
+		altText: text('alt_text'),
+		revisionNote: text('revision_note'),
+		decidedBy: text('decided_by'),
+		decidedAt: timestamp('decided_at', { withTimezone: true }),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('creative_qa_reviews_client_version_idx').on(t.clientId, t.pageVersionId),
+		index('creative_qa_reviews_client_idx').on(t.clientId),
+		index('creative_qa_reviews_org_idx').on(t.organizationId)
 	]
 );
 

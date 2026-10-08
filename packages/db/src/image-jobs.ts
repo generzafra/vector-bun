@@ -70,6 +70,7 @@ export async function insertImageGenerationJobForTenant(
 		error?: string | null;
 		storageKey?: string | null;
 		creativeAssetId?: string | null;
+		visualDirectionId?: string | null;
 		createdBy?: string | null;
 	}
 ) {
@@ -95,8 +96,41 @@ export async function insertImageGenerationJobForTenant(
 			error: input.error ?? null,
 			storageKey: input.storageKey ?? null,
 			creativeAssetId: input.creativeAssetId ?? null,
+			visualDirectionId: input.visualDirectionId ?? null,
 			createdBy: input.createdBy ?? null
 		})
 		.returning();
 	return row;
+}
+
+export async function attachImageJobDirectionForTenant(
+	ctx: TenantContext,
+	jobId: string,
+	visualDirectionId: string
+) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.update(imageGenerationJobs)
+		.set({ visualDirectionId, updatedAt: new Date() })
+		.where(
+			and(eq(imageGenerationJobs.id, jobId), eq(imageGenerationJobs.clientId, required.clientId))
+		)
+		.returning();
+	return row ?? null;
+}
+
+export async function listImageJobsForDirectionForTenant(
+	ctx: TenantContext,
+	visualDirectionId: string
+) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select()
+		.from(imageGenerationJobs)
+		.where(
+			and(
+				eq(imageGenerationJobs.clientId, required.clientId),
+				eq(imageGenerationJobs.visualDirectionId, visualDirectionId)
+			)
+		);
 }

@@ -1,6 +1,6 @@
 # Creative track — C1–C9
 
-**Status:** Implementation specification — C0–C3 and thin C5 in; thin FR3 consumes C1; C4, C6–C9 open  
+**Status:** Implementation specification — C0–C3, thin C5, and C7 in; C4, C6, C8–C9 open. Art direction beyond this track is [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md) (Wave D).  
 **Track:** Creative (not a Vector phase)  
 **Standing law:** [`docs/29`](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md) §63  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B then D  
@@ -36,7 +36,7 @@ This track has **no phase exit**. Phase 5 already exited with C0 + two-platform 
 
 **Must take for First Reveal (Wave B):** C1, C3, C5, C7. C2 before FR6 winner media. Thin FR7 does not require C2.
 
-**Later:** C4 remainder, C6, C8, C9, full URL-extraction QuickStart, portfolio asset-gap analysis (Phase 9 later).
+**Later:** C6, C9, full URL-extraction QuickStart, portfolio asset-gap analysis (Phase 9 later). Art direction beyond the current section grammar is [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md) (CE0–CE7, Wave D): briefs, width modes, M0–M2 motion, rendered screenshots, and reveal change categories. It does not add a package or a second renderer. C4 is CE3. C8 is CE7.
 
 ---
 
@@ -100,11 +100,11 @@ A normal launch must not require hand-designing every asset. C1 + typography-led
 | **C4** | Derivatives / crop / compression                                  | After C3                                   |
 | **C5** | Funnel manifests; Delivery uses approved derivatives only         | **In** (thin; C3 composition ids until C4) |
 | **C6** | Social families + previews                                        | After C4–C5                                |
-| **C7** | Automated QA + client approval/revision                           | Before FR8                                 |
+| **C7** | Automated QA + client approval/revision                           | **In**                                     |
 | **C8** | Publication usage, experiment join, learning objects              | Wave D                                     |
 | **C9** | `VideoProvider`, short-form                                       | Last                                       |
 
-Do not start FR6 until C3–C5. C3 and thin C5 are in. FR6 winner-only expensive media is the next First Reveal slice.
+C3, thin C5, FR6, and C7 are in. FR8 client reveal is in. C4 remainder, C6, and C8 are Wave D.
 
 ---
 
@@ -164,7 +164,7 @@ Cross-tenant isolation on every new table. Rights fail closed. Storage keys tena
 
 ## 14. Do not start until
 
-C0 exists (true). C1, C2, C3, and thin C5 are in. Thin FR3 is in after C1. FR6 waits for C2–C5 (now in). FR8 waits for C7. C4 remainder, C6, and C8 are Wave D.
+C0 exists (true). C1, C2, C3, thin C5, and C7 are in. FR6 and FR8 are in. FR9 waits. C4 remainder is CE3, C8 is CE7, and both sit in Wave D with the rest of [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). C6 is Wave D. Do not start CE0 before Wave C O4 / O5.
 
 ## Locked attachments
 

@@ -5,7 +5,7 @@
 **Project:** Vector — Autonomous Growth OS  
 **Document type:** Cross-cutting implementation architecture and operating standard  
 **Recommended repository location:** `/docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`  
-**Status:** Accepted architecture standard (ADR-0008). Implementation follows the C0–C9 track. First Reveal consumes C1, C3, C5, and C7 (`docs/plans/FIRST_REVEAL_TRACK.md`, ADR-0012). This does not reopen Phase 1 or Phase 4 exits.  
+**Status:** Accepted architecture standard (ADR-0008). Implementation follows the C0–C9 track. First Reveal consumes C1, C3, C5, and C7 (`docs/plans/FIRST_REVEAL_TRACK.md`, ADR-0012). Art-directed page experience is `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` (ADR-0014) and does not add a second media pipeline. This does not reopen Phase 1 or Phase 4 exits.  
 **Version:** 1.1  
 **Date:** 22 August 2026  
 **Applies to:** Client onboarding, brand ingestion, funnels, social media, email marketing, campaign generation, SEO/AEO/GEO presentation, CRO experiments, Vector 24, asset storage, AI governance, approvals, and client operations  
@@ -2198,10 +2198,11 @@ Thin slice in. Tenant-owned `funnel_asset_manifests` attach composition ids to i
 
 ## Phase C7 — QA and Approval
 
+In. `creative_qa_reviews` records rights, size, alt text, prohibited style, and invented-proof checks for the current draft. Unknown rights fail closed. A passing check is what Control `/reveal` can approve or send back. Approving does not publish. Pixel visual review is CE5, later.
+
 - automated checks;
-- visual review;
 - client approval;
-- revision flow.
+- revision note.
 
 ## Phase C8 — Creative Analytics
 

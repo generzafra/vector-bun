@@ -281,6 +281,20 @@
 			"when": 1756230000000,
 			"tag": "0039_c5_funnel_manifests",
 			"breakpoints": true
+		},
+		{
+			"idx": 40,
+			"version": "7",
+			"when": 1756240000000,
+			"tag": "0040_fr6_winner_media",
+			"breakpoints": true
+		},
+		{
+			"idx": 41,
+			"version": "7",
+			"when": 1756250000000,
+			"tag": "0041_c7_creative_qa",
+			"breakpoints": true
 		}
 	]
 }

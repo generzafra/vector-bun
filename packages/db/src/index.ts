@@ -17,6 +17,7 @@ export * from './visual-directions';
 export * from './image-jobs';
 export * from './compositions';
 export * from './funnel-manifests';
+export * from './creative-qa';
 export * from './social';
 export * from './search';
 export * from './experiments';

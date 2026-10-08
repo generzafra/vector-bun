@@ -146,6 +146,13 @@ Creative C5 (authenticated session cookie plus CSRF on mutations; active client 
 
 Hostname-scoped Delivery `GET /og-image` is not an API key or storage-key URL. Unknown hosts 404 with no tenant names. JSON-LD and `llms.txt` stay approved knowledge only.
 
+Creative C7 / FR6 / FR8 (authenticated session cookie plus CSRF on mutations; active client only):
+
+- `POST /v1/funnel/winner-media` — one supporting photo for the kept hybrid direction (`pages.manage`, CSRF). Typography-led and authentic strategies do not generate
+- `POST /v1/funnel/creative-qa` — record the preview check (`pages.manage`, CSRF)
+- `GET /v1/reveal` — one direction when the check passed (`pages.read` or `ai.read`)
+- `POST /v1/reveal/decide` — approve or request changes (`pages.manage` or `ai.manage`, CSRF). Does not publish
+
 `SocialProvider` lives in `packages/social`. Memory is the default. Official LinkedIn, X, and Meta (Facebook / Instagram) adapters run when `SOCIAL_ADAPTER=official`. Official OAuth start/complete uses `createAuthorizationUrl` and `exchangeAuthorizationCode`. Tokens are encrypted with `TOKEN_ENCRYPTION_KEY` and never returned in JSON. Refresh uses official OAuth token endpoints when client or app credentials are configured. Official adapters upload approved C0 images. `GET /v1/public/social-media` serves a short-lived HMAC grant so Instagram can fetch tenant-scoped bytes; forged, expired, or cross-tenant grants fail closed. Official Instagram Graph publish is media-required. `social-due-sweep` is tenant-scoped; `social-due-sweep-platform` fans out one job per client with due posts.
 
 ## Phase 6 Control API

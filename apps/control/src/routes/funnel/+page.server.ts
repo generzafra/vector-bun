@@ -7,7 +7,9 @@ import {
 	overrideFirstRevealGate,
 	publishFunnel,
 	composeCreativeShells,
-	placeFunnelShareCards
+	placeFunnelShareCards,
+	completeWinnerMedia,
+	runCreativeQa
 } from '@vector/domain';
 
 export async function load({ locals }) {
@@ -77,6 +79,43 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not place share cards on the preview' });
+		}
+	},
+	winnerPhoto: async ({ locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		try {
+			const result = await completeWinnerMedia(
+				session,
+				contextFor(session, locals.requestId),
+				locals.requestId
+			);
+			if (!result.generated) {
+				return {
+					notice: 'This preview uses type and layout. Vector will not spend on an extra photo.'
+				};
+			}
+			return { notice: 'One supporting photo was added for the kept direction.' };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not add a supporting photo' });
+		}
+	},
+	checkPreview: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		try {
+			await runCreativeQa(
+				session,
+				contextFor(session, locals.requestId),
+				{ altText: String(form.get('altText') ?? '') },
+				locals.requestId
+			);
+			return { notice: 'Preview check recorded. The client reviews it on Reveal.' };
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not check this preview' });
 		}
 	}
 };

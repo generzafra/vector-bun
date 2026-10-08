@@ -492,3 +492,54 @@ First clients stay supervised. Vector 24 remains a mature-state target. Do not d
 ### Reversal path
 
 Supersede this ADR. Keep the track specs as historical. Do not add numbered charters past 30 without a further ADR.
+
+---
+
+## ADR-0014
+
+### Date
+
+8 October 2026
+
+### Status
+
+Accepted
+
+### Context
+
+The 8 October 2026 Creative Experience Engine blueprint asks for art-directed client landing pages: briefs, a wider component grammar, winner-only media, rendered screenshot QA, restrained motion, and client feedback. Wave B is already in (thin FR3, thin FR4–FR5, C1–C3, thin C5, thin FR6, C7, deterministic FR7, thin FR8). The blueprint's original snapshot still named FR6 as the next slice. Standing charters stop at `docs/30`. `docs/09` still withholds cinematic and interactive variants until a real client needs them. `docs/27` remains the publication gate.
+
+### Decision
+
+Adopt the blueprint as a cross-cutting **execution track**, not as a phase and not as `docs/31`.
+
+- Design blueprint: `docs/plans/VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md`
+- Sequence and current status: `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md`
+- Register CE0–CE7 on Wave D in `docs/plans/SHIP_REMAINING.md` and `docs/plans/CROSS_CUTTING_TRACKS.md`
+
+The track extends `packages/funnel-engine`, Delivery sections, `packages/contracts`, `packages/images`, and `packages/compose`. It does not add `packages/creative-experience-engine`, a second renderer, a second asset store, or `generateImage` on `AIProvider`.
+
+Thin FR6, C7, deterministic FR7, and thin FR8 stay as built. Pixel screenshots are CE5 and are not claimed shipped. Structured reveal feedback is CE6. C4 derivatives are CE3. C8 learning is CE7.
+
+The next implementation slice remains Wave C **O4 / O5**. CE0 does not jump that queue. ADR-0012 and ADR-0013 still govern charter limits and remaining-work sequencing.
+
+### Alternatives considered
+
+Treat the blueprint as the next implementation and restart FR6. Add `docs/31`. Build a separate creative-experience package and renderer. Pull screenshot QA into Wave C ahead of Overview and Today. Ignore the blueprint and leave its stale "FR6 is next" prompt in force.
+
+### Consequences
+
+Agents read the track file before any CE slice. The blueprint supplies design detail. Charters still win on product law. Five synthetic industry fixtures, width modes, M0–M2 motion, fingerprints, and screenshot evidence wait for Wave D. M3, WebGL, and video stay later. A manifest score is not a screenshot review. Approval of a reveal is not publication.
+
+### Security impact
+
+Briefs, experience manifests, fingerprints, visual QA reports, and creative feedback are tenant-owned when persisted. Fingerprints must not pool one client's copy or media for another client. Media references stay tenant-scoped asset ids. Models cannot emit executable HTML, CSS, or JavaScript. Hard blockers for tenancy, prohibited claims, and unlicensed imagery override scores and operator aesthetic overrides.
+
+### Operational impact
+
+No CE code is required to accept this ADR. Do not add Playwright or a new browser platform without a later ADR if no suitable runner exists. Performance numbers in the blueprint are targets, not measured results. Image spend stays on the existing job ledger.
+
+### Reversal path
+
+Supersede this ADR. Leave the blueprint and track spec as historical. Keep `docs/27`, `docs/09`, and `docs/29` as the law for public pages, section grammar, and media.
+

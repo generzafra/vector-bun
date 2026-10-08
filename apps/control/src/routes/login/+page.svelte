@@ -8,7 +8,6 @@
 <PageHeader
 	eyebrow="Authenticated access"
 	title="Sign in"
-	description="Operator and client access to Vector Control."
 />
 
 {#if form?.error}

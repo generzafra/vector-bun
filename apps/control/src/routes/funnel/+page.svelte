@@ -42,6 +42,9 @@
 {#if form?.error}
 	<Alert>{form.error}</Alert>
 {/if}
+{#if form?.notice}
+	<Alert tone="info">{form.notice}</Alert>
+{/if}
 
 {#if data.needsClient}
 	<section>
@@ -190,6 +193,20 @@
 					<button type="submit">Use these cards on the preview</button>
 				</form>
 			{/if}
+			<form method="post" action="?/winnerPhoto">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<button type="submit">Add one supporting photo</button>
+			</form>
+			<p>The photo is for the kept direction only. Other directions stay as type and layout.</p>
+			<form method="post" action="?/checkPreview">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Photo description
+					<input name="altText" maxlength="160" />
+				</label>
+				<button type="submit">Check this preview</button>
+			</form>
+			<p><a href="/reveal">Open the client reveal</a></p>
 		{/if}
 	</section>
 

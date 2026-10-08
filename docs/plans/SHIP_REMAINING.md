@@ -26,6 +26,7 @@ Read before coding a remaining slice:
 | Client Value V0–V5                                                | `docs/30`, `docs/20`                       | [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md) (spec) — remaining table in §3                                  |
 | Phase 9 S2–S4 + SRE / DR / retention                              | `docs/08`, `14`, `16`, `19`, `20`, `26`    | [PLATFORM_OPS_TRACK.md](PLATFORM_OPS_TRACK.md); S2–S4 rules stay in [09_PHASE_9_SCALE.md](09_PHASE_9_SCALE.md) |
 | Extra Delivery variants, Control chrome leftovers, extra networks | `docs/27`, `docs/28`, `docs/11`, `docs/17` | [SURFACE_COMPLETENESS_TRACK.md](SURFACE_COMPLETENESS_TRACK.md)                                                 |
+| Creative Experience CE0–CE7                                       | `docs/27`, `docs/09`, `docs/29`            | [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Blueprint: [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md) |
 
 Client UX is **not** a surface leftover. Default nav, Today, Approvals, and QuickStart live in [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md) § Client operating UX. Creative confirm is C1. First-site reveal is FR8. Do not dump Knowledge / Funnel / Autonomy on a client by default.
 
@@ -57,7 +58,7 @@ Client UX is **not** a surface leftover. Default nav, Today, Approvals, and Quic
 | First Reveal **thin FR3**                                                                          | Consume confirmed C1 on compose; `asset_sufficiency_snapshots`; typography-led fallback                        |
 | First Reveal **thin FR4–FR5**                                                                      | Cheap direction manifests, diversity, deterministic scoring, one winner draft. Not three sites                 |
 
-Not in code: `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `revenue_events`, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements.
+Not in code: `CRMProvider`, `AdProvider`, `BillingProvider`, `VideoProvider`, `revenue_events`, value snapshots, Ask Vector, Today, Campaigns, Insights, Creative QuickStart extraction, entitlements, Creative Experience CE0–CE7 (briefs, width modes, motion presets, pixel screenshots, reveal change categories).
 
 ---
 
@@ -88,11 +89,11 @@ The 16-step catalog in `docs/17` is the **readiness inventory**. It is not the c
 | **C1** | Brand visual profile + onboarding confirm | **In**                         |
 | **C2** | `ImageProvider` (not `AIProvider`)        | **In**                         |
 | **C3** | Deterministic composition                 | **In**                         |
-| **C4** | Derivatives                               | After C3                       |
+| **C4** | Derivatives                               | Wave D / CE3                   |
 | **C5** | Funnel asset manifests                    | **In** (thin; C3 ids until C4) |
 | **C6** | Social families                           | After C4–C5                    |
-| **C7** | QA + client approval/revision             | Before FR8                     |
-| **C8** | Creative analytics + learning objects     | After Phase 7; Wave D          |
+| **C7** | QA + client approval/revision             | **In**                         |
+| **C8** | Creative analytics + learning objects     | Wave D / CE7                   |
 | **C9** | `VideoProvider`                           | Unattached until needed        |
 
 ### Outcomes O3–O20
@@ -124,10 +125,25 @@ Spec remains [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md). Do not generate thr
 | **FR3**           | **Thin in**                                | C1 consumed; C5 placement in                                |
 | **FR4**           | **Thin in**                                | Schema, diversity, deterministic grammar enumerator         |
 | **FR5**           | **Thin in**                                | In-memory render + deterministic score; winner is the draft |
-| **FR6**           | Open                                       | C2–C5 in; winner-only expensive media                       |
-| **FR7 remainder** | Open                                       | visual / a11y / perf / screenshots                          |
-| **FR8**           | Open                                       | C7 + remaining FR7; Control `docs/28` + `docs/30` language  |
+| **FR6**           | **In**                                     | One ImageProvider job for the hybrid winner only            |
+| **FR7 remainder** | **In** (deterministic)                     | Contrast, form, section weight, first-screen description    |
+| **FR8**           | **In**                                     | Control `/reveal`: one direction, approve or request changes |
 | **FR9**           | Open                                       | Phase 9 later                                               |
+
+### Creative Experience CE0–CE7
+
+Design blueprint: [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md). Sequence and status: [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Same funnel engine and Creative Engine. Wave D. Do not start before Wave C **O4 / O5**.
+
+| Slice | Status | Depends on |
+| ----- | ------ | ---------- |
+| **CE0** | Open | Audit and synthetic fixtures only. No production change |
+| **CE1** | Open | Versioned brief on the existing direction manifest |
+| **CE2** | Open | Width modes and a small grammar. No cinematic variant until a real client needs it |
+| **CE3** | Open | C4 derivatives. Thin FR6 is already in |
+| **CE4** | Open | Allowlisted M0–M2 motion |
+| **CE5** | Open | Rendered screenshots. Current FR7 is deterministic only |
+| **CE6** | Open | Change categories on thin FR8. Approving still does not publish |
+| **CE7** | Open | C8 learning. No invented ROI |
 
 ### Client Value V0–V5
 
@@ -172,7 +188,7 @@ Goal: a non-technical owner is not dropped into the operator cockpit, and §78 l
 4. **O3** `sales_outcomes` — **In**
 5. **V0** activity proof when fee/package is known (no ROI) — **In**
 
-Wave A is complete. Wave B **C1**, **thin FR3**, **thin FR4–FR5**, **C2**, **C3**, and **thin C5** are in. Next: Wave B **FR6**.
+Wave A is complete. Wave B is complete. Next: Wave C **O4 / O5**.
 
 ### Wave B — first-site quality (still one engine)
 
@@ -182,9 +198,9 @@ Wave A is complete. Wave B **C1**, **thin FR3**, **thin FR4–FR5**, **C2**, **C
 4. **C2** `ImageProvider` — **In**
 5. **C3** deterministic composition — **In**
 6. **C5** funnel manifests — **Thin in** (C3 composition ids until C4)
-7. **FR6** winner-only expensive media
-8. **C7** QA + client creative approval
-9. **FR7 remainder** then **FR8** client reveal
+7. **FR6** winner-only expensive media — **In**
+8. **C7** QA + client creative approval — **In**
+9. **FR7 remainder** then **FR8** client reveal — **In** (deterministic first-screen checks; pixel screenshots stay out)
 
 ### Wave C — client operating system
 
@@ -195,11 +211,12 @@ Wave A is complete. Wave B **C1**, **thin FR3**, **thin FR4–FR5**, **C2**, **C
 5. **V1** lead/goal value join
 6. **O15** Ask Vector only then
 
-### Wave D — creative + value maturity
+### Wave D — creative experience, creative maturity, and value
 
-1. **C4** remainder / **C6** social families / **C8** creative learning
-2. **V2–V4** when coverage exists
-3. **C9** video last
+1. **CE0–CE7** on the existing engines — [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). CE3 is the C4 remainder. CE7 is C8. Thin FR6 and thin FR8 stay
+2. **C6** social families
+3. **V2–V4** when coverage exists
+4. **C9** video last
 
 ### Wave E — scale and platform
 
@@ -218,7 +235,9 @@ Wave A is complete. Wave B **C1**, **thin FR3**, **thin FR4–FR5**, **C2**, **C
 - Replacing Phase 2 `lead_status` or Phase 1 `offers`
 - `apps/client` fork
 - `generateImage` on `AIProvider`
-- Second object store, second funnel renderer, second sales/revenue ledger
+- Second object store, second funnel renderer, second sales/revenue ledger, or `packages/creative-experience-engine` by default
+- Arbitrary tenant HTML, CSS, or JavaScript on Delivery
+- Treating a manifest heuristic as a screenshot review
 - Three full production websites by default
 - Autonomous ad spend
 - Inventing sales, revenue, hours saved, previous spend, or agency cost

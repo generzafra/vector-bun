@@ -11,7 +11,8 @@
 **Companion Control identity standard:** `docs/28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md`  
 **Companion creative production standard:** `docs/29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md`  
 **Companion authenticated client UX / outcomes standard:** `docs/30_VECTOR_CLIENT_EXPERIENCE_REVENUE_INTELLIGENCE_GROWTH_OUTCOMES.md`  
-**Companion First Reveal track:** `docs/plans/FIRST_REVEAL_TRACK.md` — pre-client composition and gate. This document remains the public quality bar and publication Frontend Release Gate.
+**Companion First Reveal track:** `docs/plans/FIRST_REVEAL_TRACK.md` — pre-client composition and gate. This document remains the public quality bar and publication Frontend Release Gate.  
+**Companion Creative Experience track:** `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` (ADR-0014) — later art direction on the same renderer. It does not replace this gate. Wave D. Design blueprint: `docs/plans/VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md`.
 
 ---
 

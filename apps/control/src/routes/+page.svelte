@@ -7,7 +7,7 @@
 <svelte:head>
 	<meta
 		name="description"
-		content="Vector builds and operates the digital customer-acquisition engine behind your company."
+		content="Vector builds and operates the customer-acquisition engine behind your company."
 	/>
 </svelte:head>
 

@@ -12,7 +12,7 @@
 
 **Not `docs/31`.** Numbered charters stop at `docs/30`. This file is the slice spec. It does not reopen Phase 1. Publication still uses the `docs/27` Frontend Release Gate. The First Reveal Gate is an additional pre-client gate. `docs/28` is Control identity, not the Creative Engine. `docs/29` owns ingest, generation, composition, rights, and approval.
 
-**Remaining execution (24 August 2026):** FR0–FR2, thin FR3, thin FR4–FR5, and thin FR7 are in. FR6 and FR8–FR9 are open; FR7 remainder (screenshots / visual review) stays later. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B. Creative dependencies: [CREATIVE_TRACK.md](CREATIVE_TRACK.md). C3 composition and thin C5 funnel manifests are in; FR6 winner-only expensive media is next. Client reveal (FR8) uses `docs/30` business language; do not overwhelm with schema names, model names, or CSS tokens. Do not generate three full sites.
+**Remaining execution (8 October 2026):** FR0–FR8 are in. FR9 is open. FR7 remainder is deterministic contrast, form, section weight, and a first-screen description. Pixel screenshots and AI visual review are CE5, not this runtime. Structured reveal feedback is CE6. Both are Wave D in [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md). Next is Wave C. Client reveal is Control `/reveal` in business language. Do not generate three full sites.
 
 | Slice         | Status                                                                      | Depends on                            |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------- |
@@ -20,9 +20,9 @@
 | Thin FR7      | In (deterministic checks + operator override; preview publish not blocked)  | —                                     |
 | FR3           | Thin in (C1 consume, sufficiency, typography-led fallback; thin C5 OG in)   | C1 in; thin C5 in                     |
 | FR4–FR5       | Thin in (cheap manifests, diversity, deterministic score, one winner draft) | Existing compose engine               |
-| FR6           | Open                                                                        | C2–C5 in; winner-only expensive media |
-| FR7 remainder | Open                                                                        | visual / a11y / perf / screenshots    |
-| FR8           | Open                                                                        | C7 + remaining FR7                    |
+| FR6           | In (one supporting photo for the hybrid winner; other directions stay cheap) | C2–C5 in                          |
+| FR7 remainder | In (contrast, form, section weight, first-screen text; no pixel screenshots) | —                                 |
+| FR8           | In (Control `/reveal`, approve or request changes, does not publish)         | C7 in                             |
 | FR9           | Open                                                                        | Phase 9 later                         |
 
 ---
@@ -3043,7 +3043,7 @@ Thin slice in: schema-validated cheap manifests using existing funnel-engine sec
 
 ## FR5 — Candidate Rendering and Scoring
 
-Thin slice in: each cheap manifest is composed in memory on the shared funnel engine. Deterministic integer scores persist on tenant-scoped `page_candidate_scores`. One winner is written as the page draft. Operators see names, rationale, and Strong / Ready / Needs work on Control `/funnel` — not a numeric score and not a client reveal. Screenshots, AI visual review, and FR8 stay later.
+Thin slice in: each cheap manifest is composed in memory on the shared funnel engine. Deterministic integer scores persist on tenant-scoped `page_candidate_scores`. One winner is written as the page draft. Operators see names, rationale, and Strong / Ready / Needs work on Control `/funnel` — not a numeric score. Client reveal is FR8 on `/reveal`. Pixel screenshots and AI visual review stay later.
 
 - local preview rendering;
 - deterministic scoring;
@@ -3053,35 +3053,15 @@ Thin slice in: each cheap manifest is composed in memory on the shared funnel en
 
 ## FR6 — Winner Asset Completion
 
-Open. Thin C5 is in: Delivery already consumes placed C3 OG composition ids on published page versions. FR6 spends expensive C2 media on the winning direction only. Do not generate three sites. Do not invent proof.
-
-- selected direction asset manifest;
-- Doc 28 integration;
-- winner-only expensive generation;
-- generation budget enforcement.
+In. When media strategy is hybrid, one `ImageProvider` job is spent on the selected direction and linked by `visual_direction_id`. Typography-led and authentic strategies do not generate. A repeat uses the same idempotency key. Budget, pause, and prohibited-style checks stay on the C2 path. Other directions get no image jobs.
 
 ## FR7 — First Reveal Gate
 
-Thin first-client bar: deterministic checks (headline, placeholder copy, preview noindex, primary CTA, logo or typography-led hero, known hero). Results persist on `first_reveal_gate_results`. Operators can override with a written reason. Preview publish is not blocked. Screenshots, AI visual review, and client reveal UX are later.
-
-- brand checks;
-- first-screen checks;
-- visual checks;
-- trust checks;
-- mobile;
-- accessibility;
-- performance;
-- SEO;
-- analytics.
+Thin first-client bar plus remainder checks: contrast when both theme colors are set, request-form heading and labels, section count, and a first-screen description (headline and action). Results persist on `first_reveal_gate_results`. Operators can override with a written reason. Preview publish is not blocked. Pixel screenshots and AI visual review are CE5 in [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). They are not stored.
 
 ## FR8 — Client Reveal UX
 
-- preview state;
-- device switching;
-- rationale;
-- approval;
-- revision request;
-- simple feedback controls.
+In on Control `/reveal`. The client sees one direction, its rationale, and a desktop or phone frame. Approve or request changes. Approving does not publish. The page stays hidden until the preview check passes. It is not in the default client nav; Approvals links to it. Plain-language change categories and revision lineage are CE6, later.
 
 ## FR9 — Scale and Learning
 

@@ -11,7 +11,7 @@ Before implementation establish audience, primary and secondary conversion, page
 
 Do not create generic AI-style landing pages: no default purple/blue glow, fake logos, three identical feature cards, oversized radius, or buzzword headlines.
 
-Use shared Vector capability tokens and section variants (`hero-split`, `services-editorial`) without making every client look the same. Do not apply `docs/28` Vector identity (black/blue signal-to-growth chrome) to client Delivery pages. Prefer Outcome → Visual → Explanation → Proof → CTA. Client images and generated media follow `docs/29`. First client preview composition follows `docs/plans/FIRST_REVEAL_TRACK.md`: cheap direction manifests, winner-only expensive media, First Reveal Gate before the client sees the page.
+Use shared Vector capability tokens and section variants (`hero-split`, `services-editorial`) without making every client look the same. Do not apply `docs/28` Vector identity (black/blue signal-to-growth chrome) to client Delivery pages. Prefer Outcome → Visual → Explanation → Proof → CTA. Client images and generated media follow `docs/29`. First client preview composition follows `docs/plans/FIRST_REVEAL_TRACK.md`: cheap direction manifests, winner-only expensive media, First Reveal Gate before the client sees the page. Further art direction follows `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` and does not replace the `docs/27` publication gate.
 
 Respect `prefers-reduced-motion`. Keep essential copy in crawlable HTML. Machine-readable facts (`llms.txt`, JSON-LD) must match visible copy (`docs/10`). Never fake metrics or invent analytics event names.
 

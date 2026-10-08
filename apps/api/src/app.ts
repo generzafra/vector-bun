@@ -116,7 +116,11 @@ import {
 	composeCreativeShells,
 	listCreativeCompositions,
 	getFunnelAssetManifest,
-	placeFunnelShareCards
+	placeFunnelShareCards,
+	completeWinnerMedia,
+	decideClientReveal,
+	getClientReveal,
+	runCreativeQa
 } from '@vector/domain';
 import { createRequestId } from '@vector/observability';
 
@@ -1378,6 +1382,47 @@ app.post('/v1/funnel-manifests/place', async (c) => {
 	const ctx = contextFor(session, requestId);
 	const data = await placeFunnelShareCards(session, ctx, requestId);
 	return c.json({ requestId, data }, 201);
+});
+
+app.post('/v1/funnel/winner-media', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const data = await completeWinnerMedia(session, ctx, requestId);
+	return c.json({ requestId, data }, 201);
+});
+
+app.post('/v1/funnel/creative-qa', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	actorCan(session, 'pages.manage');
+	const ctx = contextFor(session, requestId);
+	const body = await c.req.json().catch(() => ({}));
+	const data = await runCreativeQa(session, ctx, body, requestId);
+	return c.json({ requestId, data }, 201);
+});
+
+app.get('/v1/reveal', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	const ctx = contextFor(session, requestId);
+	return c.json({ requestId, data: await getClientReveal(session, ctx) });
+});
+
+app.post('/v1/reveal/decide', async (c) => {
+	const requestId = createRequestId();
+	const session = await requireSession(c);
+	if (!session.clientId) throw new ForbiddenError('No active client');
+	assertCsrf(session.csrf, c.req.header('x-csrf-token'));
+	const ctx = contextFor(session, requestId);
+	const data = await decideClientReveal(session, ctx, await c.req.json(), requestId);
+	return c.json({ requestId, data });
 });
 
 app.get('/v1/search', async (c) => {

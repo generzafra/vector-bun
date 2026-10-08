@@ -72,6 +72,14 @@ funnel_asset_manifests
 
 One manifest per page version. Slots store C3 composition ids (OG / social / email), never object-store keys. Composition FKs are `ON DELETE set null`. Do not `ON DELETE CASCADE`. Operator `pages.manage` places latest shells onto the current draft. Publish copies the draft manifest onto the new published version. Delivery `/og-image` serves the published OG slot only. C4 `creative_derivatives` are not required for this thin slice.
 
+Creative C7 and FR8 (tenant-owned, `client_id` required):
+
+```text
+creative_qa_reviews
+```
+
+One review per draft page version. Checks cover rights, size, alt text, prohibited style, and invented proof. Status is `pending`, `blocked`, `approved`, or `changes_requested`. Approving does not publish. FR6 stores `image_generation_jobs.visual_direction_id` for the one hybrid winner photo. Other directions are not generated.
+
 Phase 5 social (tenant-owned, `client_id` required):
 
 ```text

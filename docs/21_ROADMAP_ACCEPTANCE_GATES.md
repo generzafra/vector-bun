@@ -1,6 +1,6 @@
 # Roadmap and Acceptance Gates
 
-Detailed execution plans: [plans/README.md](plans/README.md). Cross-cutting Creative, Outcomes, First Reveal, and Client Value mapping: [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md). Remaining unimplemented slices: [plans/SHIP_REMAINING.md](plans/SHIP_REMAINING.md). Implement one phase or track slice at a time. Cursor Grok Bot is the development agent. Production Grok API starts in Phase 4. Numbered charters stop at `docs/30`. First Reveal and Client Value are tracks (ADR-0012), not `docs/31` / `docs/32`. Remaining work is sequenced as track plans in `docs/plans/` (ADR-0013), not new numbered charters.
+Detailed execution plans: [plans/README.md](plans/README.md). Cross-cutting Creative, Outcomes, First Reveal, Client Value, and Creative Experience mapping: [plans/CROSS_CUTTING_TRACKS.md](plans/CROSS_CUTTING_TRACKS.md). Remaining unimplemented slices: [plans/SHIP_REMAINING.md](plans/SHIP_REMAINING.md). Implement one phase or track slice at a time. Cursor Grok Bot is the development agent. Production Grok API starts in Phase 4. Numbered charters stop at `docs/30`. First Reveal and Client Value are tracks (ADR-0012), not `docs/31` / `docs/32`. Remaining work is sequenced as track plans in `docs/plans/` (ADR-0013), not new numbered charters. Creative Experience CE0–CE7 is Wave D on the same engines (ADR-0014).
 
 ## Phase 0
 
