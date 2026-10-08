@@ -47,6 +47,8 @@ export async function upsertCreativeQaReviewForTenant(
 			summary: input.summary,
 			altText: input.altText,
 			revisionNote: null,
+			changeCategories: null,
+			priorDirectionId: null,
 			decidedBy: null,
 			decidedAt: null,
 			updatedAt: now
@@ -61,6 +63,8 @@ export async function upsertCreativeQaReviewForTenant(
 				summary: input.summary,
 				altText: input.altText,
 				revisionNote: null,
+				changeCategories: null,
+				priorDirectionId: null,
 				decidedBy: null,
 				decidedAt: null,
 				updatedAt: now
@@ -76,6 +80,8 @@ export async function decideCreativeQaReviewForTenant(
 		pageVersionId: string;
 		status: 'approved' | 'changes_requested';
 		revisionNote: string | null;
+		changeCategories: string[] | null;
+		priorDirectionId: string | null;
 		decidedBy: string;
 	}
 ) {
@@ -85,6 +91,8 @@ export async function decideCreativeQaReviewForTenant(
 		.set({
 			status: input.status,
 			revisionNote: input.revisionNote,
+			changeCategories: input.changeCategories,
+			priorDirectionId: input.priorDirectionId,
 			decidedBy: input.decidedBy,
 			decidedAt: new Date(),
 			updatedAt: new Date()

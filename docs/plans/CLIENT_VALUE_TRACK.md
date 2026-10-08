@@ -12,16 +12,16 @@
 
 **Not `docs/32`.** Numbered charters stop at `docs/30`. This track **extends** Outcomes. It does not sit above `docs/30` as a second sales, revenue, or attribution source of truth. `docs/20` owns MGE operating cost. Client-facing value must not expose MGE margin. These slices do not reopen Phases 0–9.
 
-**Remaining execution (8 October 2026):** V0 and V1 are **in**. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md). Next is Wave D CE0. O15 Ask Vector is in. Execution facts live in [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md). Trusted software calculates; AI explains.
+**Remaining execution (8 October 2026):** V0, V1, V2, V3, and V4 are **in**. V3 shows a revenue-to-fee ratio on Control `/value` only when this month’s recorded revenue, the package fee, and attribution coverage agree. It is not profit and not ROI. Replacement cost is not shown. Sequence in [SHIP_REMAINING.md](SHIP_REMAINING.md). V4 and C9 are in. Next is Wave E P9-S2. CE0–CE7 are in. O15 Ask Vector is in. Execution facts live in [OUTCOMES_TRACK.md](OUTCOMES_TRACK.md). Trusted software calculates; AI explains.
 
-| Slice    | Status | Depends on                                                 |
-| -------- | ------ | ---------------------------------------------------------- |
-| V0       | **In** | Known fee/package. Activity proof only                     |
-| V1       | **In** | O1–O3. Qualified leads, source label, primary goal. No ROI |
-| V2 / O21 | Open   | Versioned benchmarks or client baseline. Labeled estimated |
-| V3 / O22 | Open   | O11–O12 / O14 coverage. Replacement cost ≠ ROI             |
-| V4       | Open   | Phase 7 + data health                                      |
-| V5       | Open   | Phase 9 later                                              |
+| Slice    | Status | Depends on                                                         |
+| -------- | ------ | ------------------------------------------------------------------ |
+| V0       | **In** | Known fee/package. Activity proof only                             |
+| V1       | **In** | O1–O3. Qualified leads, source label, primary goal. No ROI         |
+| V2 / O21 | **In** | Versioned client baseline. Labeled estimated. No savings math      |
+| V3 / O22 | **In** | Revenue-to-fee when coverage matches. Not profit. Not ROI          |
+| V4       | **In** | Experiment count difference when data health is clear. Not revenue |
+| V5       | Open   | Phase 9 later                                                      |
 
 ---
 
@@ -3840,6 +3840,8 @@ Add:
 - revenue-to-fee ratio;
 - stronger monthly value statement.
 
+**In:** Control `/value` derives the ratio from this month’s recorded revenue events and the stored package fee. The ratio appears only when both use the same currency and attribution coverage is observed or measured. Mixed currency, a missing fee, or weak attribution stays unknown. The sentence says it is not profit. Replacement cost is not calculated. No new table and no second revenue ledger.
+
 ---
 
 ## V4 — Incremental Value
@@ -3850,6 +3852,8 @@ Add:
 - experiment-based value;
 - incremental conversion estimate;
 - advanced attribution.
+
+**In:** Control `/value` reads the latest tenant experiment result. A difference between challenger and control primary counts is shown only when the sample is clean and every data-health check is healthy. The sentence is a count. It is not revenue and is not added to recorded revenue. A thin or newer unclean result hides the count. No new table.
 
 ---
 

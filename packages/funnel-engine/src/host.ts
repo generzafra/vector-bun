@@ -26,6 +26,10 @@ export function isOgImagePath(pathname: string) {
 	return pathname === '/og-image' || pathname === '/og-image/';
 }
 
+export function isHeroImagePath(pathname: string) {
+	return pathname === '/hero-image' || pathname === '/hero-image/';
+}
+
 export function isUnsubscribePath(pathname: string) {
 	return pathname === '/unsubscribe' || pathname === '/unsubscribe/';
 }

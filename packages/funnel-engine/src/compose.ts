@@ -9,6 +9,8 @@ import {
 } from '@vector/contracts';
 import { formatMoneyLabel } from './money';
 import { parsePageDocument, type PageDocument, type PageSection } from './schema';
+import { motionFor } from './motion';
+import { heroMobileFor, sectionRhythm, widthFor, widthRoleFor } from './width';
 
 export type KnowledgeSnapshot = {
 	clientSlug: string;
@@ -286,6 +288,16 @@ export function composeLeadPage(
 
 	const title = `${brand.displayName} · ${brand.primaryConversion}`.slice(0, 70);
 	const description = brand.offer.slice(0, 160);
+	const rhythm = sectionRhythm({
+		primaryConversion: brand.primaryConversion,
+		personality
+	});
+	const framed = sections.map((section) => {
+		const role = widthRoleFor(section.type);
+		const widthMode = widthFor(rhythm, role);
+		if (role !== 'hero') return { ...section, widthMode };
+		return { ...section, widthMode, mobileTreatment: heroMobileFor(rhythm) };
+	});
 
 	return parsePageDocument({
 		schemaVersion: 1,
@@ -297,13 +309,14 @@ export function composeLeadPage(
 		},
 		theme: {
 			personality,
-			tokens: brand.tokens
+			tokens: brand.tokens,
+			motionPreset: motionFor(rhythm)
 		},
 		seo: {
 			title,
 			description,
 			noindex: options.preview
 		},
-		sections
+		sections: framed
 	});
 }

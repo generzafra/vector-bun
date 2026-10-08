@@ -2684,7 +2684,7 @@ First Reveal client card (`docs/plans/FIRST_REVEAL_TRACK.md`): Control shows a b
 
 Build in the order in §88. First paying-client bar (§78) is launch readiness, not a Phase 0 reopen. Revenue value may remain optional. Ask Vector, CRM sync, ads, and billing stay later slices.
 
-Client operating UX is first-class: capability-filtered default nav (CU0 in), Outcomes QuickStart (CU1 in), Approval Center (O8 in), `sales_outcomes` (O3 in), and V0 activity proof on `/value` before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md). Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md). O4 Overview is in on Control `/overview`. O5 Today is in on Control `/today` and in the default client nav. O9 offer versions are in on Control `/knowledge`. O10 `CRMProvider` is in as a memory adapter with no vendor. O11 revenue events are in. O12 attribution confidence is in. O13 recommendation evidence is in. O14 monthly growth review is in. V1 lead and goal value join is in on Control `/value`. Next is Wave D CE0. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
+Client operating UX is first-class: capability-filtered default nav (CU0 in), Outcomes QuickStart (CU1 in), Approval Center (O8 in), `sales_outcomes` (O3 in), and V0 activity proof on `/value` before more operator screens (`docs/30` §2, §5, §81–85). Execution: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md). Sequence: [`docs/plans/SHIP_REMAINING.md`](plans/SHIP_REMAINING.md). O4 Overview is in on Control `/overview`. O5 Today is in on Control `/today` and in the default client nav. O9 offer versions are in on Control `/knowledge`. O10 `CRMProvider` is in as a memory adapter with no vendor. O11 revenue events are in. O12 attribution confidence is in. O13 recommendation evidence is in. O14 monthly growth review is in. V1 lead and goal value join is in on Control `/value`. V2 client baselines and V3 revenue-to-fee are in on Control `/value`. V4 incremental counts are in on Control `/value`. C9 is in. Next is Wave E P9-S2. CE0–CE7 are in. Do not put Knowledge / Funnel / Autonomy / Portfolio in the default client nav. The `docs/17` 16-step catalog is operator readiness, not the client form.
 
 ---
 
@@ -2900,10 +2900,10 @@ It is done when:
 
 Phase mapping is locked in `docs/plans/CROSS_CUTTING_TRACKS.md`. These twenty items are the Outcomes track (O1–O20), not a new Vector phase. Client Value extends them. Remaining execution, including CU0–CU1 client operating UX before O4–O20: [`docs/plans/OUTCOMES_TRACK.md`](plans/OUTCOMES_TRACK.md).
 
-21. Replacement-cost and time-savings ranges (V2 / O21). Versioned benchmarks or client baseline. Labeled estimated.
-22. Revenue-linked value statement (V3 / O22) only when O11–O12 coverage exists. Replacement cost is not ROI.
+21. Versioned client baseline (V2 / O21) is in. Client-stated previous monthly spend, labeled estimated. Time-savings ranges stay later.
+22. Revenue-linked value statement (V3 / O22) is in. Revenue-to-fee only when the fee, recorded revenue, and attribution coverage match. Replacement cost is not ROI.
 
-V0 activity proof is in on Control `/value`. V1 joins O1–O3 in Wave C. V4 incrementality waits for Phase 7 coverage. V5 waits for Phase 9 later.
+V0 activity proof is in on Control `/value`. V1 joins O1–O3 in Wave C. V2 client baselines and V3 revenue-to-fee are in on the same page. V4 incremental counts are in on the same page. V5 waits for Phase 9 later.
 
 Recommended:
 

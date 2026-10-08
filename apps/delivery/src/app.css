@@ -162,9 +162,48 @@ button[type='submit']:disabled {
 }
 
 main {
+	max-width: none;
+	margin: 0;
+	padding: 0 0 var(--space-6);
+}
+
+.section-frame {
+	min-width: 0;
+}
+
+.width-contained {
 	max-width: 68rem;
-	margin: 0 auto;
-	padding: var(--space-4) var(--space-4) var(--space-6);
+	margin-inline: auto;
+	padding-inline: var(--space-4);
+}
+
+.width-wide {
+	max-width: 90rem;
+	margin-inline: auto;
+	padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+
+.width-full-bleed {
+	width: 100%;
+	padding-inline: clamp(1rem, 5vw, 4rem);
+	background: color-mix(in srgb, var(--text) 4%, var(--bg));
+}
+
+.width-split-bleed {
+	width: min(100%, 90rem);
+	margin-inline: auto;
+	padding-inline: var(--space-4);
+}
+
+.hero-photo-frame {
+	margin: 0 0 var(--space-4);
+}
+
+.hero-photo {
+	display: block;
+	width: 100%;
+	max-height: 28rem;
+	object-fit: cover;
 }
 
 .hero-minimal,
@@ -263,7 +302,7 @@ main {
 }
 
 .lead form {
-	max-width: 28rem;
+	max-width: min(28rem, 100%);
 }
 
 label {
@@ -288,8 +327,10 @@ label.choice input {
 	margin-top: 0.3rem;
 }
 
-input,
+input:not([type='checkbox']):not([type='radio']),
 textarea {
+	width: 100%;
+	max-width: 100%;
 	min-height: 2.75rem;
 	padding: 0.65rem 0.8rem;
 	border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
@@ -318,6 +359,13 @@ textarea {
 }
 
 @media (min-width: 800px) {
+	.width-split-bleed {
+		width: 100%;
+		max-width: none;
+		padding-left: max(1rem, calc((100vw - 68rem) / 2));
+		padding-right: 0;
+	}
+
 	.hero-split {
 		grid-template-columns: 3fr 2fr;
 		padding-top: var(--space-6);
@@ -332,6 +380,22 @@ textarea {
 }
 
 @media (max-width: 799px) {
+	.width-contained,
+	.width-wide,
+	.width-full-bleed,
+	.width-split-bleed {
+		padding-inline: 1rem;
+	}
+
+	.mobile-type h1 {
+		max-width: 16ch;
+	}
+
+	.mobile-stack .hero-split,
+	.mobile-type .hero-split {
+		grid-template-columns: 1fr;
+	}
+
 	.hero-minimal,
 	.hero-editorial,
 	.hero-split {
@@ -345,6 +409,49 @@ textarea {
 
 	.top .cta {
 		width: 100%;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.motion-m1 h1,
+	.motion-m2 h1,
+	.motion-m2 .lede {
+		animation-name: motion-rise;
+		animation-duration: 220ms;
+		animation-timing-function: ease-out;
+		animation-fill-mode: both;
+	}
+
+	.motion-m2 h1,
+	.motion-m2 .lede {
+		animation-duration: 350ms;
+	}
+
+	.motion-m2 .lede {
+		animation-delay: 80ms;
+	}
+
+	.motion-m1 .cta,
+	.motion-m2 .cta {
+		transition: transform 150ms ease-out;
+	}
+
+	.motion-m1 .cta:hover,
+	.motion-m1 .cta:focus-visible,
+	.motion-m2 .cta:hover,
+	.motion-m2 .cta:focus-visible {
+		transform: translateY(-1px);
+	}
+}
+
+@keyframes motion-rise {
+	from {
+		opacity: 0;
+		transform: translateY(0.4rem);
+	}
+	to {
+		opacity: 1;
+		transform: none;
 	}
 }
 

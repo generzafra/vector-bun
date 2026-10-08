@@ -114,7 +114,7 @@ export async function insertCreativeAssetForTenant(
 	ctx: TenantContext,
 	input: {
 		title: string;
-		kind: 'image' | 'graphic' | 'other';
+		kind: 'image' | 'graphic' | 'other' | 'video';
 		storageKey: string;
 		originalFilename: string;
 		mimeType: string;
@@ -210,4 +210,45 @@ export async function updateCreativeAssetRightsForTenant(
 		)
 		.returning();
 	return row ?? null;
+}
+
+export async function replaceCreativeFamilyForTenant(
+	ctx: TenantContext,
+	input: { familyKey: string; slots: { assetId: string; channel: string }[] }
+) {
+	const required = requireTenantContext(ctx);
+	return db.transaction(async (tx) => {
+		await tx
+			.update(creativeAssets)
+			.set({ familyKey: null, channel: null, updatedAt: new Date() })
+			.where(
+				and(
+					eq(creativeAssets.clientId, required.clientId),
+					eq(creativeAssets.familyKey, input.familyKey)
+				)
+			);
+		const stored = [];
+		for (const slot of input.slots) {
+			const [row] = await tx
+				.update(creativeAssets)
+				.set({
+					familyKey: input.familyKey,
+					channel: slot.channel,
+					updatedAt: new Date()
+				})
+				.where(
+					and(eq(creativeAssets.id, slot.assetId), eq(creativeAssets.clientId, required.clientId))
+				)
+				.returning({
+					id: creativeAssets.id,
+					title: creativeAssets.title,
+					status: creativeAssets.status,
+					familyKey: creativeAssets.familyKey,
+					channel: creativeAssets.channel
+				});
+			if (!row) throw new Error('Creative family asset was not stored');
+			stored.push(row);
+		}
+		return stored;
+	});
 }

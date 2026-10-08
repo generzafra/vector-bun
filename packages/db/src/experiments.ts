@@ -438,6 +438,50 @@ export async function listLatestExperimentResultsForTenant(
 		.orderBy(desc(experimentResults.computedAt));
 }
 
+export async function latestExperimentResultForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select({
+			sampleMet: experimentResults.sampleMet,
+			horizonMet: experimentResults.horizonMet,
+			botContamination: experimentResults.botContamination,
+			sourceImbalance: experimentResults.sourceImbalance,
+			controlPrimaryCount: experimentResults.controlPrimaryCount,
+			challengerPrimaryCount: experimentResults.challengerPrimaryCount,
+			primaryMetric: experiments.primaryMetric
+		})
+		.from(experimentResults)
+		.innerJoin(experiments, eq(experiments.id, experimentResults.experimentId))
+		.where(
+			and(
+				eq(experimentResults.clientId, required.clientId),
+				eq(experiments.clientId, required.clientId)
+			)
+		)
+		.orderBy(desc(experimentResults.computedAt))
+		.limit(1);
+	return row ?? null;
+}
+
+export async function getExperimentResultForTenant(ctx: TenantContext, id: string) {
+	const required = requireTenantContext(ctx);
+	const [row] = await db
+		.select({
+			id: experimentResults.id,
+			experimentId: experimentResults.experimentId,
+			horizonMet: experimentResults.horizonMet,
+			sampleMet: experimentResults.sampleMet,
+			botContamination: experimentResults.botContamination,
+			sourceImbalance: experimentResults.sourceImbalance,
+			controlPrimaryCount: experimentResults.controlPrimaryCount,
+			challengerPrimaryCount: experimentResults.challengerPrimaryCount
+		})
+		.from(experimentResults)
+		.where(and(eq(experimentResults.id, id), eq(experimentResults.clientId, required.clientId)))
+		.limit(1);
+	return row ?? null;
+}
+
 export async function listExperimentDecisionsForTenant(
 	ctx: TenantContext,
 	experimentIds: string[]

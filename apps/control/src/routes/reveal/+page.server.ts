@@ -36,7 +36,11 @@ export const actions = {
 			await decideClientReveal(
 				session,
 				contextFor(session, locals.requestId),
-				{ decision: 'changes_requested', note: String(form.get('note') ?? '') },
+				{
+					decision: 'changes_requested',
+					note: String(form.get('note') ?? ''),
+					categories: form.getAll('category').map(String)
+				},
 				locals.requestId
 			);
 			return { notice: 'Change request recorded. Nothing was published.' };

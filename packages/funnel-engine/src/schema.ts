@@ -24,6 +24,56 @@ export const SERVICES_SECTION_TYPES = ['services', 'services-editorial'] as cons
 export const CTA_SECTION_TYPES = ['cta', 'cta-minimal'] as const;
 export const TYPOGRAPHY_LED_HERO_TYPES = ['hero-minimal', 'hero-editorial'] as const;
 
+export const SECTION_WIDTH_MODES = ['contained', 'wide', 'full-bleed', 'split-bleed'] as const;
+export type SectionWidthMode = (typeof SECTION_WIDTH_MODES)[number];
+
+export const MOTION_PRESETS = ['m0', 'm1', 'm2'] as const;
+export type MotionPreset = (typeof MOTION_PRESETS)[number];
+
+export const HERO_MOBILE_TREATMENTS = ['stack', 'typography_first'] as const;
+export type HeroMobileTreatment = (typeof HERO_MOBILE_TREATMENTS)[number];
+
+const widthModeField = z.enum(SECTION_WIDTH_MODES).optional();
+const mobileTreatmentField = z.enum(HERO_MOBILE_TREATMENTS).optional();
+const UNSAFE_MEDIA_TEXT = /[<>]|javascript:|\{@html/i;
+
+const heroMediaFields = {
+	mediaAssetId: z.string().uuid().optional(),
+	mediaAlt: z.string().min(1).max(200).optional(),
+	focalX: z.number().int().min(0).max(10000).optional(),
+	focalY: z.number().int().min(0).max(10000).optional()
+};
+
+function heroMediaIssues(
+	section: {
+		mediaAssetId?: string;
+		mediaAlt?: string;
+		focalX?: number;
+		focalY?: number;
+	},
+	ctx: z.RefinementCtx
+) {
+	const placed = section.mediaAssetId !== undefined;
+	if (placed && section.mediaAlt && UNSAFE_MEDIA_TEXT.test(section.mediaAlt)) {
+		ctx.addIssue({ code: 'custom', message: 'Hero alt text must stay plain' });
+	}
+	if (
+		placed &&
+		(!section.mediaAlt || section.focalX === undefined || section.focalY === undefined)
+	) {
+		ctx.addIssue({
+			code: 'custom',
+			message: 'Hero media needs alt text and a focal point'
+		});
+	}
+	if (
+		!placed &&
+		(section.mediaAlt || section.focalX !== undefined || section.focalY !== undefined)
+	) {
+		ctx.addIssue({ code: 'custom', message: 'A focal point requires an approved asset' });
+	}
+}
+
 const ctaSchema = z
 	.object({
 		label: z.string().min(1).max(80),
@@ -39,9 +89,13 @@ const heroMinimalSectionSchema = z
 		headline: z.string().min(1).max(160),
 		lede: z.string().min(1).max(400),
 		primaryCta: ctaSchema,
-		secondaryCta: ctaSchema.optional()
+		secondaryCta: ctaSchema.optional(),
+		widthMode: widthModeField,
+		mobileTreatment: mobileTreatmentField,
+		...heroMediaFields
 	})
-	.strict();
+	.strict()
+	.superRefine(heroMediaIssues);
 
 const heroSplitSectionSchema = z
 	.object({
@@ -53,9 +107,13 @@ const heroSplitSectionSchema = z
 		asideTitle: z.string().min(1).max(80),
 		asideBody: z.string().min(1).max(240),
 		primaryCta: ctaSchema,
-		secondaryCta: ctaSchema.optional()
+		secondaryCta: ctaSchema.optional(),
+		widthMode: widthModeField,
+		mobileTreatment: mobileTreatmentField,
+		...heroMediaFields
 	})
-	.strict();
+	.strict()
+	.superRefine(heroMediaIssues);
 
 const heroEditorialSectionSchema = z
 	.object({
@@ -65,9 +123,13 @@ const heroEditorialSectionSchema = z
 		headline: z.string().min(1).max(160),
 		lede: z.string().min(1).max(400),
 		primaryCta: ctaSchema,
-		secondaryCta: ctaSchema.optional()
+		secondaryCta: ctaSchema.optional(),
+		widthMode: widthModeField,
+		mobileTreatment: mobileTreatmentField,
+		...heroMediaFields
 	})
-	.strict();
+	.strict()
+	.superRefine(heroMediaIssues);
 
 const proofItemSchema = z
 	.object({
@@ -81,7 +143,8 @@ const proofSectionSchema = z
 		id: z.string().min(1).max(80),
 		type: z.literal('proof'),
 		heading: z.string().min(1).max(120),
-		items: z.array(proofItemSchema).min(1).max(6)
+		items: z.array(proofItemSchema).min(1).max(6),
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -90,7 +153,8 @@ const proofFeaturedSectionSchema = z
 		id: z.string().min(1).max(80),
 		type: z.literal('proof-featured'),
 		heading: z.string().min(1).max(120),
-		items: z.array(proofItemSchema).min(1).max(6)
+		items: z.array(proofItemSchema).min(1).max(6),
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -107,7 +171,8 @@ const servicesSectionSchema = z
 		id: z.string().min(1).max(80),
 		type: z.literal('services'),
 		heading: z.string().min(1).max(120),
-		items: z.array(serviceItemSchema).min(1).max(8)
+		items: z.array(serviceItemSchema).min(1).max(8),
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -116,7 +181,8 @@ const servicesEditorialSectionSchema = z
 		id: z.string().min(1).max(80),
 		type: z.literal('services-editorial'),
 		heading: z.string().min(1).max(120),
-		items: z.array(serviceItemSchema).min(1).max(8)
+		items: z.array(serviceItemSchema).min(1).max(8),
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -127,7 +193,8 @@ const offerSectionSchema = z
 		heading: z.string().min(1).max(120),
 		name: z.string().min(1).max(120),
 		summary: z.string().min(1).max(400),
-		priceLabel: z.string().max(80).optional()
+		priceLabel: z.string().max(80).optional(),
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -137,7 +204,8 @@ const ctaSectionSchema = z
 		type: z.literal('cta'),
 		heading: z.string().min(1).max(120),
 		body: z.string().min(1).max(400),
-		primaryCta: ctaSchema
+		primaryCta: ctaSchema,
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -147,7 +215,8 @@ const ctaMinimalSectionSchema = z
 		type: z.literal('cta-minimal'),
 		heading: z.string().min(1).max(120),
 		body: z.string().min(1).max(400),
-		primaryCta: ctaSchema
+		primaryCta: ctaSchema,
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -166,7 +235,8 @@ const faqSectionSchema = z
 					.strict()
 			)
 			.min(1)
-			.max(8)
+			.max(8),
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -180,7 +250,8 @@ const leadFormSectionSchema = z
 		fields: z
 			.array(z.enum(['name', 'email', 'phone', 'company', 'message']))
 			.min(1)
-			.max(6)
+			.max(6),
+		widthMode: widthModeField
 	})
 	.strict();
 
@@ -219,7 +290,8 @@ export const pageDocumentSchema = z
 				personality: z
 					.enum(['premium', 'technology', 'growth', 'creative', 'corporate'])
 					.optional(),
-				tokens: brandTokensSchema
+				tokens: brandTokensSchema,
+				motionPreset: z.enum(MOTION_PRESETS).optional()
 			})
 			.strict(),
 		seo: z

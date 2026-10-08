@@ -1,6 +1,6 @@
 # Creative track — C1–C9
 
-**Status:** Implementation specification — C0–C3, thin C5, and C7 in; C4, C6, C8–C9 open. Art direction beyond this track is [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md) (Wave D).  
+**Status:** Implementation specification — C0–C3, winner C4, thin C5, C6, C7, C8, and C9 in; social crops stay out. Art direction beyond this track is [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md) (Wave D).  
 **Track:** Creative (not a Vector phase)  
 **Standing law:** [`docs/29`](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md) §63  
 **Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md) Wave B then D  
@@ -36,7 +36,7 @@ This track has **no phase exit**. Phase 5 already exited with C0 + two-platform 
 
 **Must take for First Reveal (Wave B):** C1, C3, C5, C7. C2 before FR6 winner media. Thin FR7 does not require C2.
 
-**Later:** C6, C9, full URL-extraction QuickStart, portfolio asset-gap analysis (Phase 9 later). Art direction beyond the current section grammar is [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md) (CE0–CE7, Wave D): briefs, width modes, M0–M2 motion, rendered screenshots, and reveal change categories. It does not add a package or a second renderer. C4 is CE3. C8 is CE7.
+**Later:** full URL-extraction QuickStart and portfolio asset-gap analysis (Phase 9 later). C9 is in as a memory provider. Social pixel crops stay out. Art direction beyond the current section grammar is [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md) (CE0–CE7, Wave D): briefs, width modes, M0–M2 motion, rendered screenshots, and reveal change categories. It does not add a package or a second renderer. C4 is CE3 and is in. C8 is CE7 and is in.
 
 ---
 
@@ -72,8 +72,8 @@ No third plane. Bytes stay on `StorageProvider` under `clients/{client_id}/creat
 
 - C1: `brand_visual_profiles` (tenant-owned). Capabilities: extend `knowledge.manage` / `pages.manage` or add `creative.manage` if a third capability is required — authorize by capability, not role string.
 - C2: `image_generation_jobs` (tenant-owned); `packages/images` with `ImageProvider`
-- C3: `creative_compositions` (tenant-owned); `packages/compose` SVG compositor. C4 `creative_derivatives` later
-- C5: `funnel_asset_manifests` (tenant-owned). Thin slice stores C3 composition ids per page version. C4 `creative_derivatives` later
+- C3: `creative_compositions` (tenant-owned); `packages/compose` SVG compositor. C4 winner rows are `creative_derivatives`
+- C5: `funnel_asset_manifests` (tenant-owned). Thin slice stores C3 composition ids per page version. Hero placement uses an approved asset id
 - C6: campaign family rows on existing `creative_assets` (kind/family), not a second blob store
 - C7: reuse `approval_requests` with creative subject types; do not invent a second approval product
 - C8: `creative_learning_objects` (tenant-owned), join Phase 7 learning objects
@@ -91,20 +91,20 @@ A normal launch must not require hand-designing every asset. C1 + typography-led
 
 ## 7. Implementation order
 
-| Slice  | Work                                                              | Gate                                       |
-| ------ | ----------------------------------------------------------------- | ------------------------------------------ |
-| **C0** | Schema, versions, rights, `clients/{id}/creative/…`               | **In**                                     |
-| **C1** | Brand visual profile + confirm/edit; prohibited styles            | **In**                                     |
-| **C2** | `ImageProvider`, Grok image, job/cost/prompt versions             | **In**                                     |
-| **C3** | Deterministic compose: logo, type, tokens, OG/email/social shells | **In**                                     |
-| **C4** | Derivatives / crop / compression                                  | After C3                                   |
-| **C5** | Funnel manifests; Delivery uses approved derivatives only         | **In** (thin; C3 composition ids until C4) |
-| **C6** | Social families + previews                                        | After C4–C5                                |
-| **C7** | Automated QA + client approval/revision                           | **In**                                     |
-| **C8** | Publication usage, experiment join, learning objects              | Wave D                                     |
-| **C9** | `VideoProvider`, short-form                                       | Last                                       |
+| Slice  | Work                                                              | Gate                                                                     |
+| ------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **C0** | Schema, versions, rights, `clients/{id}/creative/…`               | **In**                                                                   |
+| **C1** | Brand visual profile + confirm/edit; prohibited styles            | **In**                                                                   |
+| **C2** | `ImageProvider`, Grok image, job/cost/prompt versions             | **In**                                                                   |
+| **C3** | Deterministic compose: logo, type, tokens, OG/email/social shells | **In**                                                                   |
+| **C4** | Winner focal points and planned widths 640 / 960 / 1440           | **In** (CE3). Separate resized files and social crops wait               |
+| **C5** | Funnel manifests; Delivery uses approved derivatives only         | **In** (thin; C3 composition ids until C4)                               |
+| **C6** | Social families + previews                                        | **In**. Channel metadata on `creative_assets`. Pixel crops wait          |
+| **C7** | Automated QA + client approval/revision                           | **In**                                                                   |
+| **C8** | Publication usage, experiment join, learning objects              | **In** (CE7). Qualified leads and sales stay uncompared until attributed |
+| **C9** | `VideoProvider`, short-form                                       | Last                                                                     |
 
-C3, thin C5, FR6, and C7 are in. FR8 client reveal is in. C4 remainder, C6, and C8 are Wave D.
+C3, winner C4, thin C5, FR6, C6, C7, and C8 are in. FR8 client reveal is in. V2, V3, V4, and C9 are in. Next is Wave E P9-S2.
 
 ---
 
@@ -134,7 +134,7 @@ C3, thin C5, FR6, and C7 are in. FR8 client reveal is in. C4 remainder, C6, and 
 ## 10. C3–C5 rules — compose, derivatives, funnel manifests
 
 - C3: logos and marketing text are composed deterministically from the C1 profile and approved copy. Prefer authentic client media. Authorize with `pages.read` / `pages.manage`. Control `/funnel` uses business language. Unpublished shells stay off Delivery until an operator places them on a page version and that version is published.
-- Derivatives are immutable versions. Do not overwrite a public cached asset in place (`docs/19`). Thin C5 treats C3 composition ids as the placed ids until C4 exists. Do not invent `creative_derivatives` in this slice.
+- Derivatives are immutable versions. Do not overwrite a public cached asset in place (`docs/19`). Thin C5 treats C3 composition ids as the placed share-card ids. CE3 added tenant-owned `creative_derivatives` for the winner hero: planned widths and focal points, not separate resized files.
 - Funnel manifests reference composition / later approved derivative ids, never raw object-store keys as authorization. Tenant-owned `funnel_asset_manifests` attach to immutable `page_versions`. Logo/composition FKs are `ON DELETE set null`. Do not `ON DELETE CASCADE`.
 - Delivery already has hostname-scoped `/brand-logo`. Thin C5 adds hostname-scoped `/og-image` from the published page version's placed OG composition. Preview must not serve another tenant’s derivative. Draft C3 shells stay on Control `/funnel/composition/:id`.
 - JSON-LD and `llms.txt` still use approved knowledge only. Generated lifestyle images are not proof. Composed share cards are not JSON-LD.
@@ -152,7 +152,7 @@ C3, thin C5, FR6, and C7 are in. FR8 client reveal is in. C4 remainder, C6, and 
 ## 12. C8–C9 rules
 
 - C8 compares creative variants against an existing business metric when Phase 7 coverage exists. Engagement is not automatically revenue.
-- C9 stays unattached until a client needs short-form. Same rights, tenancy, and approval rules.
+- C9 is in as a memory `VideoProvider`. Drafts stay unapproved. A vendor adapter waits until a client needs a real short-form model. Same rights, tenancy, and approval rules.
 
 ---
 
@@ -164,7 +164,7 @@ Cross-tenant isolation on every new table. Rights fail closed. Storage keys tena
 
 ## 14. Do not start until
 
-C0 exists (true). C1, C2, C3, thin C5, and C7 are in. FR6 and FR8 are in. FR9 waits. C4 remainder is CE3, C8 is CE7, and both sit in Wave D with the rest of [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). C6 is Wave D. Wave C is complete through O15. Next is CE0.
+C0 exists (true). C1, C2, C3, winner C4, thin C5, and C7 are in. FR6 and FR8 are in. FR9 waits. C8 is CE7 and sits in Wave D with the rest of [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). C6 is Wave D. Wave C is complete through O15. CE0–CE7 are in. C6 is in. V2, V3, V4, and C9 are in. Next is Wave E P9-S2.
 
 ## Locked attachments
 

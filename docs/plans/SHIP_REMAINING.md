@@ -34,31 +34,40 @@ Client UX is **not** a surface leftover. Default nav, Today, Approvals, and Quic
 
 ## 2. Already in — do not rebuild
 
-| Item                                                                                               | Status                                                                                                         |
-| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Phase 0–5 exits                                                                                    | Met (Phase 5 via ADR-0010)                                                                                     |
-| Phase 6 S0–S8                                                                                      | In. May exit after S1–S4 + Control backlog                                                                     |
-| Phase 7 S0–S4                                                                                      | In. Exit met                                                                                                   |
-| Phase 8 S0–S4                                                                                      | In. Exit met                                                                                                   |
-| Phase 9 S0–S1                                                                                      | In. S2–S4 later                                                                                                |
-| Creative **C0**                                                                                    | `creative_assets` / versions / rights on existing `StorageProvider`                                            |
-| Outcomes **O1** goals, **O2** Phase 2 `lead_status`, **O6** data health, **O7** notification prefs | Thin first-client bar                                                                                          |
-| First Reveal **FR0–FR2**, **thin FR7**                                                             | Additive Delivery quality + deterministic gate with operator override                                          |
-| Social LinkedIn / X / Facebook / Instagram                                                         | Official adapters. Company Page, TikTok, YouTube not started                                                   |
-| Control `docs/28` tokens on existing operator routes                                               | Operator cockpit, not client-simple nav                                                                        |
-| **CU0** capability-filtered Control nav                                                            | Default client shell is Overview / Leads / Approvals / Goals. `control.operator` keeps the cockpit             |
-| **CU1** Outcomes QuickStart                                                                        | Control `/quickstart` maps seven answers into goals, high-intent prefs, and a recorded approver                |
-| **O8** Approval Center                                                                             | Control `/approvals` groups existing `approval_requests`; decide does not publish or send                      |
-| **O3** `sales_outcomes`                                                                            | Optional integer `amount_minor` + currency on Control `/leads`; does not replace `lead_status`                 |
-| **V0** activity proof                                                                              | Control `/value`: known fee/package + observed monthly work. **No ROI**                                        |
-| Creative **C1**                                                                                    | Tenant-owned `brand_visual_profiles` + versions; Control `/brand` confirm/edit. Unconfirmed is not FR8         |
-| Creative **C2**                                                                                    | `ImageProvider` in `packages/images`; tenant-owned `image_generation_jobs`; draft-only C0 rows                 |
-| Creative **C3**                                                                                    | Deterministic SVG shells in `packages/compose`; tenant-owned `creative_compositions`; Control `/funnel` drafts |
-| Creative **C5**                                                                                    | Tenant-owned `funnel_asset_manifests`; place C3 ids on a draft; publish copies to Delivery `/og-image`         |
-| First Reveal **thin FR3**                                                                          | Consume confirmed C1 on compose; `asset_sufficiency_snapshots`; typography-led fallback                        |
-| First Reveal **thin FR4–FR5**                                                                      | Cheap direction manifests, diversity, deterministic scoring, one winner draft. Not three sites                 |
+| Item                                                                                               | Status                                                                                                                              |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 0–5 exits                                                                                    | Met (Phase 5 via ADR-0010)                                                                                                          |
+| Phase 6 S0–S8                                                                                      | In. May exit after S1–S4 + Control backlog                                                                                          |
+| Phase 7 S0–S4                                                                                      | In. Exit met                                                                                                                        |
+| Phase 8 S0–S4                                                                                      | In. Exit met                                                                                                                        |
+| Phase 9 S0–S1                                                                                      | In. S2–S4 later                                                                                                                     |
+| Creative **C0**                                                                                    | `creative_assets` / versions / rights on existing `StorageProvider`                                                                 |
+| Outcomes **O1** goals, **O2** Phase 2 `lead_status`, **O6** data health, **O7** notification prefs | Thin first-client bar                                                                                                               |
+| First Reveal **FR0–FR2**, **thin FR7**                                                             | Additive Delivery quality + deterministic gate with operator override                                                               |
+| Social LinkedIn / X / Facebook / Instagram                                                         | Official adapters. Company Page, TikTok, YouTube not started                                                                        |
+| Control `docs/28` tokens on existing operator routes                                               | Operator cockpit, not client-simple nav                                                                                             |
+| **CU0** capability-filtered Control nav                                                            | Default client shell is Overview / Leads / Approvals / Goals. `control.operator` keeps the cockpit                                  |
+| **CU1** Outcomes QuickStart                                                                        | Control `/quickstart` maps seven answers into goals, high-intent prefs, and a recorded approver                                     |
+| **O8** Approval Center                                                                             | Control `/approvals` groups existing `approval_requests`; decide does not publish or send                                           |
+| **O3** `sales_outcomes`                                                                            | Optional integer `amount_minor` + currency on Control `/leads`; does not replace `lead_status`                                      |
+| **V0** activity proof                                                                              | Control `/value`: known fee/package + observed monthly work. **No ROI**                                                             |
+| Creative **C1**                                                                                    | Tenant-owned `brand_visual_profiles` + versions; Control `/brand` confirm/edit. Unconfirmed is not FR8                              |
+| Creative **C2**                                                                                    | `ImageProvider` in `packages/images`; tenant-owned `image_generation_jobs`; draft-only C0 rows                                      |
+| Creative **C3**                                                                                    | Deterministic SVG shells in `packages/compose`; tenant-owned `creative_compositions`; Control `/funnel` drafts                      |
+| Creative **C5**                                                                                    | Tenant-owned `funnel_asset_manifests`; place C3 ids on a draft; publish copies to Delivery `/og-image`                              |
+| First Reveal **thin FR3**                                                                          | Consume confirmed C1 on compose; `asset_sufficiency_snapshots`; typography-led fallback                                             |
+| First Reveal **thin FR4–FR5**                                                                      | Cheap direction manifests, diversity, deterministic scoring, one winner draft. Not three sites                                      |
+| Creative Experience **CE0**                                                                        | Five synthetic industry fixtures and baseline notes. No renderer change. See [CE0_BASELINE.md](CE0_BASELINE.md)                     |
+| Creative Experience **CE1**                                                                        | Optional brief on `visual_directions.manifest`. Legacy pages still render. No new table                                             |
+| Creative Experience **CE2**                                                                        | Width modes on the existing heroes, story sections, and conversion treatments. No cinematic variant                                 |
+| Creative Experience **CE3**                                                                        | Winner asset gaps, focal points, planned derivative widths, and a typography-led fallback. `/hero-image` serves the approved source |
+| Creative Experience **CE4**                                                                        | Allowlisted M0–M2 motion. Reduced motion keeps the page still and readable. M3 stays out                                            |
+| Creative Experience **CE5**                                                                        | Structural geometry at 320, 390, 768, and 1440, fingerprint v1, and hard-blocker override. Pixel screenshots were not captured      |
+| Creative Experience **CE6**                                                                        | Plain-language change categories on Control `/reveal`, linked to the prior direction. Approving does not publish                    |
+| Creative Experience **CE7**                                                                        | Tenant-scoped design learning from an existing experiment result. Observed event counts only. It does not auto-apply or invent ROI  |
+| Creative **C6**                                                                                    | Campaign family metadata on existing creative assets. Channels without an asset stay text-only. Saving a family does not publish    |
 
-Not in code: `AdProvider`, `BillingProvider`, `VideoProvider`, value snapshots, Ask Vector, Campaigns, Insights, Creative QuickStart extraction, entitlements, Creative Experience CE0–CE7 (briefs, width modes, motion presets, pixel screenshots, reveal change categories).
+Not in code: `AdProvider`, `BillingProvider`, `VideoProvider`, value snapshots, Ask Vector, Campaigns, Insights, Creative QuickStart extraction, entitlements, pixel screenshots. M3, WebGL, resized derivative files, and social crops are not in.
 
 ---
 
@@ -83,18 +92,18 @@ The 16-step catalog in `docs/17` is the **readiness inventory**. It is not the c
 
 ### Creative C1–C9
 
-| Slice  | Work                                      | Gate                           |
-| ------ | ----------------------------------------- | ------------------------------ |
-| C0     | Asset schema, versions, rights            | **In**                         |
-| **C1** | Brand visual profile + onboarding confirm | **In**                         |
-| **C2** | `ImageProvider` (not `AIProvider`)        | **In**                         |
-| **C3** | Deterministic composition                 | **In**                         |
-| **C4** | Derivatives                               | Wave D / CE3                   |
-| **C5** | Funnel asset manifests                    | **In** (thin; C3 ids until C4) |
-| **C6** | Social families                           | After C4–C5                    |
-| **C7** | QA + client approval/revision             | **In**                         |
-| **C8** | Creative analytics + learning objects     | Wave D / CE7                   |
-| **C9** | `VideoProvider`                           | Unattached until needed        |
+| Slice  | Work                                      | Gate                                                    |
+| ------ | ----------------------------------------- | ------------------------------------------------------- |
+| C0     | Asset schema, versions, rights            | **In**                                                  |
+| **C1** | Brand visual profile + onboarding confirm | **In**                                                  |
+| **C2** | `ImageProvider` (not `AIProvider`)        | **In**                                                  |
+| **C3** | Deterministic composition                 | **In**                                                  |
+| **C4** | Derivatives                               | Wave D / CE3                                            |
+| **C5** | Funnel asset manifests                    | **In** (thin; C3 ids until C4)                          |
+| **C6** | Social families                           | **In**. Pixel crops stay out                            |
+| **C7** | QA + client approval/revision             | **In**                                                  |
+| **C8** | Creative analytics + learning objects     | **In** (CE7)                                            |
+| **C9** | `VideoProvider`                           | **In**. Memory drafts only. No vendor. Does not publish |
 
 ### Outcomes O3–O20
 
@@ -132,31 +141,31 @@ Spec remains [FIRST_REVEAL_TRACK.md](FIRST_REVEAL_TRACK.md). Do not generate thr
 
 ### Creative Experience CE0–CE7
 
-Design blueprint: [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md). Sequence and status: [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Same funnel engine and Creative Engine. Wave D. Do not start CE1 before CE0. Wave C is complete through O15. V1, O4, O5, O9, O10, O11, O12, O13, and O14 are in.
+Design blueprint: [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md). Sequence and status: [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). Same funnel engine and Creative Engine. Wave D. CE0–CE7 are in. Wave C is complete through O15. V1, O4, O5, O9, O10, O11, O12, O13, and O14 are in.
 
-| Slice   | Status | Depends on                                                                         |
-| ------- | ------ | ---------------------------------------------------------------------------------- |
-| **CE0** | Open   | Audit and synthetic fixtures only. No production change                            |
-| **CE1** | Open   | Versioned brief on the existing direction manifest                                 |
-| **CE2** | Open   | Width modes and a small grammar. No cinematic variant until a real client needs it |
-| **CE3** | Open   | C4 derivatives. Thin FR6 is already in                                             |
-| **CE4** | Open   | Allowlisted M0–M2 motion                                                           |
-| **CE5** | Open   | Rendered screenshots. Current FR7 is deterministic only                            |
-| **CE6** | Open   | Change categories on thin FR8. Approving still does not publish                    |
-| **CE7** | Open   | C8 learning. No invented ROI                                                       |
+| Slice   | Status | Depends on                                                                             |
+| ------- | ------ | -------------------------------------------------------------------------------------- |
+| **CE0** | **In** | Five synthetic industries and [CE0_BASELINE.md](CE0_BASELINE.md). No production change |
+| **CE1** | **In** | Optional brief on the existing direction manifest. Legacy pages still render           |
+| **CE2** | **In** | Width modes on the existing grammar. No cinematic variant                              |
+| **CE3** | **In** | Winner media and planned widths. Thin FR6 stays. Separate resized files wait           |
+| **CE4** | **In** | Allowlisted M0–M2 motion. M3 stays out                                                 |
+| **CE5** | **In** | Structural geometry and fingerprint v1. Pixel screenshots were not captured            |
+| **CE6** | **In** | Change categories on thin FR8. Approving still does not publish                        |
+| **CE7** | **In** | C8 learning from an existing experiment result. No invented ROI                        |
 
 ### Client Value V0–V5
 
 Spec remains [CLIENT_VALUE_TRACK.md](CLIENT_VALUE_TRACK.md). Trusted software calculates; AI explains.
 
-| Slice        | Status | Depends on                                                 |
-| ------------ | ------ | ---------------------------------------------------------- |
-| **V0**       | **In** | Known fee/package. **No ROI**                              |
-| **V1**       | **In** | O1–O3. Qualified leads, source label, primary goal. No ROI |
-| **V2 / O21** | Open   | Versioned benchmarks or client baseline. Labeled estimated |
-| **V3 / O22** | Open   | O11–O12 / O14 coverage. Replacement cost ≠ ROI             |
-| **V4**       | Open   | Phase 7 + data health                                      |
-| **V5**       | Open   | Phase 9 later                                              |
+| Slice        | Status | Depends on                                                                            |
+| ------------ | ------ | ------------------------------------------------------------------------------------- |
+| **V0**       | **In** | Known fee/package. **No ROI**                                                         |
+| **V1**       | **In** | O1–O3. Qualified leads, source label, primary goal. No ROI                            |
+| **V2 / O21** | **In** | Versioned client baseline on `/value`. Labeled estimated. No ROI                      |
+| **V3 / O22** | **In** | Revenue-to-fee on `/value` when fee, revenue, and attribution coverage match. Not ROI |
+| **V4**       | **In** | Experiment count difference on `/value` when data health is clear. Not revenue        |
+| **V5**       | Open   | Phase 9 later                                                                         |
 
 ### Platform ops
 
@@ -188,7 +197,7 @@ Goal: a non-technical owner is not dropped into the operator cockpit, and §78 l
 4. **O3** `sales_outcomes` — **In**
 5. **V0** activity proof when fee/package is known (no ROI) — **In**
 
-Wave A is complete. Wave B is complete. O4 Overview, O5 Today, O9 offer versions, O10 `CRMProvider`, O11 revenue events, O12 attribution confidence, O13 recommendation evidence, O14 monthly growth review, V1 lead and goal value join, and O15 Ask Vector are in. Next: Wave D **CE0**.
+Wave A is complete. Wave B is complete. O4 Overview, O5 Today, O9 offer versions, O10 `CRMProvider`, O11 revenue events, O12 attribution confidence, O13 recommendation evidence, O14 monthly growth review, V1 lead and goal value join, and O15 Ask Vector are in. CE0–CE7 are in. V2–V4 and C9 are in. Wave D is complete. Next: Wave E **P9-S2** infrastructure snapshots, after several live clients.
 
 ### Wave B — first-site quality (still one engine)
 
@@ -213,10 +222,10 @@ Wave A is complete. Wave B is complete. O4 Overview, O5 Today, O9 offer versions
 
 ### Wave D — creative experience, creative maturity, and value
 
-1. **CE0–CE7** on the existing engines — [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md). CE3 is the C4 remainder. CE7 is C8. Thin FR6 and thin FR8 stay
-2. **C6** social families
-3. **V2–V4** when coverage exists
-4. **C9** video last
+1. **CE0** baseline fixtures — **In**. **CE1** direction brief — **In**. **CE2** width modes — **In**. **CE3** winner media — **In**. **CE4** motion presets — **In**. **CE5** structural geometry — **In**. **CE6** reveal changes — **In**. **CE7** design learning — **In**. CE3 is the C4 winner remainder. CE7 is C8. Thin FR6 and thin FR8 stay. [CREATIVE_EXPERIENCE_ENGINE_TRACK.md](CREATIVE_EXPERIENCE_ENGINE_TRACK.md)
+2. **C6** social families — **In**. Pixel crops stay out
+3. **V2** client baseline — **In**. **V3** revenue-to-fee — **In**. **V4** incremental counts — **In**
+4. **C9** `VideoProvider` — **In**. Memory drafts only. No vendor and no publish path
 
 ### Wave E — scale and platform
 

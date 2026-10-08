@@ -97,6 +97,38 @@
 	</section>
 
 	<section>
+		<h2>Previous monthly spend</h2>
+		{#if proof.baseline}
+			<p>{proof.baseline.stated} / month</p>
+			<p>Version {proof.baseline.version}. Client-stated estimate. Not a measured result.</p>
+			{#if proof.baseline.earlierVersions > 0}
+				<p>Earlier versions stay on record.</p>
+			{/if}
+		{:else}
+			<p>No previous spend has been stated. Vector will not invent one.</p>
+		{/if}
+		{#if canManage}
+			<form method="post" action="?/baseline">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Previous monthly spend (whole units)
+					<input name="previousMajor" inputmode="numeric" pattern="[0-9]*" placeholder="92000" />
+				</label>
+				<label>
+					Currency
+					<input
+						name="currency"
+						maxlength="3"
+						placeholder="PHP"
+						value={proof.baseline?.currency ?? proof.profile?.currency ?? ''}
+					/>
+				</label>
+				<button type="submit">Save a new version</button>
+			</form>
+		{/if}
+	</section>
+
+	<section>
 		<h2>Work delivered this month</h2>
 		<p>
 			{proof.counts.leads} leads · {proof.counts.salesOutcomes} sales outcomes · {proof.counts
@@ -128,6 +160,17 @@
 			<p>No primary goal yet.</p>
 		{/if}
 		<p>Vector does not rank a channel from this.</p>
+	</section>
+
+	<section>
+		<h2>Revenue and the package fee</h2>
+		<p>{proof.revenueLink.detail}</p>
+		<p>Replacement cost is not shown. This is not ROI.</p>
+	</section>
+
+	<section>
+		<h2>Experiment difference</h2>
+		<p>{proof.incremental.detail}</p>
 	</section>
 
 	<section>

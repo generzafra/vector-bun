@@ -121,7 +121,7 @@ From `docs/30` §78, after supervised launch tooling exists:
 
 **In (this bar):** FR0–FR2 Delivery quality on the existing engine, hostname-scoped `/brand-logo`, a deterministic First Reveal Gate with operator override (thin FR7 plus contrast, form, section weight, and first-screen text), Control `/goals` for a primary goal (O1), data-health flags (O6), notification defaults (O7), capability-filtered Control nav (CU0), Outcomes QuickStart (CU1), Approval Center grouping (O8), `sales_outcomes` (O3), V0 activity proof on Control `/value` (known fee/package + observed monthly work, no ROI) and V1 lead and goal join on that same page, C1 brand confirm, C2 `ImageProvider`, C3 composition, thin C5 placement, thin FR3–FR6, C7 creative QA, and thin FR8 on Control `/reveal`. Preview publish is not blocked by a failed gate. Approving a reveal does not publish.
 
-**Not in:** FR9, pixel screenshots, AI visual review, Creative Experience CE0–CE7, C4 derivatives, Ask Vector, CRM sync, ads, billing, entitlements, three full sites.
+**Not in:** FR9, pixel screenshots, AI visual review, M3 motion, resized derivative files, Ask Vector, CRM sync, ads, billing, entitlements, three full sites. CE0–CE7 are in.
 
 Not required: Ask Vector, CRM sync, ads, billing, entitlements, full Today polish, three design directions, winner image generation, mature ROI, DIY/agency calculator.
 

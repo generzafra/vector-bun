@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { REVEAL_CHANGE_CATEGORIES } from '@vector/contracts';
 	import Alert from '$lib/vector/Alert.svelte';
 	import EmptyState from '$lib/vector/EmptyState.svelte';
 	import PageHeader from '$lib/vector/PageHeader.svelte';
@@ -48,6 +49,12 @@
 			<p>You approved this direction. It is not live until it is published.</p>
 		{:else if reveal.status === 'changes_requested'}
 			<p>Change request: {reveal.revisionNote}</p>
+			{#each reveal.changeLabels as label (label)}
+				<p>{label}</p>
+			{/each}
+			{#if reveal.priorDirectionName}
+				<p>This request stays on {reveal.priorDirectionName}.</p>
+			{/if}
 		{/if}
 		<div class="actions">
 			<button type="button" onclick={() => (device = 'desktop')}>Desktop</button>
@@ -67,8 +74,17 @@
 			</form>
 			<form method="post" action="?/changes">
 				<input type="hidden" name="_csrf" value={data.csrf} />
+				<fieldset>
+					<legend>What should change</legend>
+					{#each REVEAL_CHANGE_CATEGORIES as category (category.id)}
+						<label>
+							<input type="checkbox" name="category" value={category.id} />
+							{category.label}
+						</label>
+					{/each}
+				</fieldset>
 				<label>
-					What should change
+					Tell us more
 					<textarea name="note" required minlength="8" maxlength="400"></textarea>
 				</label>
 				<button type="submit">Request changes</button>

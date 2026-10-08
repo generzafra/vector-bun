@@ -1797,7 +1797,12 @@ export const creativeAssetStatus = pgEnum('creative_asset_status', [
 	'approved',
 	'archived'
 ]);
-export const creativeAssetKind = pgEnum('creative_asset_kind', ['image', 'graphic', 'other']);
+export const creativeAssetKind = pgEnum('creative_asset_kind', [
+	'image',
+	'graphic',
+	'other',
+	'video'
+]);
 export const creativeRightsStatus = pgEnum('creative_rights_status', [
 	'unknown',
 	'client_owned',
@@ -1843,6 +1848,8 @@ export const creativeAssets = pgTable(
 			.references(() => clients.id),
 		title: text('title').notNull(),
 		kind: creativeAssetKind('kind').notNull().default('image'),
+		familyKey: text('family_key'),
+		channel: text('channel'),
 		status: creativeAssetStatus('status').notNull().default('draft'),
 		sourceType: text('source_type').notNull().default('operator_upload'),
 		currentVersion: integer('current_version').notNull().default(1),
@@ -1852,7 +1859,8 @@ export const creativeAssets = pgTable(
 	},
 	(t) => [
 		index('creative_assets_client_idx').on(t.clientId),
-		index('creative_assets_org_idx').on(t.organizationId)
+		index('creative_assets_org_idx').on(t.organizationId),
+		uniqueIndex('creative_assets_client_family_channel_idx').on(t.clientId, t.familyKey, t.channel)
 	]
 );
 
@@ -1911,6 +1919,41 @@ export const creativeAssetRights = pgTable(
 	]
 );
 
+export const creativeDerivatives = pgTable(
+	'creative_derivatives',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		pageVersionId: uuid('page_version_id')
+			.notNull()
+			.references(() => pageVersions.id),
+		sourceAssetId: uuid('source_asset_id').references(() => creativeAssets.id, {
+			onDelete: 'set null'
+		}),
+		slot: text('slot').notNull(),
+		widthPx: integer('width_px').notNull(),
+		focalX: integer('focal_x').notNull(),
+		focalY: integer('focal_y').notNull(),
+		altText: text('alt_text').notNull(),
+		status: text('status').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('creative_derivatives_client_version_width_idx').on(
+			t.clientId,
+			t.pageVersionId,
+			t.widthPx
+		),
+		index('creative_derivatives_client_idx').on(t.clientId),
+		index('creative_derivatives_org_idx').on(t.organizationId)
+	]
+);
+
 export const imageGenerationJobs = pgTable(
 	'image_generation_jobs',
 	{
@@ -1951,6 +1994,48 @@ export const imageGenerationJobs = pgTable(
 		index('image_generation_jobs_client_idx').on(t.clientId),
 		index('image_generation_jobs_direction_idx').on(t.clientId, t.visualDirectionId),
 		index('image_generation_jobs_org_idx').on(t.organizationId)
+	]
+);
+
+export const videoGenerationJobs = pgTable(
+	'video_generation_jobs',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		status: text('status').notNull(),
+		mode: text('mode').notNull(),
+		title: text('title').notNull(),
+		promptText: text('prompt_text').notNull(),
+		promptVersion: text('prompt_version').notNull(),
+		schemaVersion: text('schema_version').notNull(),
+		durationSeconds: integer('duration_seconds').notNull(),
+		adapter: text('adapter').notNull(),
+		model: text('model').notNull(),
+		providerRequestId: text('provider_request_id'),
+		idempotencyKey: text('idempotency_key').notNull(),
+		costMicros: integer('cost_micros').notNull().default(0),
+		currency: text('currency').notNull().default('USD'),
+		denyReason: text('deny_reason'),
+		error: text('error'),
+		storageKey: text('storage_key'),
+		creativeAssetId: uuid('creative_asset_id').references(() => creativeAssets.id, {
+			onDelete: 'set null'
+		}),
+		sourceAssetId: uuid('source_asset_id').references(() => creativeAssets.id, {
+			onDelete: 'set null'
+		}),
+		createdBy: text('created_by'),
+		createdAt: createdAt(),
+		updatedAt: updatedAt()
+	},
+	(t) => [
+		uniqueIndex('video_generation_jobs_client_idempotency_idx').on(t.clientId, t.idempotencyKey),
+		index('video_generation_jobs_client_idx').on(t.clientId)
 	]
 );
 
@@ -2061,6 +2146,10 @@ export const creativeQaReviews = pgTable(
 		summary: text('summary').notNull(),
 		altText: text('alt_text'),
 		revisionNote: text('revision_note'),
+		changeCategories: text('change_categories').array(),
+		priorDirectionId: uuid('prior_direction_id').references(() => visualDirections.id, {
+			onDelete: 'set null'
+		}),
 		decidedBy: text('decided_by'),
 		decidedAt: timestamp('decided_at', { withTimezone: true }),
 		createdAt: createdAt(),
@@ -3293,6 +3382,41 @@ export const experimentLearningObjects = pgTable(
 	]
 );
 
+export const creativeLearningObjects = pgTable(
+	'creative_learning_objects',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		experimentId: uuid('experiment_id')
+			.notNull()
+			.references(() => experiments.id),
+		experimentLearningId: uuid('experiment_learning_id')
+			.notNull()
+			.references(() => experimentLearningObjects.id),
+		controlPageVersionId: uuid('control_page_version_id').references(() => pageVersions.id, {
+			onDelete: 'set null'
+		}),
+		challengerPageVersionId: uuid('challenger_page_version_id').references(() => pageVersions.id, {
+			onDelete: 'set null'
+		}),
+		status: text('status').notNull(),
+		evidence: text('evidence').notNull(),
+		statement: text('statement').notNull(),
+		autoApply: boolean('auto_apply').notNull().default(false),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('creative_learning_objects_experiment_idx').on(t.experimentId),
+		index('creative_learning_objects_client_idx').on(t.clientId),
+		index('creative_learning_objects_org_idx').on(t.organizationId)
+	]
+);
+
 export const aiKillSwitchScope = pgEnum('ai_kill_switch_scope', ['client', 'platform']);
 
 export const aiActionPolicies = pgTable(
@@ -3970,6 +4094,30 @@ export const clientValueProfiles = pgTable(
 	(t) => [
 		uniqueIndex('client_value_profiles_client_idx').on(t.clientId),
 		index('client_value_profiles_org_idx').on(t.organizationId)
+	]
+);
+
+export const clientValueBaselines = pgTable(
+	'client_value_baselines',
+	{
+		id: id(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizations.id),
+		clientId: uuid('client_id')
+			.notNull()
+			.references(() => clients.id),
+		version: integer('version').notNull(),
+		amountMinor: integer('amount_minor').notNull(),
+		currency: text('currency').notNull(),
+		evidence: text('evidence').notNull(),
+		label: text('label').notNull(),
+		recordedBy: text('recorded_by'),
+		createdAt: createdAt()
+	},
+	(t) => [
+		uniqueIndex('client_value_baselines_client_version_idx').on(t.clientId, t.version),
+		index('client_value_baselines_client_idx').on(t.clientId)
 	]
 );
 

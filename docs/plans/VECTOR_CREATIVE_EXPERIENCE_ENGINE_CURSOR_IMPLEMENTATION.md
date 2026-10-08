@@ -61,7 +61,7 @@ Cursor must inspect current files, not rely solely on this snapshot. Read:
 18. `apps/delivery/src/lib/sections/*`, `apps/delivery/src/routes/+page.svelte`, `apps/delivery/src/app.css`
 19. Current `packages/contracts` manifest types, `packages/images`, `packages/compose`, asset and brand database tables, Control `/brand` and `/funnel` routes, existing tests, workflow adapters and CI.
 
-**Precedence:** Standing charters and accepted ADRs override this blueprint. Changes to governed behavior require a documented ADR. Numbered charters stop at `docs/30`; **do not create `docs/31` or a new phase**. This track is adopted as `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` (ADR-0014) and attached to Wave D. Do not silently resequence outstanding roadmap work. The next slice remains Wave D CE0.
+**Precedence:** Standing charters and accepted ADRs override this blueprint. Changes to governed behavior require a documented ADR. Numbered charters stop at `docs/30`; **do not create `docs/31` or a new phase**. This track is adopted as `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` (ADR-0014) and attached to Wave D. Do not silently resequence outstanding roadmap work. CE0–CE7 are in. V2 is in. V3 is in. V4 is in. C9 is in. The next slice is Wave E P9-S2.
 
 ## 2.1 Verified baseline at document creation
 
@@ -74,7 +74,7 @@ A repository inspection on 8 October 2026 showed:
 - `candidate-score.ts` scores mostly structural heuristics, not screenshots of the actual rendered result.
 - `first-reveal.ts` checks the original thin gate plus contrast, form, section weight, and a first-screen description. That is still not screenshot, pixel, or AI visual review.
 - `app.css` establishes responsive basic typography, spacing and reduced-motion rules, with a constrained central `main` column suitable for early MVP but not all cinematic compositions.
-- Reconciled status on 8 October 2026: Wave B is in, including thin FR3, thin FR4–FR5, C1, C2, C3, thin C5, thin FR6 (one hybrid winner photo), C7, deterministic FR7 remainder, and thin FR8 on Control `/reveal`. C4, C6, C8, FR9, pixel screenshots, motion presets, and the CE grammar are open. The next repository slice is Wave D CE0. Do not restart FR6.
+- Reconciled status on 8 October 2026: Wave B is in, including thin FR3, thin FR4–FR5, C1, C2, C3, thin C5, thin FR6 (one hybrid winner photo), C7, deterministic FR7 remainder, and thin FR8 on Control `/reveal`. Winner C4, M0–M2 motion, structural geometry, and reveal change categories are in. FR9, pixel screenshots, and M3 stay open. C8 is in. CE0–CE7 are in. V2 is in. V3 is in. V4 is in. C9 is in. The next repository slice is Wave E P9-S2. Do not restart FR6.
 
 **Preserve** all implemented functionality, previous exit gates, tenant security and integration contracts. Do not regenerate completed milestones just to rename them.
 
@@ -694,9 +694,11 @@ Implement per-client/campaign budgets, idempotency, cost ledgers, provider failu
 
 # 17. Rollout Plan: Small, Testable Vertical Slices
 
-**Important:** These are **CE** enhancement slices. They extend current Creative C and First Reveal FR work. Wave B is complete, including thin FR6, C7, deterministic FR7, and thin FR8. Do not restart FR0–FR8. The next repository slice is Wave D CE0. CE work is Wave D in `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` and must not jump that queue.
+**Important:** These are **CE** enhancement slices. They extend current Creative C and First Reveal FR work. Wave B is complete, including thin FR6, C7, deterministic FR7, and thin FR8. Do not restart FR0–FR8. CE0–CE7 are in. V2 is in. V3 is in. V4 is in. C9 is in. The next repository slice is Wave E P9-S2. CE work is Wave D in `docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md` and must not jump that queue.
 
 ## CE0 — Implementation Audit and Baseline Fixtures
+
+**Status:** In on 8 October 2026. Notes and fixtures: `docs/plans/CE0_BASELINE.md`, `tests/fixtures/ce0-industries.ts`. Pixel screenshots were not captured. CE5 owns that work. No production behavior changed.
 
 **Goal:** Measure what exists before expanding it.
 
@@ -711,6 +713,8 @@ Tasks:
 **Acceptance:** Baseline screenshots, inventory and failing gap examples exist; no production behavior changed; no speculative migration made.
 
 ## CE1 — Creative Brief and Manifest Evolution
+
+**Status:** In. Optional `experience` on `VisualDirectionManifest`, derived from confirmed knowledge. Legacy manifests and page version 1 still parse. No migration. Tests: `tests/ce1-creative-brief.test.ts`.
 
 **Goal:** Enable context-aware art direction.
 
@@ -727,6 +731,8 @@ Tasks:
 
 ## CE2 — Premium Visual Grammar v1
 
+**Status:** In. Optional `widthMode` on existing sections and `mobileTreatment` on the three heroes. Legacy pages without those fields still parse. No cinematic or interactive variant. Tests: `tests/ce2-width-grammar.test.ts`.
+
 **Goal:** Visible step change in presentation with bounded component count.
 
 Tasks:
@@ -740,6 +746,8 @@ Tasks:
 **Acceptance:** Five fixture industries have coherent and materially different results; pages work at 320/390/768/1440 widths; no clipped text, broken forms, invalid markup or cross-tenant assets.
 
 ## CE3 — FR6 Winner Media Completion / C4 Derivatives
+
+**Status:** In. Planned widths and focal points are stored on `creative_derivatives`. Delivery serves the approved source at `/hero-image`. Separate resized files are not in this slice. Thin FR6 is unchanged.
 
 **Goal:** Supply the best authentic or permitted generated visuals to the winning experience. Thin FR6 is already in: one supporting photo for a hybrid winner, and no photo for typography-led or authentic strategies. This slice is the remainder: an asset-gap list, C4 derivatives, focal points, and a typography-led fallback when generation is blocked.
 
@@ -755,6 +763,8 @@ Tasks:
 
 ## CE4 — Motion Presets and Interaction
 
+**Status:** In. Optional `m0`, `m1`, and `m2` on the page theme. A missing preset renders as `m0`. Reduced motion disables the animation. M3 is not in this slice.
+
 **Goal:** Premium but restrained immersion.
 
 Tasks:
@@ -768,7 +778,9 @@ Tasks:
 
 ## CE5 — Screenshot-Based Quality / FR7 Completion
 
-**Goal:** Gate the rendered result rather than merely the manifest. Deterministic FR7 checks are already in. Pixel screenshots, geometry checks, and vision-model review are not. Do not claim this slice is shipped.
+**Status:** Structural geometry, fingerprint v1, and the hard-blocker override are in. Pixel screenshots and vision-model review were not captured. Do not claim a browser snapshot exists.
+
+**Goal:** Gate the rendered result rather than merely the manifest. Deterministic FR7 checks are already in. Pixel screenshots and vision-model review are not.
 
 Tasks:
 
@@ -781,6 +793,8 @@ Tasks:
 **Acceptance:** Intentionally broken fixtures fail deterministically; false-positive cases have documented review; high score cannot override a critical blocker; screenshot review is auditable.
 
 ## CE6 — First Reveal Approval / FR8
+
+**Status:** In. Change categories and the prior direction are stored on the existing review. Approving does not publish.
 
 **Goal:** Premium client-facing design review. Thin FR8 is already in on Control `/reveal`: one direction, a short rationale, a desktop or phone frame, and approve or request changes. Approving does not publish. This slice adds plain-language change categories and a revision linked to the prior direction. Do not rebuild that page.
 
@@ -803,6 +817,8 @@ Tasks:
 2. Compare qualified leads/sales when sufficiently observed; handle missing attribution explicitly.
 3. Feed back learnings as tenant-scoped, evidence-backed design hypotheses.
 4. Avoid auto-optimizing on small sample sizes or novelty scores alone.
+
+**Status:** In. A tenant-scoped `creative_learning_objects` row joins the existing Phase 7 learning object and cites observed event counts. Qualified leads and sales stay uncompared until they are attributed to the variants. `auto_apply` is false. Change proposals stay policy governed.
 
 **Acceptance:** Learning references valid experiment/outcome data, never invented ROI; change proposals remain policy governed.
 
@@ -892,7 +908,7 @@ Inspect first; exact edits depend on current tree and contracts.
 | Existing C0 assets/C5 manifests                 | Approved asset references, later C4 derivatives, immutable publication                          |
 | Control `/brand`, `/funnel`, `/approvals`       | Client-friendly direction, preview, feedback and existing approval integration                  |
 | Existing tests / CI                             | Desktop/mobile screenshot assertions, security regression and design fixtures                   |
-| `docs/plans/SHIP_REMAINING.md`                  | CE0–CE7 registered as Wave D. Next slice remains Wave D CE0                                     |
+| `docs/plans/SHIP_REMAINING.md`                  | CE0–CE7 are in. V2 is in. V3 is in. V4 is in. C9 is in. Next slice is Wave E P9-S2              |
 
 Do not add an entire `packages/creative-experience-engine` package by default. New package boundaries require demonstrated shared domain complexity and a review of existing code ownership.
 
@@ -1033,8 +1049,8 @@ CRITICAL RULES
 - Maintain backwards compatibility with existing page versions.
 
 EXECUTION MODE
-1. The next repository slice is Wave D CE0 unless the task names a later CE slice.
-2. When a CE slice is authorized, start with CE0 only if it is not already done.
+1. V2 is in. V3 is in. V4 is in. C9 is in. The next repository slice is Wave E P9-S2 unless the task names another remaining slice.
+2. CE0–CE7 are in. Do not repeat them. There is no CE8.
 3. Do not rebuild thin FR6, C7, deterministic FR7, or thin FR8.
 4. Present a file-level, bounded implementation plan.
 5. Implement ONE coherent vertical slice with tests and docs.
@@ -1055,11 +1071,11 @@ Do not invent a performance uplift or ROI. Treat synthetic fixture pages
 as QA demonstrations, not evidence of real customer conversion.
 
 FIRST TASK
-CE0 is the next repository slice. Do not start CE1 ahead of it.
-When a CE slice is the authorized task, inspect current source and follow
-docs/plans/CREATIVE_EXPERIENCE_ENGINE_TRACK.md. CE0 is an audit with no
-production behavior change. Only edit code after that slice's boundaries
-are clear.
+CE0–CE7 are in. There is no further Creative Experience slice. V2 is in. V3 is in. V4 is in. C9 is in. The next repository slice is Wave E P9-S2.
+When a remaining slice is the authorized task, inspect current source and follow
+docs/plans/SHIP_REMAINING.md. CE7 records a design learning from an existing experiment result and does not invent ROI.
+Pixel screenshots were not captured. Thin FR6 stays. Only edit code after that slice's
+boundaries are clear.
 ```
 
 ---

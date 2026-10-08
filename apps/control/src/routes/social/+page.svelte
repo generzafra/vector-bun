@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SOCIAL_PLATFORMS } from '@vector/contracts';
 	import Alert from '$lib/vector/Alert.svelte';
 	import EmptyState from '$lib/vector/EmptyState.svelte';
 	import PageHeader from '$lib/vector/PageHeader.svelte';
@@ -462,6 +463,43 @@
 					</select>
 				</label>
 				<button type="submit">Create draft</button>
+			</form>
+		{/if}
+	</section>
+
+	<section>
+		<h2>Campaign family</h2>
+		<p>Text only remains available on any channel without an approved asset.</p>
+		<p>Saving a family does not publish.</p>
+		{#each overview.families as family (family.familyKey)}
+			<h3>{family.familyKey}</h3>
+			<ul>
+				{#each family.slots as slot (slot.channel)}
+					<li>{slot.channel}: {slot.label}</li>
+				{/each}
+			</ul>
+		{:else}
+			<p>No campaign family yet.</p>
+		{/each}
+		{#if canManage}
+			<form method="post" action="?/assignFamily">
+				<input type="hidden" name="_csrf" value={data.csrf} />
+				<label>
+					Family name
+					<input name="familyKey" required maxlength="40" pattern="[a-z0-9]+(-[a-z0-9]+)*" />
+				</label>
+				{#each SOCIAL_PLATFORMS as channel (channel)}
+					<label>
+						{channel}
+						<select name={channel}>
+							<option value="">Text only</option>
+							{#each approvedAssets as asset (asset.id)}
+								<option value={asset.id}>{asset.title}</option>
+							{/each}
+						</select>
+					</label>
+				{/each}
+				<button type="submit">Save family</button>
 			</form>
 		{/if}
 	</section>

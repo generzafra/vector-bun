@@ -4,6 +4,8 @@ import {
 	ForbiddenError,
 	NotFoundError,
 	ValidationError,
+	parseRevealChangeCategories,
+	revealChangeLabel,
 	assertActorOwnsContext,
 	promptHitsProhibitedStyle,
 	promptRequestsInventedProof,
@@ -218,6 +220,14 @@ export async function getClientReveal(actor: Actor, ctx: TenantContext) {
 		summary: review.summary,
 		status: review.status,
 		revisionNote: review.revisionNote,
+		changeLabels: (review.changeCategories ?? [])
+			.map((id) => revealChangeLabel(id))
+			.filter(
+				(label): label is NonNullable<ReturnType<typeof revealChangeLabel>> => label !== null
+			),
+		priorDirectionName:
+			directions.find((row) => row.direction.id === review.priorDirectionId)?.direction.name ??
+			null,
 		previewUrl
 	};
 }
@@ -225,7 +235,7 @@ export async function getClientReveal(actor: Actor, ctx: TenantContext) {
 export async function decideClientReveal(
 	actor: Actor,
 	ctx: TenantContext,
-	input: { decision: 'approved' | 'changes_requested'; note?: string },
+	input: { decision: 'approved' | 'changes_requested'; note?: string; categories?: unknown },
 	requestId: string
 ) {
 	hasAny(actor, ['pages.manage', 'ai.manage']);
@@ -233,13 +243,21 @@ export async function decideClientReveal(
 	const draft = await getLatestDraftForTenant(required);
 	if (!draft) throw new NotFoundError('Draft funnel not found');
 	const note = input.note?.trim() ?? '';
-	if (input.decision === 'changes_requested' && note.length < 8) {
+	const requesting = input.decision === 'changes_requested';
+	if (requesting && note.length < 8) {
 		throw new ValidationError('Say what you want changed');
 	}
+	const categories = requesting ? parseRevealChangeCategories(input.categories) : null;
+	const directions = requesting
+		? await listVisualDirectionsForVersionForTenant(required, draft.id)
+		: [];
+	const selected = directions.find((row) => row.direction.status === 'selected');
 	const row = await decideCreativeQaReviewForTenant(required, {
 		pageVersionId: draft.id,
 		status: input.decision,
-		revisionNote: input.decision === 'changes_requested' ? note : null,
+		revisionNote: requesting ? note : null,
+		changeCategories: categories,
+		priorDirectionId: requesting ? (selected?.direction.id ?? null) : null,
 		decidedBy: actor.userId
 	});
 	if (!row) throw new ValidationError('This preview is not ready for a decision');

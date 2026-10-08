@@ -1,10 +1,11 @@
 # Creative Experience Engine — CE0–CE7
 
-**Status:** Execution specification — accepted 8 October 2026 (ADR-0014). No CE slice is in code.  
+**Status:** Execution specification — accepted 8 October 2026 (ADR-0014). **CE0–CE7 are in.** Pixel screenshots were not captured.  
 **Track:** Cross-cutting extension of Creative and First Reveal. Not a Vector phase. Not `docs/31`.  
 **Design blueprint:** [VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md](VECTOR_CREATIVE_EXPERIENCE_ENGINE_CURSOR_IMPLEMENTATION.md)  
+**CE0 baseline:** [CE0_BASELINE.md](CE0_BASELINE.md)  
 **Standing law:** [`docs/27`](../27_VECTOR_FRONTEND_UI_UX_SALES_FUNNEL_STANDARD.md) (public quality and the Frontend Release Gate), [`docs/09`](../09_FUNNEL_ENGINE_DESIGN_SYSTEM.md) (section grammar), [`docs/29`](../29_VECTOR_CREATIVE_ASSET_GENERATION_MEDIA_PIPELINE.md) (media, rights, composition), [`docs/28`](../28_VECTOR_HERO_AND_PRODUCT_VISUAL_LANGUAGE.md) (Control chrome only), [`docs/10`](../10_SEO_AEO_CONTENT_STANDARD.md), [`docs/14`](../14_SECURITY_PRIVACY_COMPLIANCE.md)  
-**Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md). Next implementation slice is Wave D **CE0**. O15 Ask Vector, V1 lead and goal value join, O4 Overview, O5 Today, O9 offer versions, O10 `CRMProvider`, O11 revenue events, O12 attribution confidence, O13 recommendation evidence, and O14 monthly growth review are in. This track is Wave D. Do not start CE1 ahead of CE0.
+**Sequence:** [SHIP_REMAINING.md](SHIP_REMAINING.md). CE0–CE7 are in. There is no further Creative Experience slice. The next Wave D item is **C6** social families. O15 Ask Vector, V1 lead and goal value join, O4 Overview, O5 Today, O9 offer versions, O10 `CRMProvider`, O11 revenue events, O12 attribution confidence, O13 recommendation evidence, and O14 monthly growth review are in. This track is Wave D.
 
 Where this file and the blueprint disagree on order or current status, this file wins. Where either disagrees with a charter or an accepted ADR on product law, the charter or ADR wins.
 
@@ -47,18 +48,18 @@ AI proposes validated data for approved components. Trusted code renders it. Mod
 
 ---
 
-## 4. Still open
+## 4. Slice status
 
-| Slice   | Work                                                                                                                 | Maps to            | Gate                                                                        |
-| ------- | -------------------------------------------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------- |
-| **CE0** | Fixture audit and baseline notes. Five synthetic industries. No production behavior change                           | —                  | Wave D, before CE1                                                          |
-| **CE1** | Versioned creative brief and experience fields on the existing direction manifest. Legacy pages keep rendering       | FR4                | After CE0                                                                   |
-| **CE2** | Section width modes and a small grammar: 3 heroes, 3 story sections, 2 conversion treatments, with mobile treatments | FR2, `docs/09`     | After CE1. No cinematic or interactive variant until a real client needs it |
-| **CE3** | Winner asset-gap list, focal points, responsive derivatives, typography-led fallback                                 | C4. Thin FR6 stays | With C4                                                                     |
-| **CE4** | Allowlisted M0–M2 motion. M3, WebGL, and video wait                                                                  | `docs/27` motion   | After CE2                                                                   |
-| **CE5** | Desktop and mobile screenshots, geometry checks, fingerprint v1. A high score cannot override a hard blocker         | FR7 remainder      | After CE2. Current FR7 does not include this                                |
-| **CE6** | Plain-language change categories and a revision linked to the prior direction                                        | Thin FR8           | After CE5. Do not publish on approve                                        |
-| **CE7** | Learning from Phase 7 outcomes. No invented ROI                                                                      | C8                 | Wave D, after Phase 7 coverage                                              |
+| Slice   | Work                                                                                                                                                                                 | Maps to            | Gate                                                   |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ | ------------------------------------------------------ |
+| **CE0** | **In.** Five synthetic industries, baseline notes, no production change. [CE0_BASELINE.md](CE0_BASELINE.md)                                                                          | —                  | Before CE1                                             |
+| **CE1** | **In.** Versioned brief on the existing direction manifest. Legacy pages still render. `tests/ce1-creative-brief.test.ts`                                                            | FR4                | After CE0                                              |
+| **CE2** | **In.** Width modes on the existing 3 heroes, story sections, and conversion treatments. No cinematic variant. `tests/ce2-width-grammar.test.ts`                                     | FR2, `docs/09`     | After CE1. Cinematic and interactive variants stay out |
+| **CE3** | **In.** Winner asset-gap list, focal points, planned responsive widths, typography-led fallback. Delivery `/hero-image` serves the approved source. `tests/ce3-winner-media.test.ts` | C4. Thin FR6 stays | After CE2                                              |
+| **CE4** | **In.** Allowlisted M0–M2 motion. M3, WebGL, and video stay out. `tests/ce4-motion.test.ts`                                                                                          | `docs/27` motion   | After CE2                                              |
+| **CE5** | **In.** Structural checks at 320, 390, 768, and 1440, fingerprint v1, and a hard-blocker override. Pixel screenshots were not captured. `tests/ce5-experience-qa.test.ts`            | FR7 remainder      | After CE2                                              |
+| **CE6** | **In.** Plain-language change categories and a revision linked to the prior direction. Approving does not publish. `tests/ce6-reveal-changes.test.ts`                                | Thin FR8           | After CE5                                              |
+| **CE7** | **In.** Design learning joined to a Phase 7 experiment result. Observed event counts only. No invented ROI. `tests/ce7-creative-learning.test.ts`                                    | C8                 | After Phase 7 coverage                                 |
 
 Default motion is restrained. M3 is a later opt-in. Design fingerprints are privacy-safe derived features, not another tenant's copy or media. Image-layout embeddings wait for a privacy review.
 
@@ -84,10 +85,10 @@ Performance targets in the blueprint are goals. Do not report them as measured u
 
 `bun:test`. Cross-tenant isolation on every new tenant-owned row. Explicit `TenantContext`. Legacy page versions still render. Rights and prohibited styles fail closed. No `generateImage` on `AIProvider`. No second object store.
 
-CE5 adds viewport checks at 320, 390, 768, and 1440. CE0 fixtures use synthetic data, never another tenant's records.
+CE0 is covered by `tests/ce0-baseline.test.ts` and `tests/fixtures/ce0-industries.ts`. Those fixtures are synthetic and are not tenant rows. CE5 adds viewport checks at 320, 390, 768, and 1440. Later slices keep using the CE0 fixtures and never another tenant's records.
 
 ---
 
 ## 7. Do not start until
 
-Wave C's current slice is done, or the user explicitly asks for a CE slice. CE0 is the first slice of this track, not the next slice of the repository. Do not pull screenshot infrastructure, Playwright, or a new browser platform forward without an ADR if the repo has no suitable runner. Do not start Ask Vector, ads, billing, or video from this track.
+Wave C is complete. CE0–CE7 are in. There is no further Creative Experience slice. Do not pull screenshot infrastructure, Playwright, or a new browser platform forward without an ADR. Pixel screenshots were not captured in CE5. Do not start ads, billing, or video from this track.

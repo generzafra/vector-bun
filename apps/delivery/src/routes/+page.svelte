@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { publicPageMeta } from '@vector/funnel-engine';
+	import { motionClass, publicPageMeta } from '@vector/funnel-engine';
 	import PageRenderer from '$lib/sections/PageRenderer.svelte';
 	import { emitDeliveryEvent } from '$lib/track';
 
@@ -40,7 +40,7 @@
 </svelte:head>
 
 <div
-	class={['page', `page-${personality}`]}
+	class={['page', `page-${personality}`, motionClass(data.document.theme.motionPreset)]}
 	style:--bg={tokens.background ?? '#111'}
 	style:--surface={tokens.surface ?? '#1a1a1a'}
 	style:--text={tokens.text ?? '#f4f4f0'}

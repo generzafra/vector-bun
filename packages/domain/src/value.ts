@@ -2,6 +2,8 @@ import { requireCapability } from '@vector/auth';
 import {
 	assertActorOwnsContext,
 	attributionCoverage,
+	dataHealthEvidenceClass,
+	incrementalValueStatement,
 	clientValueClientIdSchema,
 	parseContract,
 	recordValueActivitySchema,
@@ -15,6 +17,9 @@ import {
 	attributionEvidenceForTenant,
 	countObservedWorkForTenant,
 	getClientValueProfileForTenant,
+	latestExperimentResultForTenant,
+	listDataHealthChecksForTenant,
+	listClientValueBaselinesForTenant,
 	getOverviewFactsForTenant,
 	insertValueActivityForTenant,
 	listClientGoalsForTenant,
@@ -23,6 +28,10 @@ import {
 } from '@vector/db';
 import { recordAudit } from './audit';
 import type { Actor } from './auth-service';
+import { summarizeRecordedRevenue } from './revenue';
+import { presentRevenueLink, presentStoredBaseline } from './value-money';
+
+export { recordClientValueBaseline } from './value-money';
 
 /** V0 reuses goals.read / goals.manage. Do not add value.* until roles are migrated. */
 
@@ -99,14 +108,30 @@ export async function getClientValueProof(actor: Actor, ctx: TenantContext, clie
 		assertValueClient(required, clientId);
 	}
 	const period = utcMonthWindow();
-	const [profile, counts, activities, facts, goals, attribution] = await Promise.all([
+	const [
+		profile,
+		counts,
+		activities,
+		facts,
+		goals,
+		attribution,
+		baselines,
+		revenue,
+		checks,
+		experiment
+	] = await Promise.all([
 		getClientValueProfileForTenant(required),
 		countObservedWorkForTenant(required, period),
 		listValueActivityForTenant(required, period),
 		getOverviewFactsForTenant(required),
 		listClientGoalsForTenant(required),
-		attributionEvidenceForTenant(required)
+		attributionEvidenceForTenant(required),
+		listClientValueBaselinesForTenant(required),
+		summarizeRecordedRevenue(required, period),
+		listDataHealthChecksForTenant(required),
+		latestExperimentResultForTenant(required)
 	]);
+	const current = baselines[0] ?? null;
 	const coverage = attributionCoverage({
 		leadCount: attribution.leadCount,
 		classes: attribution.classes
@@ -123,7 +148,13 @@ export async function getClientValueProof(actor: Actor, ctx: TenantContext, clie
 			qualifiedLeads: counts.qualifiedLeads,
 			attributionEvidence: coverage.evidenceClass satisfies AttributionEvidenceClass,
 			goal: primaryGoalJoin(primary, facts)
-		}
+		},
+		baseline: presentStoredBaseline(current, baselines.length),
+		revenueLink: presentRevenueLink(profile, revenue, coverage.evidenceClass),
+		incremental: incrementalValueStatement({
+			dataHealth: dataHealthEvidenceClass(checks),
+			result: experiment
+		})
 	};
 }
 

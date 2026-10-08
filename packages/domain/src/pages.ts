@@ -7,6 +7,7 @@ import {
 	assertActorOwnsContext,
 	assetMediaStrategyLabel,
 	brandVisualProfileConfirmed,
+	DEFAULT_PROHIBITED_STYLES,
 	enumerateVisualDirectionCandidates,
 	evaluateAssetSufficiency,
 	parseAssetMediaStrategy,
@@ -196,7 +197,26 @@ export async function composeFunnel(actor: Actor, ctx: TenantContext, requestId:
 		mediaStrategy: sufficiency.mediaStrategy,
 		hasLogo: Boolean(logo),
 		personality: brand.brandPersonality,
-		hasApprovedClaims: claims.some((claim) => claim.kind === 'approved')
+		hasApprovedClaims: claims.some((claim) => claim.kind === 'approved'),
+		brief:
+			brand.audience && brand.offer && brand.primaryConversion
+				? {
+						displayName: brand.displayName,
+						audience: brand.audience,
+						offer: brand.offer,
+						primaryConversion: brand.primaryConversion,
+						approvedClaims: claims
+							.filter((claim) => claim.kind === 'approved')
+							.map((claim) => claim.statement),
+						prohibitedClaims: claims
+							.filter((claim) => claim.kind === 'prohibited')
+							.map((claim) => claim.statement),
+						photographyDirection: profile?.photographyDirection ?? null,
+						prohibitedStyles: profile?.prohibitedStyles?.length
+							? profile.prohibitedStyles
+							: [...DEFAULT_PROHIBITED_STYLES]
+					}
+				: undefined
 	});
 	const scored = candidates.map((manifest) => {
 		const document = composeLeadPage(knowledge, {

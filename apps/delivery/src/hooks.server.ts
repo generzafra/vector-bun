@@ -27,7 +27,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		decision.kind === 'llms' ||
 		decision.kind === 'unsubscribe' ||
 		decision.kind === 'brand_logo' ||
-		decision.kind === 'og_image'
+		decision.kind === 'og_image' ||
+		decision.kind === 'hero_image'
 	) {
 		const response = await resolve(event);
 		if (decision.kind !== 'domain_challenge' && decision.domainKind === 'preview') {

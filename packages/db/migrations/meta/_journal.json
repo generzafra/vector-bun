@@ -337,6 +337,48 @@
 			"when": 1756310000000,
 			"tag": "0047_o15_ask_vector",
 			"breakpoints": true
+		},
+		{
+			"idx": 48,
+			"version": "7",
+			"when": 1756320000000,
+			"tag": "0048_ce3_winner_derivatives",
+			"breakpoints": true
+		},
+		{
+			"idx": 49,
+			"version": "7",
+			"when": 1756330000000,
+			"tag": "0049_ce6_reveal_revisions",
+			"breakpoints": true
+		},
+		{
+			"idx": 50,
+			"version": "7",
+			"when": 1756340000000,
+			"tag": "0050_ce7_creative_learning",
+			"breakpoints": true
+		},
+		{
+			"idx": 51,
+			"version": "7",
+			"when": 1756350000000,
+			"tag": "0051_c6_social_families",
+			"breakpoints": true
+		},
+		{
+			"idx": 52,
+			"version": "7",
+			"when": 1756360000000,
+			"tag": "0052_v2_client_baselines",
+			"breakpoints": true
+		},
+		{
+			"idx": 53,
+			"version": "7",
+			"when": 1756370000000,
+			"tag": "0053_c9_video_provider",
+			"breakpoints": true
 		}
 	]
 }

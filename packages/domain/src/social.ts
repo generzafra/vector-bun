@@ -24,6 +24,7 @@ import {
 	transitionSocialPostSchema,
 	upsertSocialConnectionSchema,
 	SOCIAL_PLATFORMS,
+	socialFamiliesFromAssets,
 	type SocialPlatform,
 	type SocialPostStatus,
 	type TenantContext
@@ -343,6 +344,7 @@ export async function getSocialOverview(actor: Actor, ctx: TenantContext, client
 		},
 		paused: env.SOCIAL_PUBLISHING_PAUSED,
 		creative,
+		families: socialFamiliesFromAssets(assets),
 		workflows: workflowRuntime().health(),
 		connections: connections.map(publicConnection),
 		accounts: accounts.map((account) => ({

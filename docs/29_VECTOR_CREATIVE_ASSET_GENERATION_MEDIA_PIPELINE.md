@@ -2173,6 +2173,8 @@ In. Trusted software in `packages/compose` writes editorial/minimal SVG shells (
 
 ## Phase C4 — Derivatives
 
+In for the winner hero (CE3). Tenant-owned `creative_derivatives` record planned widths 640, 960, and 1440 plus integer focal points. Delivery `/hero-image` serves the approved source bytes for the hostname's tenant. The page stores an asset id, not a storage key. Separate resized files, compression, and social crops wait. Unapproved, blocked, or cross-tenant media stays off the page.
+
 - resizing;
 - cropping;
 - focal points;
@@ -2181,7 +2183,7 @@ In. Trusted software in `packages/compose` writes editorial/minimal SVG shells (
 
 ## Phase C5 — Funnel Integration
 
-Thin slice in. Tenant-owned `funnel_asset_manifests` attach composition ids to immutable page versions. Operators place latest C3 OG / social / email shells onto a draft (`pages.manage`); publish copies the manifest to the new published version. Delivery hostname-scoped `/og-image` serves the published OG slot for that host's tenant only. Raw object-store keys are not authorization and do not appear in HTML. C4 derivatives, hero/service/case-study slots, and C7 approval remain later. JSON-LD and `llms.txt` stay approved knowledge only.
+Thin slice in. Tenant-owned `funnel_asset_manifests` attach composition ids to immutable page versions. Operators place latest C3 OG / social / email shells onto a draft (`pages.manage`); publish copies the manifest to the new published version. Delivery hostname-scoped `/og-image` serves the published OG slot for that host's tenant only. Raw object-store keys are not authorization and do not appear in HTML. CE3 places an approved hero asset id and serves it at `/hero-image`. Service and case-study slots stay out. JSON-LD and `llms.txt` stay approved knowledge only.
 
 - asset manifests;
 - Delivery Open Graph placement;
@@ -2191,6 +2193,8 @@ Thin slice in. Tenant-owned `funnel_asset_manifests` attach composition ids to i
 - frontend renderer integration (later).
 
 ## Phase C6 — Social Integration
+
+In. A campaign family stores channel metadata on existing `creative_assets` rows. An approved asset can be assigned to LinkedIn, X, Facebook, or Instagram. Channels without an asset stay text-only. Control `/social` shows that preview. Saving a family does not publish, and it does not create cropped bytes.
 
 - campaign asset families;
 - scheduling readiness;
@@ -2209,9 +2213,11 @@ In. `creative_qa_reviews` records rights, size, alt text, prohibited style, and 
 - publication usage;
 - performance;
 - experiment integration;
-- creative learning objects.
+- creative learning objects. CE7 stores one tenant-scoped row joined to an existing Phase 7 learning object. It cites observed experiment event counts, leaves qualified leads and sales uncompared when they are not attributed to the variants, and does not auto-apply or invent ROI.
 
 ## Phase C9 — Video
+
+**In.** `packages/video` is a `VideoProvider` with a memory adapter and a paused adapter. There is no vendor video API. `draftShortVideo` stores an unapproved `video/mp4` creative asset for the active tenant, capped at 15 seconds. Image-to-video accepts only that tenant's image. Logo, invented proof, and prohibited styles are denied. Replaying an idempotency key does not generate again. Approving and publishing stay on the existing creative and social paths. `AIProvider` has no video method. The memory file is a draft placeholder, not a rendered campaign film.
 
 - short-form video provider;
 - image-to-video;

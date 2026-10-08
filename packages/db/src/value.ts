@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lt, max, sql } from 'drizzle-orm';
 import {
 	assertSameClient,
 	requireTenantContext,
@@ -8,6 +8,7 @@ import {
 } from '@vector/contracts';
 import { db } from './client';
 import {
+	clientValueBaselines,
 	clientValueProfiles,
 	emailMessages,
 	leads,
@@ -34,6 +35,57 @@ export async function getClientValueProfileForTenant(ctx: TenantContext) {
 		.where(eq(clientValueProfiles.clientId, required.clientId))
 		.limit(1);
 	return row ?? null;
+}
+
+export async function listClientValueBaselinesForTenant(ctx: TenantContext) {
+	const required = requireTenantContext(ctx);
+	return db
+		.select({
+			id: clientValueBaselines.id,
+			version: clientValueBaselines.version,
+			amountMinor: clientValueBaselines.amountMinor,
+			currency: clientValueBaselines.currency,
+			evidence: clientValueBaselines.evidence,
+			label: clientValueBaselines.label
+		})
+		.from(clientValueBaselines)
+		.where(eq(clientValueBaselines.clientId, required.clientId))
+		.orderBy(desc(clientValueBaselines.version));
+}
+
+export async function insertClientValueBaselineForTenant(
+	ctx: TenantContext,
+	input: { amountMinor: number; currency: string; recordedBy: string | null }
+) {
+	const required = requireTenantContext(ctx);
+	return db.transaction(async (tx) => {
+		const [latest] = await tx
+			.select({ version: max(clientValueBaselines.version) })
+			.from(clientValueBaselines)
+			.where(eq(clientValueBaselines.clientId, required.clientId));
+		const version = Number(latest?.version ?? 0) + 1;
+		const [row] = await tx
+			.insert(clientValueBaselines)
+			.values({
+				organizationId: required.organizationId,
+				clientId: required.clientId,
+				version,
+				amountMinor: input.amountMinor,
+				currency: input.currency,
+				evidence: 'client_confirmed',
+				label: 'estimated',
+				recordedBy: input.recordedBy
+			})
+			.returning({
+				id: clientValueBaselines.id,
+				version: clientValueBaselines.version,
+				amountMinor: clientValueBaselines.amountMinor,
+				currency: clientValueBaselines.currency,
+				evidence: clientValueBaselines.evidence,
+				label: clientValueBaselines.label
+			});
+		return row ?? null;
+	});
 }
 
 export async function upsertClientValueProfileForTenant(

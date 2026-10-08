@@ -1,10 +1,11 @@
 import { fail, isRedirect, redirect } from '@sveltejs/kit';
 import { env } from '@vector/config';
-import { AppError } from '@vector/contracts';
+import { AppError, SOCIAL_PLATFORMS } from '@vector/contracts';
 import {
 	approveCreativeAsset,
 	confirmCreativeRights,
 	contextFor,
+	assignSocialFamily,
 	createSocialPost,
 	getSocialOverview,
 	processDueSocialPublishesForOperator,
@@ -353,6 +354,30 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AppError) return fail(error.status, { error: error.message });
 			return fail(500, { error: 'Could not process scheduled posts' });
+		}
+	},
+	assignFamily: async ({ request, locals }) => {
+		const session = locals.session!;
+		if (!session.clientId) return fail(400, { error: 'Select a client first' });
+		const form = await request.formData();
+		const slots = SOCIAL_PLATFORMS.flatMap((channel) => {
+			const assetId = String(form.get(channel) ?? '').trim();
+			return assetId ? [{ channel, assetId }] : [];
+		});
+		try {
+			const preview = await assignSocialFamily(
+				session,
+				contextFor(session, locals.requestId),
+				{ familyKey: String(form.get('familyKey') ?? ''), slots },
+				locals.requestId
+			);
+			return {
+				ok: true,
+				notice: `Saved ${preview.familyKey}. Channels without an asset stay text only.`
+			};
+		} catch (error) {
+			if (error instanceof AppError) return fail(error.status, { error: error.message });
+			return fail(500, { error: 'Could not save the campaign family' });
 		}
 	},
 	syncMetrics: async ({ locals }) => {

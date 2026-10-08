@@ -2,7 +2,15 @@ import { and, desc, eq, inArray, isNotNull, max } from 'drizzle-orm';
 import { assertSameClient, requireTenantContext, type TenantContext } from '@vector/contracts';
 import { normalizeHostname, type PageDocument } from '@vector/funnel-engine';
 import { db } from './client';
-import { clientDomains, funnelAssetManifests, funnels, pageVersions, pages, sites } from './schema';
+import {
+	clientDomains,
+	creativeDerivatives,
+	funnelAssetManifests,
+	funnels,
+	pageVersions,
+	pages,
+	sites
+} from './schema';
 
 export function assertPageClient(ctx: TenantContext, clientId: string) {
 	return assertSameClient(ctx, clientId);
@@ -469,6 +477,32 @@ export async function publishLatestDraftForTenant(ctx: TenantContext) {
 				placedAt: draftManifest.placedAt,
 				placedBy: draftManifest.placedBy
 			});
+		}
+
+		const draftDerivatives = await tx
+			.select()
+			.from(creativeDerivatives)
+			.where(
+				and(
+					eq(creativeDerivatives.clientId, required.clientId),
+					eq(creativeDerivatives.pageVersionId, draft.id)
+				)
+			);
+		if (draftDerivatives.length > 0) {
+			await tx.insert(creativeDerivatives).values(
+				draftDerivatives.map((row) => ({
+					organizationId: required.organizationId,
+					clientId: required.clientId,
+					pageVersionId: published.id,
+					sourceAssetId: row.sourceAssetId,
+					slot: row.slot,
+					widthPx: row.widthPx,
+					focalX: row.focalX,
+					focalY: row.focalY,
+					altText: row.altText,
+					status: row.status
+				}))
+			);
 		}
 
 		await tx

@@ -50,7 +50,11 @@ export const MAX_CREATIVE_BYTES = 8 * 1024 * 1024;
 const CREATIVE_ALLOWED = {
 	'image/png': ALLOWED['image/png'],
 	'image/jpeg': ALLOWED['image/jpeg'],
-	'image/webp': ALLOWED['image/webp']
+	'image/webp': ALLOWED['image/webp'],
+	'video/mp4': {
+		ext: ['mp4'],
+		magic: (b: Uint8Array) => b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70
+	}
 } as const;
 
 export type AllowedCreativeMime = keyof typeof CREATIVE_ALLOWED;
@@ -66,7 +70,7 @@ export function inspectCreativeUpload(input: {
 	}
 	const mime = normalizeMime(input.declaredType);
 	const rule = CREATIVE_ALLOWED[mime as AllowedCreativeMime];
-	if (!rule) throw new ValidationError('Only PNG, JPEG, and WEBP creative assets are allowed');
+	if (!rule) throw new ValidationError('Only PNG, JPEG, WEBP, and MP4 creative assets are allowed');
 	if (!rule.magic(input.bytes)) throw new ValidationError('File contents do not match the declared type');
 	const ext = (input.filename.split('.').pop() ?? '').toLowerCase();
 	if (ext && !(rule.ext as readonly string[]).includes(ext)) {

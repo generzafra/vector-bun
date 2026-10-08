@@ -11,6 +11,7 @@ import {
 	isBrandLogoPath,
 	isDomainChallengePath,
 	isHealthPath,
+	isHeroImagePath,
 	isOgImagePath,
 	isLlmsTxtPath,
 	isRobotsPath,
@@ -57,6 +58,13 @@ export type DeliveryResolution =
 	  }
 	| {
 			kind: 'og_image';
+			hostname: string;
+			domainKind: DeliveryDomainKind;
+			clientId: string;
+			organizationId: string;
+	  }
+	| {
+			kind: 'hero_image';
 			hostname: string;
 			domainKind: DeliveryDomainKind;
 			clientId: string;
@@ -158,6 +166,15 @@ export async function resolveDeliveryPage(
 	if (isOgImagePath(pathname)) {
 		return {
 			kind: 'og_image',
+			hostname: domain.hostname,
+			domainKind: domain.kind,
+			clientId: domain.clientId,
+			organizationId: domain.organizationId
+		};
+	}
+	if (isHeroImagePath(pathname)) {
+		return {
+			kind: 'hero_image',
 			hostname: domain.hostname,
 			domainKind: domain.kind,
 			clientId: domain.clientId,

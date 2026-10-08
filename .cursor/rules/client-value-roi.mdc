@@ -22,4 +22,4 @@ Never:
 
 Trusted software calculates. AI may explain. All calculations must be deterministic, versioned, tenant-scoped, auditable, and labeled by evidence class.
 
-V0 activity proof is in on Control `/value` (known fee/package + observed monthly work). Do not add ROI, replacement-cost money, invented hours, or `value_snapshots` in this slice. Next value slice is V1 in Wave C.
+V0 activity proof, V2 client baselines, V3 revenue-to-fee, and V4 incremental counts are in on Control `/value`. The ratio is not profit. The experiment difference is a count, not revenue. Do not add replacement-cost money, invented hours, or `value_snapshots`. Next value slice is V5, which waits for Phase 9. C9 is in. The next slice is Wave E P9-S2.
